@@ -1,5 +1,9 @@
 # JIZURA 字面 — 文字PV自動構成ツール
 
+**English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)
+
+英語版 AE パネル：[ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) · [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip)
+
 歌詞を入れると、文字PV（リリックモーション）でよく使われる表現を組み合わせてカットを自動で組み立て、MP4 に書き出すブラウザアプリです。レイアウト・動き・装飾・つなぎ・仕上げを 707 の小さな部品（と 24 のスタイル）として持ち、その組み合わせを毎回変えるので、シードを変えれば何度でも別の構成になります。After Effects 用のパネル（スクリプト版と、ブラウザ版の画面をそのまま使える CEP 版）も付属しています。
 
 **▶ ブラウザで使う：<https://852wa.github.io/JIZURA/>**　／　AE パネル：[JIZURA_AE.jsx](https://852wa.github.io/JIZURA/JIZURA_AE.jsx)（スクリプト版。リンク先を右クリック →「名前を付けてリンク先を保存」）・[JIZURA_CEP.zip](https://852wa.github.io/JIZURA/JIZURA_CEP.zip)（CEP 版）

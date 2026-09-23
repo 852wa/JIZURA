@@ -6,8 +6,10 @@
 <title>JIZURA 字面</title>
 <meta name="description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <link rel="canonical" href="https://852wa.github.io/JIZURA/">
+<link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
+<link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA 字面 — 文字PV自動構成ツール">
+<meta property="og:title" content="JIZURA 字面">
 <meta property="og:description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <meta property="og:url" content="https://852wa.github.io/JIZURA/">
 <meta name="twitter:card" content="summary">
@@ -53,6 +55,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .proj { display: flex; gap: 8px; flex: 1 1 280px; min-width: 0; }
 .proj input { flex: 1 1 0; min-width: 0; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.lang-switch { display: inline-flex; align-items: center; gap: 3px; flex: none; font: 500 11px var(--mono); border: 1px solid var(--line2); border-radius: var(--r); padding: 3px; }
+.lang-switch a, .lang-switch span { display: inline-block; padding: 3px 7px; color: var(--muted); text-decoration: none; border-radius: 2px; }
+.lang-switch a:hover { color: var(--text); background: var(--raised2); }
+.lang-switch [aria-current=page] { color: var(--ink); background: var(--amber); }
+html[lang=en] { --ui: system-ui, -apple-system, "Segoe UI", sans-serif; --brand: Georgia, "Times New Roman", serif; }
+html[lang=en] .work { grid-template-columns: minmax(315px, 365px) minmax(0, 1fr) minmax(350px, 395px); }
+html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px; }
+html[lang=en] .now-row { grid-template-columns: 105px minmax(0, 1fr); }
+html[lang=en] .font-row { grid-template-columns: 95px minmax(0, 1fr); }
+html[lang=en] .ln .tools select { max-width: 130px; }
+html[lang=en] .fields .field { overflow-wrap: anywhere; }
+html[lang=en] .easy-grid button, html[lang=en] .tabs button { white-space: normal; line-height: 1.2; }
 
 /* ---------- controls ---------- */
 input[type=text], input[type=number], input:not([type]), select, textarea {
@@ -254,12 +268,14 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {
   .work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  html[lang=en] .work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .col-stage { grid-column: 1 / -1; order: -1; }
   .col-left { border-right: 1px solid var(--line); }
   .col-right { border-left: 0; }
 }
 @media (max-width: 760px) {
   .work { grid-template-columns: minmax(0, 1fr); }
+  html[lang=en] .work { grid-template-columns: minmax(0, 1fr); }
   .col-left, .col-right { border: 0; border-top: 1px solid var(--line); }
   .bar { gap: 10px; }
   .brand .tag { display: none; }
@@ -297,6 +313,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
       <button id="modeEasy" aria-pressed="false" title="おまかせボタン中心のシンプルな画面">かんたん</button>
       <button id="modePro" aria-pressed="true" title="すべての設定を表示">詳細</button>
     </div>
+    <nav class="lang-switch" aria-label="言語"><span aria-current="page">日本語</span><a href="en/index.html" lang="en">English</a></nav>
     <div class="acts">
       <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
