@@ -1,6 +1,8 @@
 // ================================================================ decor (AE)
 var JZ_DECOR = {};
 var JZ_DECOR_BACK = { grid: 1, stripes: 1, blobs: 1, bars: 1, shapes: 1, counter: 1 };
+// decor the browser draws with ghost off (grid, stripes, counter, rings, dots, chevrons, leaders, waveform, barcode) is kept
+// out of the tinted ghosts with jzNoGhost; brackets, slash, sparks, blobs, bars and shapes are ghosted like in the browser
 function jzIO(ctx, dur) { // opacity in/out expression for decor layers
     var c = ctx.cut;
     return JZ_FNS + 'value*oc(time/' + jzN(dur || 0.3) + ')*(1-ic((time-' + jzN(c.dur - Math.max(0.12, c.outDur || 0.15)) + ')/' + jzN(Math.max(0.12, c.outDur || 0.15)) + '))';
@@ -19,7 +21,7 @@ JZ_DECOR.brackets = function (ctx, bb, d) {
 };
 JZ_DECOR.rings = function (ctx, bb, d) {
     var sc = ctx.sc, cx = (bb.x0 + bb.x1) / 2, cy = (bb.y0 + bb.y1) / 2, R0 = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * 0.55 + ctx.H * 0.05;
-    var S = jzShapeLayer(ctx, 'rings', cx, cy);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'rings', cx, cy));
     for (var k = 0; k < (d.n || 2); k++) {
         var R = R0 * (1 + k * 0.28 + jzR(d.seed, k, 1) * 0.1), g = jzGrp(S);
         jzAddEllipse(g, R * 2, R * 2); jzAddStroke(g, sc.fg, 1.2, 70);
@@ -27,13 +29,13 @@ JZ_DECOR.rings = function (ctx, bb, d) {
         jzGX(g).property('ADBE Vector Rotation').expression = 'time*' + (k % 2 ? -14 : 10) + '+' + Math.round(jzR(d.seed, k, 2) * 360);
         var a = (jzR(d.seed, k, 2) * 360 + 40) * Math.PI / 180, px = cx + Math.cos(a) * R, py = cy + Math.sin(a) * R;
         var lab = jzText(ctx, 'X' + Math.round(px) + ' Y' + Math.round(py), { font: 'mono', size: Math.max(10, ctx.H * 0.015), color: sc.sub, x: px + 10, y: py - 12, align: 'left' });
-        jzSetExpr(jzXf(lab, 'ADBE Opacity'), jzIO(ctx, 0.5));
+        jzSetExpr(jzXf(lab, 'ADBE Opacity'), jzIO(ctx, 0.5)); jzNoGhost(lab);
     }
     jzSetExpr(jzXf(S, 'ADBE Opacity'), jzIO(ctx, 0.3));
 };
 JZ_DECOR.dots = function (ctx, bb, d) {
     var sc = ctx.sc, cx = (bb.x0 + bb.x1) / 2, cy = (bb.y0 + bb.y1) / 2, R = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) * 0.62 + ctx.H * 0.04;
-    var S = jzShapeLayer(ctx, 'dot ring', cx, cy), g = jzGrp(S);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'dot ring', cx, cy)), g = jzGrp(S);
     jzAddEllipse(g, 5, 5, R, 0); jzAddFill(g, sc.fg);
     var rp = jzVecs(g).addProperty('ADBE Vector Filter - Repeater');
     rp.property('ADBE Vector Repeater Copies').setValue(36);
@@ -47,7 +49,7 @@ JZ_DECOR.arrows = function (ctx, bb, d) {
     var sc = ctx.sc, cy = (bb.y0 + bb.y1) / 2, s = Math.max(14, ctx.H * 0.03), gap = s * 0.9;
     for (var side = -1; side <= 1; side += 2) {
         var xEdge = side < 0 ? bb.x0 - s * 1.2 : bb.x1 + s * 1.2, dir = -side;
-        var S = jzShapeLayer(ctx, 'chevrons', xEdge, cy);
+        var S = jzNoGhost(jzShapeLayer(ctx, 'chevrons', xEdge, cy));
         for (var i = 0; i < 3; i++) {
             var g = jzGrp(S), x = side * i * gap;
             jzAddPath(g, [[x - dir * s * 0.35, -s * 0.5], [x + dir * s * 0.35, 0], [x - dir * s * 0.35, s * 0.5]], false);
@@ -86,33 +88,33 @@ JZ_DECOR.leaders = function (ctx, bb, d) {
     for (var k = 0; k < 2; k++) {
         var ax = anchors[k][0], ay = anchors[k][1], sgn = k === 1 ? -1 : 1;
         var tx = jzClamp(ax + sgn * W * jzLerp(0.06, 0.14, jzR(d.seed, k, 1)), W * 0.06, W * 0.94), ty = jzClamp(ay + (k === 0 ? -1 : 1) * H * jzLerp(0.08, 0.16, jzR(d.seed, k, 2)), H * 0.08, H * 0.92);
-        var S = jzShapeLayer(ctx, 'leader', 0, 0), g = jzGrp(S);
+        var S = jzNoGhost(jzShapeLayer(ctx, 'leader', 0, 0)), g = jzGrp(S);
         jzAddPath(g, [[ax, ay], [tx, ty], [tx + sgn * W * 0.05, ty]], false); jzAddStroke(g, sc.sub, 1.2);
         jzAddTrimPaths(g, JZ_FNS + '100*oe((time-0.1)/0.45)');
         var gd = jzGrp(S); jzAddEllipse(gd, 7, 7, ax, ay); jzAddFill(gd, sc.accent);
         var t = jzText(ctx, labels[k], { font: k === 0 ? 'gothic_med' : 'mono', size: fs, color: sc.fg, x: tx + sgn * W * 0.055, y: ty - fs * 0.9, align: k === 1 ? 'right' : 'left', track: 0.06 });
-        jzSetExpr(jzXf(t, 'ADBE Opacity'), jzIO(ctx, 0.45));
+        jzSetExpr(jzXf(t, 'ADBE Opacity'), jzIO(ctx, 0.45)); jzNoGhost(t);
     }
 };
 JZ_DECOR.waveform = function (ctx, bb, d) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, y = H * (d.low ? 0.86 : 0.14), pts = [], n = 60;
     for (var i = 0; i <= n; i++) { var u = i / n, a = H * 0.03 * Math.sin(u * Math.PI) * (0.4 + jzR(d.seed, i)); pts.push([jzLerp(W * 0.18, W * 0.82, u), y + (i % 2 ? a : -a)]); }
-    var S = jzShapeLayer(ctx, 'waveform', 0, 0), g = jzGrp(S); jzAddPath(g, pts, false); jzAddStroke(g, sc.fg, 1.4, 90);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'waveform', 0, 0)), g = jzGrp(S); jzAddPath(g, pts, false); jzAddStroke(g, sc.fg, 1.4, 90);
     jzSetExpr(jzXf(S, 'ADBE Scale'), 'posterizeTime(12);seedRandom(Math.floor(time*12),true);[100,100*random(0.5,1.2)]');
     jzXf(S, 'ADBE Anchor Point').setValue([W / 2, y]); jzXf(S, 'ADBE Position').setValue([W / 2, y]);
     jzAddTrimPaths(g, JZ_FNS + '100*oe(time/0.4)');
 };
 JZ_DECOR.barcode = function (ctx, bb, d) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, x0 = d.right ? W * 0.84 : W * 0.06, y0 = d.low ? H * 0.84 : H * 0.07, h = H * 0.05;
-    var S = jzShapeLayer(ctx, 'barcode', x0, y0), g = jzGrp(S), x = 0;
+    var S = jzNoGhost(jzShapeLayer(ctx, 'barcode', x0, y0)), g = jzGrp(S), x = 0;
     for (var i = 0; i < 34; i++) { var w = 1 + Math.floor(jzR(d.seed, i, 1) * 3.2); if (jzR(d.seed, i, 2) < 0.62) jzAddRect(g, w, h, 0, x + w / 2, h / 2); x += w + 1.5; }
     jzAddFill(g, sc.fg, 90);
     var t = jzText(ctx, jzPad(jzHash(d.seed, 5) % 1000000000, 9), { font: 'mono', size: Math.max(9, H * 0.014), color: sc.fg, x: x0, y: y0 + h + 12, align: 'left', track: 0.2 });
-    jzSetExpr(jzXf(S, 'ADBE Opacity'), jzIO(ctx, 0.3)); jzSetExpr(jzXf(t, 'ADBE Opacity'), jzIO(ctx, 0.3));
+    jzSetExpr(jzXf(S, 'ADBE Opacity'), jzIO(ctx, 0.3)); jzSetExpr(jzXf(t, 'ADBE Opacity'), jzIO(ctx, 0.3)); jzNoGhost(t);
 };
 JZ_DECOR.grid = function (ctx, bb, d) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, gs = H / 8;
-    var S = jzShapeLayer(ctx, 'grid', 0, 0), g = jzGrp(S), x, y;
+    var S = jzNoGhost(jzShapeLayer(ctx, 'grid', 0, 0)), g = jzGrp(S), x, y;
     for (x = (W / 2) % gs; x < W; x += gs) jzAddPath(g, [[x, 0], [x, H]], false);
     for (y = (H / 2) % gs; y < H; y += gs) jzAddPath(g, [[0, y], [W, y]], false);
     jzAddStroke(g, sc.sub, 1, 12);
@@ -120,7 +122,7 @@ JZ_DECOR.grid = function (ctx, bb, d) {
 };
 JZ_DECOR.stripes = function (ctx, bb, d) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, w = H * 0.04;
-    var S = jzShapeLayer(ctx, 'stripes', d.corner ? W * 0.85 : W * 0.15, d.corner ? H * 0.15 : H * 0.85), g = jzGrp(S);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'stripes', d.corner ? W * 0.85 : W * 0.15, d.corner ? H * 0.15 : H * 0.85)), g = jzGrp(S);
     for (var i = -6; i <= 6; i++) jzAddRect(g, w, H * 0.36, 0, i * w * 2, 0);
     jzAddFill(g, d.accent ? sc.accent : sc.dim, 90);
     jzXf(S, 'ADBE Rotate Z').setValue(-35);
@@ -169,7 +171,7 @@ JZ_DECOR.shapes = function (ctx, bb, d) {
 };
 JZ_DECOR.counter = function (ctx, bb, d) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut;
-    var t = jzText(ctx, '00', { font: jzFontOf(ctx, '_', 'display'), size: H * 0.5, color: d.accent ? sc.accent : sc.dim, x: d.right ? W * 0.86 : W * 0.14, y: H * (d.low ? 0.72 : 0.3) });
+    var t = jzNoGhost(jzText(ctx, '00', { font: jzFontOf(ctx, '_', 'display'), size: H * 0.5, color: d.accent ? sc.accent : sc.dim, x: d.right ? W * 0.86 : W * 0.14, y: H * (d.low ? 0.72 : 0.3) }));
     var ex = d.mode === 'count' ? 'Math.floor(linear(time,0,' + jzN(c.dur * 0.8) + ',' + (d.from || 0) + ',' + (d.to || 99) + ')).toString()' : '"' + jzPad((c.index || 0) + 1, 2) + '"';
     try { t.property('ADBE Text Properties').property('ADBE Text Document').expression = ex; } catch (e) {}
     jzSetExpr(jzXf(t, 'ADBE Opacity'), jzIO(ctx, 0.3));
@@ -179,13 +181,17 @@ function jzDecorate(ctx, bb) {
     var list = ctx.cut.decor || [];
     bb = bb || { x0: ctx.W * 0.35, x1: ctx.W * 0.65, y0: ctx.H * 0.4, y1: ctx.H * 0.6, cx: ctx.W / 2, cy: ctx.H / 2 };
     for (var i = 0; i < list.length; i++) {
-        var d = list[i], fn = JZ_DECOR[d.id];
-        if (!fn) continue;
+        var d = list[i], id = jzFallback('decor', d.id, null), D = id ? JZ_REG.decor[id] : null;
+        if (!D) continue;
         var before = ctx.comp.numLayers;
-        try { fn(ctx, bb, d); } catch (e) { jzWarn('decor ' + d.id + ': ' + e.toString()); }
-        if (JZ_DECOR_BACK[d.id]) { // push newly created layers to the back, keeping their order
+        try { D.build(ctx, bb, d); } catch (e) { jzWarn('decor ' + id + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
+        if (D.back || jzMeta('decor', id).layer === 'back') { // push newly created layers to the back, keeping their order
             var added = ctx.comp.numLayers - before;
             for (var k = 0; k < added; k++) { try { ctx.comp.layer(1).moveToEnd(); } catch (e2) {} }
         }
     }
 }
+// ---- register the original decor set
+(function () {
+    for (var k in JZ_DECOR) if (JZ_DECOR.hasOwnProperty(k)) jzReg('decor', k, { build: JZ_DECOR[k], back: !!JZ_DECOR_BACK[k] });
+})();

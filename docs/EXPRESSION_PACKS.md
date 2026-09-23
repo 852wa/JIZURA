@@ -200,6 +200,11 @@ entry in many combinations; `python3 dev/overview.py <group> out/ov t_all` makes
 Syntax check: `node -e "new Function(require('fs').readFileSync('src/11p_<pack>.js','utf8'))"`. Finally run `python3 build.py`.
 
 ## After Effects
-The AE panel implements the original set only. Give every new layout / enter / exit / hold / decor entry an `ae` counterpart (see
-"After Effects counterpart" above; `J.AE_MAP` in src/11_export.js can override it) so browser → AE JSON exports keep working.
-fx entries may declare `ae`; text treatments, backgrounds, camera moves and transitions are browser-only.
+The AE panel (`ae/*.jsx`, built by `python3 build_ae.py`) has its own registry: `jzReg(group, key, def)` in `ae/05_reg.jsx`, core
+entries in `ae/20_motion.jsx` … `ae/45_core.jsx`, and one file per ported pack (`ae/p_*.jsx`). Planning metadata (weights, tags,
+追加分/和風 flags, fits, durations) is exported from the browser engine into `ae/data.json` by `node tools/export_ae_data.js`, so both
+planners make the same decisions. A browser entry that has no AE port yet is replaced by its closest ported entry (the `ae`
+counterpart, see "After Effects counterpart" above; `J.AE_MAP` in src/11_export.js can override it) — keep giving new entries an `ae`
+counterpart so browser → AE JSON exports keep working.
+Checks (need `cd dev && npm install` once): `node dev/ae_test.js` builds every style × several seeds on an emulated AE object model
+in an ES3 realm; `node dev/ae_check.js --group layout --ids all` checks the ported parts of one group.

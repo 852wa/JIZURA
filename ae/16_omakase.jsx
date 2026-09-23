@@ -76,41 +76,67 @@ function jzStyleWithPalette(st, pal) {
     o.schemes = out;
     return o;
 }
+// 合成用の背景 (green / black back): every scheme white-on-black, no textures — same as the browser's keyStyle()
+function jzKeyStyle(st) {
+    var o = jzCopy(st), out = [], i, s;
+    for (i = 0; i < st.schemes.length; i++) {
+        s = { bg: '#000000', fg: '#FFFFFF', sub: '#D2D2D2', accent: '#FFFFFF', accent2: '#BDBDBD', ink: '#FFFFFF', dim: '#1E1E1E', ghostA: '#9A9A9A', ghostB: '#5E5E5E' };
+        if (st.schemes[i].grad) s.grad = ['#FFFFFF', '#A8A8A8'];
+        out.push(s);
+    }
+    o.schemes = out; o.texture = { grain: 0, paper: 0, scan: 0 }; o.key = true;
+    return o;
+}
 // technique on/off map for a mood — deterministic from the seed so a rebuild reproduces it
 function jzAllEnabled() {
-    var en = { layout: {}, enter: {}, exit: {}, hold: {}, decor: {} }, groups = [['layout', JZ_DATA.layoutOrder], ['enter', JZ_DATA.enterOrder], ['exit', JZ_DATA.exitOrder], ['hold', JZ_DATA.holdOrder], ['decor', JZ_DATA.decorOrder]], k, j;
-    for (k = 0; k < groups.length; k++) for (j = 0; j < groups[k][1].length; j++) en[groups[k][0]][groups[k][1][j]] = true;
+    var en = {}, g, j;
+    for (g = 0; g < JZ_GROUPS.length; g++) { var ord = jzOrder(JZ_GROUPS[g]); en[JZ_GROUPS[g]] = {}; for (j = 0; j < ord.length; j++) en[JZ_GROUPS[g]][ord[j]] = true; }
     return en;
 }
-function jzMoodEnabled(moodKey, seed) {
+// technique on/off map for a mood (same idea as the browser's おまかせ): everything tagged with the mood plus the
+// mood's hand-picked core items, a sprinkle of everything else, and a minimum count per group. Deterministic from the seed.
+var JZ_MOOD_MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4, trans: 3 };
+function jzMoodEnabled(moodKey, seed, o) {
     var M = moodKey ? JZ_DATA.moods[moodKey] : null;
     if (!M) return jzAllEnabled();
-    var rng = new JzRng((jzHash(seed || 1, 4242) % 2147483646) + 1), en = jzAllEnabled(), k;
-    function subset(group, order, prefer, min) {
-        var on = {}, n = 0, i;
-        for (i = 0; i < order.length; i++) { on[order[i]] = prefer ? (jzIndexOf(prefer, order[i]) >= 0 || rng.chance(0.22)) : rng.chance(0.8); if (on[order[i]]) n++; }
-        for (i = 0; i < order.length && n < min; i++) if (!on[order[i]]) { on[order[i]] = true; n++; }
-        en[group] = on;
+    var rng = new JzRng((jzHash(seed || 1, 4242) % 2147483646) + 1), en = {}, g, i, k;
+    for (g = 0; g < JZ_GROUPS.length; g++) {
+        var grp = JZ_GROUPS[g], ord = jzOrder(grp), items = [], on = {}, n = 0;
+        for (i = 0; i < ord.length; i++) if (!jzMeta(grp, ord[i]).special && (!o || jzRandomOk(o, grp, ord[i]))) items.push(ord[i]);
+        var hand = (grp === 'layout' || grp === 'enter' || grp === 'exit') && M[grp] instanceof Array ? M[grp] : [];
+        for (i = 0; i < items.length; i++) {
+            k = items[i];
+            var pref = moodKey === 'chaos' ? null : (jzIndexOf(hand, k) >= 0 || jzHasTag(jzMeta(grp, k), moodKey));
+            on[k] = pref === null ? rng.chance(0.8) : (pref || rng.chance(0.22));
+            if (on[k]) n++;
+        }
+        var min = Math.min(JZ_MOOD_MIN[grp] || 3, items.length), guard = 0;
+        while (n < min && guard++ < 500) { k = items[rng.int(0, items.length - 1)]; if (!on[k]) { on[k] = true; n++; } }
+        en[grp] = on;
     }
-    subset('layout', JZ_DATA.layoutOrder, M.layout, 4);
-    subset('enter', JZ_DATA.enterOrder, M.enter, 3);
-    subset('exit', JZ_DATA.exitOrder, M.exit, 3);
-    en.enter.cut = true; en.exit.cut = true;
-    for (k = 0; k < JZ_DATA.holdOrder.length; k++) en.hold[JZ_DATA.holdOrder[k]] = jzIndexOf(M.noHold || [], JZ_DATA.holdOrder[k]) < 0;
-    subset('decor', JZ_DATA.decorOrder, null, 4);
+    en.enter.cut = true; en.exit.cut = true; en.hold.still = true;
+    if (en.treat) en.treat.none = true; if (en.bg) en.bg.none = true; if (en.cam) en.cam.push = true;
+    for (k = 0; k < (M.noHold || []).length; k++) en.hold[M.noHold[k]] = false;
     return en;
 }
 // roll a whole new look: mood, style, effect strengths, switches, seed, maybe a palette
-function jzOmakase(curMood, curStyle, rnd) {
+// o: the 追加分 / 和風 switches ({ extra, wa }) — styles they rule out are never picked
+function jzOmakase(curMood, curStyle, rnd, o) {
     rnd = rnd || Math.random;
     function pick(a) { return a[Math.floor(rnd() * a.length) % a.length]; }
     function range(r) { return r[0] + (r[1] - r[0]) * rnd(); }
+    function okStyle(k) { return JZ_DATA.styles[k] && jzRandomOk(o || {}, 'style', k); }
     var moods = [], i, k;
     for (i = 0; i < JZ_DATA.moodOrder.length; i++) if (JZ_DATA.moodOrder[i] !== curMood) moods.push(JZ_DATA.moodOrder[i]);
     var mood = pick(moods), M = JZ_DATA.moods[mood];
-    var base = (M.styles && rnd() < 0.72) ? M.styles : JZ_DATA.styleOrder, pool = [];
-    for (i = 0; i < base.length; i++) if (base[i] !== curStyle && JZ_DATA.styles[base[i]]) pool.push(base[i]);
-    if (!pool.length) for (i = 0; i < JZ_DATA.styleOrder.length; i++) if (JZ_DATA.styleOrder[i] !== curStyle) pool.push(JZ_DATA.styleOrder[i]);
+    var moodStyles = [], seen = {};
+    for (i = 0; i < (M.styles || []).length; i++) if (okStyle(M.styles[i]) && !seen[M.styles[i]]) { moodStyles.push(M.styles[i]); seen[M.styles[i]] = 1; }
+    for (i = 0; i < JZ_DATA.styleOrder.length; i++) { k = JZ_DATA.styleOrder[i]; if (!seen[k] && okStyle(k) && jzIndexOf(JZ_DATA.styles[k].moods || [], mood) >= 0) { moodStyles.push(k); seen[k] = 1; } }
+    var base = [], pool = [];
+    if (moodStyles.length && rnd() < 0.72) base = moodStyles; else for (i = 0; i < JZ_DATA.styleOrder.length; i++) if (okStyle(JZ_DATA.styleOrder[i])) base.push(JZ_DATA.styleOrder[i]);
+    for (i = 0; i < base.length; i++) if (base[i] !== curStyle) pool.push(base[i]);
+    if (!pool.length) for (i = 0; i < JZ_DATA.styleOrder.length; i++) if (JZ_DATA.styleOrder[i] !== curStyle && okStyle(JZ_DATA.styleOrder[i])) pool.push(JZ_DATA.styleOrder[i]);
+    if (!pool.length) pool = [curStyle || 'noir'];
     var style = pick(pool), fx = {};
     for (k in M.fx) if (M.fx.hasOwnProperty(k)) fx[k] = range(M.fx[k]);
     var r = { mood: mood, style: style, fx: fx, onTwos: rnd() < 0.75, flash: rnd() < 0.65, hud: pick([0, 0, 1, 2]), seed: Math.floor(rnd() * 999999999), palette: null };

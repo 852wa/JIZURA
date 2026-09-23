@@ -9,78 +9,118 @@ function jzEventsArr(plan, type, t0, t1) {
     return '[' + out.join(',') + ']';
 }
 
+// Structure of the generated project:
+//   main comp  ── base background (first scheme) ─ one WRAPPER precomp per cut ─ effect-event layers ─ HUD ─ JZ FX ─ flash ─ vignette
+//   wrapper    ── scheme background + radial lift ─ paper ─ background graphic ─ ghost B ─ ghost A ─ content ─ "JZ Camera" null
+//   content    ── the layout's text / shape layers + decor (built by the registry entries)
+// Cut-to-cut transitions work on neighbouring wrapper layers in the main comp.
 function jzBuild(plan, opt) {
     opt = opt || {};
-    JZLOG = [];
+    JZLOG = []; JZ_FALLBACKS = 0;
     var W = opt.width || plan.width || 1920, H = opt.height || plan.height || 1080, fps = plan.fps || 24, D = Math.max(1, plan.duration || 10);
     var st = plan.style, fx = plan.fx || {}, roles = opt.roles || JZ_ROLE_DEFAULT;
     var ghostAmt = (fx.chroma == null ? 0.7 : fx.chroma) * (st.ghost == null ? 1 : st.ghost);
     var title = String(plan.title || 'lyric').substr(0, 20);
     var comp = app.project.items.addComp('JIZURA ' + title, W, H, 1, D, fps);
+    // edges uncovered by glitch shifts show the scheme background (the browser redraws over the old frame) instead of black
+    try { comp.bgColor = plan.keyBg ? [0, 0, 0] : jzHex(st.schemes[0].bg); } catch (eb) {}
     var folder = app.project.items.addFolder('JIZURA ' + title + ' cuts');
     var u = H / 1080;
     var schemes = st.schemes, cuts = plan.cuts || [];
+    var FXV = { motion: fx.motion == null ? 0.7 : fx.motion, glitch: fx.glitch == null ? 0.5 : fx.glitch, decor: fx.decor == null ? 0.5 : fx.decor, texture: fx.texture == null ? 0.6 : fx.texture, chroma: fx.chroma == null ? 0.7 : fx.chroma };
     function schemeOf(c) { return schemes[(c.scheme || 0) % schemes.length] || schemes[0]; }
-
-    // ---------- background: radial ramp with hold keyframes where the colour scheme changes
-    var bg = comp.layers.addSolid(jzHex(schemes[0].bg), 'JZ Background', W, H, 1, D);
-    var ramp = jzEffect(bg, 'ADBE Ramp', 'JZ BG Colour');
-    jzEP(ramp, 1, [W / 2, H * 0.45]); jzEP(ramp, 3, [W, H]); jzEP(ramp, 5, 2);
-    var last = -1;
-    for (var i = 0; i < cuts.length; i++) {
-        var si = (cuts[i].scheme || 0) % schemes.length;
-        if (si === last) continue;
-        var s = schemes[si], lift = jzLum(s.bg) < 0.5 ? 0.045 : 0.1, b = jzHex(s.bg);
-        var c1 = [Math.min(1, b[0] + lift), Math.min(1, b[1] + lift), Math.min(1, b[2] + lift)];
-        var tt = i === 0 ? 0 : cuts[i].start;
-        try {
-            var p2 = ramp.property(2), p4 = ramp.property(4);
-            p2.setValueAtTime(tt, c1); p4.setValueAtTime(tt, b);
-            p2.setInterpolationTypeAtKey(p2.nearestKeyIndex(tt), KeyframeInterpolationType.HOLD, KeyframeInterpolationType.HOLD);
-            p4.setInterpolationTypeAtKey(p4.nearestKeyIndex(tt), KeyframeInterpolationType.HOLD, KeyframeInterpolationType.HOLD);
-        } catch (e) { jzWarn('bg key: ' + e.toString()); }
-        last = si;
-    }
     var paperAmt = (st.texture && st.texture.paper) || 0;
-    if (paperAmt > 0.05 && (fx.texture == null || fx.texture > 0.05)) {
-        var pp = comp.layers.addSolid([0.5, 0.5, 0.5], 'JZ Paper', W, H, 1, D);
-        jzEffect(pp, 'ADBE Fractal Noise', 'JZ Paper Noise');
-        pp.blendingMode = BlendingMode.OVERLAY; jzXf(pp, 'ADBE Opacity').setValue(22 * paperAmt);
-        pp.moveAfter(bg); bg.moveToEnd();
-    }
+    // 合成用の背景: the plan's style is already white-on-black; no lift / paper / background graphic / vignette,
+    // the finished comp is made monochrome (Tint) and — for green — screened onto #00FF00
+    var KEY = (plan.keyBg === 'green' || plan.keyBg === 'black') ? plan.keyBg : null;
+    if (KEY) paperAmt = 0;
+
+    // ---------- base background (visible between cuts)
+    var base = comp.layers.addSolid(jzHex(schemes[0].bg), 'JZ Background', W, H, 1, D);
+    if (!KEY) jzBgLift(base, schemes[0], W, H);
 
     // ---------- cuts
-    var lagA = 0.8 / 24, lagB = 1.6 / 24;
+    var lagA = 0.8 / 24, lagB = 1.6 / 24, wraps = [];
     for (var ci = 0; ci < cuts.length; ci++) {
         var cut = cuts[ci];
         if (!(cut.end > cut.start)) continue;
         cut.dur = cut.end - cut.start;
-        var sc = schemeOf(cut);
-        var pc = app.project.items.addComp(jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16), W, H, 1, Math.max(cut.dur, 1 / fps) + 0.2, fps);
+        var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
+        var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
+        // content
+        var pc = app.project.items.addComp(label + ' text', W, H, 1, cdur, fps);
         pc.parentFolder = folder;
-        var ctx = { comp: pc, W: W, H: H, sc: sc, st: st, fx: { motion: fx.motion == null ? 0.7 : fx.motion, glitch: fx.glitch == null ? 0.5 : fx.glitch }, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
-        var bb = null;
-        try { var fn = JZ_LAYOUTS[cut.layout] || JZ_LAYOUTS.center; bb = fn(ctx); }
-        catch (e) { jzWarn('cut ' + (ci + 1) + ' ' + cut.layout + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
+        var ctx = { comp: pc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
+        var bb = null, lk = jzFallback('layout', cut.layout, 'center');
+        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: W, H: H, dur: cut.dur }, st) : {}; }
+        try { bb = JZ_REG.layout[lk].build(ctx); }
+        catch (e) { jzWarn('cut ' + (ci + 1) + ' ' + lk + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
         try { jzDecorate(ctx, bb); } catch (e2) { jzWarn('decor: ' + e2.toString()); }
-        var L = comp.layers.add(pc);
-        L.startTime = cut.start; L.inPoint = cut.start; L.outPoint = cut.end;
-        L.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
+        // wrapper
+        var wc = app.project.items.addComp(label, W, H, 1, cdur, fps);
+        wc.parentFolder = folder;
+        var bgL = wc.layers.addSolid(jzHex(sc.bg), 'JZ BG', W, H, 1, cdur);
+        if (!KEY) jzBgLift(bgL, sc, W, H);
+        if (paperAmt > 0.05 && FXV.texture > 0.05) {
+            var pp = wc.layers.addSolid([0.5, 0.5, 0.5], 'JZ Paper', W, H, 1, cdur);
+            var pn = jzEffect(pp, 'ADBE Fractal Noise', 'JZ Paper Noise'); jzEP(pn, 4, 60);
+            // the browser's paper is a faint fibre texture: keep the overlay light, fainter still on dark schemes
+            pp.blendingMode = BlendingMode.OVERLAY; jzXf(pp, 'ADBE Opacity').setValue((jzLum(sc.bg) < 0.4 ? 6 : 12) * paperAmt);
+        }
+        var bk = !KEY && cut.bg && cut.bg !== 'none' ? jzFallback('bg', cut.bg, null) : null;
+        if (bk) {
+            var bctx = { comp: wc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, plan: plan, P: cut.bgP || {} };
+            try { JZ_REG.bg[bk].build(bctx, bctx.P); } catch (e3) { jzWarn('bg ' + bk + ': ' + e3.toString() + (e3.line ? ' (line ' + e3.line + ')' : '')); }
+        }
+        var CL = wc.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
+        var content = [CL];
         if (ghostAmt > 0.02 && opt.ghosts !== false) {
+            // layers marked with jzNoGhost() stay out of the ghosts: feed them from a copy of the content comp with those layers off
+            var gsrc = null, li;
+            for (li = 1; li <= pc.numLayers; li++) if (jzIsNoGhost(pc.layer(li))) { gsrc = pc; break; }
+            if (gsrc) {
+                try {
+                    gsrc = pc.duplicate(); gsrc.name = label + ' ghost'; gsrc.parentFolder = folder;
+                    for (li = 1; li <= gsrc.numLayers; li++) if (jzIsNoGhost(gsrc.layer(li))) gsrc.layer(li).enabled = false;
+                } catch (eg) { gsrc = null; jzWarn('ghost copy: ' + eg.toString()); }
+            }
             var ghosts = [['B', lagB, [-3.4, -1.3], sc.ghostB], ['A', lagA, [3.2, 1.9], sc.ghostA]];
             for (var g = 0; g < ghosts.length; g++) {
-                var G = L.duplicate();
-                G.name = L.name + ' ghost' + ghosts[g][0];
-                G.startTime = cut.start + ghosts[g][1]; G.inPoint = cut.start; G.outPoint = cut.end + ghosts[g][1];
-                G.moveAfter(L);
+                var G = gsrc ? wc.layers.add(gsrc) : CL.duplicate();
+                G.name = 'ghost ' + ghosts[g][0];
+                G.startTime = ghosts[g][1]; G.inPoint = 0; G.outPoint = cdur;
+                G.moveAfter(CL);
                 var tint = jzEffect(G, 'ADBE Tint', 'JZ Ghost Colour');
                 jzEP(tint, 1, jzHex(ghosts[g][3])); jzEP(tint, 2, jzHex(ghosts[g][3])); jzEP(tint, 3, 100);
                 if (jzLum(sc.bg) > 0.55) G.blendingMode = BlendingMode.MULTIPLY;
                 var off = ghosts[g][2];
-                jzSetExpr(jzXf(G, 'ADBE Position'), 'var ev=' + jzEventsArr(plan, 'chroma', cut.start, cut.end) + ';var s=1;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.55,dt);}' +
+                jzSetExpr(jzXf(G, 'ADBE Position'), 'var T0=' + jzN(cut.start) + ',ev=' + jzEventsArr(plan, 'chroma', cut.start, cut.end) + ';var s=1;for(var i=0;i<ev.length;i++){var dt=(time+T0-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.55,dt);}' +
                     'var k=' + jzN(ghostAmt * u) + '*s;[value[0]+' + off[0] + '*k,value[1]+' + off[1] + '*k]');
+                content.push(G);
             }
         }
+        // camera: a null at the comp centre (identity transform) that carries the content and its ghosts
+        var nul = wc.layers.addNull(cdur); nul.name = 'JZ Camera';
+        jzXf(nul, 'ADBE Anchor Point').setValue([W / 2, H / 2]); jzXf(nul, 'ADBE Position').setValue([W / 2, H / 2]);
+        for (var q = 0; q < content.length; q++) content[q].parent = nul;
+        var ck = jzFallback('cam', cut.cam || 'push', 'push');
+        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: wc, nul: nul, content: content, P: cut.camP || {}, W: W, H: H, u: u, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
+        catch (e4) { jzWarn('cam ' + ck + ': ' + e4.toString() + (e4.line ? ' (line ' + e4.line + ')' : '')); }
+        // into the main comp
+        var WL = comp.layers.add(wc);
+        WL.startTime = cut.start; WL.inPoint = cut.start; WL.outPoint = cut.end;
+        WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
+        wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc });
+    }
+
+    // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
+    for (var wi = 1; wi < wraps.length; wi++) {
+        var B = wraps[wi], A = wraps[wi - 1], tk = B.cut.trans ? jzFallback('trans', B.cut.trans, null) : null;
+        if (!tk || Math.abs(A.cut.end - B.cut.start) > 0.06) continue;
+        var td = jzClamp(B.cut.transDur || jzMeta('trans', tk).dur || 0.35, 0.08, Math.max(0.1, B.cut.dur * 0.6));
+        A.layer.outPoint = B.cut.start + td;
+        var tctx = { comp: comp, W: W, H: H, u: u, A: A.layer, B: B.layer, t0: B.cut.start, dur: td, P: B.cut.transP || {}, sc: B.sc, scPrev: A.sc, st: st, fx: FXV, cut: B.cut, prev: A.cut, fps: fps };
+        try { JZ_REG.trans[tk].build(tctx); } catch (e5) { jzWarn('trans ' + tk + ': ' + e5.toString() + (e5.line ? ' (line ' + e5.line + ')' : '')); }
     }
 
     // ---------- HUD
@@ -88,7 +128,7 @@ function jzBuild(plan, opt) {
 
     // ---------- global FX (top adjustment layer)
     var fxL = comp.layers.addSolid([1, 1, 1], 'JZ FX', W, H, 1, D); fxL.adjustmentLayer = true;
-    if (fx.onTwos !== false) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ 2-koma'); jzEP(pt, 1, fps / 2); }
+    if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
     var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
     jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
     var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
@@ -100,27 +140,49 @@ function jzBuild(plan, opt) {
     jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
     var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
     jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
-    var glowAmt = (st.glow || 0.6) * (fx.texture == null ? 0.6 : fx.texture);
+    var glowAmt = (st.glow || 0.6) * FXV.texture;
     if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
-    var gr = (st.texture && st.texture.grain || 0) * (fx.texture == null ? 0.6 : fx.texture);
+    var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
     if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
+
+    // ---------- effect events that have their own layers (above the koma / shake layer: they run at full frame rate, like the browser's post effects)
+    var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps };
+    for (var ei = 0; ei < evs.length; ei++) {
+        var ev = evs[ei], fk = jzFallback('fx', ev.type, null);
+        if (!fk || JZ_REG.fx[fk].builtin) continue;
+        var e1 = { t: ev.t, type: fk, amp: ev.amp || 1, dur: Math.max(ev.dur || 0, 1 / 24), seed: jzHash(ev.t, ev.type) % 100000, sc: schemeOf(jzCutAtTime(cuts, ev.t) || cuts[0] || { scheme: 0 }) };
+        try { JZ_REG.fx[fk].build(fctx, e1); } catch (e6) { jzWarn('fx ' + fk + ': ' + e6.toString() + (e6.line ? ' (line ' + e6.line + ')' : '')); }
+    }
 
     // ---------- flash + vignette
     var fl = comp.layers.addSolid(jzHex(jzLum(schemes[0].bg) < 0.5 ? schemes[0].fg : '#ffffff'), 'JZ Flash', W, H, 1, D);
     jzSetExpr(jzXf(fl, 'ADBE Opacity'), 'var ev=' + jzEventsArr(plan, 'flash') + ';var o=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])o=Math.max(o,Math.pow(1-dt/ev[i][2],1.5)*92);}o');
-    var vg = comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
-    try {
+    var vg = KEY ? null : comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
+    if (vg) try {
         var m = vg.property('ADBE Mask Parade').addProperty('ADBE Mask Atom');
         m.property('ADBE Mask Shape').setValue(jzCircleShape(W / 2, H / 2, Math.max(W, H) * 0.62));
         m.inverted = true; m.property('ADBE Mask Feather').setValue([H * 0.5, H * 0.5]);
         jzXf(vg, 'ADBE Scale').setValue([100, 100 * H / W * 1.6]);
-    } catch (e3) { jzWarn('vignette: ' + e3.toString()); }
-    jzXf(vg, 'ADBE Opacity').setValue(32 * (fx.texture == null ? 0.6 : fx.texture));
+    } catch (e7) { jzWarn('vignette: ' + e7.toString()); }
+    if (vg) jzXf(vg, 'ADBE Opacity').setValue(32 * FXV.texture);
+    if (KEY) {
+        var km = comp.layers.addSolid([1, 1, 1], 'JZ Key Mono', W, H, 1, D); km.adjustmentLayer = true;
+        jzEffect(km, 'ADBE Tint', 'JZ Key Mono');
+        if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
+    }
 
     // audio layer (optional)
-    if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e4) { jzWarn('audio: ' + e4.toString()); } }
+    if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
     comp.openInViewer();
     return comp;
+}
+function jzCutAtTime(cuts, t) { for (var i = cuts.length - 1; i >= 0; i--) if (t >= cuts[i].start - 1e-6 && t < cuts[i].end) return cuts[i]; return null; }
+// scheme background: radial "lift" like the browser (Gradient Ramp on the solid)
+function jzBgLift(L, sc, W, H) {
+    var lift = jzLum(sc.bg) < 0.5 ? 0.045 : 0.1, b = jzHex(sc.bg);
+    var c1 = [Math.min(1, b[0] + lift), Math.min(1, b[1] + lift), Math.min(1, b[2] + lift)];
+    var ramp = jzEffect(L, 'ADBE Ramp', 'JZ BG Lift');
+    jzEP(ramp, 1, [W / 2, H * 0.45]); jzEP(ramp, 2, c1); jzEP(ramp, 3, [W, H]); jzEP(ramp, 4, b); jzEP(ramp, 5, 2);
 }
 
 function jzHUD(comp, plan, sc, roles) {

@@ -40,7 +40,16 @@ function jzBB(L) {
 function jzUnion(a, b) { if (!a) return b; if (!b) return a; var r = { x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) }; r.cx = (r.x0 + r.x1) / 2; r.cy = (r.y0 + r.y1) / 2; return r; }
 function jzP(ctx, k, d) { return (ctx.P && ctx.P[k] != null) ? ctx.P[k] : d; }
 function jzFontOf(ctx, k, role) { var v = jzP(ctx, k, null); return v || (ctx.st.fonts[role] ? ctx.st.fonts[role][0] : 'gothic_black'); }
-function jzMain(ctx, str, o) { var L = jzText(ctx, str, o); jzMotion(ctx, L, { size: jzFontSize(L), mi: o.mi || 0, noHold: o.noHold, enter: o.enter, exit: o.exit }); return L; }
+// the lyric itself: text + the cut's enter / hold / exit + the cut's text treatment
+function jzMain(ctx, str, o) { var L = jzText(ctx, str, o); return jzAnimate(ctx, L, o); }
+// motion + treatment for a text layer made with jzText (use when the layer has to be measured / placed first)
+function jzAnimate(ctx, L, o) {
+    o = o || {};
+    jzMotion(ctx, L, { size: jzFontSize(L), mi: o.mi || 0, noHold: o.noHold, enter: o.enter, exit: o.exit });
+    var tk = ctx.cut.treat && ctx.cut.treat !== 'none' && o.treat !== false ? jzFallback('treat', ctx.cut.treat, null) : null;
+    if (tk) { try { JZ_REG.treat[tk].apply(ctx, L, ctx.cut.treatP || {}, o); } catch (e) { jzWarn('treat ' + tk + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); } }
+    return L;
+}
 function jzSmall(ctx, str, o) { o.font = o.font || jzFontOf(ctx, '_', 'body'); var L = jzText(ctx, str, o); return L; }
 
 var JZ_LAYOUTS = {};
@@ -51,7 +60,7 @@ JZ_LAYOUTS.center = function (ctx) {
     var bb = jzBB(L);
     if (jzP(ctx, 'sub', false) && c.lineText && c.lineText !== c.text) {
         var s = jzSmall(ctx, c.lineText, { size: Math.max(16, H * 0.026), color: sc.sub, x: bb.cx, y: bb.y1 + H * 0.07, track: 0.22 });
-        jzFadeIO(ctx, s, c.inDur * 0.5, 0.3);
+        jzFadeIO(ctx, s, c.inDur * 0.5, 0.3); jzNoGhost(s);       // helper layers drawn with ghost off in the browser: jzNoGhost
     }
     if (jzP(ctx, 'under', false)) {
         var U = jzShapeLayer(ctx, 'underline', bb.x0, bb.y1 + H * 0.02);
@@ -116,7 +125,7 @@ JZ_LAYOUTS.vcols = function (ctx) {
         var x = W / 2 + ((colsA.length - 1) / 2 - i) * sz * 1.4;
         var cL = jzText(ctx, jzVertical(colsA[i]), { font: font, size: sz, color: sc.fg, x: x, y: 0, leading: sz * 1.03 });
         var h = jzSize(cL)[1]; jzXf(cL, 'ADBE Position').setValue([x, top + h / 2]);
-        jzMotion(ctx, cL, { size: sz, mi: i * 3 });
+        jzAnimate(ctx, cL, { size: sz, mi: i * 3 });
         bb = jzUnion(bb, jzBB(cL));
     }
     return bb;
@@ -144,10 +153,10 @@ JZ_LAYOUTS.marquee = function (ctx) {
         if (style === 'outline') { o.fill = false; o.stroke = Math.max(1.2, rs * 0.02); o.strokeColor = sc.fg; }
         else if (style === 'dim') { o.color = sc.sub; o.opacity = 0.35; }
         else {
-            var B = jzShapeLayer(ctx, 'row band', W / 2, y); var g = jzGrp(B); jzAddRect(g, W + 40, rs * 1.24); jzAddFill(g, sc.ink); B.moveToEnd();
+            var B = jzNoGhost(jzShapeLayer(ctx, 'row band', W / 2, y)); var g = jzGrp(B); jzAddRect(g, W + 40, rs * 1.24); jzAddFill(g, sc.ink); B.moveToEnd();
             o.color = sc.bg;
         }
-        var R = jzScrollRow(ctx, c.text, o);
+        var R = jzNoGhost(jzScrollRow(ctx, c.text, o));
         jzFadeIO(ctx, R, Math.abs(k) * 0.05, 0.12);
     }
     return jzBB(L);
@@ -157,20 +166,20 @@ JZ_LAYOUTS.tile = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, n = jzP(ctx, 'rowsN', 14), unit = jzP(ctx, 'unit', 'chunk') === 'line' ? c.lineText : c.text;
     var tf = jzFontOf(ctx, 'tileFont', 'serif'), rowH = H / n, ts = rowH * 0.72;
     for (var r = 0; r <= n; r++) {
-        var R = jzScrollRow(ctx, unit, { font: tf, size: ts, color: sc.sub, y: (r + 0.5) * rowH, speed: (r % 2 ? 26 : -26), offset: r * 91, track: 0.02, opacity: 0.42 });
+        var R = jzNoGhost(jzScrollRow(ctx, unit, { font: tf, size: ts, color: sc.sub, y: (r + 0.5) * rowH, speed: (r % 2 ? 26 : -26), offset: r * 91, track: 0.02, opacity: 0.42 }));
         jzFadeIO(ctx, R, jzR(c.seed, r, 91) * c.inDur * 1.6, 0.1);
     }
     var font = jzFontOf(ctx, 'font', 'display');
     var o = { font: font, size: 200, color: sc.fg, x: W / 2, y: H / 2, track: 0.04, maxW: W * 0.8, maxH: H * 0.34, maxSize: H * 0.3 };
     if (jzP(ctx, 'knock', 'stroke') === 'box') {
         var M = jzMain(ctx, c.text, o), bb = jzBB(M), pad = jzFontSize(M) * 0.35;
-        var B = jzShapeLayer(ctx, 'knockout box', W / 2, H / 2); var g = jzGrp(B); jzAddRect(g, bb.x1 - bb.x0 + pad * 2, bb.y1 - bb.y0 + pad * 1.6); jzAddFill(g, sc.bg);
+        var B = jzNoGhost(jzShapeLayer(ctx, 'knockout box', W / 2, H / 2)); var g = jzGrp(B); jzAddRect(g, bb.x1 - bb.x0 + pad * 2, bb.y1 - bb.y0 + pad * 1.6); jzAddFill(g, sc.bg);
         B.moveAfter(M); jzSetExpr(jzXf(B, 'ADBE Scale'), JZ_FNS + 'var e=oe(time/0.4);[value[0]*e,value[1]]');
         return bb;
     }
     var K = jzText(ctx, c.text, { font: font, size: 200, color: sc.bg, x: W / 2, y: H / 2, track: 0.04, maxW: W * 0.8, maxH: H * 0.34, maxSize: H * 0.3, stroke: 1, strokeColor: sc.bg });
     var ks = jzFontSize(K), src = K.property('ADBE Text Properties').property('ADBE Text Document'), td = src.value; td.strokeWidth = ks * 0.16; src.setValue(td);
-    jzMotion(ctx, K, { size: ks, mi: 0 });
+    jzMotion(ctx, K, { size: ks, mi: 0 }); jzNoGhost(K);   // knock-out stroke (a helper, ghost: false in the browser)
     var M2 = jzMain(ctx, c.text, o);
     return jzBB(M2);
 };
@@ -180,7 +189,7 @@ JZ_LAYOUTS.scatter = function (ctx) {
     if (jzP(ctx, 'extras', true)) for (i = 0; i < 8; i++) {
         var top = jzR(s, i, 82) < 0.5;
         var E = jzSmall(ctx, c.text, { size: jzLerp(H * 0.022, H * 0.045, jzR(s, i, 83)), color: sc.sub, x: jzLerp(W * 0.08, W * 0.92, jzR(s, i, 84)), y: top ? jzLerp(H * 0.08, H * 0.26, jzR(s, i, 85)) : jzLerp(H * 0.74, H * 0.92, jzR(s, i, 85)), rot: (jzR(s, i, 86) * 2 - 1) * 18, opacity: 0.75 });
-        jzFadeIO(ctx, E, jzR(s, i, 81) * c.dur * 0.5, 0.1);
+        jzFadeIO(ctx, E, jzR(s, i, 81) * c.dur * 0.5, 0.1); jzNoGhost(E);
     }
     var base = Math.min(H * 0.3, W * 0.9 / n * 1.15), fA = jzFontOf(ctx, 'font', 'display'), fB = jzFontOf(ctx, 'fontB', 'serif');
     for (i = 0; i < n; i++) {
@@ -214,7 +223,7 @@ function jzTextOnPath(L, shape, firstMarginExpr, ctx) {
 JZ_LAYOUTS.ring = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = c.text.replace(/[\s　]+/g, ''), n = jzCount(text), R = H * jzP(ctx, 'R', 0.31), cx = W / 2, cy = H / 2;
     var font = jzFontOf(ctx, 'font', 'display'), fontC = jzFontOf(ctx, 'fontC', 'display'), center = jzP(ctx, 'center', 'word'), speed = jzP(ctx, 'speed', 8);
-    var ringS = jzShapeLayer(ctx, 'ring lines', cx, cy), g = jzGrp(ringS); jzAddEllipse(g, R * 1.72, R * 1.72); jzAddStroke(g, sc.sub, 1.2, 55);
+    var ringS = jzNoGhost(jzShapeLayer(ctx, 'ring lines', cx, cy)), g = jzGrp(ringS); jzAddEllipse(g, R * 1.72, R * 1.72); jzAddStroke(g, sc.sub, 1.2, 55);
     var g2 = jzGrp(ringS); jzAddEllipse(g2, R * 2.3, R * 2.3); jzAddStroke(g2, sc.sub, 1.2, 35); ringS.moveToEnd();
     var bb = null;
     if (center === 'disc') {
@@ -268,7 +277,7 @@ JZ_LAYOUTS.huge = function (ctx) {
         var T = jzSmall(ctx, c.text, { size: ls, color: sc.bg, x: W * 0.05 + ls * 0.7, y: H * 0.86, align: 'left', track: 0.12 });
         var tw = jzSize(T)[0];
         var B = jzShapeLayer(ctx, 'label box', W * 0.05 + (tw + ls * 1.4) / 2, H * 0.86), g = jzGrp(B); jzAddRect(g, tw + ls * 1.4, ls * 2); jzAddFill(g, sc.ink);
-        B.moveAfter(T); jzFadeIO(ctx, B, c.inDur * 0.5, 0.2); jzFadeIO(ctx, T, c.inDur * 0.5, 0.2);
+        B.moveAfter(T); jzFadeIO(ctx, B, c.inDur * 0.5, 0.2); jzFadeIO(ctx, T, c.inDur * 0.5, 0.2); jzNoGhost(B); jzNoGhost(T);
     }
     return jzBB(L);
 };
@@ -285,7 +294,7 @@ JZ_LAYOUTS.labels = function (ctx) {
         var sz = jzSize(T), B = jzShapeLayer(ctx, 'label', x, y), g = jzGrp(B);
         jzAddRect(g, sz[0] + fs * 0.7, fs * 1.36); jzAddFill(g, sc.ink);
         jzXf(B, 'ADBE Rotate Z').setValue(rot); B.moveAfter(T);
-        T.parent = B; jzPop(ctx, B, delay, true);
+        T.parent = B; jzPop(ctx, B, delay, true); jzNoGhost(T);
         return B;
     }
     if (variant === 'radial') {
@@ -317,12 +326,12 @@ JZ_LAYOUTS.condensed = function (ctx) {
 
 JZ_LAYOUTS.gloss = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = c.text, font = jzFontOf(ctx, 'font', 'serif'), right = jzP(ctx, 'side', 'right') === 'right', r;
-    if (jzP(ctx, 'bgText', true)) for (r = 0; r < 3; r++) jzScrollRow(ctx, text.replace(/[\s　]+/g, ''), { font: font, size: H * 0.3, color: sc.dim, y: H * (0.18 + r * 0.32), speed: r % 2 ? 20 : -20, offset: r * 200 }).moveToEnd();
+    if (jzP(ctx, 'bgText', true)) for (r = 0; r < 3; r++) jzNoGhost(jzScrollRow(ctx, text.replace(/[\s　]+/g, ''), { font: font, size: H * 0.3, color: sc.dim, y: H * (0.18 + r * 0.32), speed: r % 2 ? 20 : -20, offset: r * 200 })).moveToEnd();
     var L = jzMain(ctx, text, { font: font, size: 200, color: sc.fg, x: right ? W * 0.4 : W * 0.6, y: H * 0.54, track: 0.03, maxW: W * 0.5, maxH: H * 0.3, maxSize: H * 0.24 });
     var bb = jzBB(L), size = jzFontSize(L);
     var ax = right ? bb.x1 + size * 0.1 : bb.x0 - size * 0.1, ay = bb.y0 + size * 0.2;
     var nx = right ? Math.min(W * 0.9, bb.x1 + W * 0.1) : Math.max(W * 0.1, bb.x0 - W * 0.1), ny = Math.max(H * 0.12, bb.y0 - H * 0.12);
-    var S = jzShapeLayer(ctx, 'leader', 0, 0), g = jzGrp(S);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'leader', 0, 0)), g = jzGrp(S);
     jzAddPath(g, [[ax, ay], [jzLerp(ax, nx, 0.45), ay], [nx, ny]], false); jzAddStroke(g, sc.sub, 1.3);
     jzAddTrimPaths(g, JZ_FNS + '100*oe((time-' + jzN(c.inDur * 0.4) + ')/0.45)');
     var gd = jzGrp(S); jzAddEllipse(gd, 8, 8, ax, ay); jzAddFill(gd, sc.accent);
@@ -332,6 +341,7 @@ JZ_LAYOUTS.gloss = function (ctx) {
     var t2 = jzText(ctx, note, { font: body, size: ns, color: sc.sub, x: nx, y: ny + ns * 0.4, align: al, track: 0.08 });
     var t3 = jzText(ctx, 'No.' + jzPad((c.line || 0) + 1, 2), { font: 'mono', size: ns * 0.8, color: sc.accent, x: nx, y: ny + ns * 2, align: al });
     jzFadeIO(ctx, t1, c.inDur * 0.5, 0.3); jzFadeIO(ctx, t2, c.inDur * 0.6, 0.3); jzFadeIO(ctx, t3, c.inDur * 0.7, 0.3);
+    jzNoGhost(t1); jzNoGhost(t2); jzNoGhost(t3);
     return bb;
 };
 
@@ -341,8 +351,8 @@ JZ_LAYOUTS.type = function (ctx) {
     var L = jzText(ctx, text, { font: jzFontOf(ctx, 'font', 'body'), size: 200, color: sc.fg, x: x, y: H / 2, align: left ? 'left' : 'center', track: 0.06, maxW: W * 0.74, maxH: H * 0.36, maxSize: H * 0.11 });
     jzMotion(ctx, L, { size: jzFontSize(L), mi: 0, enter: c.enter === 'cut' ? 'type' : c.enter });
     var bb = jzBB(L), fs = jzFontSize(L);
-    if (jzP(ctx, 'prompt', true)) { var p = jzText(ctx, '>', { font: 'mono', size: fs * 0.8, color: sc.accent, x: (left ? x : bb.x0) - fs * 0.9, y: bb.y0 + fs * 0.55 }); jzFadeIO(ctx, p, 0, 0.05); }
-    var st = jzText(ctx, 'LINE ' + jzPad((c.line || 0) + 1, 2), { font: 'mono', size: Math.max(12, H * 0.02), color: sc.sub, x: W * 0.13, y: H * 0.8, align: 'left', opacity: 0.8 });
+    if (jzP(ctx, 'prompt', true)) { var p = jzText(ctx, '>', { font: 'mono', size: fs * 0.8, color: sc.accent, x: (left ? x : bb.x0) - fs * 0.9, y: bb.y0 + fs * 0.55 }); jzFadeIO(ctx, p, 0, 0.05); jzNoGhost(p); }
+    var st = jzNoGhost(jzText(ctx, 'LINE ' + jzPad((c.line || 0) + 1, 2), { font: 'mono', size: Math.max(12, H * 0.02), color: sc.sub, x: W * 0.13, y: H * 0.8, align: 'left', opacity: 0.8 }));
     try { st.property('ADBE Text Properties').property('ADBE Text Document').expression = '"LINE ' + jzPad((c.line || 0) + 1, 2) + ' ─ " + timeToTimecode(time + ' + jzN(c.start) + ')'; } catch (e) {}
     return bb;
 };
@@ -358,10 +368,10 @@ JZ_LAYOUTS.diag = function (ctx) {
     if (jzP(ctx, 'second', true)) {
         var y2 = bh * 0.95, h2 = bh * 0.32, rad = -ang * Math.PI / 180;
         var ox = -Math.sin(rad) * y2, oy = Math.cos(rad) * y2;
-        var B2 = jzShapeLayer(ctx, 'band 2', W / 2 + ox, H / 2 + oy), g2 = jzGrp(B2); jzAddRect(g2, W * 2.4, h2); jzAddFill(g2, sc.fg, 90);
+        var B2 = jzNoGhost(jzShapeLayer(ctx, 'band 2', W / 2 + ox, H / 2 + oy)), g2 = jzGrp(B2); jzAddRect(g2, W * 2.4, h2); jzAddFill(g2, sc.fg, 90);
         jzXf(B2, 'ADBE Rotate Z').setValue(-ang); B2.moveAfter(B);
         var R2 = jzScrollRow(ctx, c.lineText + '　／', { font: jzFontOf(ctx, '_', 'body'), size: h2 * 0.55, color: sc.bg, y: 0, speed: 120, track: 0.1 });
-        R2.parent = B2; jzXf(R2, 'ADBE Rotate Z').setValue(0);
+        R2.parent = B2; jzXf(R2, 'ADBE Rotate Z').setValue(0); jzNoGhost(R2);
         jzXf(R2, 'ADBE Position').setValue([0, 0]);
     }
     jzMotion(ctx, L, { size: size, mi: 0 });
@@ -373,7 +383,7 @@ JZ_LAYOUTS.circle = function (ctx) {
     var cx = W / 2 + jzP(ctx, 'off', 0) * W, cy = H / 2;
     if (variant === 'eclipse') {
         var L = jzMain(ctx, jzSplitLines(text, 6), { font: font, size: 200, color: sc.fg, x: W / 2, y: H / 2, maxW: W * 0.82, maxH: H * 0.46, maxSize: H * 0.36 });
-        var R = H * 0.19, E = jzShapeLayer(ctx, 'eclipse', W / 2, H / 2 + H * 0.12), g = jzGrp(E);
+        var R = H * 0.19, E = jzNoGhost(jzShapeLayer(ctx, 'eclipse', W / 2, H / 2 + H * 0.12)), g = jzGrp(E);
         jzAddEllipse(g, R * 2, R * 2); jzAddStroke(g, sc.fg, 3, 90); jzAddFill(g, '#000000');
         var gl = jzEffect(E, 'ADBE Glo2', 'JZ Corona'); jzEP(gl, 2, 20); jzEP(gl, 3, 40); jzEP(gl, 4, 1.4);
         jzSetExpr(jzXf(E, 'ADBE Position'), '[value[0]+(time/' + jzN(c.dur) + '-0.5)*thisComp.width*0.16,value[1]]');
@@ -417,7 +427,7 @@ JZ_LAYOUTS.pill = function (ctx) {
             var px = W / 2 + (i === 0 ? -w * 0.3 : w * 0.42), py = H / 2 + (i === 1 ? -h * 0.95 : h * 0.95);
             var t = jzSmall(ctx, labs[i], { size: fs, color: sc.fg, x: px, y: py, track: 0.1 }), ts = jzSize(t);
             var B = jzShapeLayer(ctx, 'tag', px, py), gb = jzGrp(B); jzAddRect(gb, ts[0] + fs * 1.6, fs * 1.7, fs * 0.85); jzAddStroke(gb, sc.fg, 1.3);
-            t.parent = B; jzPop(ctx, B, 0.15 + i * 0.06, true);
+            t.parent = B; jzPop(ctx, B, 0.15 + i * 0.06, true); jzNoGhost(B); jzNoGhost(t);
         }
     }
     return jzBB(T);
@@ -426,19 +436,27 @@ JZ_LAYOUTS.pill = function (ctx) {
 JZ_LAYOUTS.title = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut;
     var L = jzMain(ctx, c.text, { font: jzFontOf(ctx, 'font', 'display'), size: 200, color: sc.fg, x: W / 2, y: H / 2, track: 0.08, maxW: W * 0.7, maxH: H * 0.2, maxSize: H * 0.16 });
-    if (c.note) { var a = jzSmall(ctx, c.note, { size: Math.max(16, H * 0.03), color: sc.sub, x: W / 2, y: H / 2 + jzFontSize(L) * 0.95, track: 0.3 }); jzFadeIO(ctx, a, 0.3, 0.4); }
+    if (c.note) { var a = jzSmall(ctx, c.note, { size: Math.max(16, H * 0.03), color: sc.sub, x: W / 2, y: H / 2 + jzFontSize(L) * 0.95, track: 0.3 }); jzFadeIO(ctx, a, 0.3, 0.4); jzNoGhost(a); }
     return jzBB(L);
 };
 
 JZ_LAYOUTS.interlude = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut;
-    var S = jzShapeLayer(ctx, 'rings', W / 2, H / 2);
+    var S = jzNoGhost(jzShapeLayer(ctx, 'rings', W / 2, H / 2));
     for (var k = 0; k < 3; k++) { var g = jzGrp(S); jzAddEllipse(g, H * (0.4 + k * 0.2), H * (0.4 + k * 0.2)); jzAddStroke(g, sc.sub, 1.2, 50); }
     jzSetExpr(jzXf(S, 'ADBE Scale'), 'var s=100*(1+0.04*Math.sin(time*2));[s,s]');
     if (jzP(ctx, 'variant', 'counter') === 'counter') {
         var n = jzText(ctx, '0.0', { font: jzFontOf(ctx, '_', 'display'), size: H * 0.36, color: sc.fg, x: W / 2, y: H / 2, opacity: 0.9 });
         try { n.property('ADBE Text Properties').property('ADBE Text Document').expression = 'Math.max(0,' + jzN(c.dur) + '-time).toFixed(1)'; } catch (e) {}
     }
-    jzSmall(ctx, c.text || '— interlude —', { size: Math.max(12, H * 0.022), color: sc.sub, x: W / 2, y: H * 0.82, track: 0.4 });
+    jzNoGhost(jzSmall(ctx, c.text || '— interlude —', { size: Math.max(12, H * 0.022), color: sc.sub, x: W / 2, y: H * 0.82, track: 0.4 }));
     return { x0: W * 0.35, x1: W * 0.65, y0: H * 0.3, y1: H * 0.7, cx: W / 2, cy: H / 2 };
 };
+
+// ---- register the original layouts (their parameters come from jzParams in 15_plan.jsx)
+(function () {
+    for (var k in JZ_LAYOUTS) if (JZ_LAYOUTS.hasOwnProperty(k)) {
+        jzReg('layout', k, { build: JZ_LAYOUTS[k], special: (k === 'title' || k === 'interlude'),
+            plan: (function (kk) { return function (rng, cut, st) { return jzParams(kk, rng, st, cut.text); }; })(k) });
+    }
+})();
