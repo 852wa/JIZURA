@@ -117,11 +117,11 @@ function dc2_stroke(g, col, w, op, round) {
     return s;
 }
 function dc2_dash(st, d, gp) {   // AE starts with an empty Dashes group; the preview model has fixed children
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    return [p1, p2];
+    // add both entries first, THEN fetch them: adding the gap invalidates a reference held to the dash
+    var D = st.property('ADBE Vector Stroke Dashes'), mn = ['ADBE Vector Stroke Dash 1', 'ADBE Vector Stroke Gap 1'], out = [], i, p;
+    for (i = 0; i < 2; i++) { try { D.addProperty(mn[i]); } catch (e) {} }
+    for (i = 0; i < 2; i++) { p = null; try { p = D.property(mn[i]); } catch (e2) { p = null; } out.push(p); }
+    return out;
 }
 // subtract a rectangle (comp px, layer at 0,0) — front particles / orbits never cover the lyric
 function dc2_hole(L, x0, y0, x1, y1, feather) {
@@ -204,8 +204,9 @@ jzReg('decor', 'beatRing', {
                 if (dg[1]) jzSetExpr(dg[1], hk + 'r*' + jzN(Math.PI * 2 * 3.5 / 360));
             } else jzSetExpr(st.property('ADBE Vector Stroke Width'), hk + jzN(u) + '*(1+1.5*(1-p))');
         }
-        var gc = jzGrp(S, 'pulse'), ec = jzAddEllipse(gc, r0 * 2, r0 * 2), sp = jzAddStroke(gc, col, u, base * 60);
+        var gc = jzGrp(S, 'pulse'), ec = jzAddEllipse(gc, r0 * 2, r0 * 2);
         jzSetExpr(ec.property('ADBE Vector Ellipse Size'), hd + 'var pl=Math.exp(-sn*9),r=' + jzN(r0) + '*(1+0.03*pl);[2*r,2*r]');
+        var sp = jzAddStroke(gc, col, u, base * 60);      // after the ellipse is configured (the stroke invalidates ec)
         jzSetExpr(sp.property('ADBE Vector Stroke Width'), hd + jzN(u) + '*(1+2.2*Math.exp(-sn*9))');
         jzNoGhost(S);
         dc2_op(ctx, S, 'oc(time/0.4)');
@@ -355,17 +356,22 @@ jzReg('decor', 'rainStreaks', {
     build: function (ctx, bb, d) {
         var W = ctx.W, H = ctx.H, sc = ctx.sc, u = dc2_u(ctx), s = d.seed, i, b, dk = dc2_dark(ctx);
         var N = Math.min(110, 60 + (d.n | 0) * 16), sl = (d.right ? 1 : -1) * (8 + (d.r || 0) * 10) * Math.PI / 180, tn = Math.tan(sl);
-        var S = jzShapeLayer(ctx, 'rain', 0, 0), HD = dc2_hd(ctx, DC2_WR), bands = [];
-        for (b = 2; b >= 0; b--) bands[b] = jzGrp(S, 'rain ' + (b + 1));
-        for (i = 0; i < N; i++) {
-            var z = dc2_r(s, i, 1), v = (1200 + z * 1300) * u, len = (36 + z * 80) * u, span = H + len + 80 * u;
-            var x0 = dc2_r(s, i, 3) * (W + H * Math.abs(tn)) - (tn > 0 ? H * tn : 0);
-            var g = dc2_sub(bands[z < 0.4 ? 0 : z < 0.8 ? 1 : 2], 'streak ' + (i + 1));
-            jzAddPath(g, [[0, 0], [len * tn, len]], false);
-            dc2_gx(g, 'ADBE Vector Position', HD + 'var y=wr(' + jzN(dc2_r(s, i, 2) * span) + '+' + jzN(v) + '*T,' + jzN(-len - 40 * u) + ',' + jzN(span) + ');[' + jzN(x0) + '+y*' + jzN(tn) + ',y]');
-        }
+        var S = jzShapeLayer(ctx, 'rain', 0, 0), HD = dc2_hd(ctx, DC2_WR), g;
         var col = dk ? (sc.sub || sc.fg) : sc.fg, k = dk ? 1 : 0.75, ws = [Math.max(1, 0.9 * u), Math.max(1, 1.2 * u), 1.6 * u], as = [18, 30, 46];
-        for (b = 0; b < 3; b++) jzAddStroke(bands[b], col, ws[b], as[b] * k);
+        // one depth band at a time (rain 3, 2, 1 — same stacking as before), each filled completely before the next band is
+        // added to the contents (a new sibling group invalidates references to the earlier bands)
+        for (b = 2; b >= 0; b--) {
+            var band = jzGrp(S, 'rain ' + (b + 1));
+            for (i = 0; i < N; i++) {
+                var z = dc2_r(s, i, 1); if ((z < 0.4 ? 0 : z < 0.8 ? 1 : 2) !== b) continue;
+                var v = (1200 + z * 1300) * u, len = (36 + z * 80) * u, span = H + len + 80 * u;
+                var x0 = dc2_r(s, i, 3) * (W + H * Math.abs(tn)) - (tn > 0 ? H * tn : 0);
+                g = dc2_sub(band, 'streak ' + (i + 1));
+                jzAddPath(g, [[0, 0], [len * tn, len]], false);
+                dc2_gx(g, 'ADBE Vector Position', HD + 'var y=wr(' + jzN(dc2_r(s, i, 2) * span) + '+' + jzN(v) + '*T,' + jzN(-len - 40 * u) + ',' + jzN(span) + ');[' + jzN(x0) + '+y*' + jzN(tn) + ',y]');
+            }
+            jzAddStroke(band, col, ws[b], as[b] * k);
+        }
         jzNoGhost(S);
         dc2_op(ctx, S, 'oc(time/0.45)');
     }
@@ -551,15 +557,17 @@ jzReg('decor', 'brushStroke', {
         if (!col) return;
         var T = jzU(ctx) * dc2_rr(0.11, 0.16, s, 1), yc = H * 0.5 + (d.low ? 1 : -1) * H * dc2_rr(0, 0.05, s, 2) + (W < H ? 0 : T * 0.1);
         var ltr = !!d.right, xa = W * dc2_rr(0.06, 0.16, s, 3), xb = W * dc2_rr(0.84, 0.95, s, 4), tilt = dc2_rs(s, 5) * T * 0.35, bow = dc2_rs(s, 6) * T * 0.25;
-        var K = 22, SN = 26, S = jzShapeLayer(ctx, 'brush stroke', 0, 0), bands = [jzGrp(S, 'bristles'), jzGrp(S, 'bristles fine')];
+        var K = 22, SN = 26, S = jzShapeLayer(ctx, 'brush stroke', 0, 0), hairs = [[], []], bn, band;
         var HEAD = DC2_CL + 'var h=1-Math.pow(1-cl(time/0.5),3);';
+        // hairs are collected per band first; each band group is then filled completely before the next one is added
+        // (a new sibling group invalidates references to the earlier band)
         for (j = 0; j < K; j++) {
             var f = j / (K - 1) - 0.5, edge = Math.abs(f) * 2;
             var t0 = dc2_r(s, j, 1) * 0.05 + edge * edge * 0.06, t1 = 1 - edge * dc2_rr(0.12, 0.4, s, j, 2) - dc2_r(s, j, 3) * 0.06;
             if (t1 <= t0) continue;
             var gapAt = dc2_r(s, j, 4) < 0.45 ? dc2_rr(0.55, 0.9, s, j, 5) : 2, gapL = 0.03 + dc2_r(s, j, 6) * 0.05;
             var pieces = gapAt < t1 ? [[t0, Math.min(gapAt, t1)], [gapAt + gapL, t1]] : [[t0, t1]];
-            var band = bands[edge > 0.6 || dc2_r(s, j, 7) < 0.3 ? 1 : 0];
+            bn = edge > 0.6 || dc2_r(s, j, 7) < 0.3 ? 1 : 0;
             for (k = 0; k < pieces.length; k++) {
                 var ta = pieces[k][0], tb = pieces[k][1]; if (tb - ta < 0.01) continue;
                 var m = Math.max(3, Math.round(SN * (tb - ta))), pts = [];
@@ -567,13 +575,18 @@ jzReg('decor', 'brushStroke', {
                     var t = ta + (tb - ta) * i / m, tt = ltr ? t : 1 - t, taper = 1 - Math.pow(t, 3) * 0.55;
                     pts.push([jzLerp(xa, xb, tt), yc + tilt * (tt - 0.5) + bow * Math.sin(tt * Math.PI) + f * T * taper + dc2_rs(s, j, Math.round(t * SN), 8) * 0.8 * u]);
                 }
-                var g = dc2_sub(band, 'hair ' + (j + 1) + '.' + (k + 1));
-                jzAddPath(g, pts, false);
-                jzAddTrimPaths(g, HEAD + '100*cl((h-' + jzN(ta) + ')/' + jzN(tb - ta) + ')');
+                hairs[bn].push({ name: 'hair ' + (j + 1) + '.' + (k + 1), pts: pts, ta: ta, tb: tb });
             }
         }
-        dc2_stroke(bands[0], col, T / K * 2.2, al * 100, true);
-        dc2_stroke(bands[1], col, T / K * 1.3, al * 100, true);
+        for (bn = 0; bn < 2; bn++) {
+            band = jzGrp(S, bn ? 'bristles fine' : 'bristles');
+            for (k = 0; k < hairs[bn].length; k++) {
+                var hr = hairs[bn][k], g = dc2_sub(band, hr.name);
+                jzAddPath(g, hr.pts, false);
+                jzAddTrimPaths(g, HEAD + '100*cl((h-' + jzN(hr.ta) + ')/' + jzN(hr.tb - hr.ta) + ')');
+            }
+            dc2_stroke(band, col, T / K * (bn ? 1.3 : 2.2), al * 100, true);
+        }
         jzNoGhost(S);
         dc2_op(ctx, S);
     }

@@ -14,11 +14,15 @@ jzReg('trans', 'wipe', {
         var lw = jzEffect(t.B, 'ADBE Linear Wipe', 'JZ Trans Wipe'); jzEP(lw, 2, ang); jzEP(lw, 3, 0);
         jzEX(lw, 1, HD + '100*(1-e)');
         // leading edge bar + hairline, fading in and out with bell(p)
-        var lwid = Math.max(2, Math.min(W, H) * 0.007), S = jzEvShape(t.comp, 'JZ Trans edge', t.t0, t.dur), g = jzGrp(S, 'edge'), g2 = jzGrp(S, 'hair');
+        // (each group is finished before the next one is added — adding a group invalidates references to its siblings in AE)
+        var lwid = Math.max(2, Math.min(W, H) * 0.007), S = jzEvShape(t.comp, 'JZ Trans edge', t.t0, t.dur);
         var horiz = d === 'L' || d === 'R', side = (d === 'R' || d === 'D') ? -1 : 1;
-        if (horiz) { jzAddRect(g, lwid, H, 0, 0, H / 2); jzAddRect(g2, Math.max(1, lwid * 0.35), H, 0, lwid * 3.2 * side, H / 2); }
-        else { jzAddRect(g, W, lwid, 0, W / 2, 0); jzAddRect(g2, W, Math.max(1, lwid * 0.35), 0, W / 2, lwid * 3.2 * side); }
-        jzAddFill(g, jzTAcc(t)); jzAddFill(g2, jzTAcc(t)); jzGX(g2).property('ADBE Vector Group Opacity').setValue(50);
+        var g = jzGrp(S, 'edge');
+        if (horiz) jzAddRect(g, lwid, H, 0, 0, H / 2); else jzAddRect(g, W, lwid, 0, W / 2, 0);
+        jzAddFill(g, jzTAcc(t));
+        var g2 = jzGrp(S, 'hair');
+        if (horiz) jzAddRect(g2, Math.max(1, lwid * 0.35), H, 0, lwid * 3.2 * side, H / 2); else jzAddRect(g2, W, Math.max(1, lwid * 0.35), 0, W / 2, lwid * 3.2 * side);
+        jzAddFill(g2, jzTAcc(t)); jzGX(g2).property('ADBE Vector Group Opacity').setValue(50);
         var pos = { L: '[' + W + '*(1-e),0]', R: '[' + W + '*e,0]', U: '[0,' + H + '*(1-e)]', D: '[0,' + H + '*e]' }[d];
         jzSetExpr(jzXf(S, 'ADBE Position'), HD + pos);
         jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + '100*Math.pow(bell(p),0.6)');
@@ -107,14 +111,16 @@ jzReg('trans', 'diagonalWipe', {
         jzEX(lw, 1, HD + '100*(1-e)');
         // accent band + thin second band on the A side of the edge (width follows bell(p))
         var ext = Math.abs(dx) * W / 2 + Math.abs(dy) * H / 2, band = tn_md(t) * 0.07 * H / n, LEN = (W + H) * 2;
-        var S = jzEvShape(t.comp, 'JZ Trans diagonal band', t.t0, t.dur), g2 = jzGrp(S, 'band 2'), g1 = jzGrp(S, 'band');
-        var r1 = jzAddRect(g1, 10, LEN, 0, 0, 0), r2 = jzAddRect(g2, 10, LEN, 0, 0, 0);
-        jzAddFill(g1, tn_acc(t)); jzAddFill(g2, tn_acc(t, true), 85);
-        var BW = HD + 'var bw=' + jzN(band) + '*bell(p);';
-        jzSetExpr(r1.property('ADBE Vector Rect Size'), BW + '[bw,' + jzN(LEN) + ']');
-        jzSetExpr(r1.property('ADBE Vector Rect Position'), BW + '[bw/2,0]');
+        // (each rect is configured before its fill / the next group is added — those adds invalidate held references in AE)
+        var S = jzEvShape(t.comp, 'JZ Trans diagonal band', t.t0, t.dur), BW = HD + 'var bw=' + jzN(band) + '*bell(p);';
+        var g2 = jzGrp(S, 'band 2'), r2 = jzAddRect(g2, 10, LEN, 0, 0, 0);
         jzSetExpr(r2.property('ADBE Vector Rect Size'), BW + '[bw*0.25,' + jzN(LEN) + ']');
         jzSetExpr(r2.property('ADBE Vector Rect Position'), BW + '[bw*1.475,0]');
+        jzAddFill(g2, tn_acc(t, true), 85);
+        var g1 = jzGrp(S, 'band'), r1 = jzAddRect(g1, 10, LEN, 0, 0, 0);
+        jzSetExpr(r1.property('ADBE Vector Rect Size'), BW + '[bw,' + jzN(LEN) + ']');
+        jzSetExpr(r1.property('ADBE Vector Rect Position'), BW + '[bw/2,0]');
+        jzAddFill(g1, tn_acc(t));
         // the layer origin rides on the wipe edge (same sweep as Linear Wipe), its +x axis points into the A side
         jzSetExpr(jzXf(S, 'ADBE Position'), HD + 'var s=' + jzN(ext) + '*(1-2*e);[' + jzN(W / 2) + '+(' + jzN(dx) + ')*s,' + jzN(H / 2) + '+(' + jzN(dy) + ')*s]');
         jzXf(S, 'ADBE Rotate Z').setValue(Math.atan2(-dy, -dx) * 180 / Math.PI);
@@ -132,10 +138,11 @@ jzReg('trans', 'clockWipe', {
         jzEX(rw, 1, HD + '100*(1-e)');
         if (dir > 0) jzEX(rw, 2, HD + jzN(a0 + 90) + '+360*e'); else jzEP(rw, 2, a0 + 90);
         jzEP(rw, 3, [W / 2, H / 2]); jzEP(rw, 4, 1); jzEP(rw, 5, 0);
-        var S = jzEvShape(t.comp, 'JZ Trans clock hand', t.t0, t.dur), g2 = jzGrp(S, 'hub'), g = jzGrp(S, 'hand');
+        var S = jzEvShape(t.comp, 'JZ Trans clock hand', t.t0, t.dur);
+        var g2 = jzGrp(S, 'hub'); jzAddEllipse(g2, lw * 4.4, lw * 4.4, 0, 0); jzAddFill(g2, ac);    // (finished before the next group is added)
+        var g = jzGrp(S, 'hand');
         jzAddPath(g, [[0, 0], [R, 0]], false);
         var sk = jzAddStroke(g, ac, lw); sk.property('ADBE Vector Stroke Line Cap').setValue(2);
-        jzAddEllipse(g2, lw * 4.4, lw * 4.4, 0, 0); jzAddFill(g2, ac);
         jzXf(S, 'ADBE Position').setValue([W / 2, H / 2]);
         jzSetExpr(jzXf(S, 'ADBE Rotate Z'), HD + jzN(a0) + '+' + jzN(360 * dir) + '*e');
         jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + '100*Math.pow(bell(p),0.5)');
@@ -154,11 +161,14 @@ jzReg('trans', 'irisOpen', {
         var iw = jzEffect(C, 'ADBE Iris Wipe', 'JZ Trans irisOpen');
         jzEP(iw, 1, [cx, cy]); jzEP(iw, 2, 32); jzEP(iw, 4, 0); jzEP(iw, 7, 0);
         jzEX(iw, 3, HD + 'r/0.995');
-        var S = jzEvShape(t.comp, 'JZ Trans iris rings', t.t0, t.dur), g1 = jzGrp(S, 'ring'), g2 = jzGrp(S, 'ring 2');
-        var e1 = jzAddEllipse(g1, 10, 10, 0, 0), e2 = jzAddEllipse(g2, 10, 10, 0, 0);
-        jzAddStroke(g1, tn_acc(t), lw); jzAddStroke(g2, tn_acc(t, true), lw * 0.4, 60);
+        // (each ellipse is configured before its stroke / the next group is added)
+        var S = jzEvShape(t.comp, 'JZ Trans iris rings', t.t0, t.dur);
+        var g1 = jzGrp(S, 'ring'), e1 = jzAddEllipse(g1, 10, 10, 0, 0);
         jzSetExpr(e1.property('ADBE Vector Ellipse Size'), HD + 'var d=2*r+' + jzN(lw) + ';[d,d]');
+        jzAddStroke(g1, tn_acc(t), lw);
+        var g2 = jzGrp(S, 'ring 2'), e2 = jzAddEllipse(g2, 10, 10, 0, 0);
         jzSetExpr(e2.property('ADBE Vector Ellipse Size'), HD + 'var d=2*(r*1.06+' + jzN(lw * 2.5) + ');[d,d]');
+        jzAddStroke(g2, tn_acc(t, true), lw * 0.4, 60);
         jzXf(S, 'ADBE Position').setValue([cx, cy]);
         jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + '100*Math.pow(bell(p),0.6)');
     }
@@ -249,11 +259,15 @@ jzReg('trans', 'doorsOpen', {
         tn_xf(t.B, 'JZ Trans in doorsOpen', HD, { sc: '0.93+0.07*oc(p)' });
         var bg = tn_solid(t, t.sc.bg, 'JZ Trans doors bg'); bg.moveAfter(t.B);
         // accent bars on the inner edges
-        var S = jzEvShape(t.comp, 'JZ Trans door edges', t.t0, t.dur), g1 = jzGrp(S, 'edge 1'), g2 = jzGrp(S, 'edge 2');
-        if (!v) { jzAddRect(g1, lw, H, 0, hw - lw / 2, H / 2); jzAddRect(g2, lw, H, 0, hw + lw / 2, H / 2); }
-        else { jzAddRect(g1, W, lw, 0, W / 2, hw - lw / 2); jzAddRect(g2, W, lw, 0, W / 2, hw + lw / 2); }
-        jzAddFill(g1, ac); jzAddFill(g2, ac);
+        // (group 1 is finished before group 2 is added)
+        var S = jzEvShape(t.comp, 'JZ Trans door edges', t.t0, t.dur);
+        var g1 = jzGrp(S, 'edge 1');
+        if (!v) jzAddRect(g1, lw, H, 0, hw - lw / 2, H / 2); else jzAddRect(g1, W, lw, 0, W / 2, hw - lw / 2);
+        jzAddFill(g1, ac);
         jzSetExpr(jzGX(g1).property('ADBE Vector Position'), HD + (v ? '[0,-off]' : '[-off,0]'));
+        var g2 = jzGrp(S, 'edge 2');
+        if (!v) jzAddRect(g2, lw, H, 0, hw + lw / 2, H / 2); else jzAddRect(g2, W, lw, 0, W / 2, hw + lw / 2);
+        jzAddFill(g2, ac);
         jzSetExpr(jzGX(g2).property('ADBE Vector Position'), HD + (v ? '[0,off]' : '[off,0]'));
         jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + '100*Math.pow(bell(p),0.5)');
     }
@@ -369,8 +383,9 @@ jzReg('trans', 'spinOut', {
         tn_xf(t.B, 'JZ Trans in spinOut', HD, { sc: '1.08-0.08*oc(p)' });
         // accent frame around the spinning picture (screen-constant line width)
         var S = jzEvShape(t.comp, 'JZ Trans spin frame', t.t0, t.dur), g = jzGrp(S, 'frame');
-        var r = jzAddRect(g, W, H, 0, 0, 0); jzAddStroke(g, tn_acc(t), lw);
+        var r = jzAddRect(g, W, H, 0, 0, 0);    // (configured before the stroke is added — that invalidates r in AE)
         jzSetExpr(r.property('ADBE Vector Rect Size'), HD + '[Math.max(0,' + jzN(W) + '*s-' + jzN(lw) + '),Math.max(0,' + jzN(H) + '*s-' + jzN(lw) + ')]');
+        jzAddStroke(g, tn_acc(t), lw);
         jzXf(S, 'ADBE Position').setValue([W / 2, H / 2]);
         jzSetExpr(jzXf(S, 'ADBE Rotate Z'), HD + jzN(rot) + '*e');
         jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + 's<0.01?0:100*Math.min(1,p*6)');
@@ -413,8 +428,9 @@ jzReg('trans', 'inkBlob', {
         var Rm = jzEvShape(t.comp, 'JZ Trans ink rim', t.t0, t.dur);
         for (var k = 0; k < 6; k++) {
             var a = jzR(s0, k, 7, 0) * TAU, f = 1.12 + 0.3 * jzR(s0, k, 8, 0), rr = md * (0.008 + 0.02 * jzR(s0, k, 9, 0));
-            var gd = jzGrp(Rm, 'drop ' + (k + 1)), ee = jzAddEllipse(gd, 10, 10, 0, 0); jzAddFill(gd, ac);
+            var gd = jzGrp(Rm, 'drop ' + (k + 1)), ee = jzAddEllipse(gd, 10, 10, 0, 0);
             jzSetExpr(ee.property('ADBE Vector Ellipse Size'), HD + 'var d=' + jzN(2 * rr) + '*cl(p*4);[d,d]');
+            jzAddFill(gd, ac);    // (after the ellipse is configured — the add invalidates ee in AE)
             jzSetExpr(jzGX(gd).property('ADBE Vector Position'), HD + 'var d=r*' + jzN(f) + '+rim;[' + jzN(Math.cos(a)) + '*d,' + jzN(Math.sin(a)) + '*d]');
         }
         var gr = jzGrp(Rm, 'rim'); tn_blob(gr, s0, R, 1.2); jzAddFill(gr, ac);

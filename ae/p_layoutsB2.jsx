@@ -454,9 +454,10 @@ jzReg('layout', 'depthStack', {
         if (style === 'lines') {
             var R = lb2_ng(jzShapeLayer(ctx, 'depth rays', 0, 0)), cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
             for (var q = 0; q < 4; q++) {
-                var g = jzGrp(R, 'ray'), rr = jzAddRect(g, 10, Math.max(u, M * 0.0013)); jzAddFill(g, sc.sub);
+                var g = jzGrp(R, 'ray'), rr = jzAddRect(g, 10, Math.max(u, M * 0.0013));
                 var E = HD + 'var sN=1/(1+' + N + '*0.26*dp);var x0=CX+' + jzN(cs[q][0] * m.w / 2) + ',y0=CY+' + jzN(cs[q][1] * m.h / 2) + ';var x1=CX+(vx-CX)*(1-sN)+' + jzN(cs[q][0] * m.w / 2) + '*sN,y1=CY+(vy-CY)*(1-sN)+' + jzN(cs[q][1] * m.h / 2) + '*sN;';
                 rr.property('ADBE Vector Rect Size').expression = E + '[Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)),value[1]]';
+                jzAddFill(g, sc.sub);                             // (after the rect is configured: adding the fill invalidates rr)
                 jzGX(g).property('ADBE Vector Position').expression = E + '[(x0+x1)/2,(y0+y1)/2]';
                 jzGX(g).property('ADBE Vector Rotation').expression = E + 'Math.atan2(y1-y0,x1-x0)*180/Math.PI';
             }
@@ -742,12 +743,15 @@ function lb2_eqBar(S, HE, ox, oy, w, col, alpha, o) {
             jzGX(g).property('ADBE Vector Position').expression = pre('h');
         }
     } else {
-        g = jzGrp(S, 'bar'); var r = jzAddRect(g, w, 10); jzAddFill(g, col, alpha * 100);
+        // (each rect is configured before its fill is added: adding a sibling invalidates the rect reference)
+        g = jzGrp(S, 'bar'); var r = jzAddRect(g, w, 10);
         r.property('ADBE Vector Rect Size').expression = HE + '[value[0],Math.max(0,h)]';
+        jzAddFill(g, col, alpha * 100);
         jzGX(g).property('ADBE Vector Position').expression = pre('h/2');
         if (o.style === 'mirror') {
-            var gm = jzGrp(S, 'reflection'), rm = jzAddRect(gm, w, 10); jzAddFill(gm, col, alpha * 22);
+            var gm = jzGrp(S, 'reflection'), rm = jzAddRect(gm, w, 10);
             rm.property('ADBE Vector Rect Size').expression = HE + '[value[0],Math.max(0,h*0.35)]';
+            jzAddFill(gm, col, alpha * 22);
             jzGX(gm).property('ADBE Vector Position').expression = pre('h+' + jzN(o.lw * 2) + '+h*0.175');
         }
     }

@@ -400,10 +400,12 @@ jzReg('enter', 'shutter', { apply: function (m) {
     if (G.arranged || en1_crowded(m, G)) return;
     var S = jzNoGhost(en1_shape(m, 'JZ In Shutter')), acc = m.ctx.sc.accent || '#ffffff', len = (vert ? h : w) + mg * 2, k;
     for (k = 0; k < 2; k++) {
-        var grp = jzGrp(S, k ? 'line B' : 'line A'), rc = jzAddRect(grp, 10, 10, 0), gx = jzGX(grp), sg = k ? '+' : '-';
-        jzAddFill(grp, acc);
+        // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
+        var grp = jzGrp(S, k ? 'line B' : 'line A'), rc = jzAddRect(grp, 10, 10, 0), sg = k ? '+' : '-';
         jzSetExpr(rc.property('ADBE Vector Rect Size'), H + ev + (vert ? '[' + jzN(t) + ',' + jzN(len) + '*grow]' : '[' + jzN(len) + '*grow,' + jzN(t) + ']'));
-        jzSetExpr(gx.property('ADBE Vector Position'), H + ev + (vert ? '[' + jzN(cx) + sg + 'hh,' + jzN(cy) + ']' : '[' + jzN(cx) + ',' + jzN(cy) + sg + 'hh]'));
+        jzAddFill(grp, acc);
+        var gx = jzGX(grp);
+        jzSetExpr(gx.property('ADBE Vector Position'), H + ev + (vert ? '[' + jzN(cx) + sg + 'hhv,' + jzN(cy) + ']' : '[' + jzN(cx) + ',' + jzN(cy) + sg + 'hhv]'));
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), H + ev + (k ? '(open>0?1:0)*' : '') + '(1-sm(0.6,0.9,P))*100');
     }
 } });
@@ -425,10 +427,12 @@ jzReg('enter', 'iris', { apply: function (m) {
         jzSetExpr(mk.property('ADBE Mask Offset'), H + ev + 'time>=DL+IN?1e4:Math.max(0,rad-' + jzN(r0) + ')');
     }
     if (G.arranged || en1_crowded(m, G)) return;
-    var S = jzNoGhost(en1_shape(m, 'JZ In Iris')), grp = jzGrp(S, 'ring'), el = jzAddEllipse(grp, 10, 10), gx = jzGX(grp);
-    jzAddStroke(grp, m.ctx.sc.accent || '#ffffff', Math.max(2 * m.u, fs * 0.03));
-    gx.property('ADBE Vector Position').setValue([cx, cy]);
+    // the ellipse is set up before the stroke is added (AE invalidates the ellipse reference once a sibling is added)
+    var S = jzNoGhost(en1_shape(m, 'JZ In Iris')), grp = jzGrp(S, 'ring'), el = jzAddEllipse(grp, 10, 10);
     jzSetExpr(el.property('ADBE Vector Ellipse Size'), H + ev + '[rad*2,rad*2]');
+    jzAddStroke(grp, m.ctx.sc.accent || '#ffffff', Math.max(2 * m.u, fs * 0.03));
+    var gx = jzGX(grp);
+    gx.property('ADBE Vector Position').setValue([cx, cy]);
     jzSetExpr(gx.property('ADBE Vector Group Opacity'), H + ev + 'rad>0.5?(1-sm(0.3,0.8,P))*100:0');
 } });
 
@@ -447,11 +451,13 @@ jzReg('enter', 'diagWipe', { apply: function (m) {
         jzSetExpr(mk.property('ADBE Mask Offset'), H + ev + 'time>=DL+IN?1e4:Tx+hf');
     }
     if (G.arranged || en1_crowded(m, G)) return;
-    var S = jzNoGhost(en1_shape(m, 'JZ In Diag')), grp = jzGrp(S, 'block'), rc = jzAddRect(grp, 10, 10, 0), gx = jzGX(grp), sk = Math.atan(kS) * 180 / Math.PI;
+    // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
+    var S = jzNoGhost(en1_shape(m, 'JZ In Diag')), grp = jzGrp(S, 'block'), rc = jzAddRect(grp, 10, 10, 0), sk = Math.atan(kS) * 180 / Math.PI;
+    jzSetExpr(rc.property('ADBE Vector Rect Size'), H + ev + 'var ln=Math.max(0,Lx-Tx);' + (vert ? '[' + jzN(hv * 2) + ',ln]' : '[ln,' + jzN(hv * 2) + ']'));
     jzAddFill(grp, m.ctx.sc.accent || '#ffffff');
+    var gx = jzGX(grp);
     if (vert) { gx.property('ADBE Vector Skew Axis').setValue(90); gx.property('ADBE Vector Skew').setValue(dir * sk); }
     else gx.property('ADBE Vector Skew').setValue(-dir * sk);
-    jzSetExpr(rc.property('ADBE Vector Rect Size'), H + ev + 'var ln=Math.max(0,Lx-Tx);' + (vert ? '[' + jzN(hv * 2) + ',ln]' : '[ln,' + jzN(hv * 2) + ']'));
     jzSetExpr(gx.property('ADBE Vector Position'), H + ev + 'var u=' + jzN(uc) + '+' + dir + '*(Lx+Tx)/2;' + (vert ? '[' + jzN(vc) + ',u]' : '[u,' + jzN(vc) + ']'));
     jzSetExpr(gx.property('ADBE Vector Group Opacity'), H + ev + 'Lx-Tx>=0.5?100:0');
 } });

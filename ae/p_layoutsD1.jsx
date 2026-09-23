@@ -44,6 +44,8 @@ function ld1_alt(ctx) { var c = ctx.cut; if (c.lineText && jzStrip(c.lineText) !
 function ld1_arr(a) { return jzArrExpr(a); }
 function ld1_strArr(a) { var o = []; for (var i = 0; i < a.length; i++) o.push('"' + String(a[i]).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'); return '[' + o.join(',') + ']'; }
 function ld1_sub(g, name) { var q = jzVecs(g).addProperty('ADBE Vector Group'); if (name) q.name = name; return q; }
+// re-fetch a named top-level group of a shape layer (a sibling added to Contents invalidates older group references in AE)
+function ld1_rg(S, name) { return S.property('ADBE Root Vectors Group').property(name); }
 function ld1_gOp(g, ex) { jzSetExpr(jzGX(g).property('ADBE Vector Group Opacity'), ex); }
 function ld1_gPos(g, ex) { jzSetExpr(jzGX(g).property('ADBE Vector Position'), ex); }
 function ld1_gSc(g, ex) { jzSetExpr(jzGX(g).property('ADBE Vector Scale'), ex); }
@@ -52,13 +54,12 @@ function ld1_rr(g, w, h, r, x, y) { return jzAddRect(g, Math.max(0.5, w), Math.m
 // parent without converting the child's values: every parent here has anchor = position (layer space == comp space)
 function ld1_parent(L, P) { try { L.setParentWithJump(P); } catch (e) { try { L.parent = P; } catch (e2) { jzWarn('parent: ' + e2.toString()); } } }
 function ld1_behind(list, L) { for (var i = 0; i < list.length; i++) list[i].moveAfter(L); }
-// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children)
+// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children).
+// Every addProperty invalidates the dash properties added before it, so add them all first, then fetch them by matchName.
 function ld1_dash(st, d, gp, offExpr) {
     var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null, p3 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); if (offExpr) p3 = D.addProperty('ADBE Vector Stroke Offset'); } catch (e) { p1 = null; p2 = null; p3 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (offExpr && !p3) p3 = D.property('ADBE Vector Stroke Offset');
+    try { D.addProperty('ADBE Vector Stroke Dash 1'); D.addProperty('ADBE Vector Stroke Gap 1'); if (offExpr) D.addProperty('ADBE Vector Stroke Offset'); } catch (e) {}
+    try { p1 = D.property('ADBE Vector Stroke Dash 1'); p2 = D.property('ADBE Vector Stroke Gap 1'); if (offExpr) p3 = D.property('ADBE Vector Stroke Offset'); } catch (e1) { jzWarn('dashes: ' + e1.toString()); }
     if (p1) p1.setValue(d); if (p2) p2.setValue(gp);
     if (p3 && offExpr) jzSetExpr(p3, offExpr);
 }
@@ -305,14 +306,14 @@ ld1_reg('cube', {
         for (f = 0; f < 5; f++) {
             var g = jzGrp(S, f === 4 ? 'top' : 'face ' + (f + 1));
             jzAddRect(g, 2 * h, 2 * h, 0);
-            var stk = jzAddStroke(g, jzMixHex(f === 4 ? topC : pc, DK, 0.35), lw), fl = jzAddFill(g, f === 4 ? topC : pc);
             var fb = 'var F=face(' + f + ');var M=[F[0]*pp,F[1]*pp,F[2]*pp,F[3]*pp,F[4],F[5]]';
+            var lx = HD + CL + fb + ';var LT=shd((-0.55*F[7]*DIR+0.55*F[8])*0.35);';
+            // each item is fully set up before its next sibling is added (adding one invalidates older item references in AE)
+            var stk = jzAddStroke(g, jzMixHex(f === 4 ? topC : pc, DK, 0.35), lw);
+            if (f < 4) jzSetExpr(stk.property('ADBE Vector Stroke Color'), lx + 'mixc(LT,DKc,0.35)');
+            var fl = jzAddFill(g, f === 4 ? topC : pc);
+            if (f < 4) jzSetExpr(fl.property('ADBE Vector Fill Color'), lx + 'LT');
             ld1_affGrp(g, HD, fb, '(F[6]>0.004?100:0)');
-            if (f < 4) {
-                var lx = HD + CL + fb + ';var LT=shd((-0.55*F[7]*DIR+0.55*F[8])*0.35);';
-                jzSetExpr(fl.property('ADBE Vector Fill Color'), lx + 'LT');
-                jzSetExpr(stk.property('ADBE Vector Stroke Color'), lx + 'mixc(LT,DKc,0.35)');
-            }
         }
         var gS = jzGrp(S, 'shadow'); jzAddRect(gS, 2.08 * h, 2.08 * h, 0); jzAddFill(gS, DK);
         ld1_affGrp(gS, HD, 'var F=face(4);var M=[F[0]*pp,F[1]*pp,F[2]*pp,F[3]*pp,CX,CY+hs*CP+hs*0.14]', '35');
@@ -741,7 +742,10 @@ ld1_reg('ribbon', {
         var RS = jzShapeLayer(ctx, 'ribbon', 0, 0), shadeG = [], tailsG = [];
         var gl = [], OF = [], RI = [], TS = [];
         for (var ri = 0; ri < nR; ri++) {
-            var HD = rowHead(ri), gF = jzGrp(RS, 'front ' + (ri + 1)), gB = jzGrp(RS, 'back ' + (ri + 1)), gT = jzGrp(RS, 'twist shade ' + (ri + 1));
+            var HD = rowHead(ri);
+            jzGrp(RS, 'front ' + (ri + 1)); jzGrp(RS, 'back ' + (ri + 1)); jzGrp(RS, 'twist shade ' + (ri + 1));
+            // fetch the three groups after all were added (each addition invalidates the older sibling references in AE)
+            var gF = ld1_rg(RS, 'front ' + (ri + 1)), gB = ld1_rg(RS, 'back ' + (ri + 1)), gT = ld1_rg(RS, 'twist shade ' + (ri + 1));
             for (q = 0; q < FB.length - 1; q++) {
                 var fa = FB[q], fb = FB[q + 1], fm = (fa + fb) / 2, dm = Math.abs(fm - 0.5), tm = dm < 0.33 ? 1 : Math.cos(Math.PI * (dm - 0.33) / 0.17);
                 var body = 'var fa=Math.max(' + jzN(fa) + ',w0),fb=Math.min(' + jzN(fb) + ',w1);if(fb<fa)fb=fa;var A1=edge(TB,fa,1),B1=edge(TB,fb,1),B2=edge(TB,fb,-1),A2=edge(TB,fa,-1);var Q=[A1[0],A1[1],B1[0],B1[1],B2[0],B2[1],A2[0],A2[1]]';
@@ -897,9 +901,10 @@ ld1_reg('pendulum', {
             if (mode === 'fan') jzAddFill(gB, col);
             ld1_gPos(gB, AH + '[' + jzN(pX) + ',' + jzN(pY) + '+LI*gr]');
             // string (behind the bob)
-            var gS = jzGrp(AR, 'string'), rS = jzAddRect(gS, lw, 10, 0); jzAddFill(gS, sc.sub); ld1_gOp(gS, '75');
+            var gS = jzGrp(AR, 'string'), rS = jzAddRect(gS, lw, 10, 0);
             jzSetExpr(rS.property('ADBE Vector Rect Size'), AH + '[' + jzN(lw) + ',Math.max(0.01,LI*gr-' + jzN(off) + ')]');
             jzSetExpr(rS.property('ADBE Vector Rect Position'), AH + '[' + jzN(pX) + ',' + jzN(pY) + '+Math.max(0.01,LI*gr-' + jzN(off) + ')/2]');
+            jzAddFill(gS, sc.sub); ld1_gOp(gS, '75');
             jzSetExpr(jzXf(AR, 'ADBE Rotate Z'), AH + '-th');
             jzSetExpr(jzXf(AR, 'ADBE Opacity'), AH + '(gr<=0?0:100)*K');
             arms.push({ L: AR, y: pY + Li, col: col, Li: Li, AH: AH });
@@ -1130,13 +1135,17 @@ ld1_reg('balloons', {
             'var fly=ic(PO)*' + jzN(H * 0.9) + ';function bal(i){var e=cl((time-T1[i])/0.45),ph=PH[i];return [XS[i]+Math.sin(time*0.9+ph)*SZ*0.03,YS[i]+Math.sin(time*1.4+ph)*SZ*0.05*MO+(1-oc(e))*' + jzN(H * 0.35) + '-fly*FL[i],' +
             'Math.sin(time*0.8+ph*1.3)*5*MO+R3[i],e];}\n';
         // strings (knot -> gather point, sagging: two segments) + knots
-        var SL = jzShapeLayer(ctx, 'balloon strings', 0, 0), gs = jzGrp(SL, 'strings'), gk = jzGrp(SL, 'knots'), lw = Math.max(1 * ctx.u, u * 0.0016);
+        var SL = jzShapeLayer(ctx, 'balloon strings', 0, 0), lw = Math.max(1 * ctx.u, u * 0.0016);
+        jzGrp(SL, 'strings'); jzGrp(SL, 'knots');
+        var gs = ld1_rg(SL, 'strings'), gk = ld1_rg(SL, 'knots');      // fetched after both exist (AE invalidates older sibling refs)
         for (i = 0; i < gl.length; i++) {
             var kb = 'var B=bal(' + i + '),rr=B[2]*Math.PI/180,bx=B[0]-Math.sin(rr)*SZ*0.58,by=B[1]+Math.cos(rr)*SZ*0.58,' +
                 (bunch ? 'ex=' + jzN(gx) + '+(B[0]-' + jzN(gx) + ')*0.06,ey=' + jzN(gy) + '-fly' : 'ex=bx+Math.sin(time*1.1+' + i + ')*SZ*0.2,ey=Math.min(' + jzN(H * 1.05) + ',by+' + jzN(H * 0.3) + ')') +
                 ',mx=(bx+ex)/2+Math.sin(time*2+' + i + ')*SZ*0.05,my=(by+ey)/2+SZ*0.25,k=B[3]>0?1:0;';
-            var s1 = ld1_seg(gs, 'string ' + (i + 1) + 'a', BH, kb + 'var X0=bx,Y0=by,X1=mx,Y1=my', lw), s2 = ld1_seg(gs, 'string ' + (i + 1) + 'b', BH, kb + 'var X0=mx,Y0=my,X1=ex,Y1=ey', lw);
-            ld1_gOp(s1, BH + kb + 'k*100'); ld1_gOp(s2, BH + kb + 'k*100');
+            var s1 = ld1_seg(gs, 'string ' + (i + 1) + 'a', BH, kb + 'var X0=bx,Y0=by,X1=mx,Y1=my', lw);
+            ld1_gOp(s1, BH + kb + 'k*100');
+            var s2 = ld1_seg(gs, 'string ' + (i + 1) + 'b', BH, kb + 'var X0=mx,Y0=my,X1=ex,Y1=ey', lw);
+            ld1_gOp(s2, BH + kb + 'k*100');
             var gkn = ld1_sub(gk, 'knot ' + (i + 1)); jzAddPath(gkn, [[-size * 0.05, size * 0.07], [size * 0.05, size * 0.07], [0, -size * 0.02]], true); jzAddFill(gkn, DC[i]);
             ld1_gPos(gkn, BH + kb + '[bx,by]'); ld1_gOp(gkn, BH + kb + 'k*100');
         }
@@ -1473,9 +1482,10 @@ ld1_reg('ledScroll', {
         jzAddFill(gs, jzMixHex(frameC, '#000000', 0.35));
         var mainY = info === 'top' ? fy0 + fr + infoH + fr * 0.6 : fy0 + fr, panels = [{ y: mainY, h: ph, col: ledC }];
         if (infoH) panels.push({ y: info === 'top' ? fy0 + fr : mainY + ph + fr * 0.6, h: infoH, col: infoC });
-        for (i = 0; i < panels.length; i++) { var gpn = jzGrp(F, 'panel ' + (i + 1)), rp = ld1_rr(gpn, fw - fr * 2, panels[i].h, 0, W / 2, panels[i].y + panels[i].h / 2); jzAddFill(gpn, panel); jzSetExpr(rp.property('ADBE Vector Rect Size'), TH + '[Math.max(0.5,hw*2-' + jzN(fr * 2) + '),' + jzN(panels[i].h) + ']'); }
-        var gf = jzGrp(F, 'frame'), rf = ld1_rr(gf, fw, fh, fr * 0.6, W / 2, fy0 + fh / 2); jzAddFill(gf, frameC);
+        for (i = 0; i < panels.length; i++) { var gpn = jzGrp(F, 'panel ' + (i + 1)), rp = ld1_rr(gpn, fw - fr * 2, panels[i].h, 0, W / 2, panels[i].y + panels[i].h / 2); jzSetExpr(rp.property('ADBE Vector Rect Size'), TH + '[Math.max(0.5,hw*2-' + jzN(fr * 2) + '),' + jzN(panels[i].h) + ']'); jzAddFill(gpn, panel); }
+        var gf = jzGrp(F, 'frame'), rf = ld1_rr(gf, fw, fh, fr * 0.6, W / 2, fy0 + fh / 2);
         jzSetExpr(rf.property('ADBE Vector Rect Size'), TH + '[Math.max(0.5,hw*2),' + jzN(fh) + ']');
+        jzAddFill(gf, frameC);
         ld1_opx(ctx, F, 'K');
         // dot grids: cols x rows of LEDs over a panel (x-scaled with the frame as it opens)
         function dots(name, P0, col) {
@@ -1543,9 +1553,10 @@ ld1_reg('billboard', {
         var ST = jzShapeLayer(ctx, 'billboard stand', 0, 0), pw = bw * 0.035;
         var gg = jzGrp(ST, 'ground'); jzAddPath(gg, [[W * 0.03, groundY], [W * 0.97, groundY]], false); jzAddStroke(gg, sc.sub, lw); ld1_gOp(gg, '50');
         for (i = 0; i < 2; i++) {
-            var px = bx + bw * (i ? 0.78 : 0.22), gp = jzGrp(ST, 'post ' + (i + 1)), rp = ld1_rr(gp, pw, 10, 0); jzAddFill(gp, steel);
+            var px = bx + bw * (i ? 0.78 : 0.22), gp = jzGrp(ST, 'post ' + (i + 1)), rp = ld1_rr(gp, pw, 10, 0);
             jzSetExpr(rp.property('ADBE Vector Rect Size'), TH + '[' + jzN(pw) + ',Math.max(1,' + jzN(groundY - by - bh) + '-rise)]');
             jzSetExpr(rp.property('ADBE Vector Rect Position'), TH + '[' + jzN(px) + ',(' + jzN(by + bh) + '+rise+' + jzN(groundY) + ')/2]');
+            jzAddFill(gp, steel);
         }
         var x1 = bx + bw * 0.22, x2 = bx + bw * 0.78, gx = jzGrp(ST, 'bracing');
         ld1_seg(gx, 'brace 1', TH, 'var yb=' + jzN(by + bh) + '+rise,Lp=' + jzN(groundY) + '-yb;var X0=' + jzN(x1) + ',Y0=yb+Lp*0.25,X1=' + jzN(x2) + ',Y1=' + jzN(groundY) + '-Lp*0.1', lw);
@@ -1773,7 +1784,9 @@ ld1_reg('crossword', {
             ld1_gOp(gw2, HL + '(cw===' + i + ')?20:(typed>=' + n + '?12:0)');
         }
         for (r = 0; r < R; r++) {
-            var gr = jzGrp(GS, 'row ' + (r + 1)), grl = ld1_sub(gr, 'rules'), gbl = ld1_sub(gr, 'black');
+            var gr = jzGrp(GS, 'row ' + (r + 1));
+            ld1_sub(gr, 'rules'); ld1_sub(gr, 'black');
+            var grl = jzVecs(gr).property('rules'), gbl = jzVecs(gr).property('black');     // fetched after both exist (AE rule)
             ld1_rr(grl, gw, lw * 0.6, 0, gx + gw / 2, gy + (r + 1) * cell);
             for (cc = 0; cc < C; cc++) ld1_rr(grl, lw * 0.6, cell, 0, gx + (cc + 1) * cell, gy + (r + 0.5) * cell);
             jzAddFill(grl, inkC); ld1_gOp(grl, '55');
@@ -1782,11 +1795,14 @@ ld1_reg('crossword', {
             if (anyB) jzAddFill(gbl, inkC);
             ld1_gOp(gr, TH + 'ra(' + r + ')*100');
         }
-        var gp = jzGrp(GS, 'paper'), rp = ld1_rr(gp, gw, gh, 0, gw / 2, gh / 2); jzAddFill(gp, paperC);
+        // paper, then frame: each group is finished before the next one is added (AE invalidates older sibling refs)
+        var gp = jzGrp(GS, 'paper'); ld1_rr(gp, gw, gh, 0, gw / 2, gh / 2); jzAddFill(gp, paperC);
+        jzGX(gp).property('ADBE Vector Position').setValue([gx, gy]);
+        ld1_gSc(gp, TH + '[100,ga*100]');
         var gf = jzGrp(GS, 'frame'); ld1_rr(gf, gw + lw * 4, gh + lw * 4, 0, gw / 2, gh / 2); jzAddFill(gf, inkC);
-        jzGX(gp).property('ADBE Vector Position').setValue([gx, gy]); jzGX(gf).property('ADBE Vector Position').setValue([gx, gy]);
+        jzGX(gf).property('ADBE Vector Position').setValue([gx, gy]);
         jzGX(gf).property('ADBE Vector Anchor').setValue([0, -lw * 2]);
-        ld1_gSc(gp, TH + '[100,ga*100]'); ld1_gSc(gf, TH + 'var h=' + jzN(gh) + ';[100,(h*ga+' + jzN(lw * 4) + ')/(h+' + jzN(lw * 4) + ')*100]');
+        ld1_gSc(gf, TH + 'var h=' + jzN(gh) + ';[100,(h*ga+' + jzN(lw * 4) + ')/(h+' + jzN(lw * 4) + ')*100]');
         ld1_opx(ctx, GS, 'K');
         // clue numbers (one glyph per digit) + pencilled entries
         var ng = [], NP = [], NR = [], pg = [], PP = [], PR = [];

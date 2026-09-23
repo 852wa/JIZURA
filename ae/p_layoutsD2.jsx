@@ -420,12 +420,13 @@ jzReg('layout', 'shadowPlay', {
             // the sun crosses the sky; the shadow swings like a sundial
             var PHI = TH + 'var PHI=(74+(38-74)*ios(time/' + jzN(Math.max(0.5, c.dur)) + '))*' + jzN((0.85 + 0.15 * jzP(ctx, 'sweep', 0.85)) * dir) + '*Math.PI/180;';
             if (jzP(ctx, 'sun', true)) {
-                var sr0 = u * 0.045, SU = jzShapeLayer(ctx, 'sun', W / 2, yb), g1 = jzGrp(SU, 'rays'), g2 = jzGrp(SU, 'disc'), g3 = jzGrp(SU, 'glow');
+                // rays, disc, glow (same stacking order); each group is finished before the next is added (AE invalidates older sibling refs)
+                var sr0 = u * 0.045, SU = jzShapeLayer(ctx, 'sun', W / 2, yb), g1 = jzGrp(SU, 'rays');
                 for (i = 0; i < 10; i++) { var a = i / 10 * Math.PI * 2; jzAddPath(g1, [[Math.cos(a) * sr0 * 1.35, Math.sin(a) * sr0 * 1.35], [Math.cos(a) * sr0 * 1.75, Math.sin(a) * sr0 * 1.75]], false); }
                 jzAddStroke(g1, sc.accent, Math.max(1.5, sr0 * 0.1), 80);
                 ld2_gX(g1, 'ADBE Vector Rotation', 'time*0.4*180/Math.PI');
-                jzAddEllipse(g2, sr0 * 2, sr0 * 2); jzAddFill(g2, sc.accent);
-                jzAddEllipse(g3, sr0 * 3.8, sr0 * 3.8); jzAddFill(g3, sc.accent, 12);
+                var g2 = jzGrp(SU, 'disc'); jzAddEllipse(g2, sr0 * 2, sr0 * 2); jzAddFill(g2, sc.accent);
+                var g3 = jzGrp(SU, 'glow'); jzAddEllipse(g3, sr0 * 3.8, sr0 * 3.8); jzAddFill(g3, sc.accent, 12);
                 var mw2 = m.w / 2 + sr0 * 2.2, capY = ty - m.h / 2 - sr0 * 2.4;
                 jzSetExpr(jzXf(SU, 'ADBE Position'), PHI + 'var sx=' + jzN(W / 2) + '-Math.sin(PHI)*' + jzN(W * 0.4) + ',sy=' + jzN(yb - sr0 * 1.6) + '-' + jzN(yb - H * 0.1) + '*Math.cos(PHI)*1.1;' +
                     'if(Math.abs(sx-' + jzN(W / 2) + ')<' + jzN(mw2) + ')sy=Math.min(sy,' + jzN(capY) + ');[sx,sy]');
@@ -479,10 +480,13 @@ jzReg('layout', 'shadowPlay', {
         ld2_opAnim(S, 'JZ Shadow Alpha', LMP, 'a=' + (dark ? 0.9 : 0.55) + '*LA');
         var bl = jzEffect(S, 'ADBE Gaussian Blur 2', 'JZ Soft Shadow'); jzEP(bl, 1, size * 0.04 * 1.42); jzNoGhost(S);
         // the lamp
-        var fr = u * 0.02, LP = jzShapeLayer(ctx, 'lamp', 0, 0), gb = jzGrp(LP, 'base'), gfl = jzGrp(LP, 'flame'), gh = jzGrp(LP, 'halo');
+        // base, flame, halo (same stacking order), each finished before the next group is added
+        var fr = u * 0.02, LP = jzShapeLayer(ctx, 'lamp', 0, 0), gb = jzGrp(LP, 'base');
         jzAddRect(gb, fr * 1.8, fr * 1.6, 0, 0, fr * 1.4); jzAddFill(gb, sc.sub);
+        var gfl = jzGrp(LP, 'flame');
         jzAddPath(gfl, [[0, -fr * 2.2], [fr * 0.8, -fr * 0.2], [0, fr * 0.6], [-fr * 0.8, -fr * 0.2]], true); jzAddFill(gfl, sc.accent);
         ld2_gX(gfl, 'ADBE Vector Scale', LMP + '[100,100*FL]');
+        var gh = jzGrp(LP, 'halo');
         jzAddEllipse(gh, fr * 7, fr * 7); jzAddFill(gh, sc.accent, 15);
         ld2_gX(gh, 'ADBE Vector Group Opacity', LMP + '100*FL');
         jzSetExpr(jzXf(LP, 'ADBE Position'), LMP + '[LX,LY]');
@@ -535,8 +539,9 @@ jzReg('layout', 'kaleido', {
             text = ld2_brk(t0, n <= 4 ? 4 : Math.ceil(n / 2));
             var Rc = Math.min(W, H) * (n > 5 ? 0.36 : 0.3);
             size = Math.min(ld2_fit(ctx, text, font, Rc * 1.55, Rc * 1.2, tr, lead), u * 0.16);
-            var D = jzShapeLayer(ctx, 'disc', cx, cy), g1 = jzGrp(D, 'ring'), g2 = jzGrp(D, 'disc');
+            var D = jzShapeLayer(ctx, 'disc', cx, cy), g1 = jzGrp(D, 'ring');
             jzAddEllipse(g1, Rc * 2.12, Rc * 2.12); jzAddStroke(g1, sc.sub, Math.max(1, u * 0.001), 60);
+            var g2 = jzGrp(D, 'disc');      // added only after 'ring' is finished (AE invalidates older sibling refs)
             jzAddEllipse(g2, Rc * 2, Rc * 2); jzAddStroke(g2, sc.accent, Math.max(2, u * 0.004)); jzAddFill(g2, sc.bg);
             jzSetExpr(jzXf(D, 'ADBE Scale'), TH + 'var q=ob(cl(time/0.4),1.5)*(1-0.3*ic(PO))*100;[q,q]');
             jzSetExpr(jzXf(D, 'ADBE Opacity'), TH + '100*K'); jzNoGhost(D);
@@ -544,11 +549,15 @@ jzReg('layout', 'kaleido', {
             text = ld2_brk(t0, port ? 5 : 8);
             size = Math.min(ld2_fit(ctx, text, font, W * 0.84, H * 0.26, tr, lead), u * 0.18);
             var mb = ld2_measAt(ctx, text, font, size, tr, lead), bh0 = mb.h + size * 0.6, lwB = Math.max(2, u * 0.003);
-            var BD = jzNoGhost(jzShapeLayer(ctx, 'band', cx, cy)), gb = jzGrp(BD, 'band'), gt = jzGrp(BD, 'top'), gbt = jzGrp(BD, 'bottom');
+            // band, top, bottom (same stacking order); each group is finished before the next is added (AE invalidates older sibling refs)
+            var BD = jzNoGhost(jzShapeLayer(ctx, 'band', cx, cy));
             var BH = TH + 'var bh=' + jzN(bh0) + '*oe(time/0.4)*(1-ic(PO));';
-            jzAddRect(gt, W, lwB, 0, 0, 0); jzAddFill(gt, sc.accent); ld2_gX(gt, 'ADBE Vector Position', BH + '[0,-bh/2]'); ld2_gX(gt, 'ADBE Vector Group Opacity', BH + '100*K');
-            jzAddRect(gbt, W, lwB, 0, 0, 0); jzAddFill(gbt, sc.accent); ld2_gX(gbt, 'ADBE Vector Position', BH + '[0,bh/2]'); ld2_gX(gbt, 'ADBE Vector Group Opacity', BH + '100*K');
+            var gb = jzGrp(BD, 'band');
             jzAddRect(gb, W, bh0, 0, 0, 0); jzAddFill(gb, sc.bg); ld2_gX(gb, 'ADBE Vector Scale', BH + '[100,bh/' + jzN(bh0) + '*100]');
+            var gt = jzGrp(BD, 'top');
+            jzAddRect(gt, W, lwB, 0, 0, 0); jzAddFill(gt, sc.accent); ld2_gX(gt, 'ADBE Vector Position', BH + '[0,-bh/2]'); ld2_gX(gt, 'ADBE Vector Group Opacity', BH + '100*K');
+            var gbt = jzGrp(BD, 'bottom');
+            jzAddRect(gbt, W, lwB, 0, 0, 0); jzAddFill(gbt, sc.accent); ld2_gX(gbt, 'ADBE Vector Position', BH + '[0,bh/2]'); ld2_gX(gbt, 'ADBE Vector Group Opacity', BH + '100*K');
         }
         var L = ld2_T(ctx, text, font, size, { color: sc.fg, x: cx, y: cy, track: tr, lead: lead });
         jzAnimate(ctx, L, { mi: 0 });
@@ -634,8 +643,9 @@ jzReg('layout', 'burst', {
         var TH = ld2_TH(ctx), QR = TH + 'var q=ob(cl(time/0.3),2.2)*(1-0.6*ic(PO))*(1+0.015*Math.sin(time*7)*cl(time-0.3)),ROT=' + jzN(tilt) + '+(1-oc(time/0.3))*-25+ic(PO)*20;';
         // shock ring
         var RG = jzNoGhost(jzShapeLayer(ctx, 'shock ring', cx, cy)), gr = jzGrp(RG, 'ring'), R0 = Math.max(rx, ry) * 2;
-        var el = jzAddEllipse(gr, R0, R0), stR = jzAddStroke(gr, A, Math.max(2, u * 0.012)), RN = TH + 'var rg=cl(time/0.45);';
-        jzSetExpr(el.property('ADBE Vector Ellipse Size'), RN + 'var d=' + jzN(R0) + '*(0.6+rg*1.1);[d,d]');
+        var RN = TH + 'var rg=cl(time/0.45);', el = jzAddEllipse(gr, R0, R0);
+        jzSetExpr(el.property('ADBE Vector Ellipse Size'), RN + 'var d=' + jzN(R0) + '*(0.6+rg*1.1);[d,d]');     // before the stroke is added (AE rule)
+        var stR = jzAddStroke(gr, A, Math.max(2, u * 0.012));
         jzSetExpr(stR.property('ADBE Vector Stroke Width'), RN + 'value*(1-rg)');
         jzSetExpr(jzXf(RG, 'ADBE Opacity'), RN + 'rg>=1?0:(1-rg)*K*100');
         // speed lines (flicker per frame)
@@ -1184,8 +1194,9 @@ jzReg('layout', 'glitchGrid', {
         }
         // the clean cell
         var qc = rect(crow, cc0, cc1), CF = jzShapeLayer(ctx, 'clean cell', qc[0] + qc[2] / 2, qc[1] + qc[3] / 2), gcf = jzGrp(CF, 'frame');
-        var rcf = jzAddRect(gcf, qc[2], qc[3], 0, 0, 0); jzAddStroke(gcf, sc.accent, Math.max(2, u * 0.003));
-        jzSetExpr(rcf.property('ADBE Vector Rect Size'), TH + '[' + jzN(qc[2]) + '*oe(time/0.35),' + jzN(qc[3]) + ']');
+        var rcf = jzAddRect(gcf, qc[2], qc[3], 0, 0, 0);
+        jzSetExpr(rcf.property('ADBE Vector Rect Size'), TH + '[' + jzN(qc[2]) + '*oe(time/0.35),' + jzN(qc[3]) + ']');     // before the stroke is added (AE rule)
+        jzAddStroke(gcf, sc.accent, Math.max(2, u * 0.003));
         jzSetExpr(jzXf(CF, 'ADBE Opacity'), TH + '100*K'); jzNoGhost(CF);
         if (labels) {
             var RC = jzText(ctx, 'REC ● CLEAN', { font: jzMonoF(ctx), size: Math.max(10 * ctx.u, u * 0.014), color: sc.accent, x: 0, y: 0, align: 'left', name: 'REC label' });
@@ -1299,9 +1310,8 @@ jzReg('layout', 'maskReveal', {
             gpat = null;
             var Tm = T0;
         } else {
+            // pattern first (top), ground second: the pattern is finished before 'ground' is added (AE invalidates older sibling refs)
             gpat = jzGrp(P, 'pattern');
-            var gbg2 = jzGrp(P, 'ground');
-            jzAddRect(gbg2, diag + size, diag + size, 0, 0, 0); jzAddFill(gbg2, scene === 'shine' && sc.grad ? sc.grad[0] : (scene === 'shine' ? A : B));
             if (scene === 'dots') {
                 var per = size * 0.2, nd = Math.ceil(diag / per) + 3;
                 jzAddEllipse(gpat, per * 0.6, per * 0.6, -nd / 2 * per, -nd / 2 * per); jzAddFill(gpat, A);
@@ -1321,6 +1331,9 @@ jzReg('layout', 'maskReveal', {
                 ld2_gX(gpat, 'ADBE Vector Position', TB + (shine ? 'var o=((TB*0.45)%1)*' + jzN(per2) + ';[o*0.7071,o*0.7071]' : 'var o=(TB*' + jzN(size * 0.5) + ')%' + jzN(per2) + ',a=' + jzN(ang * Math.PI / 180) + ';[o*Math.cos(a),o*Math.sin(a)]'));
                 if (shine) { var gb = jzEffect(P, 'ADBE Gaussian Blur 2', 'JZ Shine Soft'); jzEP(gb, 1, per2 * 0.22); }
             }
+            gpat = null;
+            var gbg2 = jzGrp(P, 'ground');
+            jzAddRect(gbg2, diag + size, diag + size, 0, 0, 0); jzAddFill(gbg2, scene === 'shine' && sc.grad ? sc.grad[0] : (scene === 'shine' ? A : B));
             var T2 = ld2_T(ctx, text, font, size, { color: B, x: cx, y: cy, lead: lead, name: c.text });
             jzAnimate(ctx, T2, { mi: 0, treat: false });
             ld2_matte(P, T2);
@@ -1497,9 +1510,11 @@ jzReg('layout', 'stencil', {
                 var bx = boxes[jzHash(s, k, 7) % boxes.length], dx = W / 2 + bx.lx + (jzR(s, k, 8) * 2 - 1) * bx.w * 0.3, top = H / 2 + bx.ly + bx.h * 0.35;
                 var t1 = 0.3 + k * 0.25 + (dir > 0 ? (dx - x0) / Math.max(1, x1 - x0) : (x1 - dx) / Math.max(1, x1 - x0)) * sw, Lmax = size * (0.25 + 0.3 * jzR(s, k, 9));
                 var DL = TH + 'var DLn=' + jzN(Lmax) + '*oc((time-' + jzN(t1) + ')/1.4);';
-                var gd = jzGrp(DR, 'drip ' + (k + 1)), gdb = ld2_sub(gd, 'bead'), gdr = ld2_sub(gd, 'run');
+                // bead, then run: each sub-group is finished before the next is added (AE invalidates older sibling refs)
+                var gd = jzGrp(DR, 'drip ' + (k + 1)), gdb = ld2_sub(gd, 'bead');
                 jzAddEllipse(gdb, w0 * 1.2, w0 * 1.2); jzAddFill(gdb, col);
                 ld2_gX(gdb, 'ADBE Vector Position', DL + '[0,DLn]');
+                var gdr = ld2_sub(gd, 'run');
                 jzAddPath(gdr, [[-w0 / 2, 0], [w0 / 2, 0], [w0 * 0.35, 100], [-w0 * 0.35, 100]], true); jzAddFill(gdr, col);
                 ld2_gX(gdr, 'ADBE Vector Scale', DL + '[100,DLn]');
                 jzGX(gd).property('ADBE Vector Position').setValue([dx, top]);

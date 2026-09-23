@@ -54,6 +54,10 @@ function db2_H(ctx, st) {
 function db2_op(ctx, L, st, ex, pre) { jzSetExpr(jzXf(L, 'ADBE Opacity'), db2_H(ctx, st) + (pre || '') + 'value*V*K' + (ex ? '*(' + ex + ')' : '')); }
 function db2_lx(ctx, L, mn, st, ex) { jzSetExpr(jzXf(L, mn), db2_H(ctx, st) + ex); }
 function db2_sub(g, name) { var s = jzVecs(g).addProperty('ADBE Vector Group'); if (name) s.name = name; return s; }
+// AE rule: adding / removing / moving a property invalidates the script's references to its siblings (and below) ->
+// re-fetch named items after adding the next sibling: db2_kid = inside a group's contents, db2_top = a layer's top-level group
+function db2_kid(g, name) { return jzVecs(g).property(name); }
+function db2_top(S, name) { return S.property('ADBE Root Vectors Group').property(name); }
 function db2_gx(ctx, g, mn, st, ex) { jzSetExpr(jzGX(g).property(mn), db2_H(ctx, st) + ex); }
 function db2_gop(ctx, g, st, ex, pre) { db2_gx(ctx, g, 'ADBE Vector Group Opacity', st, (pre || '') + 'value*(' + ex + ')'); }
 function db2_gpos(g, x, y) { var T = jzGX(g); T.property('ADBE Vector Anchor').setValue([x, y]); T.property('ADBE Vector Position').setValue([x, y]); }
@@ -62,11 +66,15 @@ function db2_st(g, col, w, op, cap, join) {
     try { if (cap) s.property('ADBE Vector Stroke Line Cap').setValue(cap); if (join) s.property('ADBE Vector Stroke Line Join').setValue(join); } catch (e) {}
     return s;
 }
+// (each dash property is added, then re-fetched by matchName: adding the next one invalidates the previous reference)
 function db2_dash(s, on, off) {
-    var D = s.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null, p3 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); p3 = D.addProperty('ADBE Vector Stroke Offset'); } catch (e) {}
-    try { if (p1) p1.setValue(on); if (p2) p2.setValue(off); } catch (e2) {}
-    if (!p3) { try { p3 = D.property('ADBE Vector Stroke Offset'); } catch (e3) { p3 = null; } }
+    var D = s.property('ADBE Vector Stroke Dashes'), p3 = null;
+    try { D.addProperty('ADBE Vector Stroke Dash 1'); } catch (e) {}
+    try { D.property('ADBE Vector Stroke Dash 1').setValue(on); } catch (e1) {}
+    try { D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e2) {}
+    try { D.property('ADBE Vector Stroke Gap 1').setValue(off); } catch (e3) {}
+    try { D.addProperty('ADBE Vector Stroke Offset'); } catch (e4) {}
+    try { p3 = D.property('ADBE Vector Stroke Offset'); } catch (e5) { p3 = null; }
     return p3;
 }
 // trim paths with expressions (end / start / offset), all in one header
@@ -247,11 +255,13 @@ db2_reg('vines', false, function (ctx, bb, d) {
         // growing tip (a bud riding the end of the stem)
         var tab = [], NS = 24;
         for (i = 0; i <= NS; i++) tab.push(db2_pt(db2_part(pts, 0, Math.max(0.0005, i / NS)).slice(-1)[0]));
-        var gT = db2_sub(gV, 'bud'), eT = jzAddEllipse(gT, 4.8 * u, 4.8 * u); jzAddFill(gT, ac);
+        var gT = db2_sub(gV, 'bud'), eT = jzAddEllipse(gT, 4.8 * u, 4.8 * u);
         jzSetExpr(eT.property('ADBE Vector Ellipse Position'), db2_H(ctx, ST) + E + 'var P=[' + tab.join(',') + '],k=e*' + NS + ',i=Math.min(' + (NS - 1) + ',Math.floor(k)),f=k-i;[P[i][0]+(P[i+1][0]-P[i][0])*f,P[i][1]+(P[i+1][1]-P[i][1])*f]');
+        jzAddFill(gT, ac);
         db2_gop(ctx, gT, ST, 'e<0.999?1:0', E);
         // curls and leaves sprout where the stem has passed
-        var gC = db2_sub(gV, 'curls'), gL = db2_sub(gV, 'leaves');
+        db2_sub(gV, 'curls');
+        var gL = db2_sub(gV, 'leaves'), gC = db2_kid(gV, 'curls');
         for (k = 1; k < 12; k++) {
             var f = k / 12 + db2_rs(seed, k, 1) * 0.02, p = db2_along(pts, f), side = k % 2 ? 1 : -1;
             var GR = E + 'var gw=ob(cl((e-' + jzN(f) + ')/0.12),1.8);';
@@ -520,9 +530,10 @@ db2_reg('bubbles', false, function (ctx, bb, d) {
         // body: rim, iridescent arc, highlight arc, glint
         var gb = db2_sub(g, 'body');
         db2_gop(ctx, gb, 0, '(tau<LF&&co(x,y,' + jzN(pad * 0.5) + '+R,1)>=1)?1:0', HD);
-        var g4 = db2_sub(gb, 'glint'), e4 = jzAddEllipse(g4, 3.2 * u, 3.2 * u); jzAddFill(g4, sc.fg, 90);
+        var g4 = db2_sub(gb, 'glint'), e4 = jzAddEllipse(g4, 3.2 * u, 3.2 * u);
         jzSetExpr(e4.property('ADBE Vector Ellipse Position'), db2_H(ctx, 0) + HD + '[-rx*0.36,-ry*0.44]');
         jzSetExpr(e4.property('ADBE Vector Ellipse Size'), db2_H(ctx, 0) + HD + 'var s=' + jzN(3.2 * u) + '*inf;[s,s]');
+        jzAddFill(g4, sc.fg, 90);
         var g3 = db2_sub(gb, 'highlight'), e3 = jzAddEllipse(g3, 10, 10);
         jzSetExpr(e3.property('ADBE Vector Ellipse Size'), db2_H(ctx, 0) + HD + '[1.6*rx,1.6*ry]');
         db2_trimV(g3, 0, 38 / 3.6, 292 + 90); db2_st(g3, sc.fg, 1.6 * u, 70, 2);
@@ -610,9 +621,11 @@ db2_reg('dandelion', false, function (ctx, bb, d) {
     }
     if (puff) {                     // the puffball the seeds come from
         var E = 'var e=oc(t/0.5);', gP = jzGrp(S, 'puffball');
-        var gc = db2_sub(gP, 'centre'), ec = jzAddEllipse(gc, 8 * u, 8 * u, px, py); jzAddFill(gc, sc.sub);
+        var gc = db2_sub(gP, 'centre'), ec = jzAddEllipse(gc, 8 * u, 8 * u, px, py);
         jzSetExpr(ec.property('ADBE Vector Ellipse Size'), db2_H(ctx, 0) + E + 'var s=' + jzN(8 * u) + '*e;[s,s]');
-        var gh = db2_sub(gP, 'head'), ght = db2_sub(gh, 'tips'), ghl = db2_sub(gh, 'lines');
+        jzAddFill(gc, sc.sub);
+        var gh = db2_sub(gP, 'head'); db2_sub(gh, 'tips');
+        var ghl = db2_sub(gh, 'lines'), ght = db2_kid(gh, 'tips');
         for (k = 0; k < 30; k++) {
             if (db2_r(d.seed, k, 44) < 0.25) continue;
             var a2 = k / 30 * Math.PI * 2, x1 = px + Math.cos(a2) * 30 * u, y1 = py + Math.sin(a2) * 30 * u;
@@ -719,7 +732,9 @@ db2_reg('zigzagRibbon', false, function (ctx, bb, d) {
     var seg = 7, Z = rh * 0.22, wv = rh * 0.3, vx = nx * 0.35, vy = 1, vl = Math.sqrt(vx * vx + vy * vy), VX = vx / vl * wv, VY = vy / vl * wv;
     function C(k) { var s = L * k / seg, z = k % 2 ? Z : -Z; return [ox + dx * s + nx * z, oy + dy * s + ny * z]; }
     var c1 = db2_acc(sc), a2 = db2_acc2(sc), c2 = jzContrast(a2, sc.bg) > 1.6 && a2 !== c1 ? a2 : jzMixHex(c1, sc.bg, 0.4);
-    var S = jzShapeLayer(ctx, 'zigzag ribbon', 0, 0), gE = jzGrp(S, 'fold edges'), gF = jzGrp(S, 'front folds'), gB = jzGrp(S, 'back folds');
+    var S = jzShapeLayer(ctx, 'zigzag ribbon', 0, 0);
+    jzGrp(S, 'fold edges'); jzGrp(S, 'front folds'); jzGrp(S, 'back folds');
+    var gE = db2_top(S, 'fold edges'), gF = db2_top(S, 'front folds'), gB = db2_top(S, 'back folds');
     for (k = 0; k < seg; k++) {
         var p0 = C(k), p1 = C(k + 1), F = 'var f=cl(oc(t/0.6)*' + seg + '-' + k + ');';
         var gq = db2_sub(k % 2 ? gB : gF, 'fold ' + (k + 1));
@@ -752,19 +767,20 @@ db2_reg('polkaPatch', false, function (ctx, bb, d) {
         if (round) { var fx = (x - sp.x - w / 2) / (w / 2), fy = (y - sp.y - h / 2) / (h / 2); if (fx * fx + fy * fy > 1.05) continue; }
         var dd = (dir > 0 ? i : cols - i) + j, hot = (i + j) % 3 === 0, key = dd + (hot ? 'h' : '');
         if (!groups[key]) {
-            var g = jzGrp(S, 'diagonal ' + dd + (hot ? ' hot' : ''));
-            groups[key] = { g: g, dd: dd, hot: hot, list: [] };
+            var gn = 'diagonal ' + dd + (hot ? ' hot' : '');
+            jzGrp(S, gn);
+            groups[key] = { name: gn, dd: dd, hot: hot, list: [] };
         }
         groups[key].list.push([x, y]);
     }
     for (var kk in groups) {
         if (!groups.hasOwnProperty(kk)) continue;
-        var G = groups[kk], WV = 'var q=ob(cl((t-' + jzN(G.dd * 0.03) + ')/0.3),2),wv=0.5+0.5*Math.sin(t*3.2-' + jzN(G.dd * 0.7) + '),r=' + jzN(s * 0.84) + '*(0.35+0.65*wv)*q;';
+        var G = groups[kk], gG = db2_top(S, G.name), WV = 'var q=ob(cl((t-' + jzN(G.dd * 0.03) + ')/0.3),2),wv=0.5+0.5*Math.sin(t*3.2-' + jzN(G.dd * 0.7) + '),r=' + jzN(s * 0.84) + '*(0.35+0.65*wv)*q;';
         for (i = 0; i < G.list.length; i++) {
-            var el = jzAddEllipse(G.g, s * 0.84, s * 0.84, G.list[i][0], G.list[i][1]);
+            var el = jzAddEllipse(gG, s * 0.84, s * 0.84, G.list[i][0], G.list[i][1]);
             jzSetExpr(el.property('ADBE Vector Ellipse Size'), db2_H(ctx, ST) + WV + '[r,r]');
         }
-        var fl = jzAddFill(G.g, cMain, 90);
+        var fl = jzAddFill(gG, cMain, 90);
         if (G.hot) {
             jzSetExpr(fl.property('ADBE Vector Fill Color'), db2_H(ctx, ST) + WV + 'wv>0.93?' + db2_cx(cHot) + ':' + db2_cx(cMain));
             jzSetExpr(fl.property('ADBE Vector Fill Opacity'), db2_H(ctx, ST) + WV + 'wv>0.93?100:90');
@@ -789,8 +805,8 @@ db2_reg('stripeCircle', false, function (ctx, bb, d) {
     var n = Math.ceil(R / sp2) + 1;
     jzAddPath(gl, [[0, -R * 1.2], [0, R * 1.2]], false);
     db2_rep(gm, 2 * n + 1, sp2, 0, 0, -n);
-    db2_st(gS, ac, 3.2 * u);
     if (half) db2_gx(ctx, gm, 'ADBE Vector Position', ST, '[(t*' + jzN(14 * u) + ')%' + jzN(sp2) + ',0]');
+    db2_st(gS, ac, 3.2 * u);
     db2_gx(ctx, gS, 'ADBE Vector Rotation', ST, '45' + (half ? '' : '+t*' + jzN(18 * (d.right ? 1 : -1))));
     var sh = new Shape(), kk = 0.5523 * R;
     if (half) { sh.vertices = [[R, 0], [0, R], [-R, 0]]; sh.inTangents = [[0, 0], [kk, 0], [0, kk]]; sh.outTangents = [[0, kk], [-kk, 0], [0, 0]]; sh.closed = true; }
@@ -884,9 +900,10 @@ db2_reg('halfCircles', false, function (ctx, bb, d) {
         var yb2 = sp.y + bh0;
         g = jzGrp(S, 'baseline'); jzAddPath(g, [[sp.cx - R * 1.1, yb2], [sp.cx + R * 1.1, yb2]], false);
         db2_st(g, sc.fg, Math.max(1, u), 70); db2_gop(ctx, g, ST, 'oe(t/0.4)');
-        g = jzGrp(S, 'core'); var gcc = db2_sub(g, 'disc'); jzAddPath(gcc, db2_arc(0, 0, R * 0.28, 180, 360, 20), true); jzAddFill(g, ac);
-        jzGX(g).property('ADBE Vector Position').setValue([sp.cx, yb2]);
+        g = jzGrp(S, 'core'); var gcc = db2_sub(g, 'disc'); jzAddPath(gcc, db2_arc(0, 0, R * 0.28, 180, 360, 20), true);
         db2_gx(ctx, gcc, 'ADBE Vector Scale', ST, 'var q=100*' + grow(0) + ';[q,q]');
+        jzAddFill(g, ac);
+        jzGX(g).property('ADBE Vector Position').setValue([sp.cx, yb2]);
         for (k = 3; k >= 0; k--) {
             var rk = R * (1 - k * 0.18);
             g = jzGrp(S, 'arch ' + (k + 1)); jzAddEllipse(g, rk * 2, rk * 2, sp.cx, yb2);
@@ -1076,7 +1093,9 @@ db2_reg('windowChrome', false, function (ctx, bb, d) {
             db2_gx(ctx, gk, 'ADBE Vector Scale', ST, BE + '[100*be,100*be]');
         }
     } else {
-        var bx = lx(X1 - bar * 0.6), gw = [db2_sub(gb, 'close'), db2_sub(gb, 'maximise'), db2_sub(gb, 'minimise')];
+        var bx = lx(X1 - bar * 0.6);
+        db2_sub(gb, 'close'); db2_sub(gb, 'maximise'); db2_sub(gb, 'minimise');
+        var gw = [db2_kid(gb, 'close'), db2_kid(gb, 'maximise'), db2_kid(gb, 'minimise')];
         jzAddPath(gw[0], [[-br, -br], [br, br]], false); jzAddPath(gw[0], [[-br, br], [br, -br]], false);
         jzAddRect(gw[1], br * 2, br * 2); jzAddPath(gw[2], [[-br, 0], [br, 0]], false);
         var xs = [bx, bx - bar * 0.95, bx - bar * 1.9];
@@ -1259,8 +1278,9 @@ db2_reg('likeCounter', false, function (ctx, bb, d) {
     jzSetExpr(sr.property('ADBE Vector Stroke Width'), db2_H(ctx, ST) + LK + jzN(2 * u) + '*Math.max(0.001,1-liked)');
     db2_gop(ctx, gr, ST, '(liked>0&&liked<1)?1-liked:0', LK);
     var gh = jzGrp(S, 'heart'); jzAddPath(gh, db2_heart(hx, hy + S0 * 0.05, S0), true);
-    var sh = db2_st(gh, sc.fg, Math.max(1.4, 2 * u), 100, 1, 2), fh = jzAddFill(gh, ac);
+    var sh = db2_st(gh, sc.fg, Math.max(1.4, 2 * u), 100, 1, 2);
     jzSetExpr(sh.property('ADBE Vector Stroke Color'), db2_H(ctx, ST) + LK + 'liked>0?' + db2_cx(ac) + ':' + db2_cx(sc.fg));
+    var fh = jzAddFill(gh, ac);
     jzSetExpr(fh.property('ADBE Vector Fill Opacity'), db2_H(ctx, ST) + LK + 'liked>0?100:0');
     db2_gpos(gh, hx, hy + S0 * 0.05);
     db2_gx(ctx, gh, 'ADBE Vector Scale', ST, LK + 'var p=liked>0?1+0.35*Math.sin(Math.PI*cl(liked*1.4)):ob(cl(t/0.3),1.6);[100*p,100*p]');

@@ -288,18 +288,21 @@ xb2_reg('rocketOff', function (m) {
     for (i = 0; i < G.N; i++) {
         var g = G.g[i]; if (g.sp) continue;
         var E = H + xb2_at(m, i, G.N) + base;
-        var fg = jzGrp(S, 'flame ' + (i + 1)), gx = jzGX(fg);
+        // (group transforms are fetched after the group's contents are complete)
+        var fg = jzGrp(S, 'flame ' + (i + 1));
         var tail = xb2_sub(fg, 'trail');
         var s1 = xb2_sub(tail, 'glow'); jzAddRect(s1, sz * 0.2, T, 0, 0, T / 2); jzAddFill(s1, C.acc, 28);
         var s2 = xb2_sub(tail, 'core'); jzAddRect(s2, sz * 0.08, T * 0.75, 0, 0, T * 0.375); jzAddFill(s2, C.acc, 95);
         jzSetExpr(jzGX(tail).property('ADBE Vector Scale'), E + '[100,Math.min(Lf,' + jzN(T) + ')/' + jzN(T) + '*100]');
         var tip = xb2_sub(fg, 'tip'); jzAddPath(tip, [[-sz * 0.1, 0], [sz * 0.1, 0], [0, sz * 0.45]], true); jzAddFill(tip, C.acc);
+        var gx = jzGX(fg);
         gx.property('ADBE Vector Rotation').setValue(-F.deg);
         jzSetExpr(gx.property('ADBE Vector Position'), E + '[' + jzN(g.cx) + '+' + xb2_n(F.dn[0]) + '*(hz*st-Lf),' + jzN(g.cy) + '+' + xb2_n(F.dn[1]) + '*(hz*st-Lf)]');
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), E + 'q>=0.3&&q<1?(1-u*0.8)*100:0');
-        var sm = jzGrp(S, 'smoke ' + (i + 1)), sx = jzGX(sm), k;
+        var sm = jzGrp(S, 'smoke ' + (i + 1)), sx, k;
         for (k = 0; k < 3; k++) { var d = sz * 0.6 * (1 - Math.abs(k - 1) * 0.3); jzAddEllipse(sm, d, d, (k - 1) * sz * 0.35, -sz * 0.05); }
         jzAddFill(sm, C.sub, 35);
+        sx = jzGX(sm);
         sx.property('ADBE Vector Position').setValue([g.cx + F.dn[0] * g.h * 0.5, g.cy + F.dn[1] * g.h * 0.5]);
         sx.property('ADBE Vector Rotation').setValue(-F.deg);
         jzSetExpr(sx.property('ADBE Vector Scale'), E + 'var s=(0.08+0.22*u)/0.3*100;[s,s]');
@@ -347,9 +350,10 @@ xb2_reg('balloonOff', function (m) {
     for (i = 0; i < G.N; i++) {
         var g = G.g[i]; if (g.sp) continue;
         var E = H + xb2_dirs(F) + xb2_at(m, i, G.N) + base, hz = g.h * 0.5;
-        var sg = jzGrp(S, 'string ' + (i + 1)), gx = jzGX(sg);
+        var sg = jzGrp(S, 'string ' + (i + 1));
         jzAddPath(sg, [[0, hz], [sz * 0.05, hz + sz * 0.35], [-sz * 0.03, hz + sz * 0.65], [0, hz + sz * 0.95]], false);
         var st = jzAddStroke(sg, C.sub, lw); try { st.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e0) {}
+        var gx = jzGX(sg);             // (fetched after the group's contents are complete)
         jzSetExpr(gx.property('ADBE Vector Position'), E + '[' + jzN(g.cx) + '+RT0*sw-DN0*Lf,' + jzN(g.cy) + '+RT1*sw-DN1*Lf]');
         jzSetExpr(gx.property('ADBE Vector Rotation'), E + 'rr');
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), E + 'on?85*Math.min(1,q*8):0');
@@ -427,17 +431,23 @@ xb2_reg('glassBreak', function (m) {
     m.parts.op.push(VE + 'f*=v>0?0:1;');
     // the cracks run out from the impact point (background colour), then fade while the shards drop
     var S = xb2_shape(m, 'JZ Out Cracks', first || null), lw = Math.max(1.5 * m.u, sz * 0.032);
-    var sp = jzGrp(S, 'spokes'), rg = jzGrp(S, 'ring'), fl = jzGrp(S, 'impact');
-    for (k = 0; k < K; k++) { jzAddPath(sp, [[ix, iy], B[k]], false); jzAddPath(rg, [R[k], R[(k + 1) % K]], false); }
+    // (spokes, ring, impact — in this stacking order — each finished before the next group is added: adding a group
+    //  invalidates references to its siblings)
+    var sp = jzGrp(S, 'spokes');
+    for (k = 0; k < K; k++) jzAddPath(sp, [[ix, iy], B[k]], false);
     jzAddTrimPaths(sp, H + VE + 'cr*100');
-    jzAddTrimPaths(rg, H + VE + 'cl((cr-0.5)*2)*100');
-    var s1 = jzAddStroke(sp, C.bg, lw), s2 = jzAddStroke(rg, C.bg, lw * 0.8);
+    var s1 = jzAddStroke(sp, C.bg, lw);
     jzSetExpr(s1.property('ADBE Vector Stroke Width'), H + VE + jzN(lw) + '*(v>0?Math.max(0,1-v*4):1)');
-    jzSetExpr(s2.property('ADBE Vector Stroke Width'), H + VE + jzN(lw * 0.8) + '*(v>0?Math.max(0,1-v*4):1)');
     jzSetExpr(jzGX(sp).property('ADBE Vector Group Opacity'), H + VE + 'q>0&&v<0.25?100:0');
+    var rg = jzGrp(S, 'ring');
+    for (k = 0; k < K; k++) jzAddPath(rg, [R[k], R[(k + 1) % K]], false);
+    jzAddTrimPaths(rg, H + VE + 'cl((cr-0.5)*2)*100');
+    var s2 = jzAddStroke(rg, C.bg, lw * 0.8);
+    jzSetExpr(s2.property('ADBE Vector Stroke Width'), H + VE + jzN(lw * 0.8) + '*(v>0?Math.max(0,1-v*4):1)');
     jzSetExpr(jzGX(rg).property('ADBE Vector Group Opacity'), H + VE + 'cr>0.5&&v<0.25?100:0');
-    var fe = jzAddEllipse(fl, 10, 10, ix, iy); jzAddFill(fl, C.acc);
+    var fl = jzGrp(S, 'impact'), fe = jzAddEllipse(fl, 10, 10, ix, iy);
     jzSetExpr(fe.property('ADBE Vector Ellipse Size'), H + VE + 'var d=SZ*(0.06+0.2*cr)*2;[d,d]');
+    jzAddFill(fl, C.acc);
     jzSetExpr(jzGX(fl).property('ADBE Vector Group Opacity'), H + VE + 'q>0&&v<=0?50*(1-cr):0');
 });
 
@@ -490,9 +500,9 @@ xb2_reg('clapShut', function (m) {
         m.parts.op.push(E + 'f*=e>=0.999?0:1;');
         if (Math.round(m.o.mi || 0) !== 0 || xb2_crowded(m)) return;
         var S1 = xb2_shape(m, 'JZ Out Clap Flash'), g1 = jzGrp(S1, 'flash'), rc = jzAddRect(g1, 10, 10, 0);
-        jzGX(g1).property('ADBE Vector Position').setValue(cc); jzGX(g1).property('ADBE Vector Rotation').setValue(-F.deg);
-        jzAddFill(g1, C.acc);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), H + E + '[' + jzN(sz * 0.12) + '*(1-hit),' + jzN(m.H * 0.3 * F.k) + '*(1+0.6*oc(hit))]');
+        jzGX(g1).property('ADBE Vector Position').setValue(cc); jzGX(g1).property('ADBE Vector Rotation').setValue(-F.deg);
+        jzAddFill(g1, C.acc);          // (after the rect is configured: adding the fill invalidates the rect reference)
         jzSetExpr(jzGX(g1).property('ADBE Vector Group Opacity'), H + E + 'hit>0&&hit<1?(1-hit)*100:0');
         return;
     }
@@ -509,19 +519,20 @@ xb2_reg('clapShut', function (m) {
     if (!xb2_main(m, G)) return;
     // seam line, then the impact flash + sparks
     var S = xb2_shape(m, 'JZ Out Clap Flash'), lw = Math.max(1.5 * m.u, sz * 0.025), sx = vert ? mc : seam, sy = vert ? seam : mc;
+    // (rects are configured before their fills are added: adding a fill invalidates the rect reference)
     var fg = jzGrp(S, 'seam'), fr = jzAddRect(fg, 10, 10, 0, sx, sy);
-    jzAddFill(fg, C.acc);
     var SE = H + E + 'var sa=sm(0,0.15,PO)*(1-sm(0.6,0.7,PO)),ln=hit>0?' + jzN(sz * 0.14) + '*(1-oc(hit)):' + jzN(lw) + ',ex=hit>0?' + jzN(cross) + '*(1+0.7*oc(hit)):' + jzN(cross * 1.1) + '*oc(sm(0,0.15,PO));';
     jzSetExpr(fr.property('ADBE Vector Rect Size'), SE + (vert ? '[ex,ln]' : '[ln,ex]'));
+    jzAddFill(fg, C.acc);
     jzSetExpr(jzGX(fg).property('ADBE Vector Group Opacity'), SE + 'PO<=0||hit>=1?0:(hit>0?(1-hit):sa)*100');
     for (k = 0; k < 4; k++) {
         var kg = jzGrp(S, 'spark ' + (k + 1)), kr = jzAddRect(kg, 10, Math.max(1 * m.u, sz * 0.03), 0);
-        jzAddFill(kg, C.acc);
-        jzGX(kg).property('ADBE Vector Position').setValue([sx, sy]);
-        jzGX(kg).property('ADBE Vector Rotation').setValue(((k + 0.5) / 4 * Math.PI * 2 + 0.3) * 180 / Math.PI);
         var KE = H + E + 'var r0=SZ*(0.2+0.6*hit),r1=r0+SZ*0.25*(1-hit);';
         jzSetExpr(kr.property('ADBE Vector Rect Size'), KE + '[Math.max(0.1,r1-r0),' + jzN(Math.max(1 * m.u, sz * 0.03)) + ']');
         jzSetExpr(kr.property('ADBE Vector Rect Position'), KE + '[(r0+r1)/2,0]');
+        jzAddFill(kg, C.acc);
+        jzGX(kg).property('ADBE Vector Position').setValue([sx, sy]);
+        jzGX(kg).property('ADBE Vector Rotation').setValue(((k + 0.5) / 4 * Math.PI * 2 + 0.3) * 180 / Math.PI);
         jzSetExpr(jzGX(kg).property('ADBE Vector Group Opacity'), H + E + 'hit>0&&hit<1?(1-hit)*100:0');
     }
 });
@@ -682,9 +693,9 @@ xb2_reg('rollUpOut', function (m) {
     var LE = H + RE + 'var lf=ic(cl((PO-0.8)/0.18)),e0=' + jzN(c0x - sz * 0.06) + '+' + xb2_n(cm - c0x + sz * 0.06) + '*lf,e1=' + jzN(c1x + sz * 0.06) + '+' + xb2_n(cm - c1x - sz * 0.06) + '*lf,x0=Xr-rr*(1-lf),w=2*rr*(1-lf);';
     for (b = 0; b < 3; b++) {
         var bg = jzGrp(S, 'roll ' + (b + 1)), rc = jzAddRect(bg, 10, 10, 0), s0 = band[b][0], s1 = band[b][1];
-        jzAddFill(bg, band[b][2]);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), LE + 'var aw=Math.max(0,' + jzN(s1 - s0) + '*w),cw=Math.max(0,e1-e0);' + (vert ? '[cw,aw]' : '[aw,cw]'));
         jzSetExpr(rc.property('ADBE Vector Rect Position'), LE + 'var ap=x0+' + jzN((s0 + s1) / 2) + '*w,cp=(e0+e1)/2;' + (vert ? '[cp,ap]' : '[ap,cp]'));
+        jzAddFill(bg, band[b][2]);     // (after the rect is configured: adding the fill invalidates the rect reference)
     }
     jzSetExpr(jzXf(S, 'ADBE Opacity'), H + 'PO>0&&PO<0.998?(1-sm(0.82,0.98,PO))*100:0');
 });
@@ -827,9 +838,10 @@ xb2_reg('shockOut', function (m) {
     if (!xb2_main(m, single ? null : G) || (single && Math.round(m.o.mi || 0) !== 0)) return;
     var S = xb2_shape(m, 'JZ Out Shock Ring'), RG = H + RE + 'var fa=1-sm(0.3,1,PO);', ring = [[1, 0.09, 1.5, 100], [0.82, 0.025, 1, 60]], k;
     for (k = 0; k < 2; k++) {
-        var gg = jzGrp(S, 'ring ' + (k + 1)), el = jzAddEllipse(gg, 10, 10, cx, cy), st = jzAddStroke(gg, C.acc, 2, ring[k][3]);
+        var gg = jzGrp(S, 'ring ' + (k + 1)), el = jzAddEllipse(gg, 10, 10, cx, cy);
         jzSetExpr(el.property('ADBE Vector Ellipse Size'), RG + 'var d=Math.max(0.1,rg*' + jzN(ring[k][0] * 2) + ');[d,d]');
-        jzSetExpr(st.property('ADBE Vector Stroke Width'), RG + 'Math.max(' + jzN(ring[k][2] * m.u) + ',SZ*' + jzN(ring[k][1]) + '*fa)');
+        var st = jzAddStroke(gg, C.acc, 2, ring[k][3]);     // (after the ellipse is configured: adding invalidates its reference)
+        jzSetExpr(st.property('ADBE Vector Stroke Width'),RG + 'Math.max(' + jzN(ring[k][2] * m.u) + ',SZ*' + jzN(ring[k][1]) + '*fa)');
         jzSetExpr(jzGX(gg).property('ADBE Vector Group Opacity'), RG + 'PO>0&&rg>0.5?fa*100:0');
     }
 });
@@ -871,17 +883,19 @@ xb2_reg('floodOut', function (m) {
     var S = xb2_shape(m, 'JZ Out Flood Line'), LE = H + E + 'var fa=PO>0?1-sm(0.82,0.98,PO):0;', x0 = u0 - cu - sz * 0.2, x1 = u1 - cu + sz * 0.2;
     var wg = jzGrp(S, 'water');
     jzGX(wg).property('ADBE Vector Position').setValue([cx, cy]); jzGX(wg).property('ADBE Vector Rotation').setValue(-F.deg);
-    var cg = xb2_sub(wg, 'core'), gg = xb2_sub(wg, 'glow');
+    // (each sub-group / item is finished before the next sibling is added: adding one invalidates references to the others)
+    var cg = xb2_sub(wg, 'core');
     jzAddPath(cg, [[x0, 0], [x1, 0]], false); jzAddStroke(cg, C.acc, Math.max(1.5 * m.u, U * 0.028));
-    jzAddPath(gg, [[x0, 0], [x1, 0]], false); jzAddStroke(gg, C.acc, Math.max(4 * m.u, U * 0.1), 15);
     jzSetExpr(jzGX(cg).property('ADBE Vector Position'), LE + '[0,V-' + xb2_n(cv) + ']');
+    var gg = xb2_sub(wg, 'glow');
+    jzAddPath(gg, [[x0, 0], [x1, 0]], false); jzAddStroke(gg, C.acc, Math.max(4 * m.u, U * 0.1), 15);
     jzSetExpr(jzGX(gg).property('ADBE Vector Position'), LE + '[0,V-' + xb2_n(cv) + ']');
     for (j = 0; j < 7; j++) {
         var bgp = xb2_sub(wg, 'bubble ' + (j + 1)), bx = x0 + (x1 - x0) * xb2_r(seed, j, 291), rb = xb2_r(seed, j, 292);
         var BE = LE + 'var ph=(PO*2.2+' + jzN(rb) + ')%1,by=V+' + jzN(A) + '+(1-ph)*SZ*0.9;';
         var be = jzAddEllipse(bgp, 10, 10);
-        jzAddStroke(bgp, C.acc, Math.max(1 * m.u, sz * 0.01));
         jzSetExpr(be.property('ADBE Vector Ellipse Size'), BE + 'var d=2*Math.max(1,SZ*0.03*(0.5+ph));[d,d]');
+        jzAddStroke(bgp, C.acc, Math.max(1 * m.u, sz * 0.01));
         jzSetExpr(jzGX(bgp).property('ADBE Vector Position'), BE + '[' + jzN(bx) + '+Math.sin(ph*9+' + j + ')*SZ*0.03,by-' + xb2_n(cv) + ']');
         jzSetExpr(jzGX(bgp).property('ADBE Vector Group Opacity'), BE + 'by>' + jzN(v1 + sz * 0.3) + '?0:70*fa*(1-ph*0.5)');
     }
@@ -987,10 +1001,11 @@ xb2_reg('candleOut', function (m) {
         var g = G.g[i]; if (g.sp) continue;
         var pts = [], k;
         for (k = 0; k <= 9; k++) { var f = k / 9, hgt = sz * 1.55 * f, w = Math.sin(f * 5 + 7 + i) * sz * 0.09 * f + dir * sz * 0.4 * f; pts.push([w, -hgt]); }
-        var sg = jzGrp(S, 'smoke ' + (i + 1)), gx = jzGX(sg), E = H + xb2_at(m, i, G.N) + UE + 'var ag=(u-0.36)/0.64;';
+        var sg = jzGrp(S, 'smoke ' + (i + 1)), E = H + xb2_at(m, i, G.N) + UE + 'var ag=(u-0.36)/0.64;';
         jzAddPath(sg, pts, false);
         jzAddTrimPaths(sg, E + 'cl((0.25+1.3*ag)/1.55)*100', null);
         var st = jzAddStroke(sg, C.sub, lw); try { st.property('ADBE Vector Stroke Line Cap').setValue(2); st.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e0) {}
+        var gx = jzGX(sg);             // (fetched after the group's contents are complete)
         gx.property('ADBE Vector Position').setValue([g.cx - F.dn[0] * g.h * 0.4, g.cy - F.dn[1] * g.h * 0.4]);
         gx.property('ADBE Vector Rotation').setValue(-F.deg);
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), E + 'u>=0.36&&u<1?90*(1-ag):0');

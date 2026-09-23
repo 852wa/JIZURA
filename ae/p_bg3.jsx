@@ -225,7 +225,9 @@ jzReg('bg', 'skyline', {
         var LY = [[0.6, 0.12, 0.34, 0.012], [1.1, 0.06, 0.2, 0.03]], cw = U * 0.022, ch = U * 0.03;
         for (l = 0; l < 2; l++) {
             var km = LY[l][0], h0 = LY[l][1], h1 = LY[l][2], sp = U * LY[l][3] * dir, O0 = T0 * sp, oMin = Math.min(T0 * sp, T1 * sp), oMax = Math.max(T0 * sp, T1 * sp);
-            var S = jzShapeLayer(b, 'bg skyline ' + (l ? 'front' : 'back'), 0, 0), gC = jzGrp(S, 'city'), gw = bg3_sub(gC, 'windows'), gb = bg3_sub(gC, 'buildings');
+            // rects are collected first ([w, h, x, y]), then each sub-group is built in one go (adding a sibling group in AE
+            // invalidates the script's references to the other one)
+            var S = jzShapeLayer(b, 'bg skyline ' + (l ? 'front' : 'back'), 0, 0), RB = [], RW = [], z;
             var x = 0, bi = 0;
             while (x < Lp && bi < 80) {
                 var w = U * bg3_rr(0.05, 0.12, sd, l, bi, 1), gapW = U * bg3_rr(0, 0.012, sd, l, bi, 2);
@@ -235,19 +237,23 @@ jzReg('bg', 'skyline', {
                     // screen x of this copy = x + kk*Lp - t*sp; skip copies that never reach the frame during the cut
                     if (x + kk * Lp - oMax > W || x + kk * Lp - oMin + w < 0) continue;
                     var X0 = x + kk * Lp - O0, top = H - h;
-                    jzAddRect(gb, w, h + 2 * px, 0, X0 + w / 2, top + h / 2 + px);
-                    if (tier) jzAddRect(gb, w * 0.6, h * 0.12 + px, 0, X0 + w * 0.5, top - h * 0.06 + px / 2);
-                    if (ant) { var aw = Math.max(1.5 * px, U * 0.002); jzAddRect(gb, aw, h * 0.2, 0, X0 + w * 0.5 - px + aw / 2, top - h * (tier ? 0.32 : 0.2) + h * 0.1); }
+                    RB.push([w, h + 2 * px, X0 + w / 2, top + h / 2 + px]);
+                    if (tier) RB.push([w * 0.6, h * 0.12 + px, X0 + w * 0.5, top - h * 0.06 + px / 2]);
+                    if (ant) { var aw = Math.max(1.5 * px, U * 0.002); RB.push([aw, h * 0.2, X0 + w * 0.5 - px + aw / 2, top - h * (tier ? 0.32 : 0.2) + h * 0.1]); }
                     var nx = Math.floor((w - cw * 0.4) / cw), ny = Math.floor((h - ch) / ch), wx, wy;
                     for (wy = 0; wy < ny && wy < 30; wy++) for (wx = 0; wx < nx; wx++) {
                         var ph = Math.floor(Tm * 0.25 + bg3_r(sd, l, bi, wx, wy) * 7);
                         if (bg3_r(sd + ph, l * 97 + bi, wx, wy) > (P.win || 0.28)) continue;
-                        jzAddRect(gw, cw * 0.4, ch * 0.45, 0, X0 + (w - nx * cw) / 2 + wx * cw + cw * 0.5, top + ch * 0.7 + wy * ch + ch * 0.225);
+                        RW.push([cw * 0.4, ch * 0.45, X0 + (w - nx * cw) / 2 + wx * cw + cw * 0.5, top + ch * 0.7 + wy * ch + ch * 0.225]);
                     }
                 }
                 x += w + gapW; bi++;
             }
+            var gC = jzGrp(S, 'city'), gw = bg3_sub(gC, 'windows');       // windows first = drawn over the buildings
+            for (z = 0; z < RW.length; z++) jzAddRect(gw, RW[z][0], RW[z][1], 0, RW[z][2], RW[z][3]);
             jzAddFill(gw, winLit, l ? 80 : 50);
+            var gb = bg3_sub(gC, 'buildings');
+            for (z = 0; z < RB.length; z++) jzAddRect(gb, RB[z][0], RB[z][1], 0, RB[z][2], RB[z][3]);
             jzAddFill(gb, jzLayC(sc, k * km));
             jzSetExpr(jzGX(gC).property('ADBE Vector Position'), hd + '[' + jzN(O0) + '-T*' + jzN(sp) + ',0]');
             jzSetExpr(jzXf(S, 'ADBE Position'), hd + '[0,(1-e)*' + jzN(H * 0.25) + ']');
@@ -288,10 +294,12 @@ jzReg('bg', 'sunsetSun', {
             var q = j / 18, hh = Math.max(1.2 * px, U * 0.0035 * (1 + j * 0.1));
             var wx = hd + 'var wv=' + jzN(R * (1.25 - q * 0.6)) + '*(0.55+0.45*n1(T*1.3+' + jzN(j * 1.9) + ',' + s9 + ')),xo=' + jzN(R * 0.18) + '*n1(T*0.9+' + jzN(j * 2.7) + ',' + (s9 + 3) +
                 '),sp=0.2+0.15*n1(T*1.7+' + jzN(j * 3.3) + ',' + (s9 + 9) + '),lw=Math.max(0,wv*(1-sp));';
-            var g = jzGrp(WT, 'glint ' + (j + 1)), r1 = jzAddRect(g, 10, hh), r2 = jzAddRect(g, 10, hh);
+            // each rect is fully set up before the next item is added to the group (earlier references become invalid in AE)
+            var g = jzGrp(WT, 'glint ' + (j + 1)), r1 = jzAddRect(g, 10, hh);
             jzSetExpr(r1.property('ADBE Vector Rect Size'), wx + '[lw,' + jzN(hh) + ']');
-            jzSetExpr(r2.property('ADBE Vector Rect Size'), wx + '[lw,' + jzN(hh) + ']');
             jzSetExpr(r1.property('ADBE Vector Rect Position'), wx + '[xo-wv+lw/2,' + jzN(y + hh / 2) + ']');
+            var r2 = jzAddRect(g, 10, hh);
+            jzSetExpr(r2.property('ADBE Vector Rect Size'), wx + '[lw,' + jzN(hh) + ']');
             jzSetExpr(r2.property('ADBE Vector Rect Position'), wx + '[xo+wv*sp+lw/2,' + jzN(y + hh / 2) + ']');
             jzAddFill(g, sunC);
             jzSetExpr(jzGX(g).property('ADBE Vector Group Opacity'), hd + '100*e*' + jzN(0.75 * (1 - q)) + '*(0.6+0.4*n1(T*2+' + j + ',' + (s9 + 5) + '))');
@@ -341,18 +349,20 @@ jzReg('bg', 'rainWindow', {
         var W = b.W, H = b.H, sc = b.sc, sd = P.seed || 1, U = jzU(b), px = bg3_px(b), k = P.k || 0.15, dk = bg3_dark(sc), s9 = sd % 9973, i, gI;
         var n = Math.round((P.n || 70) * bg3_area(b)), tn = Math.tan((P.ang || 8) * Math.PI / 180), span = W + H * Math.abs(tn);
         var hd = bg3_hd(b) + 'var e=oc(BT/0.6);';
-        var NG = 10, Lm = H * 0.09, Pg = H + Lm, S = jzShapeLayer(b, 'bg rainWindow rain', 0, 0), grs = [];
-        for (gI = 0; gI < NG; gI++) grs.push(jzGrp(S, 'rain ' + (gI + 1)));
+        // streaks are sorted into their speed class first, then each group is built completely before the next one is added
+        var NG = 10, Lm = H * 0.09, Pg = H + Lm, S = jzShapeLayer(b, 'bg rainWindow rain', 0, 0), segs = [], z;
+        for (gI = 0; gI < NG; gI++) segs.push([]);
         for (i = 0; i < n; i++) {
             var gi = Math.min(NG - 1, Math.floor(bg3_r(sd, i, 1) * NG)), L = H * bg3_rr(0.03, 0.09, sd, i, 2);
             var y = bg3_r(sd, i, 4) * Pg - Lm, x = bg3_r(sd, i, 3) * span - (tn > 0 ? H * tn : 0) + y * tn;
-            jzAddPath(grs[gi], [[x, y], [x + L * tn, y + L]], false);
+            segs[gi].push([[x, y], [x + L * tn, y + L]]);
         }
         for (gI = 0; gI < NG; gI++) {
-            var vg = H * (1.3 + 0.8 * (gI + 0.5) / NG);
-            bg3_roundJoin(jzAddStroke(grs[gI], jzLayC(sc, k), Math.max(px, U * 0.0016)));
-            bg3_rep(grs[gI], 2, Pg * tn, Pg, -1);
-            jzSetExpr(jzGX(grs[gI]).property('ADBE Vector Position'), hd + 'var d=wr(T*' + jzN(vg) + '+' + jzN(bg3_r(sd, gI, 9) * Pg) + ',' + jzN(Pg) + ');[d*' + jzN(tn) + ',d]');
+            var vg = H * (1.3 + 0.8 * (gI + 0.5) / NG), gR = jzGrp(S, 'rain ' + (gI + 1));
+            for (z = 0; z < segs[gI].length; z++) jzAddPath(gR, segs[gI][z], false);
+            bg3_roundJoin(jzAddStroke(gR, jzLayC(sc, k), Math.max(px, U * 0.0016)));
+            bg3_rep(gR, 2, Pg * tn, Pg, -1);
+            jzSetExpr(jzGX(gR).property('ADBE Vector Position'), hd + 'var d=wr(T*' + jzN(vg) + '+' + jzN(bg3_r(sd, gI, 9) * Pg) + ',' + jzN(Pg) + ');[d*' + jzN(tn) + ',d]');
         }
         jzSetExpr(jzXf(S, 'ADBE Opacity'), hd + '85*e');
         // mist rising from the bottom
@@ -367,16 +377,20 @@ jzReg('bg', 'rainWindow', {
                 'var x0=random(0.03,0.97)*' + jzN(W) + ',y0=random(0.04,0.7)*' + jzN(H) + ',r=' + jzN(r) + ',x=x0,y=y0,q=0,sl=u>=0.6,a=e*cl(u/0.08);' +
                 'if(!sl){r*=0.65+0.35*u/0.6;}else{q=(u-0.6)/0.4;y=y0+iq(q)*' + jzN(H * 1.15) + ';x=x0+' + jzN(U * 0.006) + '*Math.sin(q*18+' + i + ');}var L=Math.max(0,y-' + jzN(r * 0.8) + '-y0);';
             var g = jzGrp(D, 'drop ' + (i + 1));
-            var gh = bg3_sub(g, 'glint'), eh = jzAddEllipse(gh, 10, 10); jzAddFill(gh, hc);
+            // every shape is configured before its fill is added (AE invalidates earlier references in the same group)
+            var gh = bg3_sub(g, 'glint'), eh = jzAddEllipse(gh, 10, 10);
             jzSetExpr(eh.property('ADBE Vector Ellipse Size'), dh + '[r*0.56,r*0.56]');
             jzSetExpr(eh.property('ADBE Vector Ellipse Position'), dh + '[-r*0.3,-r*0.35]');
+            jzAddFill(gh, hc);
             jzSetExpr(jzGX(gh).property('ADBE Vector Group Opacity'), dh + '70*a');
-            var gb = bg3_sub(g, 'body'), eb = jzAddEllipse(gb, 10, 10); jzAddFill(gb, dc);
+            var gb = bg3_sub(g, 'body'), eb = jzAddEllipse(gb, 10, 10);
             jzSetExpr(eb.property('ADBE Vector Ellipse Size'), dh + '[r*1.8,r*2]');
+            jzAddFill(gb, dc);
             jzSetExpr(jzGX(gb).property('ADBE Vector Group Opacity'), dh + '90*a');
-            var gt = bg3_sub(g, 'trail'), rt = jzAddRect(gt, 10, 10, r * 0.22); jzAddFill(gt, dc);
+            var gt = bg3_sub(g, 'trail'), rt = jzAddRect(gt, 10, 10, r * 0.22);
             jzSetExpr(rt.property('ADBE Vector Rect Size'), dh + '[' + jzN(r * 0.45) + ',L]');
             jzSetExpr(rt.property('ADBE Vector Rect Position'), dh + '[(x0-x)/2,-' + jzN(r * 0.8) + '-L/2]');
+            jzAddFill(gt, dc);
             jzSetExpr(jzGX(gt).property('ADBE Vector Group Opacity'), dh + 'sl?55*e*(1-q*0.5):0');
             jzSetExpr(jzGX(g).property('ADBE Vector Position'), dh + '[x,y]');
         }
@@ -423,14 +437,17 @@ jzReg('bg', 'fireworks', {
             var hd = slot(j), gs = jzGrp(S, 'shell ' + (j + 1)), gB = bg3_sub(gs, 'burst');
             for (q = 0; q < 2; q++) {
                 var f = q ? 0.55 * 0.925 : 0.925, gr = bg3_sub(gB, q ? 'inner ring' : 'outer ring');
-                var ghd = bg3_sub(gr, 'head'), rh = jzAddRect(ghd, hr * 2, hr * 2), fh = jzAddFill(ghd, '#FFFFFF');
+                // each item is configured before the next one is added to its group (AE invalidates the earlier references)
+                var ghd = bg3_sub(gr, 'head'), rh = jzAddRect(ghd, hr * 2, hr * 2);
                 jzSetExpr(rh.property('ADBE Vector Rect Position'), hd + '[dd(aa,V*' + jzN(f) + '),0]');
+                var fh = jzAddFill(ghd, '#FFFFFF');
                 jzSetExpr(fh.property('ADBE Vector Fill Color'), hd + 'HC[ci]');
                 jzSetExpr(jzGX(ghd).property('ADBE Vector Group Opacity'), hd + 'var st=Math.floor(T*12+1e-6);seedRandom(' + (s9 + 7) + '+b*31+st*' + (q + 3) + ',true);(a>0.9&&random()<0.35)?0:100');
-                var gk = bg3_sub(gr, 'streak'), rk = jzAddRect(gk, 10, lw), fk = jzAddFill(gk, '#FFFFFF');
+                var gk = bg3_sub(gr, 'streak'), rk = jzAddRect(gk, 10, lw);
                 var dx = 'var d1=dd(aa,V*' + jzN(f) + '),d0=dd(Math.max(0,a-0.16),V*' + jzN(f) + ');';
                 jzSetExpr(rk.property('ADBE Vector Rect Size'), hd + dx + '[Math.max(0,d1-d0),' + jzN(lw) + ']');
                 jzSetExpr(rk.property('ADBE Vector Rect Position'), hd + dx + '[(d0+d1)/2,0]');
+                var fk = jzAddFill(gk, '#FFFFFF');
                 jzSetExpr(fk.property('ADBE Vector Fill Color'), hd + 'C[ci]');
                 var rp = bg3_rep(gr, 30, 0, 0, 0);
                 jzSetExpr(rp.property('ADBE Vector Repeater Copies'), hd + 'n0');
@@ -440,15 +457,17 @@ jzReg('bg', 'fireworks', {
             jzSetExpr(jzGX(gB).property('ADBE Vector Position'), hd + '[ox,oy+' + jzN(U * 0.055) + '*aa*aa]');
             jzSetExpr(jzGX(gB).property('ADBE Vector Group Opacity'), hd + '(vis&&a>=0)?100*K*fd:0');
             // launch trail rising to the burst point
-            var gL = bg3_sub(gs, 'launch'), rl = jzAddRect(gL, lw, 10), fl = jzAddFill(gL, '#FFFFFF');
+            var gL = bg3_sub(gs, 'launch'), rl = jzAddRect(gL, lw, 10);
             var lx = 'var y=' + jzN(H * 1.02) + '+(oy-' + jzN(H * 1.02) + ')*oq(age/0.45),y2=' + jzN(H * 1.02) + '+(oy-' + jzN(H * 1.02) + ')*oq(Math.max(0,age-0.12)/0.45);';
             jzSetExpr(rl.property('ADBE Vector Rect Size'), hd + lx + '[' + jzN(lw) + ',Math.max(0,y2-y)]');
             jzSetExpr(rl.property('ADBE Vector Rect Position'), hd + lx + '[ox+Math.sin(age*30)*' + jzN(U * 0.001) + ',(y+y2)/2]');
+            var fl = jzAddFill(gL, '#FFFFFF');
             jzSetExpr(fl.property('ADBE Vector Fill Color'), hd + 'C[ci]');
             jzSetExpr(jzGX(gL).property('ADBE Vector Group Opacity'), hd + '(age>=0&&age<0.45)?60*K:0');
             // flash at the burst point
-            var gF = jzGrp(FL, 'flash ' + (j + 1)), ef = jzAddEllipse(gF, U * 0.13, U * 0.13), ff = jzAddFill(gF, '#FFFFFF');
+            var gF = jzGrp(FL, 'flash ' + (j + 1)), ef = jzAddEllipse(gF, U * 0.13, U * 0.13);
             jzSetExpr(ef.property('ADBE Vector Ellipse Position'), hd + '[ox,oy]');
+            var ff = jzAddFill(gF, '#FFFFFF');
             jzSetExpr(ff.property('ADBE Vector Fill Color'), hd + 'C[ci]');
             jzSetExpr(jzGX(gF).property('ADBE Vector Group Opacity'), hd + '(a>=0&&a<0.25)?60*K*(1-a/0.25):0');
         }
@@ -545,17 +564,20 @@ jzReg('bg', 'filmStrip', {
         if (P.scratch !== false) {        // scratches + dust re-drawn on a 12 fps clock
             var X = jzShapeLayer(b, 'bg filmStrip scratches', 0, 0), scol = dk ? jzLayC(sc, 0.35) : jzLayC(sc, 0.3);
             for (i = 0; i < 3; i++) {
-                var gs = jzGrp(X, 'scratch ' + (i + 1)), rs = jzAddRect(gs, 2, 2); jzAddFill(gs, scol);
+                // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
+                var gs = jzGrp(X, 'scratch ' + (i + 1)), rs = jzAddRect(gs, 2, 2);
                 var ex = hd + 'var st=Math.floor(T*12+1e-6);seedRandom(' + s9 + '+Math.floor(st/4)*37+' + i + ',true);var x=random()*' + jzN(L) + ';seedRandom(' + (s9 + 500) + '+st*37+' + i + ',true);' +
                     'var on=random()<=0.55;x+=random(-1,1)*' + jzN(U * 0.004) + ';var w=random(' + jzN(Math.max(px, U * 0.0008)) + ',' + jzN(Math.max(px, U * 0.002)) + '),al=random(0.1,0.22);';
                 jzSetExpr(rs.property('ADBE Vector Rect Size'), ex + xs('w', jzN(M + 4 * px)));
+                jzAddFill(gs, scol);
                 jzSetExpr(jzGX(gs).property('ADBE Vector Position'), ex + xs('x', jzN(M / 2)));
                 jzSetExpr(jzGX(gs).property('ADBE Vector Group Opacity'), ex + 'on?100*e*al:0');
             }
             for (i = 0; i < 6; i++) {
-                var gu = jzGrp(X, 'dust ' + (i + 1)), ru = jzAddRect(gu, 2, 2); jzAddFill(gu, scol);
+                var gu = jzGrp(X, 'dust ' + (i + 1)), ru = jzAddRect(gu, 2, 2);
                 var du = hd + 'var st=Math.floor(T*12+1e-6);seedRandom(' + (s9 + 900) + '+st*53+' + i + ',true);var on=random()<=0.5,r=random(' + jzN(U * 0.001) + ',' + jzN(U * 0.003) + '),x=random()*' + jzN(W) + ',y=random()*' + jzN(H) + ';';
                 jzSetExpr(ru.property('ADBE Vector Rect Size'), du + '[2*r,1.4*r]');
+                jzAddFill(gu, scol);
                 jzSetExpr(jzGX(gu).property('ADBE Vector Position'), du + '[x+r,y+0.7*r]');
                 jzSetExpr(jzGX(gu).property('ADBE Vector Group Opacity'), du + 'on?25*e:0');
             }
@@ -583,9 +605,11 @@ jzReg('bg', 'vhsBand', {
         // tracking lines inside the band
         var TL = jzShapeLayer(b, 'bg vhsBand tracking', 0, 0), th = Math.max(px, U * 0.0016);
         for (i = 0; i < 3; i++) {
-            var g = jzGrp(TL, 'line ' + (i + 1)), rl = jzAddRect(g, 10, th); jzAddFill(g, jzLayC(sc, dk ? 0.3 : 0.2));
+            // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
+            var g = jzGrp(TL, 'line ' + (i + 1)), rl = jzAddRect(g, 10, th);
             var lx = hd + 'seedRandom(' + (s9 + 300) + '+Math.floor(st/2)*29+' + i + ',true);var ly=y+' + jzN(bh) + '*random();seedRandom(' + (s9 + 600) + '+st*29+' + i + ',true);var lx=random()*' + jzN(W * 0.6) + ',lw=random(0.2,0.6)*' + jzN(W) + ';';
             jzSetExpr(rl.property('ADBE Vector Rect Size'), lx + '[lw,' + jzN(th) + ']');
+            jzAddFill(g, jzLayC(sc, dk ? 0.3 : 0.2));
             jzSetExpr(jzGX(g).property('ADBE Vector Position'), lx + '[lx+lw/2,ly+' + jzN(th / 2) + ']');
         }
         jzSetExpr(jzXf(TL, 'ADBE Opacity'), hd + '50*e');

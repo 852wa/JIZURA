@@ -227,12 +227,14 @@ jzReg('enter', 'slingshot', { apply: function (m) {
         var W0 = eb1_toComp(L, posts[k][0], posts[k][1]);
         var pts = 'var A=parent.fromComp([' + jzN(W0[0]) + ',' + jzN(W0[1]) + ']),ax=A[0],ay=A[1],bx=' + jzN(ends[k][0]) + ',by=' + jzN(ends[k][1]) + ';';
         var grp = jzGrp(S, 'band ' + (k + 1)), gx = jzGX(grp);
-        var dot = eb1_sub(grp, 'post'), el = jzAddEllipse(dot, lw * 3.2, lw * 3.2); jzAddFill(dot, col);
-        var band = eb1_sub(grp, 'band'), rc = jzAddRect(band, 10, lw, 0); jzAddFill(band, col);
+        var dot = eb1_sub(grp, 'post'); jzAddEllipse(dot, lw * 3.2, lw * 3.2); jzAddFill(dot, col);
+        // (each shape item is fully set up before the next item is added to the same contents: AE invalidates older references)
+        var band = eb1_sub(grp, 'band'), rc = jzAddRect(band, 10, lw, 0);
         // group sits on the post, the band rect points at the line's corner
-        jzSetExpr(gx.property('ADBE Vector Position'), H + pts + '[ax,ay]');
         jzSetExpr(rc.property('ADBE Vector Rect Size'), H + pts + '[Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay)),' + jzN(lw) + ']');
         jzSetExpr(rc.property('ADBE Vector Rect Position'), H + pts + '[Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay))/2,0]');
+        jzAddFill(band, col);
+        jzSetExpr(gx.property('ADBE Vector Position'), H + pts + '[ax,ay]');
         jzSetExpr(jzGX(band).property('ADBE Vector Rotation'), H + pts + 'Math.atan2(by-ay,bx-ax)*180/Math.PI');
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), H + bd + 'bd*100');
     }
@@ -300,11 +302,10 @@ jzReg('enter', 'snapRail', { selfHide: true, apply: function (m) {
     if (vert) rails.push({ c: r.top + r.height / 2, half: r.height / 2 + m.size * 0.15, v: G.cx - m.size * 0.62 });
     else for (i = 0; i < G.lines.length; i++) { var ln = G.lines[i]; if (ln.n) rails.push({ c: (ln.x0 + ln.x1) / 2, half: (ln.x1 - ln.x0) / 2 + m.size * 0.15, v: ln.cy + m.size * 0.62 }); }
     for (i = 0; i < rails.length; i++) {
-        var R = rails[i], grp = jzGrp(S, 'rail ' + (i + 1)), rc = jzAddRect(grp, 10, 10, 0);
+        var R = rails[i], grp = jzGrp(S, 'rail ' + (i + 1)), rc = jzAddRect(grp, 10, 10, 0), len = jzN(R.half) + '*grow*(1-gone)*2';
+        jzSetExpr(rc.property('ADBE Vector Rect Size'), H + ev + (vert ? '[th,' + len + ']' : '[' + len + ',th]'));   // before the fill is added (keeps rc valid)
         jzAddFill(grp, acc);
         jzGX(grp).property('ADBE Vector Position').setValue(vert ? [R.v, R.c] : [R.c, R.v]);
-        var len = jzN(R.half) + '*grow*(1-gone)*2';
-        jzSetExpr(rc.property('ADBE Vector Rect Size'), H + ev + (vert ? '[th,' + len + ']' : '[' + len + ',th]'));
         jzSetExpr(jzGX(grp).property('ADBE Vector Group Opacity'), H + ev + 'grow>0&&gone<1?100:0');
     }
 } });
@@ -394,11 +395,12 @@ jzReg('enter', 'ripple', { selfHide: true, apply: function (m) {
     // two accent rings spreading from the centre
     var S = jzNoGhost(eb1_shape(m, 'JZ In Rings')), H = eb1_head(m), lw = Math.max(1.5 * m.u, m.size * 0.022), k;
     for (k = 0; k < 2; k++) {
-        var grp = jzGrp(S, 'ring ' + (k + 1)), el = jzAddEllipse(grp, 10, 10), st = jzAddStroke(grp, m.ctx.sc.accent || '#FFFFFF', lw), gx = jzGX(grp);
         var ev = 'var f=cl(P/0.68-' + jzN(k * 0.12) + '),rd=' + jzN(Rmax * 1.05) + '*f;';
-        gx.property('ADBE Vector Position').setValue([G.cx, G.cy]);
-        jzSetExpr(el.property('ADBE Vector Ellipse Size'), H + ev + '[rd*2,rd*2]');
+        var grp = jzGrp(S, 'ring ' + (k + 1)), gx = jzGX(grp), el = jzAddEllipse(grp, 10, 10);
+        jzSetExpr(el.property('ADBE Vector Ellipse Size'), H + ev + '[rd*2,rd*2]');    // before the stroke is added (keeps el valid)
+        var st = jzAddStroke(grp, m.ctx.sc.accent || '#FFFFFF', lw);
         jzSetExpr(st.property('ADBE Vector Stroke Width'), H + ev + jzN(lw) + '*(1-f*0.5)');
+        gx.property('ADBE Vector Position').setValue([G.cx, G.cy]);
         jzSetExpr(gx.property('ADBE Vector Group Opacity'), H + ev + 'f<=0||rd<1?0:(1-f)*' + (k ? 50 : 85));
     }
 } });
@@ -666,12 +668,15 @@ jzReg('enter', 'noteUnfold', { selfHide: true, apply: function (m) {
         var g2 = G.g[i]; if (g2.sp) continue;
         var o2 = G.n > 1 ? i / (G.n - 1) : 0, hq2 = H + 'var q=cl((P-' + jzN(0.45 * o2) + ')/0.55),a=q<=0||q>=1?0:0.6*(1-sm(0.85,1,q))*cl(q*6)*100;';
         var ch = g2.w * 0.55, cv = fs * 0.58;
-        var gv = jzGrp(S, 'crease v ' + (i + 1)), rv = jzAddRect(gv, lw, cv, 0); jzAddFill(gv, cc);
+        // (the rect is set up before the fill is added: adding to the contents invalidates older item references)
+        var gv = jzGrp(S, 'crease v ' + (i + 1)), rv = jzAddRect(gv, lw, cv, 0);
         jzSetExpr(rv.property('ADBE Vector Rect Size'), hq2 + '[' + jzN(lw) + ',q<0.52?' + jzN(cv) + ':' + jzN(cv * 2) + ']');
+        jzAddFill(gv, cc);
         jzSetExpr(jzGX(gv).property('ADBE Vector Position'), hq2 + '[' + jzN(g2.x) + ',q<0.52?' + jzN(g2.y - cv / 2) + ':' + jzN(g2.y) + ']');
         jzSetExpr(jzGX(gv).property('ADBE Vector Group Opacity'), hq2 + 'a');
-        var gh = jzGrp(S, 'crease h ' + (i + 1)), rh = jzAddRect(gh, ch, lw, 0); jzAddFill(gh, cc);
+        var gh = jzGrp(S, 'crease h ' + (i + 1)), rh = jzAddRect(gh, ch, lw, 0);
         jzSetExpr(rh.property('ADBE Vector Rect Size'), hq2 + '[q<0.14?' + jzN(ch) + ':' + jzN(ch * 2) + ',' + jzN(lw) + ']');
+        jzAddFill(gh, cc);
         jzSetExpr(jzGX(gh).property('ADBE Vector Position'), hq2 + '[q<0.14?' + jzN(g2.x - ch / 2) + ':' + jzN(g2.x) + ',' + jzN(g2.y) + ']');
         jzSetExpr(jzGX(gh).property('ADBE Vector Group Opacity'), hq2 + 'a');
     }

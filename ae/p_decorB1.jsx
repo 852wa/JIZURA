@@ -46,10 +46,16 @@ function db1_st(g, col, w, op, cap, join) {
     try { if (cap) s.property('ADBE Vector Stroke Line Cap').setValue(cap); if (join) s.property('ADBE Vector Stroke Line Join').setValue(join); } catch (e) {}
     return s;
 }
+// each dash entry is set right after it is added (adding the gap would invalidate a held reference to the dash);
+// the preview model has fixed Dashes children (addProperty refused) -> fetch by matchName instead
 function db1_dash(s, on, off) {
-    var D = s.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    try { if (p1) p1.setValue(on); if (p2) p2.setValue(off); } catch (e2) {}
+    var D = s.property('ADBE Vector Stroke Dashes'), mn = ['ADBE Vector Stroke Dash 1', 'ADBE Vector Stroke Gap 1'], v = [on, off], i, p;
+    for (i = 0; i < 2; i++) {
+        p = null;
+        try { p = D.addProperty(mn[i]); } catch (e) { p = null; }
+        if (!p) { try { p = D.property(mn[i]); } catch (e1) { p = null; } }
+        try { if (p) p.setValue(v[i]); } catch (e2) {}
+    }
 }
 // trim paths with expressions (end / start / offset), all in one header
 function db1_trim(ctx, g, st, endEx, startEx, offEx, pre) {
@@ -272,16 +278,18 @@ db1_reg('asanoha', true, function (ctx, bb, d) {
     var Rx = '(' + jzN(R0) + '*oc(t/0.8)*(1+0.06*ic(PO)))';
     var S = jzShapeLayer(ctx, 'asanoha', cx, cy), gL = jzGrp(S, 'lattice');
     db1_gx(ctx, gL, 'ADBE Vector Rotation', 0, jzN((d.r || 0) * 60) + '+t*2.5');
-    var gC = db1_sub(gL, 'cell'), gS = db1_sub(gC, 'star'), gG = db1_sub(gC, 'grid');
+    // star (top) is finished before the grid group is added next to it (a new sibling invalidates the star reference)
+    var gC = db1_sub(gL, 'cell'), gS = db1_sub(gC, 'star');
     var A = [0, 0], B = [s, 0], C = [s / 2, h3], D = [s * 1.5, h3], tris = [[A, B, C], [B, D, C]], i, j;
-    jzAddPath(gG, [A, B], false); jzAddPath(gG, [A, C], false); jzAddPath(gG, [B, C], false);
-    db1_st(gG, col, lw, al * 80);
     for (i = 0; i < 2; i++) {
         var tr = tris[i], g = [(tr[0][0] + tr[1][0] + tr[2][0]) / 3, (tr[0][1] + tr[1][1] + tr[2][1]) / 3];
         for (j = 0; j < 3; j++) jzAddPath(gS, [g, tr[j]], false);
     }
     db1_trim(ctx, gS, 0, '100*oc((t-0.15)/0.8)');
     db1_st(gS, col, lw, al * 100);
+    var gG = db1_sub(gC, 'grid');
+    jzAddPath(gG, [A, B], false); jzAddPath(gG, [A, C], false); jzAddPath(gG, [B, C], false);
+    db1_st(gG, col, lw, al * 80);
     var n = sq ? 7 : 6;
     db1_rep(gL, 2 * n + 1, s, 0, 0, -n);
     db1_rep(gL, 2 * n + 1, s / 2, h3, 0, -n);
@@ -294,16 +302,17 @@ db1_reg('asanoha', true, function (ctx, bb, d) {
         var rc = jzAddRect(gr, R0 * 2, R0 * 2, 6 * u);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), db1_H(ctx, 0) + 'var R=' + Rx + ';[2*R,2*R]');
         db1_trim(ctx, gr, 0, '100*ioc(t/0.9)');
+        db1_st(gr, col, lw * 1.3, Math.min(100, al * 160));
     } else {
         var el = jzAddEllipse(gr, R0 * 2, R0 * 2);
         jzSetExpr(el.property('ADBE Vector Ellipse Size'), db1_H(ctx, 0) + 'var R=' + Rx + ';[2*R,2*R]');
         db1_trim(ctx, gr, 0, '100*ioc(t/0.9)');
+        db1_st(gr, col, lw * 1.3, Math.min(100, al * 160));     // before the outer-arc group is added (that invalidates gr)
         var go = jzGrp(F, 'outer arc'), e2 = jzAddEllipse(go, R0 * 2, R0 * 2);
         jzSetExpr(e2.property('ADBE Vector Ellipse Size'), db1_H(ctx, 0) + 'var R=' + Rx + '+' + jzN(7 * u) + ';[2*R,2*R]');
         var t2 = db1_trim(ctx, go, 0, '300*ioc(t/0.9)/3.6'); t2.property('ADBE Vector Trim Offset').setValue(180);
         db1_st(go, col, Math.max(1, 0.8 * u), al * 90);
     }
-    db1_st(gr, col, lw * 1.3, Math.min(100, al * 160));
     db1_op(ctx, F, 0);
 });
 
@@ -339,8 +348,9 @@ db1_reg('hanabi', false, function (ctx, bb, d) {
             db1_gop(ctx, gR, ST, 'on*fade', HD);
             // heads
             var gH = db1_sub(gR, 'heads'), gh = db1_sub(gH, 'head'), step = 360 / M;
-            var e1 = jzAddEllipse(gh, hr * 2, hr * 2), e2 = jzAddEllipse(gh, hr * 2, hr * 2);
+            var e1 = jzAddEllipse(gh, hr * 2, hr * 2);
             jzSetExpr(e1.property('ADBE Vector Ellipse Position'), db1_H(ctx, ST) + HD + 'var r=R*' + rk + '*F(tb);[r,0]');
+            var e2 = jzAddEllipse(gh, hr * 2, hr * 2);      // added only after e1 is configured (it invalidates e1)
             jzSetExpr(e2.property('ADBE Vector Ellipse Position'), db1_H(ctx, ST) + HD + 'var r=R*' + jzN(rk * 0.9) + '*F(tb);[r*' + jzN(Math.cos(step * DB1_D)) + ',r*' + jzN(Math.sin(step * DB1_D)) + ']');
             db1_rep(gH, M / 2, 0, 0, step * 2);
             var fl = jzAddFill(gH, cols[ci]);
@@ -453,16 +463,18 @@ db1_reg('shimenawa', false, function (ctx, bb, d) {
     function TK(x) { return T0 * (0.45 + 0.55 * Math.sin(Math.PI * jzClamp(x / W, 0, 1))); }
     var col = db1_dark(sc) ? sc.fg : (sc.ink || sc.fg), lw = Math.max(1, 1.1 * u), step = T0 * 1.05, x;
     // rope: slanted twisted bundles (drifting by one bundle step), revealed from the centre by a mask
-    var S = jzShapeLayer(ctx, 'shimenawa rope', 0, 0), gE = jzGrp(S, 'edges'), gT = jzGrp(S, 'twist');
+    // edges (top group) are finished before the twist group is added next to them
+    var S = jzShapeLayer(ctx, 'shimenawa rope', 0, 0), gE = jzGrp(S, 'edges');
+    var tp = [], bt = [];
+    for (x = -12; x <= W + 12.1; x += 8 * u) { tp.push([x, Y(x) - TK(x) / 2 - 1.5 * u]); bt.push([x, Y(x) + TK(x) / 2 + 1.5 * u]); }
+    jzAddPath(gE, tp, false); jzAddPath(gE, bt, false); db1_st(gE, col, lw, 45);
+    var gT = jzGrp(S, 'twist');
     for (x = -2 * step; x < W + step; x += step) {
         var x0 = x, x1 = x + step * 0.82, sl = TK(x) * 0.7;
         jzAddPath(gT, [[x0, Y(x0) - TK(x0) / 2], [x1, Y(x1) - TK(x1) / 2], [x1 + sl, Y(x1) + TK(x1) / 2], [x0 + sl, Y(x0) + TK(x0) / 2]], true);
     }
     jzAddFill(gT, col, 82);
     db1_gx(ctx, gT, 'ADBE Vector Position', ST, '[value[0]+(Math.max(0,t)*' + jzN(5 * u) + ')%' + jzN(step) + ',value[1]]');
-    var tp = [], bt = [];
-    for (x = -12; x <= W + 12.1; x += 8 * u) { tp.push([x, Y(x) - TK(x) / 2 - 1.5 * u]); bt.push([x, Y(x) + TK(x) / 2 + 1.5 * u]); }
-    jzAddPath(gE, tp, false); jzAddPath(gE, bt, false); db1_st(gE, col, lw, 45);
     var mk = db1_mask(S, db1_rectShape(-12, -2 * H, W + 12, 3 * H));
     jzSetExpr(mk.property('ADBE Mask Offset'), db1_H(ctx, ST) + '-(1-ioc(t/0.8))*' + jzN(W / 2 + 12));
     db1_op(ctx, S, ST);
@@ -507,8 +519,9 @@ db1_reg('sensu', false, function (ctx, bb, d) {
     var go = jzGrp(S, 'outer edge'); jzAddEllipse(go, R * 2, R * 2); sweep(go); db1_st(go, sc.fg, Math.max(1, 1.3 * u), 95, 1, 2);
     var gi = jzGrp(S, 'inner edge'); jzAddEllipse(gi, r0 * 2, r0 * 2); sweep(gi); db1_st(gi, sc.fg, Math.max(1, 1.1 * u), 80);
     for (i = 1; i < N; i++) {
-        var gk = jzGrp(S, 'rib ' + i), g1 = db1_sub(gk, 'rib'), g2 = db1_sub(gk, 'fold');
+        var gk = jzGrp(S, 'rib ' + i), g1 = db1_sub(gk, 'rib');
         jzAddPath(g1, [[R * 0.06, 0], [r0, 0]], false); db1_st(g1, sc.fg, Math.max(1, 1.1 * u), 80);
+        var g2 = db1_sub(gk, 'fold');
         jzAddPath(g2, [[r0, 0], [R * (i % 2 ? 0.965 : 1), 0]], false); db1_st(g2, sc.fg, Math.max(1, 0.8 * u), 45);
         db1_gx(ctx, gk, 'ADBE Vector Rotation', ST, angEx(i));
     }
@@ -732,13 +745,14 @@ db1_reg('spectrumRing', false, function (ctx, bb, d) {
     var gB = jzGrp(S, 'bars');
     db1_gx(ctx, gB, 'ADBE Vector Rotation', ST, jzN((d.r || 0) * 360) + '+t*6');
     for (k = 0; k < N / 2; k++) {
-        var i1 = k, i2 = N - 1 - k, ie = k % 2 === 0 ? i1 : i2, g = db1_sub(gB, 'band ' + (k + 1)), gb = db1_sub(g, 'bars'), gp = db1_sub(g, 'peak'), an, j;
+        // 'bars' is finished before 'peak' is added next to it (a new sibling invalidates the bars reference)
+        var i1 = k, i2 = N - 1 - k, ie = k % 2 === 0 ? i1 : i2, g = db1_sub(gB, 'band ' + (k + 1)), gb = db1_sub(g, 'bars'), an, j;
         for (j = 0; j < 2; j++) { an = (j ? i2 : i1) / N * 360 * DB1_D; jzAddPath(gb, [[Math.cos(an) * rin, Math.sin(an) * rin], [Math.cos(an) * (rin + Lm), Math.sin(an) * (rin + Lm)]], false); }
         db1_trim(ctx, gb, ST, '(' + jzN(k / N) + '<=e?100*lev(' + k + ',t)*e:0)', null, null, NZ);
         var st = db1_st(gb, sc.fg, bl, 90);
         jzSetExpr(st.property('ADBE Vector Stroke Color'), db1_H(ctx, ST) + NZ + '(lev(' + k + ',t)>0.78?' + db1_cx(ac) + ':' + db1_cx(sc.fg) + ')');
         an = ie / N * 360 * DB1_D;
-        var ep = jzAddEllipse(gp, 2.6 * u, 2.6 * u);
+        var gp = db1_sub(g, 'peak'), ep = jzAddEllipse(gp, 2.6 * u, 2.6 * u);
         jzSetExpr(ep.property('ADBE Vector Ellipse Position'), db1_H(ctx, ST) + NZ + 'var r1=' + jzN(rin) + '+' + jzN(Lm) + '*lev(' + k + ',t)*e,pk=' + jzN(rin) + '+' + jzN(Lm) + '*cl(0.25+0.7*(0.55+0.45*nz(' + jzN(k * 0.5) + '+(t-0.25)*5.5))*(1-' + jzN(k / 30 * 0.55) + '))*e+' + jzN(5 * u) +
             ',r=Math.max(pk,r1+' + jzN(4 * u) + ');[' + jzN(Math.cos(an)) + '*r,' + jzN(Math.sin(an)) + '*r]');
         jzAddFill(gp, sc.sub, 80);
@@ -972,11 +986,11 @@ db1_reg('atomOrbit', false, function (ctx, bb, d) {
         jzSetExpr(el.property('ADBE Vector Ellipse Position'), db1_H(ctx, ST) + AN + '[' + jzN(R) + '*Math.cos(an*Math.PI/180),' + jzN(ry) + '*z]');
         jzSetExpr(el.property('ADBE Vector Ellipse Size'), db1_H(ctx, ST) + AN + 'var r=z<0?' + jzN(2.6 * u) + ':' + jzN(3.8 * u) + ';[2*r,2*r]');
         jzAddFill(ge, col);
+        db1_gop(ctx, ge, ST, '(ioc((t-' + jzN(k * 0.07) + ')/0.45)>=0.9?1:0)*(z<0?0.45:1)', AN);     // before 'trail' is added (it invalidates ge)
         var gt = db1_sub(g, 'trail'); jzAddEllipse(gt, R * 2, ry * 2);
         var lo = w > 0 ? 'an-' + jzN(span) : 'an', hi = w > 0 ? 'an' : 'an+' + jzN(span);
         db1_trim(ctx, gt, ST, '100*(DD<0?DD+1:DD)', null, '360*fr(' + lo + ')', AN + FR + 'var DD=fr(' + hi + ')-fr(' + lo + ');');
         db1_st(gt, col, 1.8 * u, 45, 2);
-        db1_gop(ctx, ge, ST, '(ioc((t-' + jzN(k * 0.07) + ')/0.45)>=0.9?1:0)*(z<0?0.45:1)', AN);
         db1_gop(ctx, gt, ST, '(ioc((t-' + jzN(k * 0.07) + ')/0.45)>=0.9?1:0)*(z<0?0.45:1)', AN);
         var go = db1_sub(g, 'orbit'); jzAddEllipse(go, R * 2, ry * 2);
         var to = db1_trim(ctx, go, ST, '100*ioc((t-' + jzN(k * 0.07) + ')/0.45)'); to.property('ADBE Vector Trim Offset').setValue(90);
@@ -1001,8 +1015,9 @@ db1_reg('sonarArcs', false, function (ctx, bb, d) {
         if (room < 30 * u) continue;
         var rM = Math.min(room, 190 * u), r0 = 8 * u, g = jzGrp(S, 'side ' + (i + 1));
         jzGX(g).property('ADBE Vector Position').setValue([ex, ey]);
-        var gd = db1_sub(g, 'dot'), ed = jzAddEllipse(gd, 4.4 * u, 4.4 * u); jzAddFill(gd, ac);
+        var gd = db1_sub(g, 'dot'), ed = jzAddEllipse(gd, 4.4 * u, 4.4 * u);
         jzSetExpr(ed.property('ADBE Vector Ellipse Size'), db1_H(ctx, ST) + 'var r=' + jzN(2.2 * u) + '*oc(t/0.4);[2*r,2*r]');
+        jzAddFill(gd, ac);     // after the ellipse is configured (the fill invalidates ed)
         var gs = db1_sub(g, 'speaker');
         for (k = 1; k <= 2; k++) jzAddPath(gs, db1_arc(0, 0, k * 7 * u, dr - span * 1.2, dr + span * 1.2, 12), false);
         db1_st(gs, sc.sub, Math.max(1, 1.2 * u), 80, 2);
@@ -1037,27 +1052,39 @@ db1_reg('circuit', false, function (ctx, bb, d) {
         var tc = horiz ? jzClamp((bb.y0 + bb.y1) / 2, 60 * u, H - 60 * u) : jzClamp((bb.x0 + bb.x1) / 2, 60 * u, W - 60 * u);
         var across = horiz ? db1_bh(bb) : db1_bw(bb), n = 4 + ((d.n | 0) % 3), pe = jzClamp(across / n, 10 * u, 22 * u), ps = pe * (1.6 + (d.r || 0) * 0.8);
         var Mp = function (s, t) { return side === 'l' ? [s, t] : side === 'r' ? [W - s, t] : side === 't' ? [t, s] : [t, H - s]; };
-        var gP = jzGrp(S, 'pads ' + (si + 1)), gX = jzGrp(S, 'pulses ' + (si + 1)), gR = jzGrp(S, 'traces ' + (si + 1));
+        // routes first; then each parent group (pads, pulses, traces — same stacking as before) is filled completely before the
+        // next one is added to the contents (a new sibling group invalidates references to the earlier ones)
+        var RT = [];
         for (i = 0; i < n; i++) {
             var c = i - (n - 1) / 2, t0 = tc + c * ps + db1_rs(d.seed, i, 1) * 3 * u, t1 = tc + c * pe, dd = Math.abs(t1 - t0);
             var sm = sEnd * (0.45 + 0.15 * db1_rs(d.seed, si, 2)), sa = Math.max(10 * u, sm - dd / 2);
-            var pts = [Mp(-6 * u, t0), Mp(sa, t0), Mp(sa + dd, t1), Mp(sEnd - (i % 2 ? 14 * u : 0), t1)];
-            var gt = db1_sub(gR, 'trace ' + (i + 1)); jzAddPath(gt, pts, false);
-            db1_trim(ctx, gt, ST, '100*ioc((t-' + jzN(i * 0.06 + si * 0.1) + ')/0.6)');
-            var TT = 1.3 + db1_r(d.seed, i, 5) * 0.8, D0 = 0.7 + db1_r(d.seed, i, 6) * TT;
-            var gp = db1_sub(gX, 'pulse ' + (i + 1)); jzAddPath(gp, pts, false);
-            db1_trim(ctx, gp, ST, '100*ph', '100*Math.max(0,ph-0.1)', null, 'var x=(t-' + jzN(D0) + ')/' + jzN(TT) + ',ph=(t<0.7||x<0)?0:x-Math.floor(x);');
-            db1_st(gp, ac, 2.4 * u, null, 2);
-            var gd = db1_sub(gP, 'pad ' + (i + 1)), gd1 = db1_sub(gd, 'dot'), gd2 = db1_sub(gd, 'ring');
-            jzGX(gd).property('ADBE Vector Position').setValue(pts[3]);
+            var TT = 1.3 + db1_r(d.seed, i, 5) * 0.8;
+            RT.push({ pts: [Mp(-6 * u, t0), Mp(sa, t0), Mp(sa + dd, t1), Mp(sEnd - (i % 2 ? 14 * u : 0), t1)], dd: dd, TT: TT, D0: 0.7 + db1_r(d.seed, i, 6) * TT });
+        }
+        var gP = jzGrp(S, 'pads ' + (si + 1));
+        for (i = 0; i < n; i++) {
+            var gd = db1_sub(gP, 'pad ' + (i + 1)), gd1 = db1_sub(gd, 'dot');
             jzAddEllipse(gd1, 3.2 * u, 3.2 * u); jzAddFill(gd1, ac);
+            var gd2 = db1_sub(gd, 'ring');
             jzAddEllipse(gd2, 8 * u, 8 * u); db1_st(gd2, sc.fg, Math.max(1, 1.2 * u));
+            jzGX(gd).property('ADBE Vector Position').setValue(RT[i].pts[3]);
             db1_gx(ctx, gd, 'ADBE Vector Scale', ST, 'var e=oe((t-0.55)/0.3);[100*e,100*e]');
-            if (dd > 3 * u) {
+            if (RT[i].dd > 3 * u) {
                 var gv = db1_sub(gP, 'via ' + (i + 1)); jzAddEllipse(gv, 5.2 * u, 5.2 * u); db1_st(gv, sc.sub, Math.max(1, u), 80);
-                jzGX(gv).property('ADBE Vector Position').setValue(pts[1]);
+                jzGX(gv).property('ADBE Vector Position').setValue(RT[i].pts[1]);
                 db1_gx(ctx, gv, 'ADBE Vector Scale', ST, 'var e=oe((t-0.55)/0.3);[100*e,100*e]');
             }
+        }
+        var gX = jzGrp(S, 'pulses ' + (si + 1));
+        for (i = 0; i < n; i++) {
+            var gp = db1_sub(gX, 'pulse ' + (i + 1)); jzAddPath(gp, RT[i].pts, false);
+            db1_trim(ctx, gp, ST, '100*ph', '100*Math.max(0,ph-0.1)', null, 'var x=(t-' + jzN(RT[i].D0) + ')/' + jzN(RT[i].TT) + ',ph=(t<0.7||x<0)?0:x-Math.floor(x);');
+            db1_st(gp, ac, 2.4 * u, null, 2);
+        }
+        var gR = jzGrp(S, 'traces ' + (si + 1));
+        for (i = 0; i < n; i++) {
+            var gt = db1_sub(gR, 'trace ' + (i + 1)); jzAddPath(gt, RT[i].pts, false);
+            db1_trim(ctx, gt, ST, '100*ioc((t-' + jzN(i * 0.06 + si * 0.1) + ')/0.6)');
         }
         db1_st(gR, sc.sub, lw, 85, 1, 1);
     }
@@ -1077,9 +1104,10 @@ db1_reg('swatches', false, function (ctx, bb, d) {
     var T0 = db1_label(ctx, 'COLOR BAR  ' + db1_pad(n), x0, sp.y + fs * 0.6, { size: fs, track: 0.2, alpha: a }); db1_op(ctx, T0, ST, 'oe(t/0.3)');
     var S = jzShapeLayer(ctx, 'swatches', 0, 0);
     var rx = x0 + n * (sq + g) + sq * 0.7, ry = y0 + sq * 0.85, rr = sq * 0.42;
-    var gm = jzGrp(S, 'register'), gm1 = db1_sub(gm, 'cross'), gm2 = db1_sub(gm, 'circle');
+    var gm = jzGrp(S, 'register'), gm1 = db1_sub(gm, 'cross');
     jzAddPath(gm1, [[-rr * 1.5, 0], [rr * 1.5, 0]], false); jzAddPath(gm1, [[0, -rr * 1.5], [0, rr * 1.5]], false); db1_st(gm1, sc.fg, lw);
     db1_gx(ctx, gm1, 'ADBE Vector Scale', ST, 'var e=oe((t-0.3)/0.4);[100*e,100*e]');
+    var gm2 = db1_sub(gm, 'circle');     // added after the cross is finished (it invalidates gm1)
     db1_arcTrim(ctx, gm2, rr, 0, 0, -90, ST, '360*oe((t-0.3)/0.4)'); db1_st(gm2, sc.fg, lw);
     jzGX(gm).property('ADBE Vector Position').setValue([rx, ry]);
     for (i = 0; i < n; i++) {
@@ -1131,8 +1159,9 @@ db1_reg('registration', false, function (ctx, bb, d) {
     var DX = 'var lk=oe((t-0.05)/0.9),jt=(t>1.2&&Math.floor(t/1.7)!==Math.floor((t-0.08)/1.7))?1:0,D=' + jzN(18 * u) + '*(1-lk)+jt*' + jzN(2.5 * u) + ';';
     function pie(a0) { var p = [[0, 0]], j; for (j = 0; j <= 8; j++) { var an = (a0 + j * 90 / 8) * DB1_D; p.push([Math.cos(an) * R * 0.32, Math.sin(an) * R * 0.32]); } return p; }
     for (k = 0; k < 3; k++) {
-        var S = jzShapeLayer(ctx, 'registration ' + (k + 1), cx, cy), gp = jzGrp(S, 'pies'), gl = jzGrp(S, 'lines');
+        var S = jzShapeLayer(ctx, 'registration ' + (k + 1), cx, cy), gp = jzGrp(S, 'pies');
         jzAddPath(gp, pie(-90), true); jzAddPath(gp, pie(90), true); jzAddFill(gp, cols[k], 90);
+        var gl = jzGrp(S, 'lines');     // added after the pies are finished (it invalidates gp)
         jzAddEllipse(gl, R * 1.96, R * 1.96); jzAddEllipse(gl, R * 1.24, R * 1.24);
         jzAddPath(gl, [[-R * 1.45, 0], [R * 1.45, 0]], false); jzAddPath(gl, [[0, -R * 1.45], [0, R * 1.45]], false);
         db1_st(gl, cols[k], lw, 90);
@@ -1227,8 +1256,9 @@ db1_reg('staple', false, function (ctx, bb, d) {
     if ((d.v | 0) % 2 === 1) {
         var X2 = sx < 0 ? bb.x1 + padP * 0.6 : bb.x0 - padP * 0.6, Y2 = sy < 0 ? bb.y1 + padP * 0.6 : bb.y0 - padP * 0.6, f = Ls * 0.7;
         if (X2 > m * 0.5 && X2 < W - m * 0.5 && Y2 > m * 0.5 && Y2 < H - m * 0.5) {
-            var gd = jzGrp(F, 'dog-ear'), gd1 = db1_sub(gd, 'fold'), gd2 = db1_sub(gd, 'edge');
+            var gd = jzGrp(F, 'dog-ear'), gd1 = db1_sub(gd, 'fold');
             jzAddPath(gd1, [[X2 + sx * f, Y2], [X2 + sx * f, Y2 + sy * f], [X2, Y2 + sy * f]], false); db1_st(gd1, sc.sub, Math.max(1, u), 55);
+            var gd2 = db1_sub(gd, 'edge');     // added after the fold is finished (it invalidates gd1)
             jzAddPath(gd2, [[X2 + sx * L * 0.7, Y2], [X2 + sx * f, Y2], [X2, Y2 + sy * f], [X2, Y2 + sy * L * 0.7]], false); db1_st(gd2, sc.sub, Math.max(1, u), 80);
             db1_trim(ctx, gd2, ST, '50+50*ioc(t/0.5)', '50-50*ioc(t/0.5)');
             db1_gop(ctx, gd, ST, 'oe((t-0.3)/0.4)');

@@ -428,12 +428,14 @@ jzReg('layout', 'tunnel', {
         var LS = lb1_ng(lb1_shape(ctx, 'tunnel lines', 0, 0));
         for (m = mHi; m >= mLo; m--) {
             var gl = jzGrp(LS, 'frame ' + m), hdm = TH + ph + 'var Lv=' + m + '-1+ph,SS=' + jzN(s0) + '*Math.pow(' + jzN(q) + ',Lv);';
-            var r1 = jzAddRect(gl, 2 * A, lw), r2 = jzAddRect(gl, 2 * A, lw);
-            jzAddFill(gl, sc.sub);
+            // (each rect is fully set up before the next item is added: adding to the group invalidates held references in AE)
+            var r1 = jzAddRect(gl, 2 * A, lw);
             jzSetExpr(r1.property('ADBE Vector Rect Size'), hdm + '[' + jzN(2 * A) + '*SS,' + jzN(lw) + ']');
-            jzSetExpr(r2.property('ADBE Vector Rect Size'), hdm + '[' + jzN(2 * A) + '*SS,' + jzN(lw) + ']');
             jzSetExpr(r1.property('ADBE Vector Rect Position'), hdm + '[' + jzN(cx) + ',' + jzN(cy) + '-' + jzN(B) + '*SS+' + jzN(lw / 2) + ']');
+            var r2 = jzAddRect(gl, 2 * A, lw);
+            jzSetExpr(r2.property('ADBE Vector Rect Size'), hdm + '[' + jzN(2 * A) + '*SS,' + jzN(lw) + ']');
             jzSetExpr(r2.property('ADBE Vector Rect Position'), hdm + '[' + jzN(cx) + ',' + jzN(cy) + '+' + jzN(B) + '*SS-' + jzN(lw / 2) + ']');
+            jzAddFill(gl, sc.sub);
             lb1_gOp(gl, hdm + alpha + '50*al');
         }
         // text frames: 4 edges of glyphs per frame (one layer each), built at scale 1 and zoomed by expression
@@ -633,9 +635,9 @@ jzReg('layout', 'bounceLine', {
             var SH = lb1_ng(lb1_shape(ctx, 'hop shadows', 0, 0));
             for (i = 0; i < n; i++) {
                 var gs = jzGrp(SH, 'shadow ' + (i + 1)), el = jzAddEllipse(gs, size * 0.68, size * 0.136, cx + gl[i].x, cy + gl[i].y + size * 0.56);
-                jzAddFill(gs, sc.sub);
                 var sh = TH + 'var gi=' + i + ';' + prof + 'var kk=1-h*0.55;';
                 jzSetExpr(el.property('ADBE Vector Ellipse Size'), sh + '[' + jzN(size * 0.68) + '*kk*px,' + jzN(size * 0.136) + '*kk*px]');
+                jzAddFill(gs, sc.sub);                              // (after the ellipse is set up: adding invalidates `el` in AE)
                 lb1_gOp(gs, sh + '28*kk*K*oe(time/0.5)');
             }
         }
@@ -987,12 +989,14 @@ jzReg('layout', 'keycaps', {
             else if (style === 'light') { top = lightC; side = jzMixHex(lightC, darkC, 0.32); leg = darkC; }
             else { top = jzMixHex(darkC, lightC, 0.16); side = jzMixHex(darkC, lightC, 0.06); leg = lightC; }
             var g = jzGrp(S, 'key ' + (i + 1)), dyE = TH + PZ + 'var dp=prs(' + i + ')*' + jzN(d * 0.75) + ';';
+            // (each sub-group is finished before the next one is added: adding a sibling invalidates held references in AE)
             var gt = lb1_sub(g, 'top'); lb1_rrect(gt, kz - ins * 2, kz - ins * 2.1, rr * 0.7, 0, -kz / 2 + ins * 0.35 + (kz - ins * 2.1) / 2);
             if (style === 'dark' && !isA) jzAddStroke(gt, sc.sub, 1 * k);
             jzAddFill(gt, top);
+            lb1_gPos(gt, dyE + '[value[0],value[1]+dp]');
             var gr = lb1_sub(g, 'rim'); lb1_rrect(gr, kz - ins, kz - ins * 0.9, rr * 0.85, 0, -kz / 2 + (kz - ins * 0.9) / 2); jzAddFill(gr, jzMixHex(top, side, 0.35));
+            lb1_gPos(gr, dyE + '[value[0],value[1]+dp]');
             var gs = lb1_sub(g, 'side'); lb1_rrect(gs, kz, kz + d * 0.65, rr, 0, -kz / 2 + d * 0.35 + (kz + d * 0.65) / 2); jzAddFill(gs, side);
-            lb1_gPos(gt, dyE + '[value[0],value[1]+dp]'); lb1_gPos(gr, dyE + '[value[0],value[1]+dp]');
             jzGX(g).property('ADBE Vector Position').setValue([q.x, q.y]);
             lb1_gSc(g, TH + 'var q=cl((time-' + jzN(i * 0.025) + ')/0.2);var e=q<=0?0:ob(q,1.6);[value[0]*e,value[1]*e]');
             lb1_gOp(g, TH + '100*K');
@@ -1234,10 +1238,10 @@ jzReg('layout', 'flipBoard', {
         var fq = 'var sy=Math.abs(Math.cos(f*Math.PI)),HH=' + jzN(h / 2) + ';';
         for (i = 0; i < n; i++) {
             var gf = jzGrp(FP, 'flap ' + (i + 1)), rf = jzAddRect(gf, w, h / 2, 0, cells[i].x, cells[i].y - h / 4);
-            jzAddFill(gf, flap);
             var fh = TH + clk + fq + 'var fl=time<' + jzN(ST[i]) + '&&u>0;';
             jzSetExpr(rf.property('ADBE Vector Rect Size'), fh + '[' + jzN(w) + ',Math.max(0.01,HH*sy)]');
             jzSetExpr(rf.property('ADBE Vector Rect Position'), fh + '[' + jzN(cells[i].x) + ',' + jzN(cells[i].y) + '+(f<0.5?-1:1)*HH*sy/2]');
+            jzAddFill(gf, flap);                                   // (after the rect is set up: adding invalidates `rf` in AE)
             lb1_gOp(gf, fh + 'fl?100*oc(cl((time-' + jzN(i * 0.02) + ')/0.18))*K:0');
         }
         var FT = halfLayer('flip flap (top)', 'chA(i,m)', true), FB = halfLayer('flip flap (bottom)', 'chA(i,m+1)', false);
@@ -1248,10 +1252,10 @@ jzReg('layout', 'flipBoard', {
         FS = lb1_ng(lb1_shape(ctx, 'flip shade', 0, 0));
         for (i = 0; i < n; i++) {
             var gsd = jzGrp(FS, 'shade ' + (i + 1)), rs = jzAddRect(gsd, w, h / 2, 0, cells[i].x, cells[i].y - h / 4);
-            jzAddFill(gsd, sc.bg);
             var sh = TH + clk + fq + 'var fl=time<' + jzN(ST[i]) + '&&u>0;';
             jzSetExpr(rs.property('ADBE Vector Rect Size'), sh + '[' + jzN(w) + ',Math.max(0.01,HH*sy)]');
             jzSetExpr(rs.property('ADBE Vector Rect Position'), sh + '[' + jzN(cells[i].x) + ',' + jzN(cells[i].y) + '+(f<0.5?-1:1)*HH*sy/2]');
+            jzAddFill(gsd, sc.bg);                                 // (after the rect is set up)
             lb1_gOp(gsd, sh + 'fl?100*oc(cl((time-' + jzN(i * 0.02) + ')/0.18))*K*(f<0.5?f:1-f)*0.5:0');
         }
         // settled glyphs = the lyric (one layer per cell, entering when the cell settles)

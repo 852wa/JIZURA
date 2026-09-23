@@ -1,22 +1,23 @@
 // ================================================================ builder helpers
 var JZLOG = [];
 function jzWarn(m) { if (JZLOG.length < 400) JZLOG.push(m); }
-function jzN(x) { return String(Math.round(x * 10000) / 10000); }
+// number for expression source; negatives are parenthesised so 'a-' + jzN(-2) never becomes the syntax error 'a--2'
+function jzN(x) { var v = Math.round(x * 10000) / 10000; return v < 0 ? '(' + String(v) + ')' : String(v); }
 
 // ---- fonts: map JIZURA font keys to PostScript names, verify when the API exists
 var JZ_FONT_CANDIDATES = {
-    gothic_black: ['NotoSansJP-Black', 'NotoSansCJKjp-Black', 'SourceHanSansJP-Heavy', 'KozGoPr6N-Heavy', 'YuGothic-Bold', 'Meiryo-Bold'],
-    gothic_bold: ['NotoSansJP-Bold', 'NotoSansCJKjp-Bold', 'SourceHanSansJP-Bold', 'KozGoPr6N-Bold', 'YuGothic-Bold', 'Meiryo-Bold'],
-    gothic_med: ['NotoSansJP-Medium', 'NotoSansCJKjp-Medium', 'SourceHanSansJP-Medium', 'KozGoPr6N-Medium', 'YuGothic-Medium', 'Meiryo'],
-    gothic_light: ['NotoSansJP-Light', 'NotoSansCJKjp-Light', 'KozGoPr6N-Light', 'YuGothic-Light', 'Meiryo'],
+    gothic_black: ['NotoSansJP-Black', 'NotoSansCJKjp-Black', 'SourceHanSansJP-Heavy', 'KozGoPr6N-Heavy', 'HiraginoSans-W8', 'YuGothic-Bold', 'Meiryo-Bold'],
+    gothic_bold: ['NotoSansJP-Bold', 'NotoSansCJKjp-Bold', 'SourceHanSansJP-Bold', 'KozGoPr6N-Bold', 'HiraginoSans-W6', 'YuGothic-Bold', 'Meiryo-Bold'],
+    gothic_med: ['NotoSansJP-Medium', 'NotoSansCJKjp-Medium', 'SourceHanSansJP-Medium', 'KozGoPr6N-Medium', 'HiraginoSans-W4', 'YuGothic-Medium', 'Meiryo'],
+    gothic_light: ['NotoSansJP-Light', 'NotoSansCJKjp-Light', 'KozGoPr6N-Light', 'HiraginoSans-W2', 'YuGothic-Light', 'Meiryo'],
     dela: ['DelaGothicOne-Regular', 'NotoSansJP-Black', 'KozGoPr6N-Heavy', 'YuGothic-Bold'],
     zenkaku: ['ZenKakuGothicNew-Black', 'NotoSansJP-Black', 'KozGoPr6N-Heavy', 'YuGothic-Bold'],
-    mincho_black: ['ZenOldMincho-Black', 'NotoSerifJP-Black', 'KozMinPr6N-Heavy', 'YuMincho-Demibold'],
-    mincho_bold: ['NotoSerifJP-Bold', 'NotoSerifCJKjp-Bold', 'SourceHanSerifJP-Bold', 'KozMinPr6N-Bold', 'YuMincho-Demibold'],
-    mincho: ['NotoSerifJP-Medium', 'NotoSerifCJKjp-Medium', 'SourceHanSerifJP-Medium', 'KozMinPr6N-Medium', 'YuMincho-Regular', 'MS-Mincho'],
-    mincho_light: ['NotoSerifJP-Light', 'NotoSerifCJKjp-Light', 'KozMinPr6N-Light', 'YuMincho-Light', 'YuMincho-Regular'],
+    mincho_black: ['ZenOldMincho-Black', 'NotoSerifJP-Black', 'KozMinPr6N-Heavy', 'HiraMinProN-W6', 'YuMincho-Demibold'],
+    mincho_bold: ['NotoSerifJP-Bold', 'NotoSerifCJKjp-Bold', 'SourceHanSerifJP-Bold', 'KozMinPr6N-Bold', 'HiraMinProN-W6', 'YuMincho-Demibold'],
+    mincho: ['NotoSerifJP-Medium', 'NotoSerifCJKjp-Medium', 'SourceHanSerifJP-Medium', 'KozMinPr6N-Medium', 'HiraMinProN-W3', 'YuMincho-Regular', 'MS-Mincho'],
+    mincho_light: ['NotoSerifJP-Light', 'NotoSerifCJKjp-Light', 'KozMinPr6N-Light', 'HiraMinProN-W3', 'YuMincho-Light', 'YuMincho-Regular'],
     tokumin: ['KaiseiTokumin-ExtraBold', 'ZenOldMincho-Black', 'KozMinPr6N-Heavy', 'YuMincho-Demibold'],
-    round: ['MPLUSRounded1c-ExtraBold', 'RoundedMplus1c-Black', 'NotoSansJP-Black', 'YuGothic-Bold'],
+    round: ['MPLUSRounded1c-ExtraBold', 'RoundedMplus1c-Black', 'HiraMaruProN-W4', 'NotoSansJP-Black', 'YuGothic-Bold'],
     pop: ['MochiyPopOne-Regular', 'MPLUSRounded1c-ExtraBold', 'YuGothic-Bold'],
     dot: ['DotGothic16-Regular', 'MS-Gothic', 'YuGothic-Regular'],
     brush: ['YujiSyuku-Regular', 'YuMincho-Demibold'],
@@ -26,8 +27,8 @@ var JZ_FONT_CANDIDATES = {
     rampart: ['RampartOne-Regular', 'NotoSansJP-Black', 'YuGothic-Bold'],
     potta: ['PottaOne-Regular', 'MochiyPopOne-Regular', 'YuGothic-Bold'],
     kiwi: ['KiwiMaru-Medium', 'MPLUSRounded1c-ExtraBold', 'YuGothic-Medium'],
-    klee: ['KleeOne-SemiBold', 'YuMincho-Demibold'],
-    shippori: ['ShipporiMinchoB1-ExtraBold', 'ZenOldMincho-Black', 'KozMinPr6N-Heavy', 'YuMincho-Demibold']
+    klee: ['KleeOne-SemiBold', 'Klee-Demibold', 'Klee-Medium', 'YuMincho-Demibold'],
+    shippori: ['ShipporiMinchoB1-ExtraBold', 'ZenOldMincho-Black', 'KozMinPr6N-Heavy', 'HiraMinProN-W6', 'YuMincho-Demibold']
 };
 var JZ_ROLE_DEFAULT = { display: 'YuGothic-Bold', serif: 'YuMincho-Demibold', body: 'YuGothic-Medium', mono: 'Consolas' };
 var JZ_FONT_CACHE = {};
@@ -46,13 +47,29 @@ function jzRoleOf(key) {
     return 'display';
 }
 // resolve: explicit user role font > key candidates that exist > role default
+// JZ_FONT_MISSING collects the keys whose own typeface (the browser's Google Font) is not installed, for the build report
+var JZ_FONT_MISSING = {}, JZ_FONT_NOAPI = false;
 function jzFont(key, roles) {
     roles = roles || JZ_ROLE_DEFAULT;
     var role = JZ_ROLE_DEFAULT.hasOwnProperty(key) ? key : jzRoleOf(key);
     if (roles.__force && roles[role]) return roles[role];
     var cands = JZ_FONT_CANDIDATES[key] || [];
-    for (var i = 0; i < cands.length; i++) { var ex = jzFontExists(cands[i]); if (ex === true) return cands[i]; }
+    for (var i = 0; i < cands.length; i++) {
+        var ex = jzFontExists(cands[i]);
+        if (i === 0 && ex === false) JZ_FONT_MISSING[key] = true;
+        if (ex === null) JZ_FONT_NOAPI = true;
+        if (ex === true) return cands[i];
+    }
     return roles[role] || JZ_ROLE_DEFAULT[role];
+}
+// family names of the missing typefaces (e.g. "Klee One"), for messages
+function jzMissingFonts() {
+    var out = [], seen = {}, k, fam;
+    for (k in JZ_FONT_MISSING) if (JZ_FONT_MISSING.hasOwnProperty(k)) {
+        fam = (JZ_DATA.fonts && JZ_DATA.fonts[k] && JZ_DATA.fonts[k].family) || k;
+        if (!seen[fam]) { seen[fam] = true; out.push(fam); }
+    }
+    return out;
 }
 
 // ---- text layers

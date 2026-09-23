@@ -421,8 +421,9 @@ jzReg('exit', 'scorchOut', { apply: function (m) {
         var t0 = xb1_r(seed, j, 341) * 0.85, we = w0 + (w1 - w0) * xb1_r(seed, j, 342);
         var oe = rough * (0.75 * xb1_noise(we / U * 2.4, seed) + 0.3 * xb1_noise(we / U * 8, seed + 3));
         var p0 = pt(sA + (sB - sA) * xb1_ios(t0) + oe - U * 0.05, we), ag = 'var ag=(PO-' + xb1_n(t0) + ')/0.28,ac=cl(ag);';
-        var ge = jzGrp(S, 'ember ' + (j + 1)), el = jzAddEllipse(ge, 4, 4); jzAddFill(ge, C.acc);
+        var ge = jzGrp(S, 'ember ' + (j + 1)), el = jzAddEllipse(ge, 4, 4);
         jzSetExpr(el.property('ADBE Vector Ellipse Size'), HD + ag + 'var R=ag>0&&ag<1?Math.max(0.8,' + jzN(U * 0.028) + '*(1-ag)):0;[2*R,2*R]');
+        jzAddFill(ge, C.acc);          // (after the ellipse is configured: adding the fill invalidates the ellipse reference)
         jzSetExpr(jzGX(ge).property('ADBE Vector Position'), HD + ag + '[' + jzN(p0[0]) + '-' + xb1_n(dx * U * 0.3) + '*ac+Math.sin(ac*7+' + j + ')*' + jzN(U * 0.06) + ',' + jzN(p0[1]) + '-' + xb1_n(dy * U * 0.3) + '*ac-' + xb1_n(U * 0.9) + '*ac]');
         jzSetExpr(jzGX(ge).property('ADBE Vector Group Opacity'), HD + ag + 'ag>0&&ag<1?(1-ag)*100:0');
     }
@@ -464,9 +465,10 @@ jzReg('exit', 'overexposeOut', { apply: function (m) {
     else { S = xb1_shape(m, 'JZ Out Streak'); cx = G.cx; cy = G.cy; bw = r.width; }
     var bars = [[1.8, 0.018, 95], [1.5, 0.06, 35], [1, 0.18, 14]];
     for (i = 0; i < bars.length; i++) {
-        var g = jzGrp(S, 'streak ' + (i + 1)), rc = jzAddRect(g, 10, 10, 0); jzAddFill(g, glow);
-        jzGX(g).property('ADBE Vector Position').setValue([cx, cy]); jzGX(g).property('ADBE Vector Group Opacity').setValue(bars[i][2]);
+        var g = jzGrp(S, 'streak ' + (i + 1)), rc = jzAddRect(g, 10, 10, 0);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), HD + '[' + jzN(bw * bars[i][0]) + '*(0.8+0.9*oxe),' + jzN(sz * k1 * bars[i][1]) + ']');
+        jzAddFill(g, glow);
+        jzGX(g).property('ADBE Vector Position').setValue([cx, cy]); jzGX(g).property('ADBE Vector Group Opacity').setValue(bars[i][2]);
     }
     jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + 'PO>0?Math.sin(Math.PI*cl((PO-0.12)/0.88))*100:0');
 } });
@@ -532,9 +534,10 @@ jzReg('exit', 'stripesOut', { apply: function (m) {
     xb1_hideL(m, '', 'PO>0');
     var T = xb1_twin(m, 'JZ Out Striped', '', 'PO>0?1:0'), M = xb1_matteShape(m, T, 'JZ Out Stripes Matte');
     for (k = 0; k < n; k++) {
-        var am = a0 + (k + 0.5) * sw, g = jzGrp(M, 'stripe ' + (k + 1)), rc = jzAddRect(g, sw + 0.6, 10, 0); jzAddFill(g, '#FFFFFF');
-        jzGX(g).property('ADBE Vector Rotation').setValue(phi);
+        var am = a0 + (k + 0.5) * sw, g = jzGrp(M, 'stripe ' + (k + 1)), rc = jzAddRect(g, sw + 0.6, 10, 0);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), HD + qe(k) + '[' + jzN(sw + 0.6) + ',Math.max(0,lb-la)]');
+        jzAddFill(g, '#FFFFFF');
+        jzGX(g).property('ADBE Vector Rotation').setValue(phi);
         jzSetExpr(jzGX(g).property('ADBE Vector Position'), HD + qe(k) + 'var lm=(la+lb)/2;[' + jzN(adx * am) + '+' + jzN(ldx) + '*lm,' + jzN(ady * am) + '+' + jzN(ldy) + '*lm]');
     }
     if (!xb1_main(m)) return;
@@ -602,14 +605,18 @@ jzReg('exit', 'halftoneOut', { apply: function (m) {
    (kept part = twin through per-lane rect matte; smear = blurred, stretched twin through the complementary matte) */
 function xb1_eraserBlock(m, S, E, lanes, felt) {
     // E: expression prefix defining el (lane), ex (block centre along the lane from its start); lanes: {vert, lh, len, L0, A0, fwdSign}
-    var g = jzGrp(S, 'eraser'), sf = jzVecs(g).addProperty('ADBE Vector Group'), sb = jzVecs(g).addProperty('ADBE Vector Group');
-    sf.name = 'felt'; sb.name = 'body';
-    var ew = lanes.ew, lh = lanes.lh, vert = lanes.vert, bw = vert ? lh * 1.06 : ew, bh = vert ? ew : lh * 1.06;
-    jzAddRect(sb, bw, bh, Math.min(bw, bh) * 0.18); jzAddFill(sb, lanes.acc);
-    var rf = jzAddRect(sf, vert ? bw : bw * 0.3, vert ? bh * 0.3 : bh, Math.min(bw, bh) * 0.12); jzAddFill(sf, felt);
+    // (each sub-group / item is fully set up before its next sibling is added: adding one invalidates references to the others)
+    var g = jzGrp(S, 'eraser'), ew = lanes.ew, lh = lanes.lh, vert = lanes.vert, bw = vert ? lh * 1.06 : ew, bh = vert ? ew : lh * 1.06;
+    var sf = jzVecs(g).addProperty('ADBE Vector Group');      // felt (first = drawn on top of the body)
+    sf.name = 'felt';
+    var rf = jzAddRect(sf, vert ? bw : bw * 0.3, vert ? bh * 0.3 : bh, Math.min(bw, bh) * 0.12);
     // felt on the trailing side of the stroke
     jzSetExpr(rf.property('ADBE Vector Rect Position'), E + 'var fw=el%2==0?-1:1;' + (vert ? '[0,fw*' + jzN(bh * 0.35) + ']' : '[fw*' + jzN(bw * 0.35) + ',0]'));
-    jzSetExpr(jzGX(g).property('ADBE Vector Position'), E + 'var c=Math.max(' + jzN(-ew / 2) + ',Math.min(' + jzN(lanes.len + ew / 2) + ',ex)),t=el%2==0?' + jzN(lanes.L0) + '+c:' + jzN(lanes.L0 + lanes.len) + '-c,a=' + (vert ? jzN(lanes.A0) + '-(el+0.5)*' + jzN(lh) : jzN(lanes.A0) + '+(el+0.5)*' + jzN(lh)) + ';' + (vert ? '[a,t]' : '[t,a]'));
+    jzAddFill(sf, felt);
+    var sb = jzVecs(g).addProperty('ADBE Vector Group');      // body
+    sb.name = 'body';
+    jzAddRect(sb, bw, bh, Math.min(bw, bh) * 0.18); jzAddFill(sb, lanes.acc);
+    jzSetExpr(jzGX(g).property('ADBE Vector Position'),E + 'var c=Math.max(' + jzN(-ew / 2) + ',Math.min(' + jzN(lanes.len + ew / 2) + ',ex)),t=el%2==0?' + jzN(lanes.L0) + '+c:' + jzN(lanes.L0 + lanes.len) + '-c,a=' + (vert ? jzN(lanes.A0) + '-(el+0.5)*' + jzN(lh) : jzN(lanes.A0) + '+(el+0.5)*' + jzN(lh)) + ';' + (vert ? '[a,t]' : '[t,a]'));
 }
 jzReg('exit', 'eraserOut', { apply: function (m) {
     var L = m.L, G = xb1_geo(m), r = G.r, sz = xb1_sz(m), C = xb1_col(m), vert = G.vert, s0 = xb1_s0(L), i, j;
@@ -637,9 +644,10 @@ jzReg('exit', 'eraserOut', { apply: function (m) {
     xb1_hideL(m, '', 'PO>0');
     var lane = function (Mx, keep) {
         for (j = 0; j < K; j++) {
-            var g = jzGrp(Mx, 'lane ' + (j + 1)), rc = jzAddRect(g, 10, 10, 0); jzAddFill(g, '#FFFFFF');
+            var g = jzGrp(Mx, 'lane ' + (j + 1)), rc = jzAddRect(g, 10, 10, 0);
             var q = E + 'var j=' + j + ',q=' + (keep ? 'LR(j,j>el?0:(j==el?ecut:' + jzN(len) + '),' + jzN(len) + ')' : 'LR(j,0,j<el?' + jzN(len) + ':(j==el?ecut:0))') + ';';
             jzSetExpr(rc.property('ADBE Vector Rect Size'), q + '[q[2]>0.01&&q[3]>0.01?q[2]+0.4:0,q[3]>0.01&&q[2]>0.01?q[3]+0.4:0]');
+            jzAddFill(g, '#FFFFFF');
             jzSetExpr(jzGX(g).property('ADBE Vector Position'), q + '[q[0]+q[2]/2,q[1]+q[3]/2]');
         }
     };
@@ -666,13 +674,16 @@ jzReg('exit', 'eraserOut', { apply: function (m) {
 /* ---- vacuumOut — 一点に吸われる: sucked into a point beyond the end of the line, nearest glyph first, each glyph stretching along
    its path; an accent dot at the target swells with what it swallowed and pops as a ring */
 function xb1_vacDot(m, S, cx, cy, frEx, szc) {
-    var HD = xb1_hd(m), gr = jzGrp(S, 'ring'), er = jzAddEllipse(gr, 4, 4, cx, cy), st = jzAddStroke(gr, m.ctx.sc.accent || '#FFFFFF', 2);
+    // (each item is configured before the next one is added to the same contents: adding invalidates the earlier references)
+    var HD = xb1_hd(m), gr = jzGrp(S, 'ring'), er = jzAddEllipse(gr, 4, 4, cx, cy);
     var rg = 'var rg=cl((PO-0.86)/0.14);';
     jzSetExpr(er.property('ADBE Vector Ellipse Size'), HD + rg + 'var R=' + jzN(szc) + '*(0.15+0.5*oc(rg));[2*R,2*R]');
+    var st = jzAddStroke(gr, m.ctx.sc.accent || '#FFFFFF', 2);
     jzSetExpr(st.property('ADBE Vector Stroke Width'), HD + rg + 'Math.max(1,' + jzN(szc * 0.03) + '*(1-rg))');
     jzSetExpr(jzGX(gr).property('ADBE Vector Group Opacity'), HD + rg + 'rg>0&&rg<1?(1-rg)*100:0');
-    var gd = jzGrp(S, 'dot'), ed = jzAddEllipse(gd, 4, 4, cx, cy); jzAddFill(gd, m.ctx.sc.accent || '#FFFFFF');
+    var gd = jzGrp(S, 'dot'), ed = jzAddEllipse(gd, 4, 4, cx, cy);
     jzSetExpr(ed.property('ADBE Vector Ellipse Size'), HD + frEx + 'var pu=1+0.25*Math.sin(PO*40)*(1-PO),R=' + jzN(szc) + '*(0.05+0.09*fr)*pu*(1-sm(0.9,1,PO));[2*R,2*R]');
+    jzAddFill(gd, m.ctx.sc.accent || '#FFFFFF');
     jzSetExpr(jzGX(gd).property('ADBE Vector Group Opacity'), HD + 'PO>0?100:0');
 }
 jzReg('exit', 'vacuumOut', { apply: function (m) {
@@ -736,8 +747,9 @@ jzReg('exit', 'sandOut', { apply: function (m) {
         var g = vis[j % vis.length], gx = g.x + xb1_rs(cs, j, 84) * g.w * 0.38, gy = g.y + xb1_rs(cs, j, 85) * G.fs * 0.38;
         var t0 = posOf(gx, gy) * 0.5 + xb1_r(cs, j, 81) * 0.18, k1 = xb1_r(cs, j, 82), gd = sz * (0.1 + 0.14 * xb1_r(cs, j, 86));
         var hx = 'var x=(PO-' + xb1_n(t0) + ')/0.32,xc=cl(x);';
-        var gg = jzGrp(S, 'grain ' + (j + 1)), rc = jzAddRect(gg, gd, gd * 0.45, 0); jzAddFill(gg, C.c0);
+        var gg = jzGrp(S, 'grain ' + (j + 1)), rc = jzAddRect(gg, gd, gd * 0.45, 0);
         jzSetExpr(rc.property('ADBE Vector Rect Size'), HD + hx + '[' + jzN(gd) + '*(1+2.4*xc)*(1-0.55*xc),' + jzN(gd * 0.45) + '*(1-0.55*xc)]');
+        jzAddFill(gg, C.c0);
         jzSetExpr(jzGX(gg).property('ADBE Vector Position'), HD + hx + '[' + jzN(gx) + '+' + dir + '*' + jzN(D) + '*xc*xc,' + jzN(gy) + '-(SZ*0.55*xc+Math.sin(xc*5+' + jzN(k1 * 6) + ')*SZ*0.07*xc)]');
         jzSetExpr(jzGX(gg).property('ADBE Vector Rotation'), HD + hx + jzN(xb1_rs(cs, j, 83) * 140) + '*xc*0.3');
         jzSetExpr(jzGX(gg).property('ADBE Vector Group Opacity'), HD + hx + 'x>0&&x<1?(1-x*x)*100:0');
@@ -775,8 +787,8 @@ jzReg('exit', 'shredOut', { apply: function (m) {
     if (!xb1_main(m)) return;
     // the slot: an ink bar fixed on the screen
     var P = xb1_toComp(L, (bx0 + bx1) / 2, slot), S = xb1_cshape(m, 'JZ Out Slot Bar'), g = jzGrp(S, 'bar'), rc = jzAddRect(g, 10, 10, 0);
-    jzAddFill(g, C.ink); jzGX(g).property('ADBE Vector Position').setValue(P);
     jzSetExpr(rc.property('ADBE Vector Rect Size'), HD + '[' + jzN((bw + sz * 0.5) * s0) + '*oc(sm(0,0.12,PO)),' + jzN(Math.max(2 * m.u, sz * s0 * 0.05)) + ']');
+    jzAddFill(g, C.ink); jzGX(g).property('ADBE Vector Position').setValue(P);
     jzSetExpr(jzXf(S, 'ADBE Opacity'), HD + 'PO>0?sm(0,0.1,PO)*(1-sm(0.82,0.98,PO))*100:0');
 } });
 
@@ -877,9 +889,10 @@ jzReg('hold', 'flashBox', { apply: function (m) {
     jzAnimator(L, 'JZ Hold Knockout', [['ADBE Text Fill Color', jzHex(knock)], ['ADBE Text Stroke Color', jzHex(knock)]], HD + 'fbon&&textIndex==VI[fbk]?100:0');
     jzAnimator(L, 'JZ Hold Punch', [['ADBE Text Scale 3D', [105, 105, 100]]], HD + 'fbon&&textIndex==VI[fbk]?(1-fbu)*100:0');
     if (!xb1_main(m) || xb1_crowded(m, G)) return;
-    var S = xb1_shape(m, 'JZ Hold Flash Box', null, true, true), g = jzGrp(S, 'box'), rc = jzAddRect(g, 10, 10, 0); jzAddFill(g, C.acc);
+    var S = xb1_shape(m, 'JZ Hold Flash Box', null, true, true), g = jzGrp(S, 'box'), rc = jzAddRect(g, 10, 10, 0);
     var at = 'var X=' + xb1_arr(X) + ',Y=' + xb1_arr(Y) + ',WW=' + xb1_arr(WW) + ',pop=ob(cl(fbu/0.18),2.2);';
     jzSetExpr(rc.property('ADBE Vector Rect Size'), HD + at + '[(WW[fbk]||SZ)*1.06*pop,' + jzN(G.fs) + '*1.06*pop]');
+    jzAddFill(g, C.acc);           // (after the rect is configured: adding the fill invalidates the rect reference)
     jzSetExpr(jzGX(g).property('ADBE Vector Position'), HD + at + '[X[fbk]||0,Y[fbk]||0]');
     jzSetExpr(jzGX(g).property('ADBE Vector Group Opacity'), HD + 'fbon&&PO<=0?100:0');
 } });

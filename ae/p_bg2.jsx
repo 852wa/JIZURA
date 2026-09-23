@@ -97,12 +97,17 @@ function bg2_sub(g, name) { var c = jzVecs(g).addProperty('ADBE Vector Group'); 
 function bg2_hex(g, x, y, r) { var p = [], m; for (m = 0; m < 6; m++) { var a = (m * 60 - 30) * Math.PI / 180; p.push([x + Math.cos(a) * r, y + Math.sin(a) * r]); } return jzAddPath(g, p, true); }
 function bg2_round(st) { try { st.property('ADBE Vector Stroke Line Cap').setValue(2); st.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e) {} return st; }
 // dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children)
+// (each entry is added AND set before the next one is added: in AE adding to the Dashes group invalidates held references to the others)
+function bg2_dashP(D, mn, v) {
+    var p = null;
+    try { p = D.addProperty(mn); } catch (e) { p = null; }
+    if (!p) { try { p = D.property(mn); } catch (e2) { p = null; } }
+    if (p) p.setValue(v);
+}
 function bg2_dash(st, dl, gp) {
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (p1) p1.setValue(dl); if (p2) p2.setValue(gp);
+    var D = st.property('ADBE Vector Stroke Dashes');
+    bg2_dashP(D, 'ADBE Vector Stroke Dash 1', dl);
+    bg2_dashP(D, 'ADBE Vector Stroke Gap 1', gp);
 }
 // L gets the layer directly above it as track matte (and the matte is switched off)
 function bg2_matte(L, M, type) { L.trackMatteType = type; M.enabled = false; }
@@ -667,12 +672,13 @@ jzReg('bg', 'ridgePlot', {
                 var so = new Shape(); so.vertices = pts; so.closed = false; openV.push(so);
                 var sf = new Shape(); sf.vertices = [[x0, base + px]].concat(pts, [[x1, base + px]]); sf.closed = true; closedV.push(sf);
             }
+            // (each path gets its keyframes before the stroke / fill / next group is added: adding invalidates `pL` / `pF` in AE)
             var gL = bg2_sub(g, 'line'), pL = jzAddPath(gL, openV[0].vertices, false);
+            pL.property('ADBE Vector Shape').setValuesAtTimes(ts, openV);
             bg2_round(jzAddStroke(gL, lc, lw));
             var gF = bg2_sub(g, 'fill'), pF = jzAddPath(gF, closedV[0].vertices, true);
-            jzAddFill(gF, sc.bg, paper ? 72 : 90);
-            pL.property('ADBE Vector Shape').setValuesAtTimes(ts, openV);
             pF.property('ADBE Vector Shape').setValuesAtTimes(ts, closedV);
+            jzAddFill(gF, sc.bg, paper ? 72 : 90);
         }
     }
 });
@@ -706,22 +712,24 @@ jzReg('bg', 'starfield', {
             jzSetExpr(jzGX(gm).property('ADBE Vector Group Opacity'), mh + 'on?Math.min(100,145*e*(1-q*0.6)):0');
         }
         for (l = 2; l >= 0; l--) {       // near (big, fast) layer on top
-            var cnt = Math.round(layers[l][0] * area), v = U * layers[l][2] * spd, aB = layers[l][3], g = jzGrp(S, 'stars ' + (l + 1)), gb = [], fl = null;
-            if (l === 2) fl = bg2_sub(g, 'flares');
-            for (q = 0; q < NB; q++) gb.push(bg2_sub(g, 'twinkle ' + (q + 1)));
-            for (i = 0; i < cnt; i++) {
-                var x = bg2_r(sd, l, i, 1) * Wt, y = bg2_r(sd, l, i, 2) * Ht, r = U * layers[l][1] * (0.6 + 0.8 * bg2_r(sd, l, i, 3)), gq = gb[i % NB];
-                if (l < 2) jzAddRect(gq, 2 * r, 2 * r, 0, x, y);
-                else {
-                    jzAddEllipse(gq, 2 * r, 2 * r, x, y);
-                    if (bg2_r(sd, l, i, 5) < 0.5) { var L5 = r * 5.5, thn = Math.max(0.6 * px, r * 0.25); jzAddRect(fl, 2 * L5, thn, 0, x, y); jzAddRect(fl, thn, 2 * L5, 0, x, y); }
-                }
+            var cnt = Math.round(layers[l][0] * area), v = U * layers[l][2] * spd, aB = layers[l][3], g = jzGrp(S, 'stars ' + (l + 1)), stars = [];
+            for (i = 0; i < cnt; i++) stars.push([bg2_r(sd, l, i, 1) * Wt, bg2_r(sd, l, i, 2) * Ht, U * layers[l][1] * (0.6 + 0.8 * bg2_r(sd, l, i, 3))]);
+            // every sub-group is filled completely before the next one is added (adding a group invalidates the held siblings in AE)
+            if (l === 2) {
+                var fl = bg2_sub(g, 'flares');
+                for (i = 0; i < cnt; i++) if (bg2_r(sd, l, i, 5) < 0.5) { var L5 = stars[i][2] * 5.5, thn = Math.max(0.6 * px, stars[i][2] * 0.25); jzAddRect(fl, 2 * L5, thn, 0, stars[i][0], stars[i][1]); jzAddRect(fl, thn, 2 * L5, 0, stars[i][0], stars[i][1]); }
+                var ff = jzAddFill(fl, col); jzSetExpr(ff.property('ADBE Vector Fill Opacity'), hd + jzN(50 * aB * am) + '*e*(0.45+0.55*(0.5+0.5*Math.sin(T*1.7+2)))');
             }
             for (q = 0; q < NB; q++) {
-                var f = jzAddFill(gb[q], col);
+                var gq = bg2_sub(g, 'twinkle ' + (q + 1));
+                for (i = q; i < cnt; i += NB) {
+                    var x = stars[i][0], y = stars[i][1], r = stars[i][2];
+                    if (l < 2) jzAddRect(gq, 2 * r, 2 * r, 0, x, y);
+                    else jzAddEllipse(gq, 2 * r, 2 * r, x, y);
+                }
+                var f = jzAddFill(gq, col);
                 jzSetExpr(f.property('ADBE Vector Fill Opacity'), hd + jzN(100 * aB * am) + '*e*(0.45+0.55*(0.5+0.5*Math.sin(T*' + jzN(1.1 + 2.6 * (q + 0.5) / NB) + '+' + jzN(q * 1.7 + l) + ')))');
             }
-            if (fl) { var ff = jzAddFill(fl, col); jzSetExpr(ff.property('ADBE Vector Fill Opacity'), hd + jzN(50 * aB * am) + '*e*(0.45+0.55*(0.5+0.5*Math.sin(T*1.7+2)))'); }
             bg2_rep(g, 2, Wt, 0, 0); bg2_rep(g, 2, 0, Ht, 0);
             jzSetExpr(jzGX(g).property('ADBE Vector Position'), hd + '[wr(T*' + jzN(v * vx) + ',' + jzN(Wt) + ')-' + jzN(Wt + W * 0.05) + ',wr(T*' + jzN(v * vy) + ',' + jzN(Ht) + ')-' + jzN(Ht + H * 0.05) + ']');
         }

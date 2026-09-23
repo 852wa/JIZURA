@@ -6,11 +6,13 @@ import json, os, glob, argparse
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 ap = argparse.ArgumentParser()
 ap.add_argument('--packs', default=None, help='comma separated pack names (p_xxx) or "none"; default: all ae/p_*.jsx')
-ap.add_argument('--out', default='JIZURA_AE.jsx')
+ap.add_argument('--out', default=None)
+ap.add_argument('--core', action='store_true', help='engine only (no ScriptUI), exposed as $.global.JZ_CORE — used by the CEP panel')
 a = ap.parse_args()
+if a.out is None: a.out = 'dist/JIZURA_CEP/jsx/jizura_core.jsx' if a.core else 'JIZURA_AE.jsx'
 allpacks = sorted(os.path.basename(f)[:-4] for f in glob.glob('ae/p_*.jsx'))
 packs = allpacks if a.packs is None else ([] if a.packs == 'none' else [p.strip().replace('.jsx', '').replace('ae/', '') for p in a.packs.split(',') if p.strip()])
-parts = ['00_core', '05_reg', '10_helpers', '15_plan', '16_omakase', '20_motion', '30_layouts', '40_decor', '45_core'] + packs + ['50_build', '90_ui']
+parts = ['00_core', '05_reg', '10_helpers', '15_plan', '16_omakase', '20_motion', '30_layouts', '40_decor', '45_core'] + packs + ['50_build', '55_diag'] + ([] if a.core else ['90_ui'])
 data = json.load(open('ae/data.json', encoding='utf-8'))
 body = '\n'.join(open(f'ae/{p}.jsx', encoding='utf-8').read() for p in parts)
 head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v2.0)
@@ -20,8 +22,14 @@ head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v2.
     License: see LICENSE in the source repository.
 */
 '''
-src = head + '(function (thisObj) {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\njzUI(thisObj);\n})(this);\n'
-src = '#target aftereffects\n' + src
+if a.core:
+    head = '/*  JIZURA 字面 — After Effects build engine for the CEP panel (v2.0). Loaded by host.jsx. */\n'
+    api = ('$.global.JZ_CORE = { version: 2, build: jzBuild, makePlan: jzMakePlan, keyStyle: jzKeyStyle, parse: jzParseJSON, '
+           'log: function () { return JZLOG; }, fallbacks: function () { return JZ_FALLBACKS; }, missingFonts: jzMissingFonts, diagnose: jzDiagnose, saveReport: jzSaveReport, parts: jzPartsCount, panelVersion: JZ_PANEL_VERSION, fontCheckUnavailable: function () { return JZ_FONT_NOAPI; }, roleDefault: JZ_ROLE_DEFAULT, data: JZ_DATA };')
+    src = head + '(function () {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\n' + api + '\n})();\n'
+else:
+    src = head + '(function (thisObj) {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\njzUI(thisObj);\n})(this);\n'
+    src = '#target aftereffects\n' + src
 # escape every non-ASCII character so the file is encoding-proof in ExtendScript
 out = []
 for ch in src:

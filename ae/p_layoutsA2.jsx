@@ -69,13 +69,16 @@ function la2_op(ctx, L, factorExpr, alpha) {
 }
 function la2_line(g, pts, col, w, op) { jzAddPath(g, pts, false); var s = jzAddStroke(g, col, w, op); return s; }
 function la2_sub(g, name) { var q = jzVecs(g).addProperty('ADBE Vector Group'); if (name) q.name = name; return q; }   // group inside a group
-// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children)
+// a layer's top-level shape group by name (re-fetch: adding a sibling group invalidates the references held to the others)
+function la2_top(S, name) { return S.property('ADBE Root Vectors Group').property(name); }
+// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children). Each dash property is set
+// right after it is added, re-fetched by matchName (adding the Gap invalidates a reference held to the Dash).
 function la2_dash(st, d, gp) {
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (p1) p1.setValue(d); if (p2) p2.setValue(gp);
+    var D = st.property('ADBE Vector Stroke Dashes'), p;
+    try { D.addProperty('ADBE Vector Stroke Dash 1'); } catch (e) {}
+    p = D.property('ADBE Vector Stroke Dash 1'); if (p) p.setValue(d);
+    try { D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e2) {}
+    p = D.property('ADBE Vector Stroke Gap 1'); if (p) p.setValue(gp);
 }
 function la2_gxp(g, expr) { jzSetExpr(jzGX(g).property('ADBE Vector Position'), expr); }
 function la2_gxo(g, expr) { jzSetExpr(jzGX(g).property('ADBE Vector Group Opacity'), expr); }
@@ -562,7 +565,8 @@ jzReg('layout', 'panels', {
             if (accent && fx === 'focus') {
                 var Fx = jzNoGhost(jzShapeLayer(ctx, 'speed lines', 0, 0)), R0 = Math.sqrt(pw * pw + ph * ph);
                 var tw = vert ? cn * size : la2_width(ctx, txt.split('\r')[0], font, size, 0);
-                var rin = size * (vert ? 0.9 : 0.75) + Math.max(0, tw * 0.35), gl = [jzGrp(Fx, 'thin'), jzGrp(Fx, 'mid'), jzGrp(Fx, 'bold')];
+                jzGrp(Fx, 'thin'); jzGrp(Fx, 'mid'); jzGrp(Fx, 'bold');           // (all three first, then re-fetched: adding a group invalidates its siblings)
+                var rin = size * (vert ? 0.9 : 0.75) + Math.max(0, tw * 0.35), gl = [la2_top(Fx, 'thin'), la2_top(Fx, 'mid'), la2_top(Fx, 'bold')];
                 for (j = 0; j < 48; j++) {
                     var ang = (j / 48 + jzR(c.seed, j, 61) * 0.01) * Math.PI * 2, r1 = rin * (1 + jzR(c.seed, j, 62) * 0.5), wk = jzR(c.seed, j, 63);
                     jzAddPath(gl[wk < 0.33 ? 0 : wk < 0.66 ? 1 : 2], [[cx + Math.cos(ang) * R0, cy + Math.sin(ang) * R0], [cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1]], false);

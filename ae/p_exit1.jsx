@@ -373,10 +373,11 @@ jzReg('exit', 'squash', { apply: function (m) {
         rr = fs * ks * 0.08; px = 0; py = 0;
     } else { S = jzNoGhost(ex1_shape(m, 'JZ Out Squash Dot')); rr = fs * 0.08; }
     var dA = ev + 'var dA=sm(0.6,0.8,PO)*(1-sm(0.88,1,PO));';
+    // (each shape item is fully set up before the next sibling is added: adding one invalidates references to the others in AE)
     var gl = jzGrp(S, 'line'), rc = jzAddRect(gl, rr * 10, rr * 0.24, 0);
+    jzSetExpr(rc.property('ADBE Vector Rect Size'), dA + '[' + jzN(rr * 10) + '*(1-a2*0.5),' + jzN(rr * 0.24) + ']');
     jzAddFill(gl, col);
     jzGX(gl).property('ADBE Vector Position').setValue([px, py]);
-    jzSetExpr(rc.property('ADBE Vector Rect Size'), dA + '[' + jzN(rr * 10) + '*(1-a2*0.5),' + jzN(rr * 0.24) + ']');
     jzSetExpr(jzGX(gl).property('ADBE Vector Group Opacity'), dA + 'dA*80');
     var gd = jzGrp(S, 'dot');
     jzAddEllipse(gd, rr * 2, rr * 2);
@@ -566,9 +567,9 @@ jzReg('exit', 'irisClose', { apply: function (m) {
     ex1_circ(L, cx, cy, 1, true, ev + 'rad<0.5?0:100', ev + 'time<OS?1e4:Math.max(0,rad-1)', 'JZ Out Iris');
     if (ex1_crowded(m)) return;
     var lw = Math.max(1.5 * m.u, fs * 0.035), S = jzNoGhost(ex1_shape(m, 'JZ Out Iris Ring')), g = jzGrp(S, 'ring'), el = jzAddEllipse(g, 10, 10);
+    jzSetExpr(el.property('ADBE Vector Ellipse Size'), ev + 'var d=(rad+' + jzN(lw / 2) + ')*2;[d,d]');     // before the stroke is added (el goes invalid then)
     jzAddStroke(g, ex1_hex(m.ctx.sc.accent, m.ctx.sc.fg), lw);
     jzGX(g).property('ADBE Vector Position').setValue([cx, cy]);
-    jzSetExpr(el.property('ADBE Vector Ellipse Size'), ev + 'var d=(rad+' + jzN(lw / 2) + ')*2;[d,d]');
     jzSetExpr(jzGX(g).property('ADBE Vector Group Opacity'), ev + 'rad<0.5?0:Math.min(1,PO*6)*(1-sm(0.9,1,PO))*100');
 } });
 

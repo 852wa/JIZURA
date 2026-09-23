@@ -16,7 +16,7 @@ function jzEventsArr(plan, type, t0, t1) {
 // Cut-to-cut transitions work on neighbouring wrapper layers in the main comp.
 function jzBuild(plan, opt) {
     opt = opt || {};
-    JZLOG = []; JZ_FALLBACKS = 0;
+    JZLOG = []; JZ_FALLBACKS = 0; JZ_FALLBACK_KEYS = []; JZ_FONT_MISSING = {}; JZ_FONT_NOAPI = false;
     var W = opt.width || plan.width || 1920, H = opt.height || plan.height || 1080, fps = plan.fps || 24, D = Math.max(1, plan.duration || 10);
     var st = plan.style, fx = plan.fx || {}, roles = opt.roles || JZ_ROLE_DEFAULT;
     var ghostAmt = (fx.chroma == null ? 0.7 : fx.chroma) * (st.ghost == null ? 1 : st.ghost);
@@ -81,7 +81,7 @@ function jzBuild(plan, opt) {
             if (gsrc) {
                 try {
                     gsrc = pc.duplicate(); gsrc.name = label + ' ghost'; gsrc.parentFolder = folder;
-                    for (li = 1; li <= gsrc.numLayers; li++) if (jzIsNoGhost(gsrc.layer(li))) gsrc.layer(li).enabled = false;
+                    jzTidyComp(gsrc, true);          // drop the main-pass-only layers (keeps what the ghosted layers still need)
                 } catch (eg) { gsrc = null; jzWarn('ghost copy: ' + eg.toString()); }
             }
             var ghosts = [['B', lagB, [-3.4, -1.3], sc.ghostB], ['A', lagA, [3.2, 1.9], sc.ghostA]];
@@ -171,6 +171,9 @@ function jzBuild(plan, opt) {
         if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
     }
 
+    // no hidden leftovers anywhere in what was built (track mattes stay: After Effects keeps a matte's own video off)
+    try { jzTidyTree(comp); } catch (et) { jzWarn('tidy: ' + et.toString()); }
+
     // audio layer (optional)
     if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
     comp.openInViewer();
@@ -204,4 +207,52 @@ function jzHUD(comp, plan, sc, roles) {
     var bar = jzShapeLayer(ctx, 'HUD progress', 0, 0), gb = jzGrp(bar);
     jzAddPath(gb, [[W * 0.3, H - m - L * 0.9], [W * 0.7, H - m - L * 0.9]], false); jzAddStroke(gb, sc.accent, 2);
     jzAddTrimPaths(gb, 'linear(time,0,thisComp.duration,0,100)');
+}
+
+// ---------------------------------------------------------------- tidy: remove hidden / main-pass-only leftovers
+// index of the layer used as track matte by layer i (0 = none): AE 23+ trackMatteLayer, else the legacy "layer above"
+function jzMatteIndex(C, i) {
+    var L = C.layer(i);
+    try { if (L.trackMatteLayer) return L.trackMatteLayer.index; } catch (e) {}
+    try { if (L.trackMatteType && L.trackMatteType !== TrackMatteType.NO_TRACK_MATTE && i > 1) return i - 1; } catch (e2) {}
+    return 0;
+}
+// ghost = the ghost copy of a content comp: also drop the jzNoGhost() layers. A dropped layer that another kept layer still needs
+// stays: as a track matte it keeps its video off (After Effects' own rule for mattes); as a parent it stays on at 0 % opacity.
+function jzTidyComp(C, ghost) {
+    var n = C.numLayers, i, cand = [], keep = [], par = [], mat = [], changed = true, L;
+    for (i = 1; i <= n; i++) {
+        L = C.layer(i); par[i] = 0; mat[i] = jzMatteIndex(C, i);
+        try { if (L.parent) par[i] = L.parent.index; } catch (e) {}
+        var hidden = false; try { hidden = !L.enabled; } catch (e1) {}
+        cand[i] = hidden || (ghost && jzIsNoGhost(L));
+    }
+    for (i = 1; i <= n; i++) if (cand[i] && mat[i]) cand[mat[i]] = true;      // a matte goes with the layer it cuts
+    for (i = 1; i <= n; i++) keep[i] = !cand[i];
+    while (changed) {
+        changed = false;
+        for (i = 1; i <= n; i++) if (keep[i]) {
+            if (par[i] && !keep[par[i]]) { keep[par[i]] = true; changed = true; }
+            if (mat[i] && !keep[mat[i]]) { keep[mat[i]] = true; changed = true; }
+        }
+    }
+    var isMatte = [];
+    for (i = 1; i <= n; i++) if (keep[i] && mat[i]) isMatte[mat[i]] = true;
+    for (i = n; i >= 1; i--) {
+        L = C.layer(i);
+        if (!keep[i]) { try { L.remove(); } catch (e2) { jzWarn('tidy remove: ' + e2.toString()); } continue; }
+        if (!cand[i] || isMatte[i]) continue;
+        // kept only as a parent: visible switch on, nothing drawn
+        try { L.enabled = true; var op = L.property('ADBE Transform Group').property('ADBE Opacity'); try { op.expression = ''; } catch (e3) {} op.setValue(0); } catch (e4) { jzWarn('tidy parent: ' + e4.toString()); }
+    }
+}
+function jzTidyTree(comp) {
+    var seen = {}, todo = [comp], C, i, L;
+    while (todo.length) {
+        C = todo.pop();
+        if (!C || seen[C.id]) continue;
+        seen[C.id] = true;
+        jzTidyComp(C, / ghost$/.test(C.name));
+        for (i = 1; i <= C.numLayers; i++) { L = C.layer(i); try { if (L.source && L.source instanceof CompItem) todo.push(L.source); } catch (e) {} }
+    }
 }

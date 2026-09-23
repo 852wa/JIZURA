@@ -270,9 +270,9 @@ jzReg('enter', 'crtOn', { apply: function (m) {
     var E = eb2_head(m) + 'var la=(1-sm(0.3,0.55,P))*cl(P*12),w=' + jzN(r.width + sz * 0.6) + '*o4(P/0.3),th=' + jzN(Math.max(2 * m.u, sz * 0.045)) + '*(1+2*sm(0.2,0.3,P));';
     for (k = 0; k < 2; k++) {
         var grp = jzGrp(S, k ? 'line' : 'glow'), rc = jzAddRect(grp, 10, 10, 0);
+        jzSetExpr(rc.property('ADBE Vector Rect Size'), E + '[Math.max(0.01,w),th*' + (k ? 1 : 4) + ']');   // before the fill is added (keeps rc valid)
         jzAddFill(grp, hot);
         jzGX(grp).property('ADBE Vector Position').setValue([cx, cy]);
-        jzSetExpr(rc.property('ADBE Vector Rect Size'), E + '[Math.max(0.01,w),th*' + (k ? 1 : 4) + ']');
         jzSetExpr(jzGX(grp).property('ADBE Vector Group Opacity'), E + 'la*' + (k ? 100 : 25));
     }
 } });
@@ -321,8 +321,8 @@ jzReg('enter', 'loadingBar', { selfHide: true, apply: function (m) {
     var E = eb2_head(m) + PR + 'var out=sm(0.74,0.96,P),bA=cl(P/0.08)*(1-sm(0.88,1,P)),lo=' + jzN(Ln) + '*out,hi=' + jzN(Ln) + '*pr;';
     var S = eb2_shape(m, 'JZ In Loading'), yb = r.top + r.height + gap, xb = r.left - gap - th;
     for (k = 0; k < 2; k++) {
+        // the rect is set up before the fill is added (adding to the contents invalidates older item references)
         var grp = jzGrp(S, k ? 'fill' : 'track'), rc = jzAddRect(grp, 10, 10, 0);
-        jzAddFill(grp, k ? eb2_pick(sc.accent, sc.fg) : eb2_pick(sc.sub, sc.fg), k ? 100 : 30);
         var ln = 'var s0=lo,s1=Math.max(s0,' + (k ? 'hi' : jzN(Ln)) + ');';
         if (!vert) {
             jzSetExpr(rc.property('ADBE Vector Rect Size'), E + ln + '[s1-s0,' + jzN(th) + ']');
@@ -331,6 +331,7 @@ jzReg('enter', 'loadingBar', { selfHide: true, apply: function (m) {
             jzSetExpr(rc.property('ADBE Vector Rect Size'), E + ln + '[' + jzN(th) + ',s1-s0]');
             jzSetExpr(rc.property('ADBE Vector Rect Position'), E + ln + '[' + jzN(xb + th / 2) + ',' + jzN(r.top) + '+(s0+s1)/2]');
         }
+        jzAddFill(grp, k ? eb2_pick(sc.accent, sc.fg) : eb2_pick(sc.sub, sc.fg), k ? 100 : 30);
         jzSetExpr(jzGX(grp).property('ADBE Vector Group Opacity'), E + (k ? '(hi>lo?bA:0)*100' : 'bA*100'));
     }
     // the % counter (mono, sub colour), parented to the lyric
@@ -454,15 +455,16 @@ jzReg('enter', 'brushReveal', { apply: function (m) {
         for (k = 0; k < KS; k++) {
             var lag = tail * Math.pow(eb2_r(seed, ln.li, k, 141), 1.6), vc = ln.v - hv + (k + 0.5) * th;
             var SE = LQ + 'var e=Math.max(a,F-' + jzN(lag) + ');';
+            // each rect is set up before its fill is added (adding to the contents invalidates older item references)
             var g = jzGrp(S, 'strip ' + (i + 1) + '.' + (k + 1)), rc = jzAddRect(g, 10, 10, 0);
-            jzAddFill(g, '#FFFFFF');
             jzSetExpr(rc.property('ADBE Vector Rect Size'), SE + (vert ? '[' + jzN(th + 0.8) + ',e-a]' : '[e-a,' + jzN(th + 0.8) + ']'));
             jzSetExpr(rc.property('ADBE Vector Rect Position'), SE + (vert ? '[' + jzN(vc) + ',(a+e)/2]' : '[(a+e)/2,' + jzN(vc) + ']'));
+            jzAddFill(g, '#FFFFFF');
             if (!T) continue;
             var tg = jzGrp(T, 'tip ' + (i + 1) + '.' + (k + 1)), tr = jzAddRect(tg, 10, 10, 0), TE = SE + 'var t0=Math.max(a,e-' + jzN(tip) + ');';
-            jzAddFill(tg, acc);
             jzSetExpr(tr.property('ADBE Vector Rect Size'), TE + (vert ? '[' + jzN(th * 0.92) + ',e-t0]' : '[e-t0,' + jzN(th * 0.92) + ']'));
             jzSetExpr(tr.property('ADBE Vector Rect Position'), TE + (vert ? '[' + jzN(vc) + ',(t0+e)/2]' : '[(t0+e)/2,' + jzN(vc) + ']'));
+            jzAddFill(tg, acc);
             jzSetExpr(jzGX(tg).property('ADBE Vector Group Opacity'), TE + 'q>0&&e>a&&e<=' + jzN(ln.u1 + pad + tip) + '?90*(1-sm(0.7,0.95,q)):0');
         }
     }
@@ -490,9 +492,9 @@ jzReg('enter', 'inkDrop', { apply: function (m) {
         first = false;
         if (!T) continue;
         var dg = jzGrp(T, 'drop ' + (i + 1)), el = jzAddEllipse(dg, 10, 10);
+        jzSetExpr(el.property('ADBE Vector Ellipse Size'), QE + 'var t=q/0.12,r=' + jzN(sz * 0.07) + '*(q<0.12?ob(t,2):1+(q-0.12)*4);[2*r,2*r]');   // before the fill (keeps el valid)
         jzAddFill(dg, acc);
         jzGX(dg).property('ADBE Vector Position').setValue([px, py]);
-        jzSetExpr(el.property('ADBE Vector Ellipse Size'), QE + 'var t=q/0.12,r=' + jzN(sz * 0.07) + '*(q<0.12?ob(t,2):1+(q-0.12)*4);[2*r,2*r]');
         jzSetExpr(jzGX(dg).property('ADBE Vector Group Opacity'), QE + 'q>0&&q<0.4?(q<0.12?100:(1-(q-0.12)/0.28)*100):0');
     }
 } });
@@ -529,10 +531,10 @@ jzReg('enter', 'invertBox', { apply: function (m) {
     // the lyric shows only above the block's top edge (where the block has already dropped away)
     eb2_mask(L, x0 - big, y0 - big, x1 + big, y0, E + 'e2>0||time>=DL+IN?100:0', E + 'time>=DL+IN?1e4:e2*' + jzN(h), 'JZ In Uncover');
     var B = eb2_shape(m, 'JZ In Block'), gr = jzGrp(B, 'block'), rc = jzAddRect(gr, 10, 10, 0);
-    jzAddFill(gr, col);
     var BE = E + 'var bw=' + jzN(w) + '*e1,bh=' + jzN(h) + '*(1-e2);';
-    jzSetExpr(rc.property('ADBE Vector Rect Size'), BE + '[bw,bh]');
+    jzSetExpr(rc.property('ADBE Vector Rect Size'), BE + '[bw,bh]');       // the rect is set up before the fill is added (keeps rc valid)
     jzSetExpr(rc.property('ADBE Vector Rect Position'), BE + '[' + jzN(x0) + '+bw/2,' + jzN(y1) + '-bh/2]');
+    jzAddFill(gr, col);
     jzSetExpr(jzGX(gr).property('ADBE Vector Group Opacity'), BE + 'bw>=0.5&&bh>=0.5?100:0');
     if (!K) return;
     // the knocked-out lyric: a background-coloured copy on top of the block, clipped to it
@@ -602,9 +604,9 @@ jzReg('enter', 'liquidFill', { apply: function (m) {
         eb2_waves(T, E, sz, ph);
     }
     var S = eb2_shape(m, 'JZ In Liquid Matte', true), g = jzGrp(S, 'liquid'), rc = jzAddRect(g, 10, 10, 0);
-    jzAddFill(g, '#FFFFFF');
-    jzSetExpr(rc.property('ADBE Vector Rect Size'), E + '[' + jzN(X1 - X0) + ',Math.max(0,' + jzN(bot) + '-lvl)]');
+    jzSetExpr(rc.property('ADBE Vector Rect Size'), E + '[' + jzN(X1 - X0) + ',Math.max(0,' + jzN(bot) + '-lvl)]');   // before the fill (keeps rc valid)
     jzSetExpr(rc.property('ADBE Vector Rect Position'), E + '[' + jzN(cx) + ',(lvl+' + jzN(bot) + ')/2]');
+    jzAddFill(g, '#FFFFFF');
     eb2_waves(S, E, sz, ph);
     eb2_fullMatte(m, S, cx, r.top + r.height / 2);
     eb2_matte(m, S);
@@ -718,8 +720,9 @@ jzReg('enter', 'bubbles', { selfHide: true, apply: function (m) {
         var rr = Math.max(g.w, g.h) * 0.56, o = N > 1 ? i / (N - 1) : 0;
         var QE = H + 'var q=cl((P-0.45*(0.5*' + jzN(RD[i]) + '+0.5*' + jzN(o) + '))/0.55),f=cl(q/0.68),tP=0.68,u=(q-tP)/(1-tP),' +
             'bx=' + jzN(g.cx) + '+Math.sin(' + jzN(PH[i]) + '+f*9)*' + jzN(sz * 0.1) + '*(1-f),by=' + jzN(g.cy) + '+' + jzN(sz * 1.7) + '*(1-oc(f));';
-        var bg = jzGrp(S, 'bubble ' + (i + 1)), el = jzAddEllipse(bg, rr * 2, rr * 2), st = jzAddStroke(bg, acc, lw);
-        jzSetExpr(el.property('ADBE Vector Ellipse Size'), QE + 'var k=q<tP?1:1+0.6*oc(u/0.5);[' + jzN(rr * 2) + '*k,' + jzN(rr * 2) + '*k]');
+        var bg = jzGrp(S, 'bubble ' + (i + 1)), el = jzAddEllipse(bg, rr * 2, rr * 2);
+        jzSetExpr(el.property('ADBE Vector Ellipse Size'), QE + 'var k=q<tP?1:1+0.6*oc(u/0.5);[' + jzN(rr * 2) + '*k,' + jzN(rr * 2) + '*k]');   // before the stroke (keeps el valid)
+        var st = jzAddStroke(bg, acc, lw);
         jzSetExpr(st.property('ADBE Vector Stroke Width'), QE + 'q<tP?' + jzN(lw) + ':' + jzN(lw) + '*Math.max(0,1-u)');
         jzSetExpr(jzGX(bg).property('ADBE Vector Position'), QE + 'q<tP?[bx,by]:' + eb2_pt(g.cx, g.cy));
         jzSetExpr(jzGX(bg).property('ADBE Vector Group Opacity'), QE + 'q<=0||q>=1?0:(q<tP?cl(q*6)*85:(u<0.5?(1-u/0.5)*100:0))');

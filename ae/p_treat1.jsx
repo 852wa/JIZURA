@@ -328,14 +328,15 @@ jzReg('treat', 'marker', {
         for (k = 0; k < G.spans.length; k++) {
             var Sp = G.spans[k], pad = s * 0.14, a0 = Sp.a0 - pad, ln = Sp.a1 + pad - a0, th = s * (half ? 0.52 : 1.08);
             var c0 = half ? Sp.c + s * 0.02 + th / 2 : Sp.c;
+            // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
             var g2 = jzGrp(S, 'bar ' + (k + 1)), r = jzAddRect(g2, Sp.vert ? th : ln, Sp.vert ? ln : th);
+            var H2 = HD + prog(k) + 'var A0=' + jzN(a0) + ',LN=' + jzN(ln) + ',TH=' + jzN(th) + ';var w=LN*Math.max(0,q-o);';
+            r.property('ADBE Vector Rect Size').expression = H2 + (Sp.vert ? '[TH,w]' : '[w,TH]');
+            r.property('ADBE Vector Rect Position').expression = H2 + 'var m=A0+LN*(o+Math.max(q,o))/2;' + (Sp.vert ? '[0,m]' : '[m,0]');
             jzAddFill(g2, box, half ? 92 : 100);
             var X = jzGX(g2);
             X.property('ADBE Vector Position').setValue(Sp.vert ? [c0, 0] : [0, c0]);
             if (P.v === 'skew') { X.property('ADBE Vector Skew').setValue(23.7); if (Sp.vert) X.property('ADBE Vector Skew Axis').setValue(90); }
-            var H2 = HD + prog(k) + 'var A0=' + jzN(a0) + ',LN=' + jzN(ln) + ',TH=' + jzN(th) + ';var w=LN*Math.max(0,q-o);';
-            r.property('ADBE Vector Rect Size').expression = H2 + (Sp.vert ? '[TH,w]' : '[w,TH]');
-            r.property('ADBE Vector Rect Position').expression = H2 + 'var m=A0+LN*(o+Math.max(q,o))/2;' + (Sp.vert ? '[0,m]' : '[m,0]');
         }
     }
 });

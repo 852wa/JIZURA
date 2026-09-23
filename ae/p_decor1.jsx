@@ -135,13 +135,18 @@ function dc1_arc(g, cx, cy, r, a0, a1) {
     var p = jzVecs(g).addProperty('ADBE Vector Shape - Group'); p.property('ADBE Vector Shape').setValue(sh);
     return p;
 }
-// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children)
+// dashed stroke (AE starts with an empty Dashes group; the preview model has fixed children).
+// The dash is set before the gap is added: adding the gap invalidates a held reference to the dash in AE.
+function dc1_dashItem(D, mn, v) {
+    var p = null;
+    try { p = D.addProperty(mn); } catch (e) { p = null; }
+    if (!p) { try { p = D.property(mn); } catch (e1) { p = null; } }
+    if (p) p.setValue(v);
+}
 function dc1_dash(st, dl, gp) {
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (p1) p1.setValue(dl); if (p2) p2.setValue(gp);
+    var D = st.property('ADBE Vector Stroke Dashes');
+    dc1_dashItem(D, 'ADBE Vector Stroke Dash 1', dl);
+    dc1_dashItem(D, 'ADBE Vector Stroke Gap 1', gp);
 }
 // rectangular layer mask; mode MaskMode.*, feather px or [fx, fy], expEx = Mask Expansion expression
 function dc1_mask(L, x0, y0, x1, y1, mode, feather, expEx) {
@@ -875,7 +880,7 @@ jzReg('decor', 'halftonePatch', { back: true, build: function (ctx, bb0, d) {
     // falloff: dots use a round ramp (radius = geometric mean of pw, ph); the line screen uses radius ph and the layer is
     // stretched horizontally around the corner to pw (horizontal lines stay horizontal), max line weight 92% like the browser
     var r2 = jzEffect(Mt, 'ADBE Ramp', 'JZ Falloff'), RF = lines ? ph : R, top = lines ? 0.92 : 1;
-    jzEP(r2, 1, [ox, oy]); jzEP(r2, 2, [top, top, top]); jzEP(r2, 3, [ox - sx * RF, oy]); jzEP(r2, 4, [0, 0, 0]); jzEP(r2, 5, 2); jzEP(r2, 7, 50);
+    jzEP(r2, 1, [ox, oy]); jzEP(r2, 2, [top, top, top]); jzEP(r2, 3, [ox - sx * RF, oy]); jzEP(r2, 4, [0, 0, 0]); jzEP(r2, 5, 2); jzEP(r2, 7, 0.5);
     var th = jzEffect(Mt, 'ADBE Threshold2', 'JZ Dots'); jzEP(th, 1, 128);
     if (lines) { jzXf(Mt, 'ADBE Anchor Point').setValue([ox, oy]); jzXf(Mt, 'ADBE Position').setValue([ox, oy]); jzXf(Mt, 'ADBE Scale').setValue([pw / ph * 100, 100]); }
     jzNoGhost(Mt);

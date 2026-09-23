@@ -363,13 +363,19 @@ function lc2_lines2(g, name, list, col, w, o) {
     lc2_stroke(s, col, w, o.op, o.cap);
     return s;
 }
+// (each dash entry is added AND set before the next one is added: in AE adding to the Dashes group invalidates the
+//  references already held to its other entries)
+function lc2_dashP(D, mn, v) {
+    var p = null;
+    try { p = D.addProperty(mn); } catch (e) { p = null; }
+    if (!p) { try { p = D.property(mn); } catch (e2) { p = null; } }
+    if (p) p.setValue(v);
+}
 function lc2_dash(st, d, gp, off) {
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null, p3 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); if (off) p3 = D.addProperty('ADBE Vector Stroke Offset'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (off && !p3) { try { p3 = D.property('ADBE Vector Stroke Offset'); } catch (e2) {} }
-    if (p1) p1.setValue(d); if (p2) p2.setValue(gp); if (p3 && off) p3.setValue(off);
+    var D = st.property('ADBE Vector Stroke Dashes');
+    lc2_dashP(D, 'ADBE Vector Stroke Dash 1', d);
+    lc2_dashP(D, 'ADBE Vector Stroke Gap 1', gp);
+    if (off) lc2_dashP(D, 'ADBE Vector Stroke Offset', off);
 }
 // dotted polylines (dots of radius r every `step` px): zero-length dashes with round caps
 function lc2_dots(g, name, list, col, r, step, op) {
@@ -655,10 +661,13 @@ jzReg('layout', 'letterPaper', {
         if (port) jzSetExpr(jzXf(R, 'ADBE Position'), HD + '[value[0],value[1]+(1-oc(cl(time/0.45)))*' + jzN(H * 0.25) + '+ic(PO)*' + jzN(H * 0.05) + ']');
         // shadow + edge follow the visible window
         var SH = lc2_S(ctx, 'letter shadow', 0, 0), gsh = lc2_G(SH, 'shadow'), d = u * 0.014;
-        var rs = lc2_sub(gsh, 'drop'), rp = jzAddRect(rs, 10, 10, 0); jzAddFill(rs, lc2_shCol(sc), lc2_shOp(sc));
+        // (rect expressions are set before the fill / stroke is added: adding a sibling invalidates `rp` / `rpf` in AE)
+        var rs = lc2_sub(gsh, 'drop'), rp = jzAddRect(rs, 10, 10, 0);
         jzSetExpr(rp.property('ADBE Vector Rect Size'), KX + VIS + '[vw,vh]'); jzSetExpr(rp.property('ADBE Vector Rect Position'), KX + VIS + '[vx0+vw/2+' + jzN(d * 0.6) + ',vy0+vh/2+' + jzN(d) + ']');
-        var rf = lc2_sub(gsh, 'sheet'), rpf = jzAddRect(rf, 10, 10, 0); if (C.edge) lc2_stroke(rf, C.line, 1.2 * k); jzAddFill(rf, C.fill);
+        jzAddFill(rs, lc2_shCol(sc), lc2_shOp(sc));
+        var rf = lc2_sub(gsh, 'sheet'), rpf = jzAddRect(rf, 10, 10, 0);
         jzSetExpr(rpf.property('ADBE Vector Rect Size'), KX + VIS + '[vw,vh]'); jzSetExpr(rpf.property('ADBE Vector Rect Position'), KX + VIS + '[vx0+vw/2,vy0+vh/2]');
+        if (C.edge) lc2_stroke(rf, C.line, 1.2 * k); jzAddFill(rf, C.fill);
         jzSetExpr(jzXf(SH, 'ADBE Opacity'), KX + 'value*a0');
         lc2_paint(SH);
         // rules, creases and the shading of the swinging thirds (clipped to the window)
@@ -681,10 +690,11 @@ jzReg('layout', 'letterPaper', {
                 texts.push([lc2_V(ctx, cc, { font: font, size: cs, color: C.text, x: cxp, y: top + cs * 0.4, track: 0.08 }).L, A2 + '*0.5']);
             }
             if (sign && base - 1.5 * pitch > x0 + mS) texts.push([lc2_V(ctx, 'No.' + jzLineNo(ctx), { font: font, size: ls, color: C.text, x: base - 1.5 * pitch, y: bot - ls * 5 }).L, A2 + '*0.7']);
-            var gsl = lc2_box(g, 'shade left', 0, 0, 10, 10, jzDarkest(sc)), gsr = lc2_box(g, 'shade right', 0, 0, 10, 10, jzDarkest(sc));
-            lc2_gx(gsl, 'sc', KX + '[T3*kk*10,' + jzN(ph * 10) + ']'); lc2_gx(gsl, 'pos', KX + '[' + jzN(x0) + '+T3*(1-kk),' + jzN(y0) + ']');
-            lc2_gx(gsr, 'sc', KX + '[T3*kk*10,' + jzN(ph * 10) + ']'); lc2_gx(gsr, 'pos', KX + '[' + jzN(x0 + third * 2) + ',' + jzN(y0) + ']');
-            lc2_gx(gsl, 'op', KX + '(1-kk)*35'); lc2_gx(gsr, 'op', KX + '(1-kk)*35');
+            // (each shade is finished before the next group is added to `g`)
+            var gsl = lc2_box(g, 'shade left', 0, 0, 10, 10, jzDarkest(sc));
+            lc2_gx(gsl, 'sc', KX + '[T3*kk*10,' + jzN(ph * 10) + ']'); lc2_gx(gsl, 'pos', KX + '[' + jzN(x0) + '+T3*(1-kk),' + jzN(y0) + ']'); lc2_gx(gsl, 'op', KX + '(1-kk)*35');
+            var gsr = lc2_box(g, 'shade right', 0, 0, 10, 10, jzDarkest(sc));
+            lc2_gx(gsr, 'sc', KX + '[T3*kk*10,' + jzN(ph * 10) + ']'); lc2_gx(gsr, 'pos', KX + '[' + jzN(x0 + third * 2) + ',' + jzN(y0) + ']'); lc2_gx(gsr, 'op', KX + '(1-kk)*35');
             var cr = jzMixHex(C.fill, C.text, 0.12);
             lc2_line(g, 'crease 1', [[x0 + third, y0], [x0 + third, y0 + ph]], cr, lw, { op: 80 });
             lc2_gx(lc2_line(g, 'crease 2', [[x0 + third * 2, y0], [x0 + third * 2, y0 + ph]], cr, lw, { op: 80 }), 'op', KX + '100*kk');
@@ -700,10 +710,10 @@ jzReg('layout', 'letterPaper', {
             var mm2 = lc2_meas(fb2.text, size2, ho); bb = lc2_box4(left, ly - mm2.h / 2, left + mm2.w, ly + mm2.h / 2); texts.push([TL, null]);
             if (ctxT && r0 > 0) texts.push([lc2_T(ctx, ctxT, { font: font, size: size2 * 0.6, x: left, y: top2 + (r0 - 0.5) * pitch2 - size2 * 0.1, align: 'left', color: C.text }), A2 + '*0.45']);
             if (sign) texts.push([lc2_T(ctx, '— No.' + jzLineNo(ctx), { font: font, size: ls, x: right, y: top2 + (nRow - 0.5) * pitch2 - ls * 0.2, align: 'right', color: C.text }), A2 + '*0.7']);
-            var gst = lc2_box(g, 'shade top', 0, 0, 10, 10, jzDarkest(sc)), gsb = lc2_box(g, 'shade bottom', 0, 0, 10, 10, jzDarkest(sc));
-            lc2_gx(gst, 'sc', KX + '[' + jzN(pw * 10) + ',T3*kk*10]'); lc2_gx(gst, 'pos', KX + '[' + jzN(x0) + ',' + jzN(y0) + '+T3*(1-kk)]');
-            lc2_gx(gsb, 'sc', KX + '[' + jzN(pw * 10) + ',T3*kk*10]'); lc2_gx(gsb, 'pos', KX + '[' + jzN(x0) + ',' + jzN(y0 + third * 2) + ']');
-            lc2_gx(gst, 'op', KX + '(1-kk)*35'); lc2_gx(gsb, 'op', KX + '(1-kk)*35');
+            var gst = lc2_box(g, 'shade top', 0, 0, 10, 10, jzDarkest(sc));
+            lc2_gx(gst, 'sc', KX + '[' + jzN(pw * 10) + ',T3*kk*10]'); lc2_gx(gst, 'pos', KX + '[' + jzN(x0) + ',' + jzN(y0) + '+T3*(1-kk)]'); lc2_gx(gst, 'op', KX + '(1-kk)*35');
+            var gsb = lc2_box(g, 'shade bottom', 0, 0, 10, 10, jzDarkest(sc));
+            lc2_gx(gsb, 'sc', KX + '[' + jzN(pw * 10) + ',T3*kk*10]'); lc2_gx(gsb, 'pos', KX + '[' + jzN(x0) + ',' + jzN(y0 + third * 2) + ']'); lc2_gx(gsb, 'op', KX + '(1-kk)*35');
             var cr2 = jzMixHex(C.fill, C.text, 0.12);
             lc2_gx(lc2_lines2(g, 'creases', [[[x0, y0 + third], [x0 + pw, y0 + third]], [[x0, y0 + third * 2], [x0 + pw, y0 + third * 2]]], cr2, lw, { op: 80 }), 'op', KX + '100*kk');
         }
@@ -875,9 +885,10 @@ jzReg('layout', 'chochin', {
             var t = units[0], n = jzCount(t), lw = port ? W * 0.56 : Math.min(W * 0.34, H * 0.56), lh = Math.min(lw * 1.45, H * 0.8);
             var top = H / 2 - lh / 2 + H * 0.03, TOPX = HD + AL + 'var dy=-(1-ein)*' + jzN(H * 0.3) + ';';
             var ST = lc2_S(ctx, 'cord', 0, 0);
-            var sp = lc2_sub(lc2_G(ST, 'cord'), 'line'), rp = jzAddRect(sp, 10, 10, 0); jzAddFill(sp, sc.sub);
+            var sp = lc2_sub(lc2_G(ST, 'cord'), 'line'), rp = jzAddRect(sp, 10, 10, 0);
             jzSetExpr(rp.property('ADBE Vector Rect Size'), TOPX + '[' + jzN(Math.max(2 * k, u * 0.003)) + ',Math.max(1,' + jzN(top + 5 * k) + '+dy)]');
             jzSetExpr(rp.property('ADBE Vector Rect Position'), TOPX + '[' + jzN(W / 2) + ',(' + jzN(top - 5 * k) + '+dy)/2]');
+            jzAddFill(sp, sc.sub);                                  // (after the rect is set up: adding invalidates `rp` in AE)
             jzSetExpr(jzXf(ST, 'ADBE Opacity'), TOPX + 'value*a');
             var G = glowLayer('lantern glow'); lc2_circ(lc2_G(G, 'glow'), 'glow', W / 2, top + lh / 2, lw * 1.05, bodyC, { op: jzLum(sc.bg) > 0.5 ? 12 : 22 }); blur(G, lw * 0.55);
             jzSetExpr(jzXf(G, 'ADBE Position'), TOPX + '[value[0],value[1]+dy]');
@@ -1243,10 +1254,13 @@ jzReg('layout', 'omikuji', {
         var VIS = port ? 'var vx0=' + jzN(x0) + ',vy0=' + jzN(y0) + ',vw=' + jzN(sw) + ',vh=' + jzN(sh) + '*vis;' : 'var vx0=' + jzN(x0 + sw) + '-' + jzN(sw) + '*vis,vy0=' + jzN(y0) + ',vw=' + jzN(sw) + '*vis,vh=' + jzN(sh) + ';';
         // slip (shadow + paper follow the unfolded part)
         var SH = lc2_S(ctx, 'omikuji paper', 0, 0), gs = lc2_G(SH, 'paper'), d = u * 0.012;
-        var s1 = lc2_sub(gs, 'shadow'), r1 = jzAddRect(s1, 10, 10, 0); jzAddFill(s1, lc2_shCol(sc), lc2_shOp(sc));
+        // (rect expressions are set before the fill / stroke is added: adding a sibling invalidates `r1` / `r2` in AE)
+        var s1 = lc2_sub(gs, 'shadow'), r1 = jzAddRect(s1, 10, 10, 0);
         jzSetExpr(r1.property('ADBE Vector Rect Size'), OP + VIS + '[vw,vh]'); jzSetExpr(r1.property('ADBE Vector Rect Position'), OP + VIS + '[vx0+vw/2+' + jzN(d * 0.6) + ',vy0+vh/2+' + jzN(d) + ']');
-        var s2 = lc2_sub(gs, 'slip'), r2 = jzAddRect(s2, 10, 10, 0); if (C.edge) lc2_stroke(s2, C.line, 1.2 * kx); jzAddFill(s2, C.fill);
+        jzAddFill(s1, lc2_shCol(sc), lc2_shOp(sc));
+        var s2 = lc2_sub(gs, 'slip'), r2 = jzAddRect(s2, 10, 10, 0);
         jzSetExpr(r2.property('ADBE Vector Rect Size'), OP + VIS + '[vw,vh]'); jzSetExpr(r2.property('ADBE Vector Rect Position'), OP + VIS + '[vx0+vw/2,vy0+vh/2]');
+        if (C.edge) lc2_stroke(s2, C.line, 1.2 * kx); jzAddFill(s2, C.fill);
         jzSetExpr(jzXf(SH, 'ADBE Opacity'), OP + 'value*a');
         lc2_paint(SH);
         var S = lc2_S(ctx, 'omikuji print', 0, 0), g = lc2_G(S, 'print'), m = Math.min(sw, sh) * 0.05, lw = Math.max(1.5 * kx, u * 0.002);
@@ -1443,15 +1457,17 @@ jzReg('layout', 'shoji', {
         T = lc2_T(ctx, fb.text, { font: font, size: size, x: W / 2, y: H / 2, lead: 1.15, track: 0.04, color: sc.fg, name: t0 });
         lc2_main(ctx, T, 0.12);
         var gapW = Math.min(W * (port ? 0.76 : 0.9), mm.w + size * 1.4), OPN = HD + 'var op=ioc(cl((time-0.05)/0.55))*(1-ioc(PO));';
-        var SP = lc2_S(ctx, 'shoji panels', 0, 0), half = nP / 2, sides = [lc2_G(SP, 'left'), lc2_G(SP, 'right')];
-        for (i = 0; i < nP; i++) {
-            var gg = sides[i < half ? 0 : 1];
-            lc2_box(gg, 'paper', i * pw, 0, pw, H, paperC);
-            lc2_gx(lc2_box(gg, 'dim', i * pw, 0, pw, H, sc.bg), 'op', HD + GLW + '(1-glow)*60');
-            lc2_shojiFrame(gg, 'frame', i * pw, 0, pw, H, woodC, cols, rows, kx);
+        // one side at a time: the 'right' group is only added once 'left' is complete (adding a group invalidates the other in AE)
+        var SP = lc2_S(ctx, 'shoji panels', 0, 0), half = nP / 2;
+        for (var sd = 0; sd < 2; sd++) {
+            var gg = lc2_G(SP, sd ? 'right' : 'left');
+            for (i = sd ? half : 0; i < (sd ? nP : half); i++) {
+                lc2_box(gg, 'paper', i * pw, 0, pw, H, paperC);
+                lc2_gx(lc2_box(gg, 'dim', i * pw, 0, pw, H, sc.bg), 'op', HD + GLW + '(1-glow)*60');
+                lc2_shojiFrame(gg, 'frame', i * pw, 0, pw, H, woodC, cols, rows, kx);
+            }
+            lc2_gx(gg, 'pos', OPN + '[' + (sd ? '' : '-') + jzN(gapW / 2) + '*op,0]');
         }
-        lc2_gx(sides[0], 'pos', OPN + '[-' + jzN(gapW / 2) + '*op,0]');
-        lc2_gx(sides[1], 'pos', OPN + '[' + jzN(gapW / 2) + '*op,0]');
         lc2_paint(SP);
         return lc2_box4(W / 2 - mm.w / 2, H / 2 - mm.h / 2, W / 2 + mm.w / 2, H / 2 + mm.h / 2);
     }

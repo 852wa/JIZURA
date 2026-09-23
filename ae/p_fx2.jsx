@@ -224,9 +224,11 @@ jzReg('fx', 'interlace', { build: function (f, ev) {
     // the browser paints the background first: bg-coloured edges where the rows leave the frame
     var S = jzEvShape(f.comp, 'JZ FX interlace edges', ev.t, ev.dur), side, g, r;
     for (side = 0; side < 2; side++) {
-        g = jzGrp(S, side ? 'right' : 'left'); r = jzAddRect(g, 10, H + 4, 0, 0, 0); jzAddFill(g, ev.sc.bg);
+        // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
+        g = jzGrp(S, side ? 'right' : 'left'); r = jzAddRect(g, 10, H + 4, 0, 0, 0);
         jzSetExpr(r.property('ADBE Vector Rect Size'), hd + '[Math.max(' + (side ? '-dx,0.35*dx' : 'dx,-0.35*dx') + ')+3,thisComp.height+4]');
         jzSetExpr(r.property('ADBE Vector Rect Position'), hd + 'var w=Math.max(' + (side ? '-dx,0.35*dx' : 'dx,-0.35*dx') + ')+3;[' + (side ? 'thisComp.width-w/2' : 'w/2') + ',thisComp.height/2]');
+        jzAddFill(g, ev.sc.bg);
     }
 } });
 
@@ -747,13 +749,15 @@ jzReg('fx', 'shatter', { build: function (f, ev) {
     // crack lines
     var S = jzEvShape(f.comp, 'JZ FX shatter cracks', ev.t, ev.dur), g = jzGrp(S, 'cracks');
     for (i = 0; i < n; i++) for (j = 0; j < 3; j++) fx2_path(g, shard(i, j), null, null, true);
+    // (each stroke is fully configured before the next one is added — adding gk invalidates sk in AE)
     var sk = jzAddStroke(g, dk ? '#FFFFFF' : fx2_ext([sc.fg, sc.ink], true), Math.max(1.5, M * 0.0025), 100);
     jzSetExpr(sk.property('ADBE Vector Stroke Opacity'), hd + (dk ? '75' : '60') + '*Math.max(crack,sep*0.6)');
+    try { sk.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e1) {}
     // the dark gaps that open between the drifting shards (the browser's background showing through)
     var gk = jzAddStroke(g, dk ? '#000000' : jzMixHex(sc.bg, '#000000', 0.55), 1, 100);
     jzSetExpr(gk.property('ADBE Vector Stroke Width'), hd + 'Math.max(0.1,sep*' + jzN(M * (dk ? 0.04 : 0.028) * a * 0.7) + ')');
     jzSetExpr(gk.property('ADBE Vector Stroke Opacity'), hd + 'sep>0.01?100:0');
-    try { sk.property('ADBE Vector Stroke Line Join').setValue(2); gk.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e1) {}
+    try { gk.property('ADBE Vector Stroke Line Join').setValue(2); } catch (e2) {}
     // impact flash
     var F = jzEvSolid(f.comp, 'JZ FX shatter flash', '#FFFFFF', ev.t, ev.dur);
     fx2_maskEll(F, px, py, M * 0.14, M * 0.14, { feather: M * 0.2 });
@@ -832,9 +836,11 @@ jzReg('fx', 'scanBar', { build: function (f, ev) {
     var S = jzEvShape(f.comp, 'JZ FX scanBar', ev.t, ev.dur), g, r;
     g = jzGrp(S, 'line'); r = jzAddRect(g, W + 4, Math.max(2, H * 0.003), 0, 0, 0); jzAddFill(g, dk ? '#FFFFFF' : col, 90);
     fx2_gx(g, 'ADBE Vector Position', hd + '[' + jzN(W / 2) + ',y]');
-    g = jzGrp(S, 'dim'); r = jzAddRect(g, 10, 10, 0, 0, 0); jzAddFill(g, dk ? '#000000' : sc.bg, dk ? 60 : 70);
+    // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
+    g = jzGrp(S, 'dim'); r = jzAddRect(g, 10, 10, 0, 0, 0);
     if (down) { jzSetExpr(r.property('ADBE Vector Rect Size'), hd + '[' + jzN(W + 4) + ',Math.max(0,HH-Math.max(0,y))]'); jzSetExpr(r.property('ADBE Vector Rect Position'), hd + '[' + jzN(W / 2) + ',(Math.max(0,y)+HH)/2]'); }
     else { jzSetExpr(r.property('ADBE Vector Rect Size'), hd + '[' + jzN(W + 4) + ',Math.max(0,Math.min(HH,y))]'); jzSetExpr(r.property('ADBE Vector Rect Position'), hd + '[' + jzN(W / 2) + ',Math.max(0,Math.min(HH,y))/2]'); }
+    jzAddFill(g, dk ? '#000000' : sc.bg, dk ? 60 : 70);
     // glow around the line
     var G = fx2_solid(f, 'JZ FX scanBar glow', col, W, bh * 2, ev.t, t1);
     fx2_maskRect(G, -bh, bh * 0.55, W + bh, bh * 1.45, { feather: bh * 0.9 });

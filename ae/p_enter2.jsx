@@ -341,11 +341,12 @@ jzReg('enter', 'resolve', { selfHide: true, apply: function (m) {
     // the accent block sitting on the glyph being decoded
     var W = [], i;
     for (i = 0; i < g.n; i++) W.push(g.ws[i] * 0.9);
+    // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
     var S = en2_shape(m, 'JZ Decode Block'), gr = jzGrp(S, 'block'), rc = jzAddRect(gr, m.size * 0.9, m.size * 0.98, 0);
-    jzAddFill(gr, hi);
     var bh = m.HD + 'var N=' + g.n + ',f=P*(N+1.8),fr=Math.min(N-1,Math.floor(f));';
     rc.property('ADBE Vector Rect Size').expression = bh + 'var W=' + jzArrExpr(W) + ';[W[fr],' + jzN(m.size * 0.98) + ']';
     rc.property('ADBE Vector Rect Position').expression = bh + 'var X=' + jzArrExpr(g.xs) + ',Y=' + jzArrExpr(g.ys) + ';[X[fr],Y[fr]]';
+    jzAddFill(gr, hi);
     jzSetExpr(jzXf(S, 'ADBE Opacity'), bh + 'P>=0.03&&Math.floor(f)<N?100:0');
 } });
 
@@ -372,11 +373,12 @@ jzReg('enter', 'cursorSweep', { selfHide: true, apply: function (m) {
     jzAnimator(L, 'JZ In Sweep Grow', [['ADBE Text Scale 3D', [300, 300, 100]]], q + 'on?-0.3*(1-e)/2*100:0');
     jzAnimator(L, 'JZ In Hide', [['ADBE Text Opacity', 0]], q + 'u<=0?100:(1-cl(u*3))*100');
     // the cursor bar (thins out at the end)
+    // the rect is set up before the fill is added (AE invalidates the rect reference once a sibling is added)
     var S = en2_shape(m, 'JZ Cursor'), gr = jzGrp(S, 'bar'), mg = size * 0.15, rc = jzAddRect(gr, 10, 10, 0);
-    jzAddFill(gr, en2_pick(m.ctx.sc.accent, m.ctx.sc.fg));
     var bh = m.HD + EN2_FNS + ps + 'var t=' + jzN(bw) + '*(1-sm(0.78,0.94,P));';
     rc.property('ADBE Vector Rect Size').expression = bh + (vert ? '[' + jzN(r.width + mg * 2) + ',Math.max(0.01,t)]' : '[Math.max(0.01,t),' + jzN(r.height + mg * 2) + ']');
     rc.property('ADBE Vector Rect Position').expression = bh + (vert ? '[' + jzN(r.left + r.width / 2) + ',pos]' : '[pos,' + jzN(r.top + r.height / 2) + ']');
+    jzAddFill(gr, en2_pick(m.ctx.sc.accent, m.ctx.sc.fg));
     jzSetExpr(jzXf(S, 'ADBE Opacity'), bh + 'time>=DL&&t>=0.5?100:0');
 } });
 

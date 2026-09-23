@@ -338,12 +338,18 @@ function lc1_path(S, name, pts, col, w, o) {
     if (o.op != null) jzGX(g).property('ADBE Vector Group Opacity').setValue(o.op * 100);
     return lc1_front(g);
 }
+// (each dash entry is added AND set before the next one is added: in AE adding to the Dashes group invalidates the
+//  references already held to its other entries)
+function lc1_dashP(D, mn, v) {
+    var p = null;
+    try { p = D.addProperty(mn); } catch (e) { p = null; }
+    if (!p) { try { p = D.property(mn); } catch (e2) { p = null; } }
+    if (p) p.setValue(v);
+}
 function lc1_dash(st, d, gp) {
-    var D = st.property('ADBE Vector Stroke Dashes'), p1 = null, p2 = null;
-    try { p1 = D.addProperty('ADBE Vector Stroke Dash 1'); p2 = D.addProperty('ADBE Vector Stroke Gap 1'); } catch (e) { p1 = null; p2 = null; }
-    if (!p1) p1 = D.property('ADBE Vector Stroke Dash 1');
-    if (!p2) p2 = D.property('ADBE Vector Stroke Gap 1');
-    if (p1) p1.setValue(d); if (p2) p2.setValue(gp);
+    var D = st.property('ADBE Vector Stroke Dashes');
+    lc1_dashP(D, 'ADBE Vector Stroke Dash 1', d);
+    lc1_dashP(D, 'ADBE Vector Stroke Gap 1', gp);
 }
 function lc1_trim(ctx, g, eExpr, sExpr, head) {
     var t = jzVecs(g).addProperty('ADBE Vector Filter - Trim');

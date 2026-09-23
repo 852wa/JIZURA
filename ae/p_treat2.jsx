@@ -394,9 +394,10 @@ jzReg('treat', 'stencilGap', {
         var M = tr2_shapeOn(ctx, L, 'JZ Stencil gaps', true, null);
         var gx = HD + 'var g=' + jzN(tr2_p(P, 'g', 0.04) * 2 * s) + '*oc(cl((time-DL-0.04)/0.4))*(1-ic(PO));';
         for (i = 0; i < G.rows.length; i++) for (k = 0; k < cuts.length; k++) {
+            // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
             var g = jzGrp(M, 'gap ' + (i + 1) + '.' + (k + 1)), r = jzAddRect(g, far * 2, 1, 0, G.box.cx, G.rows[i].cy + cuts[k] * s);
-            jzAddFill(g, '#FFFFFF');
             r.property('ADBE Vector Rect Size').expression = gx + '[' + jzN(far * 2) + ',g<' + jzN(0.006 * s) + '?0:g]';
+            jzAddFill(g, '#FFFFFF');
         }
         tr2_matte(M, L, true);
     }
@@ -471,12 +472,13 @@ jzReg('treat', 'karaoke', {
         if (P.ol) { var an = D.property('ADBE Text Properties').property('ADBE Text Animators'); for (i = 1; i <= an.numProperties; i++) { var sc2 = an.property(i).property('ADBE Text Animator Properties').property('ADBE Text Stroke Color'); if (sc2) sc2.setValue(jzHex(oc)); } }
         var M = tr2_shapeOn(ctx, L, 'JZ Karaoke wipe', true, null), pad = s * 0.12, cr = s * 0.72, acc = 0;
         for (k = 0; k < G.spans.length; k++) {
+            // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
             var Sp = G.spans[k], len = Sp.a1 - Sp.a0, g = jzGrp(M, 'line ' + (k + 1)), r = jzAddRect(g, 1, 1);
-            jzAddFill(g, '#FFFFFF');
             var E = Q + 'var LN=' + jzN(len) + ',A0=' + jzN(Sp.a0) + ',PD=' + jzN(pad) + ';var take=Math.min(LN,Math.max(0,q*' + jzN(tot) + '-' + jzN(acc) + '));' +
                 'var a0=A0-PD,a1=A0+take+(take>=LN-0.01?PD:0),w=take>0?a1-a0:0;';
             r.property('ADBE Vector Rect Size').expression = E + (Sp.vert ? '[' + jzN(cr * 2) + ',w]' : '[w,' + jzN(cr * 2) + ']');
             r.property('ADBE Vector Rect Position').expression = E + (Sp.vert ? '[' + jzN(Sp.c) + ',a0+w/2]' : '[a0+w/2,' + jzN(Sp.c) + ']');
+            jzAddFill(g, '#FFFFFF');
             acc += len;
         }
         tr2_matte(M, D);
@@ -732,12 +734,15 @@ jzReg('treat', 'gradientSweep', {
             for (i = 0; i < G.rows.length; i++) {
                 var lim = tr2_rowLim(G, i, far), y0 = G.rows[i].cy - s * 0.5;
                 var E = T + 'var u=0.52+0.3*Math.sin(t*Math.PI*2),B=' + jzN(lim[1]) + ',y=Math.min(B,' + jzN(y0) + '+(u-0.02)*' + jzN(s) + '),y2=Math.min(B,y+' + jzN(s * 0.03) + ');';
-                var gl = jzGrp(F, 'tide line ' + (i + 1)), rl = jzAddRect(gl, 1, 1); jzAddFill(gl, line);
+                // (each rect is configured before its fill is added — adding the fill invalidates the rect reference in AE)
+                var gl = jzGrp(F, 'tide line ' + (i + 1)), rl = jzAddRect(gl, 1, 1);
                 rl.property('ADBE Vector Rect Size').expression = E + '[' + jzN(far * 2) + ',y2-y]';
                 rl.property('ADBE Vector Rect Position').expression = E + '[' + jzN(cx) + ',(y+y2)/2]';
-                var gw = jzGrp(F, 'tide ' + (i + 1)), rw = jzAddRect(gw, 1, 1); jzAddFill(gw, c2);
+                jzAddFill(gl, line);
+                var gw = jzGrp(F, 'tide ' + (i + 1)), rw = jzAddRect(gw, 1, 1);
                 rw.property('ADBE Vector Rect Size').expression = E + '[' + jzN(far * 2) + ',B-y2]';
                 rw.property('ADBE Vector Rect Position').expression = E + '[' + jzN(cx) + ',(y2+B)/2]';
+                jzAddFill(gw, c2);
             }
         } else {
             var hl = jzLum(col) > 0.6 ? tr2_first([sc.accent, sc.accent2, sc.ghostA, sc.ghostB], function (c) { return jzLum(c) > 0.3 && jzContrast(c, col) >= 1.3; }, jzMixHex(col, sc.bg, 0.45)) : jzMixHex(col, '#FFFFFF', 0.72);
@@ -827,9 +832,11 @@ jzReg('treat', 'monoGrid', {
         }
         // tinted rows under all rules (later groups draw below)
         for (j = 0; j < runs.length; j++) {
-            var R2 = runs[j], len2 = R2.n * cell, gt = jzGrp(S, 'tint ' + (j + 1)), rt = jzAddRect(gt, 1, 1); jzAddFill(gt, tint, 90);
+            // (the rect is configured before the fill is added — adding the fill invalidates rt in AE)
+            var R2 = runs[j], len2 = R2.n * cell, gt = jzGrp(S, 'tint ' + (j + 1)), rt = jzAddRect(gt, 1, 1);
             rt.property('ADBE Vector Rect Size').expression = Q + 'var l=' + jzN(len2) + '*q;' + (vert ? '[' + jzN(cell) + ',l]' : '[l,' + jzN(cell) + ']');
             rt.property('ADBE Vector Rect Position').expression = Q + 'var l=' + jzN(len2) + '*q;' + (vert ? '[' + jzN(R2.cross) + ',' + jzN(R2.c0) + '+l/2]' : '[' + jzN(R2.c0) + '+l/2,' + jzN(R2.cross) + ']');
+            jzAddFill(gt, tint, 90);
         }
     }
 });
@@ -909,11 +916,12 @@ jzReg('treat', 'cutShift', {
         if (P.line) {
             var S = jzNoGhost(tr2_shapeOn(ctx, L, 'JZ Cut line', true, HD + TR2_POP)), lw = Math.max(1.2 * ctx.u / tr2_k(L), s * 0.012);
             for (i = 0; i < G.spans.length; i++) {
+                // (the rect is configured before the fill is added — adding the fill invalidates r in AE)
                 var Sp = G.spans[i], cp = Sp.c + at * s, g = jzGrp(S, 'cut ' + (i + 1)), r = jzAddRect(g, 1, 1);
-                jzAddFill(g, lc);
                 var E = Q + 'var ex=' + jzN(s * 0.35) + '*q,d=' + jzN(dd) + '*q,a0=' + jzN(Sp.a0) + '-ex,a1=' + jzN(Sp.a1) + '+ex+d,l=Math.max(0,a1-a0);';
                 r.property('ADBE Vector Rect Size').expression = E + (vert ? '[' + jzN(lw) + ',l]' : '[l,' + jzN(lw) + ']');
                 r.property('ADBE Vector Rect Position').expression = E + (vert ? '[' + jzN(cp) + ',(a0+a1)/2]' : '[(a0+a1)/2,' + jzN(cp) + ']');
+                jzAddFill(g, lc);
                 jzGX(g).property('ADBE Vector Group Opacity').expression = Q + 'q>0.02?Math.min(1,q)*100:0';
             }
         }

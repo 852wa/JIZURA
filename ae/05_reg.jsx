@@ -31,9 +31,10 @@ function jzOrder(g) {
 }
 // key the panel can actually build: itself, else the web's declared counterpart, else a default
 var JZ_FALLBACKS = 0;
+var JZ_FALLBACK_KEYS = [];
 function jzFallback(g, k, dflt) {
     if (jzHas(g, k)) return k;
-    if (k && k !== 'none') JZ_FALLBACKS++;
+    if (k && k !== 'none') { JZ_FALLBACKS++; if (jzIndexOf(JZ_FALLBACK_KEYS, g + '.' + k) < 0 && JZ_FALLBACK_KEYS.length < 60) JZ_FALLBACK_KEYS.push(g + '.' + k); }
     var m = jzMeta(g, k);
     if (m.ae && jzHas(g, m.ae)) return m.ae;
     return dflt;
