@@ -250,3 +250,16 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
   #app.is-easy .col-left { order: 1; }
   .transport .hist-btns { display: none; }
 }
+
+/* 追加分 / 和風 switches + badges */
+.pick-sets { margin: 12px 0 6px; text-align: left; }
+.pick-sets label.check { margin-bottom: 6px; }
+.easy-hero .pick-sets { margin-top: 14px; }
+.set-badge { display: inline-block; margin-left: 4px; padding: 0 4px; border: 1px solid var(--amber); border-radius: 3px; color: var(--amber); font-size: 10px; line-height: 15px; vertical-align: 1px; }
+.set-badge.ex { border-color: var(--cyan, #4cc9d9); color: var(--cyan, #4cc9d9); }
+.checks label.set-off { opacity: 0.45; }
+.checks label.set-off .set-badge { border-color: var(--muted); color: var(--muted); }
+.stile { position: relative; }
+.stile .badges { position: absolute; top: 4px; left: 4px; padding: 0; display: flex; gap: 3px; }
+.stile .set-badge { margin: 0; padding: 0 4px; font-size: 10px; line-height: 15px; background: rgba(0,0,0,0.55); }
+.stile.set-off { opacity: 0.55; }

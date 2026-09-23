@@ -17,7 +17,7 @@ async () => {
   const run = (label, ovs, aspect, style, n = 7) => {
     cur = label;
     const lines = ovs.map((o, i) => texts[i % texts.length]);
-    const p = Object.assign(J.defaultProject(), { lyrics: lines.join('\n'), style, aspect, seed: 1 + (label.length * 7919) % 99991,
+    const p = Object.assign(J.defaultProject(), { extra: true, lyrics: lines.join('\n'), style, aspect, seed: 1 + (label.length * 7919) % 99991,
       overrides: Object.fromEntries(ovs.map((o, i) => [i, Object.assign({ single: true }, o)])),
       timing: { bpm: 0, offset: 0, snap: false, tail: 0.5, lineTimes: Object.fromEntries(lines.map((_, i) => [i, i * 2.4])), lineScale: 1 } });
     p.fx = Object.assign(J.defaultProject().fx, { hud: 'on', glitch: 0.8, decor: 0.9 });

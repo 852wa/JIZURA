@@ -14,6 +14,8 @@ J.defaultProject = () => ({
   title: '', artist: '',
   lyrics: J.SAMPLE_LYRICS,
   style: 'noir', mood: null,
+  extra: false,                   // random picks may use the parts added after the first version (追加分)
+  wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
@@ -169,9 +171,10 @@ J.plan = (project, audio) => {
   const artist = project.artist || parsed.meta.ar || '';
   const tm = J.computeTiming(project, parsed, audio);
   const [W, H] = J.designSize(project.aspect);
-  // enabled map: anything not explicitly switched off is on (new pack entries appear enabled in old projects)
+  // enabled map: anything not explicitly switched off is on (new pack entries appear enabled in old projects);
+  // then the 追加分 / 和風 switches decide what random picks may use (a per-line override still works)
   const en = {};
-  for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false; }
+  for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false && (!J.randomOk || J.randomOk(project, g, k)); }
   const plan = {
     version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,

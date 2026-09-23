@@ -267,6 +267,19 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
   .transport .hist-btns { display: none; }
 }
 
+/* 追加分 / 和風 switches + badges */
+.pick-sets { margin: 12px 0 6px; text-align: left; }
+.pick-sets label.check { margin-bottom: 6px; }
+.easy-hero .pick-sets { margin-top: 14px; }
+.set-badge { display: inline-block; margin-left: 4px; padding: 0 4px; border: 1px solid var(--amber); border-radius: 3px; color: var(--amber); font-size: 10px; line-height: 15px; vertical-align: 1px; }
+.set-badge.ex { border-color: var(--cyan, #4cc9d9); color: var(--cyan, #4cc9d9); }
+.checks label.set-off { opacity: 0.45; }
+.checks label.set-off .set-badge { border-color: var(--muted); color: var(--muted); }
+.stile { position: relative; }
+.stile .badges { position: absolute; top: 4px; left: 4px; padding: 0; display: flex; gap: 3px; }
+.stile .set-badge { margin: 0; padding: 0 4px; font-size: 10px; line-height: 15px; background: rgba(0,0,0,0.55); }
+.stile.set-off { opacity: 0.55; }
+
 </style>
 </head>
 <body>
@@ -368,6 +381,10 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
             <span id="histPos" class="muted mono"></span>
             <button id="btnNext2" class="ghost">次の案 ▶</button>
           </div>
+          <div class="pick-sets">
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>追加分の演出も使う<small>最初の公開版のあとに追加した約350の演出・配色セット12・書体6も、おまかせやシャッフルの候補にします（オフのときは最初の公開版の演出だけ）</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>提灯・はがき・障子・扇・家紋・青海波・桜の花びらなどの和風グラフィック。オフにすると、おまかせやシャッフルで選ばれません</small></span></label>
+          </div>
         </div>
         <div class="easy-sec">
           <h3>いまの案</h3>
@@ -440,6 +457,10 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
+        <div class="pick-sets">
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>追加分の演出も使う<small>「追加」印の手法・スタイル・書体。オフのときは、おまかせやシャッフルで最初の公開版の演出だけを使います</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>「和」印の手法とスタイル。オフにすると、おまかせやシャッフルでは選ばれません（追加分の判定のあとに適用。行ごとに手動で指定した場合は使えます）</small></span></label>
+        </div>
         <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="手法を名前で絞り込み" style="flex:1" aria-label="手法を名前で絞り込み"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
@@ -2847,6 +2868,8 @@ J.defaultProject = () => ({
   title: '', artist: '',
   lyrics: J.SAMPLE_LYRICS,
   style: 'noir', mood: null,
+  extra: false,                   // random picks may use the parts added after the first version (追加分)
+  wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
@@ -3002,9 +3025,10 @@ J.plan = (project, audio) => {
   const artist = project.artist || parsed.meta.ar || '';
   const tm = J.computeTiming(project, parsed, audio);
   const [W, H] = J.designSize(project.aspect);
-  // enabled map: anything not explicitly switched off is on (new pack entries appear enabled in old projects)
+  // enabled map: anything not explicitly switched off is on (new pack entries appear enabled in old projects);
+  // then the 追加分 / 和風 switches decide what random picks may use (a per-line override still works)
   const en = {};
-  for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false; }
+  for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false && (!J.randomOk || J.randomOk(project, g, k)); }
   const plan = {
     version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
@@ -3359,8 +3383,11 @@ J.omakase = (project, rnd = Math.random) => {
   const moods = Object.keys(J.MOODS).filter(k => k !== project.mood);
   const mood = pick(moods), M = J.MOODS[mood];
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
-  const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])];
-  let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER).filter(k => k !== project.style);
+  // (only styles the 追加分 / 和風 switches allow)
+  const okStyle = k => J.STYLES[k] && (!J.randomOk || J.randomOk(project, 'style', k));
+  const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])].filter(okStyle);
+  let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER.filter(okStyle)).filter(k => k !== project.style);
+  if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style && okStyle(k));
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
   const style = pick(pool);
   const fx = Object.assign({}, project.fx);
@@ -3372,7 +3399,7 @@ J.omakase = (project, rnd = Math.random) => {
   const enabled = {};
   const MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4, trans: 3 };
   for (const g of J.GROUP_KEYS) {
-    const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special);
+    const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special && (!J.randomOk || J.randomOk(project, g, k)));
     const hand = ['layout', 'enter', 'exit'].includes(g) && Array.isArray(M[g]) ? M[g] : [];   // (M.fx holds slider ranges, not a list)
     const prefer = mood === 'chaos' ? null : new Set([...hand, ...J.taggedWith(g, mood)]);
     const on = {};
@@ -3390,7 +3417,7 @@ J.omakase = (project, rnd = Math.random) => {
   enabled.hold.still = true;
   // fonts: sometimes swap the headline / mincho faces for another catalogue face
   const fonts = {};
-  const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind));
+  const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind) && (!J.randomOk || J.randomOk(project, 'font', k)));
   if (rnd() < 0.4) fonts.display = pick(faces.filter(([k, f]) => f.weight >= 700 || f.kind === 'display' || f.kind === 'round'))[0];
   if (rnd() < 0.3) fonts.serif = pick(faces.filter(([k, f]) => f.kind === 'mincho' || f.kind === 'brush'))[0];
   if (mood === 'chaos' && rnd() < 0.2) fonts.display = 'dot';
@@ -28573,6 +28600,52 @@ trReg('pixelate', { name: 'モザイク転換', tags: ['glitch', 'pop'], w: 0.6,
 })();
 
 /* ============================================================
+   JIZURA — which entries random picks may use
+   1) 追加分 (extra): everything added after the first public
+      version (356 parts, 12 styles). Random picks (planner /
+      おまかせ / シャッフル) use the first version's set unless
+      project.extra === true.
+   2) 和風 (wa): entries built around a traditional Japanese object,
+      pattern or motif. Applied after (1): with project.wa === false
+      they are never picked at random.
+   A line can still be set to any entry by hand (per-line override).
+   Pack authors: packs not listed in J.BASE_PACKS count as 追加分;
+   add Japanese-motif keys to J.WA (or set `wa: true` on the def).
+   ============================================================ */
+(() => {
+'use strict';
+J.BASE_PACKS = ['core', undefined, 'layoutsA', 'layoutsB', 'enter', 'exitHold', 'decor', 'looks'];
+J.BASE_STYLES = ['noir', 'crimson', 'caution', 'magenta', 'paper', 'hud', 'mint', 'specimen', 'transit', 'blueprint', 'rouge', 'mono'];
+J.EXTRA_FONTS = ['reggae', 'rampart', 'potta', 'kiwi', 'klee', 'shippori'];
+J.WA = {
+  layout: ['ema', 'chochin', 'noren', 'tanzaku', 'omikuji', 'kakejiku', 'shoji', 'karuta', 'origami', 'postcard', 'letterPaper', 'genkou', 'hanko'],
+  enter: ['fanOpen', 'brushReveal'],
+  exit: ['fanClose'],
+  decor: ['seal', 'kamon', 'seigaiha', 'asanoha', 'chochin', 'shimenawa', 'sensu', 'tsukiKumo', 'momiji', 'namiGashira', 'kasumi', 'brushStroke', 'petals'],
+  bg: ['seigaiha', 'asanoha'],
+  treat: ['monoGrid'],
+  style: ['sakura', 'sumi'],
+};
+const def = (g, k) => g === 'style' ? J.STYLES[k] : g === 'font' ? J.FONTS[k] : (J.registry(g) || {})[k];
+// mark 追加分
+for (const g of J.GROUP_KEYS) for (const k of J.order(g)) { const d = def(g, k); if (d && !J.BASE_PACKS.includes(d.pack)) d.extra = true; }
+for (const k of J.STYLE_ORDER) if (!J.BASE_STYLES.includes(k)) J.STYLES[k].extra = true;
+for (const k of J.EXTRA_FONTS) if (J.FONTS[k]) J.FONTS[k].extra = true;
+// mark 和風
+for (const [g, keys] of Object.entries(J.WA)) for (const k of keys) { const d = def(g, k); if (d) d.wa = true; }
+
+J.isWa = (g, k) => { const d = def(g, k); return !!(d && d.wa); };
+J.isExtra = (g, k) => { const d = def(g, k); return !!(d && d.extra); };
+/* may random picks use this entry? (g: a group key, 'style' or 'font') — 追加分 first, then 和風 */
+J.randomOk = (project, g, k) => {
+  const d = def(g, k); if (!d) return false;
+  if (d.extra && !(project && project.extra === true)) return false;
+  if (d.wa && project && project.wa === false) return false;
+  return true;
+};
+})();
+
+/* ============================================================
    JIZURA — editor UI
    ============================================================ */
 (() => {
@@ -28619,9 +28692,14 @@ function mergeProject(p) {
   for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight || 400);
   return o;
 }
+function setBadges(d) {
+  return (d && d.extra ? '<span class="set-badge ex" title="最初の公開版のあとに追加">追加</span>' : '') + (d && d.wa ? '<span class="set-badge" title="和風の演出">和</span>' : '');
+}
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
-function autosave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {} }, 700); }
+function autosave() { clearTimeout(saveTimer); saveTimer = setTimeout(flushSave, 700); }
+function flushSave() { clearTimeout(saveTimer); try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {} }
+window.addEventListener('pagehide', () => { if (S.project) flushSave(); });
 
 /* ---------------- planning ---------------- */
 function audioLike() {
@@ -28866,7 +28944,7 @@ function drawStyleGrid() {
     J.STYLE_ORDER.forEach(k => {
       const b = document.createElement('button'); b.className = 'stile'; b.dataset.k = k;
       b.title = J.STYLES[k].desc;
-      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${J.STYLES[k].name}</span>`;
+      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${J.STYLES[k].name}</span><span class="badges">${setBadges(J.STYLES[k])}</span>`;
       b.addEventListener('click', () => { remember(); S.project.style = k; S.project.colors.enabled = false; syncUI(); replan(); commit(); });
       g.appendChild(b);
     });
@@ -28874,6 +28952,9 @@ function drawStyleGrid() {
   [...g.children].forEach(b => {
     const k = b.dataset.k, st = J.STYLES[k], sc = st.schemes[0], cv = b.querySelector('canvas'), x = cv.getContext('2d');
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
+    const off = !J.randomOk(S.project, 'style', k);
+    b.classList.toggle('set-off', off);
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（追加分がオフのため、おまかせでは選ばれません）' : '（和風の演出がオフのため、おまかせでは選ばれません）') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
@@ -28991,7 +29072,8 @@ function rerollPart(part) {
   const P = S.project;
   let msg = '';
   if (part === 'style') {
-    const pool = J.STYLE_ORDER.filter(k => k !== P.style);
+    let pool = J.STYLE_ORDER.filter(k => k !== P.style && J.randomOk(P, 'style', k));
+    if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
     msg = `スタイル：${J.STYLES[P.style].name}`;
@@ -29085,7 +29167,8 @@ function renderTech() {
     shown.forEach(k => {
       const l = document.createElement('label');
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}`;
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
+      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
@@ -29181,6 +29264,8 @@ function syncUI() {
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
+  document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
+  document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
@@ -29228,6 +29313,15 @@ function bind() {
   }));
   $('fxFlash').addEventListener('change', e => { S.project.fx.flash = e.target.checked; replan(); });
   $('techFilter').addEventListener('input', () => renderTech());
+  const setSwitch = (cls, key, on, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+    remember();
+    S.project[key] = e.target.checked;
+    document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
+    renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
+    toast(e.target.checked ? msgOn : msgOff);
+  }));
+  setSwitch('extra-toggle', 'extra', true, '追加分の演出：使う', '追加分の演出：使わない（最初の公開版の演出だけ）');
+  setSwitch('wa-toggle', 'wa', true, '和風の演出：使う', '和風の演出：使わない（おまかせ・シャッフルで選ばれません）');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });

@@ -43,8 +43,11 @@ J.omakase = (project, rnd = Math.random) => {
   const moods = Object.keys(J.MOODS).filter(k => k !== project.mood);
   const mood = pick(moods), M = J.MOODS[mood];
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
-  const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])];
-  let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER).filter(k => k !== project.style);
+  // (only styles the 追加分 / 和風 switches allow)
+  const okStyle = k => J.STYLES[k] && (!J.randomOk || J.randomOk(project, 'style', k));
+  const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])].filter(okStyle);
+  let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER.filter(okStyle)).filter(k => k !== project.style);
+  if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style && okStyle(k));
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
   const style = pick(pool);
   const fx = Object.assign({}, project.fx);
@@ -56,7 +59,7 @@ J.omakase = (project, rnd = Math.random) => {
   const enabled = {};
   const MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4, trans: 3 };
   for (const g of J.GROUP_KEYS) {
-    const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special);
+    const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special && (!J.randomOk || J.randomOk(project, g, k)));
     const hand = ['layout', 'enter', 'exit'].includes(g) && Array.isArray(M[g]) ? M[g] : [];   // (M.fx holds slider ranges, not a list)
     const prefer = mood === 'chaos' ? null : new Set([...hand, ...J.taggedWith(g, mood)]);
     const on = {};
@@ -74,7 +77,7 @@ J.omakase = (project, rnd = Math.random) => {
   enabled.hold.still = true;
   // fonts: sometimes swap the headline / mincho faces for another catalogue face
   const fonts = {};
-  const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind));
+  const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind) && (!J.randomOk || J.randomOk(project, 'font', k)));
   if (rnd() < 0.4) fonts.display = pick(faces.filter(([k, f]) => f.weight >= 700 || f.kind === 'display' || f.kind === 'round'))[0];
   if (rnd() < 0.3) fonts.serif = pick(faces.filter(([k, f]) => f.kind === 'mincho' || f.kind === 'brush'))[0];
   if (mood === 'chaos' && rnd() < 0.2) fonts.display = 'dot';

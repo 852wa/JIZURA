@@ -168,6 +168,12 @@ round pop dot brush mono sansui` + newer faces `reggae` (Reggae One, rough heavy
 elegant heavy mincho). Faces are fetched lazily only when a plan uses them, so prefer the style's role fonts (`st.fonts.*`).
 (When Google Fonts cannot be reached, sheets render with system fallback fonts — judge layout and motion, not the typeface.)
 
+### 追加分 / 和風 (random-pick sets)
+`src/11q_sets.js` decides what random picks may use. Entries from packs not listed in `J.BASE_PACKS` count as 追加分 (extra) and
+are only picked at random when the project's 「追加分の演出も使う」 switch is on. Entries built around a traditional Japanese
+object, pattern or motif (提灯, 障子, 扇, 家紋, 青海波 …) must be listed in `J.WA` (or carry `wa: true`) so the 「和風の演出も使う」
+switch can leave them out. New styles are extra unless listed in `J.BASE_STYLES`; new fonts belong in `J.EXTRA_FONTS`.
+
 ### Avoid near-duplicates
 Before designing, list what already exists in your group: `node -e` is not enough for visuals — run
 `python3 dev/overview.py <group> out/ov t_all` (after `python3 dev/build_test.py all --all-packs`) and look at the grid. Every
