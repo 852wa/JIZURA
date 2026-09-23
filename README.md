@@ -183,11 +183,6 @@ python3 build_ae.py           # ae/ → JIZURA_AE.jsx
 ```
 ビルドに必要なのは Python 3 と Node.js だけです（npm パッケージは不要）。表現部品を追加するときは `docs/EXPRESSION_PACKS.md` を参照してください（テスト用ツールは `dev/`）。
 
-### 自分のリポジトリで公開する（フォークした場合など）
-
-1. `index.html` がリポジトリ直下にある状態で push します。
-2. **Settings → Pages** で Source を **Deploy from a branch**、Branch を `main` / `/ (root)` にして保存します。
-3. 数分後に `https://<ユーザー名>.github.io/<リポジトリ名>/` で開けます。
 
 ## ライセンス
 
