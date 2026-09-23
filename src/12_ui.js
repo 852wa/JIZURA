@@ -545,6 +545,11 @@ function syncOut() {
   $('outAspect').value = S.project.aspect; $('outRes').value = String(S.project.res); $('outFps').value = String(S.project.fps);
   $('eAspect').value = S.project.aspect; $('eRes').value = String(S.project.res); $('eFps').value = String(S.project.fps);
   $('outQuality').value = S.project.quality || 'high'; $('outAudio').checked = S.project.includeAudio !== false;
+  const k = J.keyMode(S.project) || 'off';
+  $('outKey').value = k; $('eKey').value = k;
+  const kb = $('keyBadge');
+  kb.hidden = k === 'off';
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
@@ -554,7 +559,10 @@ async function codecNote() {
   if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'eMP4'];
-function baseName() { return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura'); }
+function baseName() {
+  const k = J.keyMode(S.project);
+  return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
+}
 async function runExport(kind) {
   if (S.exporting) return;
   pause();
@@ -633,17 +641,7 @@ function bind() {
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
-  $('audioFile').addEventListener('change', async e => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    $('audioName').textContent = '解析中…';
-    try {
-      pause();
-      S.audio = await J.analyzeAudio(f);
-      $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）`;
-      S.project.timing.snap = true;
-      syncUI(); replan();
-    } catch (err) { $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; }
-  });
+  $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
@@ -706,6 +704,11 @@ function bind() {
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
   ['outFps', 'eFps'].forEach(id => $(id).addEventListener('change', e => { S.project.fps = +e.target.value; syncOut(); replan(); codecNote(); }));
   $('outQuality').addEventListener('change', e => { S.project.quality = e.target.value; autosave(); });
+  ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
+    S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
+    const k = J.keyMode(S.project);
+    toast(k ? `背景：${k === 'green' ? 'グリーンバック' : 'ブラックバック'}（白い文字と演出だけ）` : '背景：通常（スタイルの配色）');
+  }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
@@ -751,6 +754,19 @@ function bind() {
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
 }
 
+/* song file -> beat analysis (file input, or a host such as the After Effects panel) */
+async function loadAudioFile(f) {
+  $('audioName').textContent = '解析中…';
+  try {
+    pause();
+    S.audio = await J.analyzeAudio(f);
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）`;
+    S.project.timing.snap = true;
+    syncUI(); replan();
+    return true;
+  } catch (err) { $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
@@ -764,4 +780,6 @@ function boot() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
+// hooks for hosts that embed the app (the After Effects CEP panel)
+J.uiApi = { toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview };
 })();

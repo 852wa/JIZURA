@@ -174,29 +174,13 @@ J.AE_MAP = {
   decor: { crosshair: 'brackets', cropMarks: 'brackets', reticle: 'rings', radar: 'rings', progressRing: 'rings', timecodeBar: 'barcode', rulerEdge: 'grid', dimension: 'leaders', indexNum: 'counter', dateStamp: 'barcode', qrBlock: 'barcode', glitchRects: 'bars', concentricSquares: 'shapes', triangleSpin: 'shapes', lineBurst: 'sparks', plusGrid: 'grid', guides: 'grid', waveLine: 'waveform', spiralLine: 'rings', halftonePatch: 'shapes', checkerStrip: 'stripes', beatRing: 'rings', orbitDots: 'dots', constellation: 'sparks', confetti: 'shapes', petals: 'shapes', rainStreaks: 'slash', snow: 'dots', lightLeak: 'blobs', bokeh: 'blobs', speedCorner: 'slash', risingParticles: 'sparks', twinkle: 'sparks', brushStroke: 'bars', tapePieces: 'bars', scribbleCircle: 'rings', scribbleUnder: 'slash', crossOut: 'slash', highlightMark: 'bars', heartsStars: 'shapes', watermarkKanji: 'counter', verticalStrip: 'leaders', romajiLine: 'leaders', bracketsJP: 'brackets', seal: 'shapes' },
   fx: { rgbSplit: 'chroma', smear: 'slice', vhsRoll: 'slice', trackingNoise: 'slice', waveWarp: 'slice', pixelDrift: 'slice', tileShift: 'block', gridRepeat: 'block', mirrorFlash: 'block', strobe: 'invert', blackFrame: 'invert', whiteFrame: 'flash', filmBurn: 'flash', lightSweep: 'flash', panelWipe: 'flash', zoomPunch: 'zoom', whipBlur: 'zoom', posterize: 'mosaic', hueShift: 'chroma', irisTrans: 'zoom', doors: 'slice', blindsTrans: 'slice', splitSlide: 'slice', crtOff: 'flash' },
 };
-// newer pack entries may declare their own counterpart as def.ae
-const aeKey = (g, k, dflt) => {
-  if ((J.CORE_ORDER[g] && J.CORE_ORDER[g].includes(k)) || (g === 'layout' && (k === 'title' || k === 'interlude'))) return k;
-  const D = J.registry(g)[k], own = D && D.ae;
-  return J.AE_MAP[g][k] || (own && J.CORE_ORDER[g].includes(own) ? own : null) || dflt;
-};
+// The plan goes to the After Effects panel as-is (version 2): the panel builds every key it implements and
+// picks the closest counterpart itself (from the exported metadata / J.AE_MAP) for anything it lacks.
 J.planForAE = (plan, project) => {
   const clean = JSON.parse(JSON.stringify(plan, (k, v) => (k === 'energy' || k === 'buffer' || k === 'peaks' ? undefined : v)));
-  let subs = 0;
-  for (const c of clean.cuts) {
-    const L = aeKey('layout', c.layout, 'center');
-    if (L !== c.layout) { c.webLayout = c.layout; c.layout = L; subs++; try { c.params = J.LAYOUTS[L].plan(J.rng(J.h(c.seed, 31)), { text: c.text, n: J.glyphCount(c.text) }, plan.style); } catch (e) { c.params = {}; } }
-    const en = aeKey('enter', c.enter, 'blur'); if (en !== c.enter) { c.webEnter = c.enter; c.enter = en; subs++; }
-    const ex = aeKey('exit', c.exit, 'blur'); if (ex !== c.exit) { c.webExit = c.exit; c.exit = ex; subs++; }
-    const ho = aeKey('hold', c.hold, 'still'); if (ho !== c.hold) { c.webHold = c.hold; c.hold = ho; }
-    const seen = new Set();
-    c.decor = (c.decor || []).map(d => { const id = aeKey('decor', d.id, null); if (id !== d.id) subs++; return id ? Object.assign({}, d, { id, webId: d.id }) : null; })
-      .filter(d => d && !seen.has(d.id) && seen.add(d.id));
-  }
-  const AE_FX = ['chroma', 'shake', 'slice', 'block', 'invert', 'flash', 'zoom', 'mosaic'];
-  clean.events = clean.events.map(ev => { const FX = J.FXE[ev.type]; if (!FX || FX.builtin) return ev; const t = J.AE_MAP.fx[ev.type] || (AE_FX.includes(FX.ae) ? FX.ae : null); return t ? Object.assign({}, ev, { type: t, webType: ev.type }) : null; }).filter(Boolean);
-  if (subs) clean.aeNote = `ブラウザ版の新しい表現 ${subs} 箇所を、AEパネルにある近い表現に置き換えています（文字加工・背景・カメラ・カット間のつなぎはAE版では未対応）`;
+  clean.version = 2;
   clean.width = J.outputSize(project)[0]; clean.height = J.outputSize(project)[1];
+  clean.extra = project.extra === true; clean.wa = project.wa !== false;
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));

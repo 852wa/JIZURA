@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.852wa.jizura" ExtensionBundleVersion="@VERSION@" ExtensionBundleName="JIZURA" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.852wa.jizura.panel" Version="@VERSION@"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- After Effects 2022 (22.0) or later -->
+      <Host Name="AEFT" Version="[22.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="11.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.852wa.jizura.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>JIZURA 字面</Menu>
+          <Geometry>
+            <Size>
+              <Height>860</Height>
+              <Width>1280</Width>
+            </Size>
+            <MinSize>
+              <Height>420</Height>
+              <Width>360</Width>
+            </MinSize>
+            <MaxSize>
+              <Height>4000</Height>
+              <Width>6000</Width>
+            </MaxSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>
