@@ -263,10 +263,24 @@ J.plan = (project, audio) => {
       const bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
       const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD, emph, history);
       const camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
+      // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
+      const prevCut = plan.cuts[plan.cuts.length - 1];
+      let trans = null, transP = {}, transDur = 0;
+      const canTrans = prevCut && Math.abs(prevCut.end - cs) < 0.06 && prevCut.layout !== 'interlude' && dur > 0.5;
+      if (canTrans) {
+        trans = ov.trans && J.TRANS[ov.trans] ? ov.trans : pickTrans(rng, st, en, fx, emph, history);
+        if (trans) {
+          const TD = J.TRANS[trans];
+          transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
+          transP = TD.plan ? TD.plan(rng, st) : {};
+          enter = 'cut'; inDur = 0.12;
+          prevCut.exit = 'cut'; prevCut.outDur = 0;
+        }
+      }
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: J.h(lineSeed, k, 17), emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
-        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP });
+        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur });
       plan.cuts.push(cut);
-      history.push({ layout, enter, exit, hold, treat, cam, decor: decor.map(d => d.id) });
+      history.push({ layout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
       // events at cut start
       // events at cut start — durations are on a 24fps timebase so every output rate looks the same
       const g = fx.glitch * (st.glitchBoost || 1);
@@ -432,6 +446,13 @@ function pickCam(rng, st, en, fx, LD, emph, history) {
     return [k, w];
   });
   return cands.length ? rng.wpick(cands) : 'push';
+}
+function pickTrans(rng, st, en, fx, emph, history) {
+  if (!J.TRANS_ORDER.length) return null;
+  if (!rng.chance(0.1 + 0.22 * (fx.motion ?? 0.7) + (emph ? 0.08 : 0))) return null;
+  const cands = J.TRANS_ORDER.filter(k => en.trans && en.trans[k] !== false && J.TRANS[k])
+    .map(k => [k, wkey(st.bias && st.bias.trans, k, J.TRANS[k].w ?? 1) * novelty(history, 'trans', k)]);
+  return cands.length ? rng.wpick(cands) : null;
 }
 // kind 'edge' = transition at a cut boundary, 'mid' = accent in the middle of a cut
 function pickFx(rng, st, en, fx, emph, fxHist, kind) {

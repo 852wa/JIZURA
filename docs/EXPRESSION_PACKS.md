@@ -122,6 +122,58 @@ entrance and out during the exit; the effect must scale with `amt` (0 = no chang
 Animate in over the first ~0.3–0.5 s of `env.lt`, out with `env.pOut`. Front decor must not cover the lyric bbox (stay around/outside it);
 back decor sits under the text — keep it low-contrast (`sc.dim`, `sc.sub`, low alpha) unless it is small.
 
+**treat** `{ name, tags, w, safe?, plan?(rng, st) → params, apply(env, it, P) }` — text treatment applied to EVERY main item of a cut
+(whole lines, single chars, vertical, rotated, huge) before enter/hold/exit run. Skip items with `it.fill === false` or low alpha
+(layouts' secondary copies). Keep `it.color` as the text colour; pick complementary colours from `env.sc` with `J.lum` checks.
+`safe: true` only if it still looks right when the lyric sits on a coloured plate (layouts marked `treat:'safe'` get only safe ones).
+Markers/boxes/underlines use `it.pre` / `it.post` hooks (they run in every pass — use the env helpers' ghost flag deliberately).
+
+**bg** `{ name, tags, w, subtle?, plan?(rng, st) → params, draw(env, P) }` — full-screen background graphic, drawn ONCE per frame (main
+pass only, not affected by the camera) after the scheme's bg fill, before any text. Chosen per lyric line, so continuous motion should
+use `env.t` (absolute time). Keep contrast LOW so text on top stays readable. `subtle: true` = allowed behind busy layouts.
+
+**cam** `{ name, tags, w, strong?, plan?(rng, st) → params, get(env, P) → {x, y, s, rot, sx, sy, skx, blur} }` — transform of the cut's
+content around the screen centre (design px / degrees). Called per pass with lagged time. Keep the lyric on screen (|x|,|y| ≤ 5%,
+s 0.92..1.15, rot ≤ 5°); big moves only briefly and they must settle. Scale by `env.fx.motion`; `strong: true` for aggressive moves.
+
+**fx** `{ name, tags, w, glitchy?, edge? (default true), mid?, dur (frames @24fps, default 4), pre (frames before the cut boundary),
+amp, scratch?, ae?, draw(ctx, ev, k, info) }` — post-processing in DEVICE pixels (identity transform). `info = {cw, ch, S (copy of the
+frame when scratch:true), sc, st, step, t, scale, allowFilter, opt, tmp(w,h), tmp2(w,h)}`; `k` 0..1 progress, `ev.amp` intensity.
+Leave ctx state clean. No getImageData on full frames. `ae` = the closest After Effects event type
+(`chroma shake slice block invert flash zoom mosaic`) or omit.
+
+**trans** (カット間のつなぎ) `{ name, tags, w, dur (seconds, default 0.35), plan?(rng, st) → params, draw(ctx, A, B, p, info) }` — how a
+cut takes over from the previous one. `A` = canvas with the previous cut's resting frame, `B` = canvas with this cut's frame (both full
+device-pixel size), `p` 0→1 (linear; ease it yourself). Draw the complete composite into `ctx` (identity transform, same size) — at p=0
+it must look exactly like A, at p=1 exactly like B. `info = {cw, ch, sc, scPrev, st, P, step, t, scale, allowFilter, seed, tmp(w,h)}`.
+The planner turns the previous cut's exit and this cut's entrance into plain cuts when a transition is used.
+
+**style** (配色セット) — added directly to `J.STYLES` + `J.STYLE_ORDER` (see src/04_styles.js for the full schema): `{ name, desc,
+moods: [mood keys], schemes: [2–4 × {bg, fg, sub, accent, accent2, ink, dim, ghostA, ghostB, grad?, paper?}], fonts: {display, serif,
+body, mono}, texture: {grain, paper, scan}, ghost, bias: {layout, enter, exit}, decor: {decorKey: weight}, hud, glow?, glitchBoost?, useGrad? }`.
+
+### After Effects counterpart (`ae`)
+Every new **layout / enter / exit / hold / decor** entry must declare `ae: '<key>'` = its closest counterpart in the original set, used
+when the browser exports a plan to the After Effects panel:
+- layout: `center mixed vcols marquee tile scatter ring wave huge labels condensed gloss type diag circle stack pill`
+- enter: `cut assemble slice type pop drop stretch wipe blur spin flicker scramble zoom`
+- exit: `cut explode fall drift slice wipe shrink blur stretch scatter glitch`
+- hold: `still jitter drift breathe wave glitchtick`
+- decor: `brackets rings dots arrows slash sparks leaders waveform barcode grid stripes blobs bars shapes counter`
+
+### Fonts
+Catalogue keys: `gothic_black gothic_bold gothic_med gothic_light dela zenkaku mincho_black mincho_bold mincho mincho_light tokumin
+round pop dot brush mono sansui` + newer faces `reggae` (Reggae One, rough heavy display) `rampart` (Rampart One, 3D outline display)
+`potta` (Potta One, brush pop) `kiwi` (Kiwi Maru, soft round) `klee` (Klee One, handwritten pencil) `shippori` (Shippori Mincho B1,
+elegant heavy mincho). Faces are fetched lazily only when a plan uses them, so prefer the style's role fonts (`st.fonts.*`).
+(When Google Fonts cannot be reached, sheets render with system fallback fonts — judge layout and motion, not the typeface.)
+
+### Avoid near-duplicates
+Before designing, list what already exists in your group: `node -e` is not enough for visuals — run
+`python3 dev/overview.py <group> out/ov t_all` (after `python3 dev/build_test.py all --all-packs`) and look at the grid. Every
+new entry must be recognisably different from all existing ones (different motion principle, composition or graphic idea — not the
+same thing with other numbers).
+
 ## Performance & robustness
 Budget ≈ 2 ms per call at 1080p. No `getImageData`, no canvas creation per frame (cache on a module-level Map keyed by params if you must
 pre-render), no unbounded loops (cap counts). Guard against `bb === null`, empty text, 1-glyph text, very long text. No exceptions.
@@ -137,9 +189,11 @@ The sheet tool prints console problems per entry (must be zero) and the slowest 
 (layouts: 4 texts × 16:9/9:16/4:3/1:1 + a timeline row; enter/exit/hold: frames across the motion on 4 layouts; decor: 4 setups × time).
 Look at every sheet critically — overlapping text, text off-screen, ugly spacing, flat or identical-to-existing motion, leftovers at p=1,
 graphics that pop instead of animating. `python3 dev/build_test.py all --all-packs && python3 dev/smoke_all.py t_all` renders every
-entry in many combinations; `python3 dev/overview.py <group> out/ov t_all` makes one overview grid per group.
+entry in many combinations; `python3 dev/overview.py <group> out/ov t_all` makes one overview grid per group (groups: layout enter exit hold decor treat bg cam fx trans style).
+`python3 dev/cost_scan.py t_all 45` lists entries whose frames take longer than 45 ms.
 Syntax check: `node -e "new Function(require('fs').readFileSync('src/11p_<pack>.js','utf8'))"`. Finally run `python3 build.py`.
 
 ## After Effects
-The AE panel implements the original set only. When you add an entry, also map it to its closest original counterpart in
-`J.AE_MAP` (src/11_export.js) so browser → AE JSON exports keep working.
+The AE panel implements the original set only. Give every new layout / enter / exit / hold / decor entry an `ae` counterpart (see
+"After Effects counterpart" above; `J.AE_MAP` in src/11_export.js can override it) so browser → AE JSON exports keep working.
+fx entries may declare `ae`; text treatments, backgrounds, camera moves and transitions are browser-only.

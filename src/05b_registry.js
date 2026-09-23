@@ -12,6 +12,7 @@
    bg       J.BG          J.BG_ORDER           line  full-screen background graphic
    cam      J.CAMERA      J.CAMERA_ORDER       cut   camera move over the cut
    fx       J.FXE         J.FXE_ORDER          event post-processing / transition effect
+   trans    J.TRANS       J.TRANS_ORDER        cut   how this cut takes over from the previous one (both frames composited)
 
    Common optional fields on every entry:
      name  (Japanese label, required)   tags  (mood keys it suits: glitch calm pop graphic editorial emotional)
@@ -41,10 +42,13 @@ J.FXE = {
   chroma: { name: '色ズレの跳ね', builtin: true },
 };
 J.FXE_ORDER = ['chroma', 'shake', 'slice', 'block', 'invert', 'flash', 'zoom', 'mosaic'];
+// cut-to-cut transitions: draw(ctx, A, B, p, info) composites the previous cut (A) and this cut (B) in device pixels
+J.TRANS = {};
+J.TRANS_ORDER = [];
 
 const GROUPS = {
   layout: ['LAYOUTS', 'LAYOUT_ORDER'], enter: ['ENTER', 'ENTER_ORDER'], hold: ['HOLD', 'HOLD_ORDER'], exit: ['EXIT', 'EXIT_ORDER'],
-  decor: ['DECOR', 'DECOR_ORDER'], treat: ['TREAT', 'TREAT_ORDER'], bg: ['BG', 'BG_ORDER'], cam: ['CAMERA', 'CAMERA_ORDER'], fx: ['FXE', 'FXE_ORDER'],
+  decor: ['DECOR', 'DECOR_ORDER'], treat: ['TREAT', 'TREAT_ORDER'], bg: ['BG', 'BG_ORDER'], cam: ['CAMERA', 'CAMERA_ORDER'], fx: ['FXE', 'FXE_ORDER'], trans: ['TRANS', 'TRANS_ORDER'],
 };
 J.GROUP_KEYS = Object.keys(GROUPS);
 J.registry = g => J[GROUPS[g][0]];

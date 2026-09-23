@@ -1,5 +1,4 @@
 <!doctype html><html><head><meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@300;500;700;900&family=Noto+Serif+JP:wght@300;500;700&family=Zen+Kaku+Gothic+New:wght@900&family=Zen+Old+Mincho:wght@900&family=Kaisei+Tokumin:wght@800&family=M+PLUS+Rounded+1c:wght@800&family=Mochiy+Pop+One&family=DotGothic16&family=Yuji+Syuku&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
 <style>body{margin:0;background:#222}</style></head><body>
 <canvas id="c" width="960" height="540"></canvas>
 <script src="jizura.js"></script>
@@ -8,7 +7,8 @@ window.T = {
   async setup(p){ this.project = Object.assign(J.defaultProject(), p||{}); if (p && p.fx) this.project.fx = Object.assign(J.defaultProject().fx, p.fx); this.plan = J.plan(this.project, p && p.__audio ? p.__audio : null);
     await J.ensureFonts(this.project.lyrics + (this.project.title||'') + '0123456789XYLINEREC:/.・【】No', null);
     this.r = new J.Renderer(); return {dur:this.plan.duration, cuts:this.plan.cuts.map(c=>[c.text,c.layout,c.enter,c.exit,c.start.toFixed(2),c.end.toFixed(2),c.scheme, c.decor.map(d=>d.id).join('+'), c.treat, c.bg, c.cam])}; },
-  cutInfo(){ return this.plan.cuts.map(c=>({text:c.text,layout:c.layout,enter:c.enter,exit:c.exit,hold:c.hold,start:c.start,end:c.end,inDur:c.inDur,outDur:c.outDur,decor:c.decor.map(d=>d.id),treat:c.treat,bg:c.bg,cam:c.cam})); },
+  cutInfo(){ return this.plan.cuts.map(c=>({text:c.text,layout:c.layout,enter:c.enter,exit:c.exit,hold:c.hold,start:c.start,end:c.end,inDur:c.inDur,outDur:c.outDur,trans:c.trans,transDur:c.transDur,decor:c.decor.map(d=>d.id),treat:c.treat,bg:c.bg,cam:c.cam})); },
+  setEvents(evs){ this.plan.events = evs; },
   counts(){ return Object.fromEntries(J.GROUP_KEYS.map(g=>[g, J.order(g).length])); },
   ids(g){ return J.order(g).slice(); },
   timeFrames(ts, scale){ const c=document.createElement('canvas'); c.width=Math.round(this.plan.W*scale); c.height=Math.round(this.plan.H*scale); const ctx=c.getContext('2d'); for (const t of ts) this.r.frame(ctx,this.plan,t,{scale,fast:true}); const out=[]; for (const t of ts){ const t0=performance.now(); this.r.frame(ctx,this.plan,t,{scale,fast:true}); out.push(performance.now()-t0);} return out; },

@@ -13,6 +13,7 @@
       <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
+      <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
     </div>
   </header>
 
@@ -117,6 +118,7 @@
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
           </div>
           <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button></div>
+          <button class="terms-open linkish">書き出した動画の権利について</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
             <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
@@ -187,8 +189,26 @@
           <div class="progress"><i class="exp-bar"></i></div>
           <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
         </div>
+        <button class="terms-open linkish" style="margin-top:10px">書き出した動画・画像の権利とライセンスについて</button>
         <p class="note" id="codecNote">書き出しはこのブラウザの中で行われます（Chrome / Edge 推奨）。</p>
       </div>
     </section>
   </main>
 </div>
+
+<dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
+  <form method="dialog">
+    <h2 id="termsTitle">利用について</h2>
+    <div class="terms-main">
+      <p class="terms-big">このツールで作った<strong>動画や画像（出力物）の権利は、作った人</strong>に帰属します。</p>
+      <p class="terms-sub">※ 使った歌詞や曲の権利は、それぞれの権利者に帰属します。</p>
+    </div>
+    <p>ツール本体は <strong>MIT ライセンス</strong>で公開しています。詳細なライセンスはこちら：</p>
+    <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
+    <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません。</p>
+    <details class="terms-oss"><summary>使用しているオープンソース</summary>
+      <p>MP4 書き出し：mp4-muxer（MIT License）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
+    </details>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>閉じる</button></div>
+  </form>
+</dialog>

@@ -9,23 +9,29 @@ const JP_SERIF_FB = '"Noto Serif JP","Noto Serif CJK JP","Hiragino Mincho ProN",
 
 /* role catalogue: key -> {label, family, weight, kind} */
 J.FONTS = {
-  gothic_black:  { label: 'Noto Sans JP Black',        family: '"Noto Sans JP"', weight: 900, kind: 'gothic', fb: JP_SANS_FB },
-  gothic_bold:   { label: 'Noto Sans JP Bold',         family: '"Noto Sans JP"', weight: 700, kind: 'gothic', fb: JP_SANS_FB },
-  gothic_med:    { label: 'Noto Sans JP Medium',       family: '"Noto Sans JP"', weight: 500, kind: 'gothic', fb: JP_SANS_FB },
-  gothic_light:  { label: 'Noto Sans JP Light',        family: '"Noto Sans JP"', weight: 300, kind: 'gothic', fb: JP_SANS_FB },
-  dela:          { label: 'Dela Gothic One',           family: '"Dela Gothic One"', weight: 400, kind: 'display', fb: JP_SANS_FB },
-  zenkaku:       { label: 'Zen Kaku Gothic New Black', family: '"Zen Kaku Gothic New"', weight: 900, kind: 'gothic', fb: JP_SANS_FB },
-  mincho_black:  { label: 'Zen Old Mincho Black',      family: '"Zen Old Mincho"', weight: 900, kind: 'mincho', fb: JP_SERIF_FB },
-  mincho_bold:   { label: 'Noto Serif JP Bold',        family: '"Noto Serif JP"', weight: 700, kind: 'mincho', fb: JP_SERIF_FB },
-  mincho:        { label: 'Noto Serif JP Medium',      family: '"Noto Serif JP"', weight: 500, kind: 'mincho', fb: JP_SERIF_FB },
-  mincho_light:  { label: 'Noto Serif JP Light',       family: '"Noto Serif JP"', weight: 300, kind: 'mincho', fb: JP_SERIF_FB },
-  tokumin:       { label: 'Kaisei Tokumin',            family: '"Kaisei Tokumin"', weight: 800, kind: 'mincho', fb: JP_SERIF_FB },
-  round:         { label: 'M PLUS Rounded 1c',         family: '"M PLUS Rounded 1c"', weight: 800, kind: 'round', fb: JP_SANS_FB },
-  pop:           { label: 'Mochiy Pop One',            family: '"Mochiy Pop One"', weight: 400, kind: 'display', fb: JP_SANS_FB },
-  dot:           { label: 'DotGothic16',               family: '"DotGothic16"', weight: 400, kind: 'pixel', fb: JP_SANS_FB },
-  brush:         { label: 'Yuji Syuku',                family: '"Yuji Syuku"', weight: 400, kind: 'brush', fb: JP_SERIF_FB },
-  mono:          { label: 'IBM Plex Mono',             family: '"IBM Plex Mono"', weight: 500, kind: 'mono', fb: '"IBM Plex Sans JP",' + JP_SANS_FB },
-  sansui:        { label: 'IBM Plex Sans JP',          family: '"IBM Plex Sans JP"', weight: 500, kind: 'gothic', fb: JP_SANS_FB },
+  gothic_black:  { label: 'Noto Sans JP Black',        family: '"Noto Sans JP"', weight: 900, kind: 'gothic', fb: JP_SANS_FB, gf: 'Noto+Sans+JP:wght@300;500;700;900' },
+  gothic_bold:   { label: 'Noto Sans JP Bold',         family: '"Noto Sans JP"', weight: 700, kind: 'gothic', fb: JP_SANS_FB, gf: 'Noto+Sans+JP:wght@300;500;700;900' },
+  gothic_med:    { label: 'Noto Sans JP Medium',       family: '"Noto Sans JP"', weight: 500, kind: 'gothic', fb: JP_SANS_FB, gf: 'Noto+Sans+JP:wght@300;500;700;900' },
+  gothic_light:  { label: 'Noto Sans JP Light',        family: '"Noto Sans JP"', weight: 300, kind: 'gothic', fb: JP_SANS_FB, gf: 'Noto+Sans+JP:wght@300;500;700;900' },
+  dela:          { label: 'Dela Gothic One',           family: '"Dela Gothic One"', weight: 400, kind: 'display', fb: JP_SANS_FB, gf: 'Dela+Gothic+One' },
+  zenkaku:       { label: 'Zen Kaku Gothic New Black', family: '"Zen Kaku Gothic New"', weight: 900, kind: 'gothic', fb: JP_SANS_FB, gf: 'Zen+Kaku+Gothic+New:wght@900' },
+  mincho_black:  { label: 'Zen Old Mincho Black',      family: '"Zen Old Mincho"', weight: 900, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Zen+Old+Mincho:wght@900' },
+  mincho_bold:   { label: 'Noto Serif JP Bold',        family: '"Noto Serif JP"', weight: 700, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Noto+Serif+JP:wght@300;500;700' },
+  mincho:        { label: 'Noto Serif JP Medium',      family: '"Noto Serif JP"', weight: 500, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Noto+Serif+JP:wght@300;500;700' },
+  mincho_light:  { label: 'Noto Serif JP Light',       family: '"Noto Serif JP"', weight: 300, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Noto+Serif+JP:wght@300;500;700' },
+  tokumin:       { label: 'Kaisei Tokumin',            family: '"Kaisei Tokumin"', weight: 800, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Kaisei+Tokumin:wght@800' },
+  round:         { label: 'M PLUS Rounded 1c',         family: '"M PLUS Rounded 1c"', weight: 800, kind: 'round', fb: JP_SANS_FB, gf: 'M+PLUS+Rounded+1c:wght@800' },
+  pop:           { label: 'Mochiy Pop One',            family: '"Mochiy Pop One"', weight: 400, kind: 'display', fb: JP_SANS_FB, gf: 'Mochiy+Pop+One' },
+  dot:           { label: 'DotGothic16',               family: '"DotGothic16"', weight: 400, kind: 'pixel', fb: JP_SANS_FB, gf: 'DotGothic16' },
+  brush:         { label: 'Yuji Syuku',                family: '"Yuji Syuku"', weight: 400, kind: 'brush', fb: JP_SERIF_FB, gf: 'Yuji+Syuku' },
+  mono:          { label: 'IBM Plex Mono',             family: '"IBM Plex Mono"', weight: 500, kind: 'mono', fb: '"IBM Plex Sans JP",' + JP_SANS_FB, gf: 'IBM+Plex+Mono:wght@500;600' },
+  reggae:        { label: 'Reggae One',                family: '"Reggae One"', weight: 400, kind: 'display', fb: JP_SANS_FB, gf: 'Reggae+One' },
+  rampart:       { label: 'Rampart One',               family: '"Rampart One"', weight: 400, kind: 'display', fb: JP_SANS_FB, gf: 'Rampart+One' },
+  potta:         { label: 'Potta One',                 family: '"Potta One"', weight: 400, kind: 'brush', fb: JP_SANS_FB, gf: 'Potta+One' },
+  kiwi:          { label: 'Kiwi Maru',                 family: '"Kiwi Maru"', weight: 500, kind: 'round', fb: JP_SANS_FB, gf: 'Kiwi+Maru:wght@500' },
+  klee:          { label: 'Klee One',                  family: '"Klee One"', weight: 600, kind: 'hand', fb: JP_SERIF_FB, gf: 'Klee+One:wght@600' },
+  shippori:      { label: 'Shippori Mincho B1',        family: '"Shippori Mincho B1"', weight: 800, kind: 'mincho', fb: JP_SERIF_FB, gf: 'Shippori+Mincho+B1:wght@800' },
+  sansui:        { label: 'IBM Plex Sans JP',          family: '"IBM Plex Sans JP"', weight: 500, kind: 'gothic', fb: JP_SANS_FB, gf: 'IBM+Plex+Sans+JP:wght@400;500;700' },
 };
 J.GOOGLE_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@300;500;700;900&family=Noto+Serif+JP:wght@300;500;700&family=Zen+Kaku+Gothic+New:wght@900&family=Zen+Old+Mincho:wght@900&family=Kaisei+Tokumin:wght@800&family=M+PLUS+Rounded+1c:wght@800&family=Mochiy+Pop+One&family=DotGothic16&family=Yuji+Syuku&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap';
 
@@ -49,13 +55,41 @@ J.fontCSS = (key, px) => {
   return `${f.weight} ${px.toFixed(2)}px ${f.family},${f.fb}`;
 };
 
-/* make sure the glyphs we need are loaded (Google Fonts are unicode-range split) */
+/* Google Fonts stylesheets are attached lazily, one family at a time, only for the faces a plan actually uses —
+   adding faces to the catalogue therefore costs nothing until a style or setting picks them */
+const cssJobs = new Map();
+function attachFamily(spec) {
+  if (!spec || typeof document === 'undefined' || !document.head) return Promise.resolve();
+  if (cssJobs.has(spec)) return cssJobs.get(spec);
+  const job = new Promise(res => {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + spec + '&display=swap';
+    const done = () => res(); l.onload = done; l.onerror = done; setTimeout(done, 5000);
+    document.head.appendChild(l);
+  });
+  cssJobs.set(spec, job);
+  return job;
+}
+/* font keys a plan draws with: style roles, per-cut font params, mono for HUD */
+J.fontsOfPlan = (plan) => {
+  const set = new Set(['mono']);
+  if (!plan) return [...set];
+  for (const r of Object.values(plan.style.fonts || {})) for (const k of r) set.add(k);
+  for (const c of plan.cuts || []) for (const v of Object.values(c.params || {})) {
+    if (typeof v === 'string' && J.FONTS[v]) set.add(v);
+    else if (Array.isArray(v)) v.forEach(x => { if (typeof x === 'string' && J.FONTS[x]) set.add(x); });
+  }
+  return [...set].filter(k => J.FONTS[k]);
+};
+/* make sure the glyphs we need are loaded (Google Fonts are unicode-range split). keys = null → every catalogue face */
 J.ensureFonts = async (text, keys) => {
   if (!document.fonts || !document.fonts.load) return;
   const uniq = [...new Set([...text])].join('') || 'あ';
+  const list = (keys || Object.keys(J.FONTS)).filter(k => J.FONTS[k]);
+  await Promise.all([...new Set(list.map(k => J.FONTS[k].gf).filter(Boolean))].map(attachFamily));
   const jobs = [];
-  for (const k of keys || Object.keys(J.FONTS)) {
-    const f = J.FONTS[k]; if (!f) continue;
+  for (const k of list) {
+    const f = J.FONTS[k];
     jobs.push(document.fonts.load(`${f.weight} 64px ${f.family}`, uniq).catch(() => null));
   }
   await Promise.all(jobs);

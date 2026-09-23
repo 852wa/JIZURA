@@ -122,6 +122,21 @@ class Renderer {
     ];
     const ghostOn = (fx.chroma ?? 0.7) > 0.02 && (st.ghost ?? 1) > 0.02 && !opt.noGhost;
     let mainBB = null, mainEnv = null;
+    // camera blur (focus pulls etc.) is applied ONCE to the whole content layer — a blur filter on every
+    // individual draw call is extremely slow when a layout draws many text rows
+    let layerBlur = 0, LX = null;
+    if (allowFilter && mainCut && J.CAMERA[mainCut.cam] && mainCut.cam !== 'push') {
+      try {
+        const e0 = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: tq - mainCut.start, ltb: tq - mainCut.start, step, scale, allowFilter, energy, beat: beatInfo });
+        const c0 = J.CAMERA[mainCut.cam].get(e0, mainCut.camP || {});
+        if (c0 && c0.blur > 0.4) layerBlur = c0.blur;
+      } catch (e) {}
+      if (layerBlur) {
+        const L = this.ensure(this.camLayer || (this.camLayer = mk(2, 2)), cw, ch);
+        LX = L.getContext('2d'); LX.setTransform(1, 0, 0, 1, 0, 0); LX.globalAlpha = 1; LX.globalCompositeOperation = 'source-over'; LX.filter = 'none';
+        LX.clearRect(0, 0, cw, ch); LX.setTransform(scale, 0, 0, scale, 0, 0);
+      }
+    }
     for (const P of passes) {
       if (P.pass !== 'main' && !ghostOn) continue;
       const tp = Math.max(0, tq - P.lag);
@@ -129,26 +144,45 @@ class Renderer {
       if (!cut) continue;
       const csc = st.schemes[cut.scheme % st.schemes.length] || st.schemes[0];
       const lt = tp - cut.start;
-      const env = this.makeEnv(ctx, plan, cut, csc, {
+      const X = LX || ctx;
+      const env = this.makeEnv(X, plan, cut, csc, {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
         t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo,
       });
-      ctx.save();
+      X.save();
       // camera move for this cut (default: slow push-in)
       let cam = null;
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
       const cs = cam.s ?? 1;
-      ctx.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
-      if (cam.rot) ctx.rotate(cam.rot * J.DEG);
-      if (cam.skx) ctx.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
-      ctx.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); ctx.translate(-W / 2, -H / 2);
-      if (cam.blur > 0.4 && allowFilter) ctx.filter = `blur(${(cam.blur * scale).toFixed(1)}px)`;
-      if (P.pass !== 'main') ctx.globalCompositeOperation = J.lum(csc.bg) > 0.55 ? 'multiply' : 'source-over';
+      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
+      if (cam.rot) X.rotate(cam.rot * J.DEG);
+      if (cam.skx) X.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
+      X.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); X.translate(-W / 2, -H / 2);
+      if (P.pass !== 'main') X.globalCompositeOperation = J.lum(csc.bg) > 0.55 ? 'multiply' : 'source-over';
       this.drawCut(env);
-      ctx.restore();
+      X.restore();
       if (P.pass === 'main') { mainEnv = env; }
+    }
+    if (LX) {
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      ctx.filter = `blur(${(layerBlur * scale).toFixed(1)}px)`; ctx.drawImage(LX.canvas, 0, 0); ctx.restore();
+    }
+    // ---------- cut-to-cut transition: composite the previous cut's resting frame with this one ----------
+    if (!opt.noTrans && mainCut && mainCut.trans && J.TRANS[mainCut.trans] && mainCut.index > 0) {
+      const lt = tq - mainCut.start, dur = mainCut.transDur || 0.35;
+      const prev = plan.cuts[mainCut.index - 1];
+      if (lt < dur && prev && Math.abs(prev.end - mainCut.start) < 0.06) {
+        const A = this.ensure(this.transA || (this.transA = mk(2, 2)), cw, ch), B = this.ensure(this.transB || (this.transB = mk(2, 2)), cw, ch);
+        const bx = B.getContext('2d'); bx.setTransform(1, 0, 0, 1, 0, 0); bx.globalCompositeOperation = 'copy'; bx.drawImage(ctx.canvas, 0, 0); bx.globalCompositeOperation = 'source-over';
+        this.frame(A.getContext('2d'), plan, Math.max(prev.start, prev.end - 1e-3), Object.assign({}, opt, { noTrans: true, noPost: true, noHud: true }));
+        const psc = st.schemes[prev.scheme % st.schemes.length] || st.schemes[0];
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+        try { J.TRANS[mainCut.trans].draw(ctx, A, B, J.clamp(lt / dur), { cw, ch, sc, scPrev: psc, st, P: mainCut.transP || {}, step, t, scale, allowFilter, seed: mainCut.seed | 0, tmp: (w, h) => this.ensure(this.transC || (this.transC = mk(2, 2)), w, h) }); }
+        catch (e) { console.warn('trans', mainCut.trans, e); }
+        ctx.restore();
+      }
     }
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud) {
@@ -157,7 +191,7 @@ class Renderer {
     }
     ctx.restore();
     // ---------- post ----------
-    this.post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter);
+    if (!opt.noPost) this.post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter);
   }
 
   makeEnv(ctx, plan, cut, sc, o) {

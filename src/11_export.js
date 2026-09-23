@@ -172,9 +172,14 @@ J.AE_MAP = {
   exit: { sinkMask: 'fall', riseOut: 'drift', slideOutL: 'stretch', slideOutR: 'stretch', flipOutX: 'shrink', flipOutY: 'fall', foldOut: 'shrink', squash: 'shrink', trackOutWide: 'blur', collapse: 'shrink', zoomThrough: 'blur', zoomFar: 'shrink', spinOut: 'scatter', twist: 'shrink', waveOut: 'scatter', blurOutStagger: 'blur', undraw: 'blur', outlineOut: 'blur', irisClose: 'shrink', diagWipeOut: 'wipe', blindsClose: 'slice', checkerOut: 'glitch', splitApart: 'slice', vSliceDrop: 'fall', melt: 'fall', dissolve: 'drift', backspace: 'wipe', scrambleOut: 'glitch', glitchDissolve: 'glitch', echoOut: 'blur', whipOut: 'stretch', gravity: 'fall', popOut: 'scatter', burn: 'drift', sweepCover: 'wipe', shatterLite: 'explode' },
   hold: { float: 'drift', sway: 'wave', pulse: 'breathe', shimmer: 'still', colorRun: 'still', rotateSlow: 'drift', trackBreathe: 'breathe', skewWobble: 'wave', beatHop: 'wave', hWave: 'wave', heartbeat: 'breathe', orbitSmall: 'jitter', jelly: 'breathe', scanBand: 'glitchtick', noiseDrift: 'drift', tilt: 'drift', zoomSlow: 'drift', stretchPulse: 'breathe', glitchJump: 'glitchtick', echoTrail: 'drift' },
   decor: { crosshair: 'brackets', cropMarks: 'brackets', reticle: 'rings', radar: 'rings', progressRing: 'rings', timecodeBar: 'barcode', rulerEdge: 'grid', dimension: 'leaders', indexNum: 'counter', dateStamp: 'barcode', qrBlock: 'barcode', glitchRects: 'bars', concentricSquares: 'shapes', triangleSpin: 'shapes', lineBurst: 'sparks', plusGrid: 'grid', guides: 'grid', waveLine: 'waveform', spiralLine: 'rings', halftonePatch: 'shapes', checkerStrip: 'stripes', beatRing: 'rings', orbitDots: 'dots', constellation: 'sparks', confetti: 'shapes', petals: 'shapes', rainStreaks: 'slash', snow: 'dots', lightLeak: 'blobs', bokeh: 'blobs', speedCorner: 'slash', risingParticles: 'sparks', twinkle: 'sparks', brushStroke: 'bars', tapePieces: 'bars', scribbleCircle: 'rings', scribbleUnder: 'slash', crossOut: 'slash', highlightMark: 'bars', heartsStars: 'shapes', watermarkKanji: 'counter', verticalStrip: 'leaders', romajiLine: 'leaders', bracketsJP: 'brackets', seal: 'shapes' },
-  fx: { rgbSplit: 'chroma', smear: 'slice', vhsRoll: 'slice', trackingNoise: 'slice', waveWarp: 'slice', pixelDrift: 'slice', tileShift: 'block', gridRepeat: 'block', mirrorFlash: 'block', strobe: 'invert', blackFrame: 'invert', whiteFrame: 'flash', filmBurn: 'flash', lightSweep: 'flash', panelWipe: 'flash', zoomPunch: 'zoom', whipBlur: 'zoom', posterize: 'mosaic', hueShift: 'chroma' },
+  fx: { rgbSplit: 'chroma', smear: 'slice', vhsRoll: 'slice', trackingNoise: 'slice', waveWarp: 'slice', pixelDrift: 'slice', tileShift: 'block', gridRepeat: 'block', mirrorFlash: 'block', strobe: 'invert', blackFrame: 'invert', whiteFrame: 'flash', filmBurn: 'flash', lightSweep: 'flash', panelWipe: 'flash', zoomPunch: 'zoom', whipBlur: 'zoom', posterize: 'mosaic', hueShift: 'chroma', irisTrans: 'zoom', doors: 'slice', blindsTrans: 'slice', splitSlide: 'slice', crtOff: 'flash' },
 };
-const aeKey = (g, k, dflt) => (J.CORE_ORDER[g] && J.CORE_ORDER[g].includes(k)) || (g === 'layout' && (k === 'title' || k === 'interlude')) ? k : (J.AE_MAP[g][k] || dflt);
+// newer pack entries may declare their own counterpart as def.ae
+const aeKey = (g, k, dflt) => {
+  if ((J.CORE_ORDER[g] && J.CORE_ORDER[g].includes(k)) || (g === 'layout' && (k === 'title' || k === 'interlude'))) return k;
+  const D = J.registry(g)[k], own = D && D.ae;
+  return J.AE_MAP[g][k] || (own && J.CORE_ORDER[g].includes(own) ? own : null) || dflt;
+};
 J.planForAE = (plan, project) => {
   const clean = JSON.parse(JSON.stringify(plan, (k, v) => (k === 'energy' || k === 'buffer' || k === 'peaks' ? undefined : v)));
   let subs = 0;
@@ -188,8 +193,9 @@ J.planForAE = (plan, project) => {
     c.decor = (c.decor || []).map(d => { const id = aeKey('decor', d.id, null); if (id !== d.id) subs++; return id ? Object.assign({}, d, { id, webId: d.id }) : null; })
       .filter(d => d && !seen.has(d.id) && seen.add(d.id));
   }
-  clean.events = clean.events.map(ev => { const FX = J.FXE[ev.type]; if (!FX || FX.builtin) return ev; const t = J.AE_MAP.fx[ev.type]; return t ? Object.assign({}, ev, { type: t, webType: ev.type }) : null; }).filter(Boolean);
-  if (subs) clean.aeNote = `ブラウザ版の新しい表現 ${subs} 箇所を、AEパネルにある近い表現に置き換えています（文字加工・背景・カメラはAE版では未対応）`;
+  const AE_FX = ['chroma', 'shake', 'slice', 'block', 'invert', 'flash', 'zoom', 'mosaic'];
+  clean.events = clean.events.map(ev => { const FX = J.FXE[ev.type]; if (!FX || FX.builtin) return ev; const t = J.AE_MAP.fx[ev.type] || (AE_FX.includes(FX.ae) ? FX.ae : null); return t ? Object.assign({}, ev, { type: t, webType: ev.type }) : null; }).filter(Boolean);
+  if (subs) clean.aeNote = `ブラウザ版の新しい表現 ${subs} 箇所を、AEパネルにある近い表現に置き換えています（文字加工・背景・カメラ・カット間のつなぎはAE版では未対応）`;
   clean.width = J.outputSize(project)[0]; clean.height = J.outputSize(project)[1];
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);

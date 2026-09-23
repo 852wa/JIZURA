@@ -6,7 +6,7 @@ const ctx = makeContext(); vm.createContext(ctx);
 vm.runInContext(src, ctx, { filename: 'JIZURA_AE.jsx' });
 const JZ = ctx.__jz;
 const D = JZ.JZ_DATA;
-const lyrics = '夜明けの色を/覚えてる\nほどけた声が遠くで鳴った\nねえ、まだ間に合うかな\n*透明*なままじゃ終われない!\n\n朝焼けのまま|asayake\nきっと嘘じゃない\nLove is over, さよなら';
+const lyrics = '夜明けの色を/覚えてる\nほどけた声が遠くで鳴った\nねえ、まだ間に合うかな\n*透明*なままじゃ終われない!\n\n朝焼けのまま|asayake\nきっと届くよ\nGood night, またね';
 function en() { const e = { layout: {}, enter: {}, exit: {}, hold: {}, decor: {} }; for (const [g, o] of [['layout', D.layoutOrder], ['enter', D.enterOrder], ['exit', D.exitOrder], ['hold', D.holdOrder], ['decor', D.decorOrder]]) o.forEach(k => e[g][k] = true); return e; }
 let builds = 0, warnings = [];
 const counts = { layout: {}, enter: {}, exit: {} };
@@ -30,9 +30,10 @@ for (const lay of L) for (let k = 0; k < D.enterOrder.length; k++) {
   JZ.jzBuild(plan, {}); builds++;
   warnings.push(...JZ.log().map(w => lay + '/' + D.enterOrder[k] + ': ' + w));
 }
-// JSON plan exported by the browser app (optional): node dev/ae_test.js path/to/plan_ae.json
-const jp = process.argv[2];
-if (jp && fs.existsSync(jp)) { const plan = JSON.parse(fs.readFileSync(jp, 'utf8')); JZ.jzBuild(plan, {}); builds++; warnings.push(...JZ.log().map(w => 'json: ' + w)); console.log('json plan cuts', plan.cuts.length); }
+// JSON plans exported by the browser app (optional): node dev/ae_test.js plan_ae.json [more.json | folder ...]
+const P = require('path');
+const jsons = process.argv.slice(2).flatMap(p => fs.existsSync(p) && fs.statSync(p).isDirectory() ? fs.readdirSync(p).filter(f => f.endsWith('.json')).map(f => P.join(p, f)) : [p]).filter(p => fs.existsSync(p));
+for (const jp of jsons) { const plan = JSON.parse(fs.readFileSync(jp, 'utf8')); JZ.jzBuild(plan, {}); builds++; warnings.push(...JZ.log().map(w => P.basename(jp) + ': ' + w)); console.log('json', P.basename(jp), 'cuts', plan.cuts.length); }
 console.log('builds', builds, 'comps', stats.comps, 'layers', stats.layers, 'animators', stats.animators, 'expressions', stats.exprs);
 console.log('effects', stats.effects);
 console.log('unknown matchNames', [...stats.unknown]);

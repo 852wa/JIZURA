@@ -58,12 +58,64 @@ J.layoutText = (it) => {
 };
 function vAdv(font, ch, size) { return /[A-Za-z0-9]/.test(ch) ? J.metrics.adv(font, ch) * size : size; }
 
+/* Blurred / glowing items are drawn ONCE into an offscreen layer and the blur / glow is applied to the whole
+   layer — a filter or shadowBlur on every glyph (× 3 chromatic passes) is very slow on canvas. */
+let layerCv = null;
+function drawItemLayered(env, it) {
+  const ctx = env.ctx;
+  const lay = it._lay || (it._lay = J.layoutText(it));
+  const size = it.size, sx = it.sx || 1, sy = it.sy || 1;
+  // item-local bounds of every glyph including per-glyph offsets
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const g of lay) {
+    const c = it.charFn ? it.charFn(g.i, g, lay.N) : null;
+    if (c && c.hide) continue;
+    const s = c && c.s != null ? Math.abs(c.s) : 1, gw = g.w * sx * s * (c && c.sx ? Math.abs(c.sx) : 1), gh = g.h * sy * s * (c && c.sy ? Math.abs(c.sy) : 1);
+    const r = Math.max(gw, gh) * (c && c.rot ? 0.75 : 0.55);
+    const gx = g.x * sx + g.vx * sx + (c ? c.dx || 0 : 0), gy = g.y * sy + g.vy * sy + (c ? c.dy || 0 : 0);
+    x0 = Math.min(x0, gx - r); x1 = Math.max(x1, gx + r); y0 = Math.min(y0, gy - r); y1 = Math.max(y1, gy + r);
+  }
+  if (x0 > x1) return null;
+  const sh = it.shadow, ex = it.extrude;
+  const pad = (it.blur || 0) * 2.6 + size * 0.12 + (it.stroke || 0) + (sh ? (sh.blur || 0) * 1.3 + Math.abs(sh.dx || 0) + Math.abs(sh.dy || 0) : 0) + (ex ? Math.abs(ex.dx || 0) + Math.abs(ex.dy || 0) : 0);
+  x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+  const T = ctx.getTransform(), k = Math.max(0.05, Math.hypot(T.a, T.b));
+  const ow = Math.ceil((x1 - x0) * k), oh = Math.ceil((y1 - y0) * k);
+  if (ow < 2 || oh < 2 || ow * oh > ctx.canvas.width * ctx.canvas.height * 1.6) return undefined;   // fall back to the direct path
+  if (!layerCv) layerCv = document.createElement('canvas');
+  if (layerCv.width < ow || layerCv.height < oh) { layerCv.width = Math.max(ow, layerCv.width); layerCv.height = Math.max(oh, layerCv.height); }
+  const L = layerCv.getContext('2d');
+  L.setTransform(1, 0, 0, 1, 0, 0); L.globalAlpha = 1; L.globalCompositeOperation = 'source-over'; L.filter = 'none';
+  L.clearRect(0, 0, ow, oh);
+  L.setTransform(k, 0, 0, k, -x0 * k, -y0 * k);
+  const inner = Object.assign({}, it, { x: 0, y: 0, rot: 0, skew: 0, blur: 0, shadow: null, blend: null });
+  const bb = J.drawItem(Object.assign({}, env, { ctx: L, inLayer: true, scale: k }), inner);
+  ctx.save();
+  ctx.translate(it.x, it.y);
+  if (it.rot) ctx.rotate(it.rot * J.DEG);
+  if (it.skew) ctx.transform(1, 0, Math.tan(it.skew * J.DEG), 1, 0, 0);
+  if (it.blend) ctx.globalCompositeOperation = it.blend;
+  if (it.blur > 0.4) ctx.filter = `blur(${(it.blur * env.scale).toFixed(1)}px)`;
+  if (sh && env.pass === 'main') {
+    ctx.shadowColor = sh.color || 'rgba(0,0,0,0.6)'; ctx.shadowBlur = (sh.blur || 0) * env.scale;
+    ctx.shadowOffsetX = (sh.dx || 0) * env.scale; ctx.shadowOffsetY = (sh.dy || 0) * env.scale;
+  }
+  ctx.drawImage(layerCv, 0, 0, ow, oh, x0, y0, ow / k, oh / k);
+  ctx.restore();
+  if (!bb) return null;
+  return Object.assign({}, bb, { x0: bb.x0 + it.x, x1: bb.x1 + it.x, y0: bb.y0 + it.y, y1: bb.y1 + it.y, cx: it.x, cy: it.y });
+}
+
 /* draw one text item. env = {ctx, pass, passColor, scale}. Returns design-space bbox + glyph boxes. */
 J.drawItem = (env, it) => {
   const ctx = env.ctx;
   const ghostPass = env.pass !== 'main';
   if (ghostPass && it.ghost === false) return null;
   if (!it.text || it.size <= 0.5) return null;
+  if (!env.inLayer && env.allowFilter && !it.pieceFn && ((it.blur || 0) > 0.4 || (it.shadow && !ghostPass && (it.shadow.blur || 0) * (env.scale || 1) > 6))) {
+    const r = drawItemLayered(env, it);
+    if (r !== undefined) return r;
+  }
   const lay = it._lay || J.layoutText(it);
   const size = it.size, sx = it.sx || 1, sy = it.sy || 1;
   const baseAlpha = (it.alpha ?? 1) * (ghostPass ? (it.ghostAlpha ?? 1) : 1);
@@ -91,7 +143,7 @@ J.drawItem = (env, it) => {
   const shadow = !ghostPass && it.shadow;
   if (shadow) {
     const k = env.scale || 1;
-    ctx.shadowColor = shadow.color || 'rgba(0,0,0,0.6)'; ctx.shadowBlur = (shadow.blur || 0) * k;
+    ctx.shadowColor = shadow.color || 'rgba(0,0,0,0.6)'; ctx.shadowBlur = env.allowFilter === false ? 0 : (shadow.blur || 0) * k;
     ctx.shadowOffsetX = (shadow.dx || 0) * k; ctx.shadowOffsetY = (shadow.dy || 0) * k;
   }
   const ext = !ghostPass && it.extrude && it.extrude.n > 0 ? it.extrude : null;

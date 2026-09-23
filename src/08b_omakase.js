@@ -43,7 +43,8 @@ J.omakase = (project, rnd = Math.random) => {
   const moods = Object.keys(J.MOODS).filter(k => k !== project.mood);
   const mood = pick(moods), M = J.MOODS[mood];
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
-  let pool = (M.styles && rnd() < 0.72 ? M.styles : J.STYLE_ORDER).filter(k => k !== project.style);
+  const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])];
+  let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER).filter(k => k !== project.style);
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
   const style = pick(pool);
   const fx = Object.assign({}, project.fx);
@@ -53,7 +54,7 @@ J.omakase = (project, rnd = Math.random) => {
   // technique subset per group: everything tagged with the mood (plus the mood's hand-picked core items),
   // a sprinkle of everything else, and a minimum count so the planner always has room to vary
   const enabled = {};
-  const MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4 };
+  const MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4, trans: 3 };
   for (const g of J.GROUP_KEYS) {
     const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special);
     const hand = ['layout', 'enter', 'exit'].includes(g) && Array.isArray(M[g]) ? M[g] : [];   // (M.fx holds slider ranges, not a list)

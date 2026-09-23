@@ -93,14 +93,21 @@ function warm() {
 let replanTimer = 0;
 const replanSoon = (ms = 220) => { clearTimeout(replanTimer); replanTimer = setTimeout(replan, ms); };
 let fontKey = '';
+let thumbFonts = null;
 async function ensureFonts() {
   const txt = S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS;
-  const key = txt + '|' + Object.keys(J.FONTS).length;
+  const keys = J.fontsOfPlan(S.plan);                       // only the faces this plan draws with
+  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
   if (key === fontKey) return;
   fontKey = key;
   showMsg('フォントを読み込み中…');
-  try { await J.ensureFonts(txt, null); } catch (e) {}
-  showMsg(null); S.need = true; drawStyleGrid();
+  try { await J.ensureFonts(txt, keys); } catch (e) {}
+  showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
+}
+// style thumbnails need two glyphs of every style's display face — fetched only once the style grid is actually shown
+function loadThumbFonts() {
+  if (thumbFonts || !$('styleGrid').offsetParent) return;
+  thumbFonts = J.ensureFonts('字面', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
 }
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
@@ -222,6 +229,7 @@ function updateCutInfo() {
     cut.treat && cut.treat !== 'none' ? chip('t', '加工', n(J.TREAT, cut.treat)) : '',
     cut.bg && cut.bg !== 'none' ? chip('b', '背景', n(J.BG, cut.bg)) : '',
     cut.cam && cut.cam !== 'push' ? chip('c', 'カメラ', n(J.CAMERA, cut.cam)) : '',
+    cut.trans ? chip('c', 'つなぎ', n(J.TRANS, cut.trans)) : '',
   ].join('');
 }
 
@@ -460,7 +468,7 @@ function setMode(m) {
   $('modePro').setAttribute('aria-pressed', String(!easy));
   try { localStorage.setItem('jizura.mode', S.mode); } catch (e) {}
   if (easy) { showNow(); syncOut(); codecNote(); }
-  sizeViewport(); drawTimeline();
+  sizeViewport(); drawTimeline(); loadThumbFonts();
 }
 
 /* ---------------- fx tab ---------------- */
@@ -482,7 +490,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果']];
+const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 function renderTech() {
@@ -550,7 +558,7 @@ async function runExport(kind) {
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
   try {
-    await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, null);
+    await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     if (kind === 'mp4') {
       const r = await J.exportMP4({ plan: S.plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal });
       txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB・${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
@@ -642,6 +650,7 @@ function bind() {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });
     if (b.dataset.tab === 'out') codecNote();
+    loadThumbFonts();
   }));
   $('fxFlash').addEventListener('change', e => { S.project.fx.flash = e.target.checked; replan(); });
   $('techFilter').addEventListener('input', () => renderTech());
@@ -693,6 +702,11 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
+  // 利用について（出力物の権利・ライセンス）
+  const dlg = $('termsDlg');
+  const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
+  document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(S.project, null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project), null, 1)));
   $('fileProject').addEventListener('change', async e => {
@@ -706,7 +720,7 @@ function bind() {
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
-    if (typing) return;
+    if (typing || $('termsDlg').open) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));

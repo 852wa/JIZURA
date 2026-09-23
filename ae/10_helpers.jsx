@@ -21,7 +21,13 @@ var JZ_FONT_CANDIDATES = {
     dot: ['DotGothic16-Regular', 'MS-Gothic', 'YuGothic-Regular'],
     brush: ['YujiSyuku-Regular', 'YuMincho-Demibold'],
     mono: ['IBMPlexMono-Medium', 'Consolas', 'CourierNewPSMT'],
-    sansui: ['IBMPlexSansJP-Medium', 'NotoSansJP-Medium', 'YuGothic-Medium', 'Meiryo']
+    sansui: ['IBMPlexSansJP-Medium', 'NotoSansJP-Medium', 'YuGothic-Medium', 'Meiryo'],
+    reggae: ['ReggaeOne-Regular', 'DelaGothicOne-Regular', 'NotoSansJP-Black', 'YuGothic-Bold'],
+    rampart: ['RampartOne-Regular', 'NotoSansJP-Black', 'YuGothic-Bold'],
+    potta: ['PottaOne-Regular', 'MochiyPopOne-Regular', 'YuGothic-Bold'],
+    kiwi: ['KiwiMaru-Medium', 'MPLUSRounded1c-ExtraBold', 'YuGothic-Medium'],
+    klee: ['KleeOne-SemiBold', 'YuMincho-Demibold'],
+    shippori: ['ShipporiMinchoB1-ExtraBold', 'ZenOldMincho-Black', 'KozMinPr6N-Heavy', 'YuMincho-Demibold']
 };
 var JZ_ROLE_DEFAULT = { display: 'YuGothic-Bold', serif: 'YuMincho-Demibold', body: 'YuGothic-Medium', mono: 'Consolas' };
 var JZ_FONT_CACHE = {};
@@ -34,7 +40,7 @@ function jzFontExists(ps) {
 }
 function jzRoleOf(key) {
     if (!key) return 'display';
-    if (/mincho|tokumin|brush/.test(key)) return 'serif';
+    if (/mincho|tokumin|brush|shippori|klee/.test(key)) return 'serif';
     if (/mono/.test(key)) return 'mono';
     if (/med|light|sansui/.test(key)) return 'body';
     return 'display';

@@ -9,7 +9,7 @@ async () => {
   const warn = console.warn, err = console.error; let cur = '';
   console.warn = (...a) => { out.problems.push(cur + ' :: ' + a.map(String).join(' ').slice(0, 200)); };
   console.error = (...a) => { out.problems.push(cur + ' :: ERR ' + a.map(String).join(' ').slice(0, 200)); };
-  const texts = ['夜', '透明', '夜明けの色を覚えてる', 'Hello world', 'ねえ、まだ間に合うかな、きっと'];
+  const texts = ['愛', '透明', 'ほどけた声が鳴った', 'Hello world', 'ねえ、まだ間に合うかな'];
   const aspects = ['16:9', '9:16', '4:3', '3:4', '1:1', '21:9'];
   const styles = J.STYLE_ORDER;
   const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
@@ -43,6 +43,8 @@ async () => {
   for (const k of G('treat')) run('treat.' + k, texts.map((_, i) => ({ treat: k, layout: ['center', 'vcols', 'mixed', 'stack', 'huge'][i] })), aspects[k.length % 6], 'noir', 4);
   for (const k of G('bg')) run('bg.' + k, texts.map((_, i) => ({ bg: k })), aspects[k.length % 6], styles[k.length % styles.length], 4);
   for (const k of G('cam')) run('cam.' + k, texts.map((_, i) => ({ cam: k })), aspects[k.length % 6], 'hud', 5);
+  for (const k of G('trans')) run('trans.' + k, texts.map((_, i) => (i ? { trans: k } : {})), aspects[k.length % 6], styles[k.length % styles.length], 8);
+  for (const k of J.STYLE_ORDER) run('style.' + k, texts.map(() => ({})), aspects[k.length % 6], k, 5);
   // random full plans with everything on
   for (let s = 0; s < 30; s++) run('random#' + s, texts.map(() => ({})), aspects[s % 6], styles[s % styles.length], 6);
   console.warn = warn; console.error = err;
@@ -66,7 +68,7 @@ async def main():
             key = pr.split(' :: ')[0].split(' ')[0]
             seen.setdefault(key, []).append(pr)
         for k, v in list(seen.items())[:60]: print(' ', len(v), v[0][:260])
-        print('slow frames', len(out['slow']), out['slow'][:12])
+        print('slow frames', len(out['slow']), out['slow'][:60])
         print('page errors', errs[:5])
         await b.close()
 asyncio.run(main())
