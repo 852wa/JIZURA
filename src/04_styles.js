@@ -9,7 +9,7 @@
 /* scheme: bg, fg, sub, accent, accent2, ink (sticker/box colour), dim (bg text), ghostA, ghostB, grad */
 J.STYLES = {
   noir: {
-    name: 'ノワール・クロマ', desc: '黒地・白文字・シアン/琥珀の色ズレ',
+    name: 'ノワール・クロマ', nameEn: 'Noir Chroma', desc: '黒地・白文字・シアン/琥珀の色ズレ', descEn: 'Black ground, white text, cyan/amber chromatic split',
     schemes: [
       { bg: '#060607', fg: '#F5EEEA', sub: '#BDB6B2', accent: '#F5A50C', accent2: '#16F4D4', ink: '#F5EEEA', dim: '#2A2A2E', ghostA: '#F5A50C', ghostB: '#16F4D4' },
       { bg: '#F2EDE8', fg: '#0B0B0C', sub: '#4A4644', accent: '#E0600C', accent2: '#0FAE98', ink: '#0B0B0C', dim: '#D9D2CC', ghostA: '#F5A50C', ghostB: '#16C4B4', swap: true },
@@ -20,7 +20,7 @@ J.STYLES = {
     decor: { rings: 0.8, hud: 0.4, slash: 0.6 }, hud: false,
   },
   crimson: {
-    name: 'クリムゾン・シグナル', desc: '深紅地・白と黒の二段組み・データ破損',
+    name: 'クリムゾン・シグナル', nameEn: 'Crimson Signal', desc: '深紅地・白と黒の二段組み・データ破損', descEn: 'Crimson ground, white-and-black two-tone, data corruption',
     schemes: [
       { bg: '#C8103F', fg: '#FFFFFF', sub: '#FFD9E2', accent: '#140509', accent2: '#39F2C8', ink: '#140509', dim: '#B00D37', ghostA: '#FFFFFF', ghostB: '#39F2C8' },
       { bg: '#FF6F98', fg: '#FFFFFF', sub: '#FFE3EB', accent: '#1A0710', accent2: '#39F2C8', ink: '#1A0710', dim: '#F25C87', ghostA: '#FFFFFF', ghostB: '#1A0710' },
@@ -32,7 +32,7 @@ J.STYLES = {
     decor: { hud: 1, arrows: 0.8, rings: 0.8 }, hud: true, glitchBoost: 1.4,
   },
   caution: {
-    name: 'コーション', desc: '黄色地・赤と青のアクセント・計器UI',
+    name: 'コーション', nameEn: 'Caution', desc: '黄色地・赤と青のアクセント・計器UI', descEn: 'Yellow ground, red and blue accents, instrument-panel UI',
     schemes: [
       { bg: '#F4D21F', fg: '#141414', sub: '#3A3510', accent: '#E0231C', accent2: '#1F3FD8', ink: '#141414', dim: '#E6C413', ghostA: '#E0231C', ghostB: '#1F3FD8' },
       { bg: '#E0231C', fg: '#F4D21F', sub: '#FFE9A0', accent: '#141414', accent2: '#FFFFFF', ink: '#141414', dim: '#C81E17', ghostA: '#141414', ghostB: '#F4D21F' },
@@ -44,7 +44,7 @@ J.STYLES = {
     decor: { hud: 1, rings: 1, arrows: 1, counter: 0.8, barcode: 0.8 }, hud: true,
   },
   magenta: {
-    name: 'ポップ・マゼンタ', desc: 'ショッキングピンク×白・太丸ゴシック・引き出し線',
+    name: 'ポップ・マゼンタ', nameEn: 'Pop Magenta', desc: 'ショッキングピンク×白・太丸ゴシック・引き出し線', descEn: 'Shocking pink × white, heavy round gothic, leader lines',
     schemes: [
       { bg: '#FF0A8C', fg: '#FFFFFF', sub: '#FFD2EA', accent: '#FFFFFF', accent2: '#2B2BD9', ink: '#FFFFFF', dim: '#F0077F', ghostA: '#FF8CC8', ghostB: '#2B2BD9' },
       { bg: '#FFFFFF', fg: '#FF0A8C', sub: '#FF6DB6', accent: '#2B2BD9', accent2: '#FF0A8C', ink: '#FF0A8C', dim: '#FFE4F2', ghostA: '#2B2BD9', ghostB: '#FF8CC8' },
@@ -56,7 +56,7 @@ J.STYLES = {
     decor: { leaders: 1, counter: 1, sparks: 0.8, shapes: 0.6 }, hud: false,
   },
   paper: {
-    name: 'ペーパー・インク', desc: '紙の質感・藍とマゼンタ・明朝の残像',
+    name: 'ペーパー・インク', nameEn: 'Paper & Ink', desc: '紙の質感・藍とマゼンタ・明朝の残像', descEn: 'Paper texture, indigo and magenta, mincho afterimages',
     schemes: [
       { bg: '#ECE9E3', fg: '#1B2350', sub: '#4D5270', accent: '#C2185B', accent2: '#111111', ink: '#111111', dim: '#DAD6CE', ghostA: '#C2185B', ghostB: '#1B2350', paper: true },
       { bg: '#151515', fg: '#F0EDE7', sub: '#B8B4AC', accent: '#C2185B', accent2: '#1B2350', ink: '#F0EDE7', dim: '#232323', ghostA: '#C2185B', ghostB: '#3A4690', paper: true },
@@ -69,7 +69,7 @@ J.STYLES = {
     decor: { bars: 1, blobs: 0.8, shapes: 0.6, waveform: 0.4 }, hud: false,
   },
   hud: {
-    name: 'ダークHUD', desc: '炭色地・細線フレーム・橙の差し色・日食',
+    name: 'ダークHUD', nameEn: 'Dark HUD', desc: '炭色地・細線フレーム・橙の差し色・日食', descEn: 'Charcoal ground, hairline frames, orange accents, eclipse',
     schemes: [
       { bg: '#131315', fg: '#EFEDEA', sub: '#8E8B88', accent: '#F25A2B', accent2: '#FFFFFF', ink: '#EFEDEA', dim: '#1E1E21', ghostA: '#F25A2B', ghostB: '#7FD7FF' },
       { bg: '#0B0B0C', fg: '#FFFFFF', sub: '#9A9796', accent: '#F25A2B', accent2: '#FFFFFF', ink: '#F25A2B', dim: '#18181A', ghostA: '#F25A2B', ghostB: '#FFFFFF' },
@@ -80,7 +80,7 @@ J.STYLES = {
     decor: { hud: 1, rings: 1, arrows: 1, grid: 0.8, slash: 0.6 }, hud: true, glow: 1.4,
   },
   mint: {
-    name: 'ミント・ターミナル', desc: '黒×青緑×ライム・ラベル貼り・スリットスキャン',
+    name: 'ミント・ターミナル', nameEn: 'Mint Terminal', desc: '黒×青緑×ライム・ラベル貼り・スリットスキャン', descEn: 'Black × teal × lime, pasted labels, slit-scan',
     schemes: [
       { bg: '#0A0E0D', fg: '#E6FFF5', sub: '#7FB9A8', accent: '#9CFF3A', accent2: '#2E8C74', ink: '#E6FFF5', dim: '#142420', ghostA: '#FF3B6B', ghostB: '#2EE6C8' },
       { bg: '#3FAE93', fg: '#0A0E0D', sub: '#123A31', accent: '#FFFFFF', accent2: '#9CFF3A', ink: '#0A0E0D', dim: '#39A087', ghostA: '#FFFFFF', ghostB: '#0A0E0D' },
@@ -92,7 +92,7 @@ J.STYLES = {
     decor: { hud: 1, grid: 0.8, barcode: 0.8, sparks: 0.5 }, hud: true,
   },
   specimen: {
-    name: 'スペシメン', desc: '墨色地・明朝・辞書の注釈と引き出し線',
+    name: 'スペシメン', nameEn: 'Specimen', desc: '墨色地・明朝・辞書の注釈と引き出し線', descEn: 'Ink-black ground, mincho, dictionary notes and leader lines',
     schemes: [
       { bg: '#1B1A1C', fg: '#F2F0EC', sub: '#A19E99', accent: '#F2F0EC', accent2: '#C8B98C', ink: '#F2F0EC', dim: '#2A292C', ghostA: '#6E6A66', ghostB: '#C8B98C' },
       { bg: '#F2F0EC', fg: '#1B1A1C', sub: '#5E5B57', accent: '#1B1A1C', accent2: '#8A7A4E', ink: '#1B1A1C', dim: '#E3E0DA', ghostA: '#B9B4AD', ghostB: '#8A7A4E' },
@@ -103,7 +103,7 @@ J.STYLES = {
     decor: { leaders: 1, slash: 0.8, rings: 0.4 }, hud: false,
   },
   transit: {
-    name: 'トランジット', desc: 'オリーブ×黄色・矢印と標識・網点',
+    name: 'トランジット', nameEn: 'Transit', desc: 'オリーブ×黄色・矢印と標識・網点', descEn: 'Olive × yellow, arrows and signage, halftone',
     schemes: [
       { bg: '#5B582B', fg: '#FFFFFF', sub: '#E6E2BC', accent: '#E8C21A', accent2: '#1A1A1A', ink: '#E8C21A', dim: '#67633A', ghostA: '#E8C21A', ghostB: '#1A1A1A' },
       { bg: '#1A1A1A', fg: '#FFFFFF', sub: '#B8B5A0', accent: '#E8C21A', accent2: '#FFFFFF', ink: '#E8C21A', dim: '#242424', ghostA: '#E8C21A', ghostB: '#7C7A55' },
@@ -115,7 +115,7 @@ J.STYLES = {
     decor: { arrows: 1.4, shapes: 1, counter: 0.8, rings: 0.6 }, hud: false,
   },
   blueprint: {
-    name: 'ブループリント', desc: '鮮青×白×黒・図形コラージュ・斜め帯',
+    name: 'ブループリント', nameEn: 'Blueprint', desc: '鮮青×白×黒・図形コラージュ・斜め帯', descEn: 'Vivid blue × white × black, shape collage, diagonal bands',
     schemes: [
       { bg: '#1B1BE8', fg: '#FFFFFF', sub: '#C7C7FF', accent: '#000000', accent2: '#FFFFFF', ink: '#000000', dim: '#2323F0', ghostA: '#000000', ghostB: '#8C8CFF' },
       { bg: '#000000', fg: '#FFFFFF', sub: '#9A9AFF', accent: '#1B1BE8', accent2: '#FFFFFF', ink: '#1B1BE8', dim: '#0A0A30', ghostA: '#1B1BE8', ghostB: '#FFFFFF' },
@@ -127,7 +127,7 @@ J.STYLES = {
     decor: { shapes: 1.4, stripes: 1, slash: 1, grid: 0.6 }, hud: false,
   },
   rouge: {
-    name: 'ルージュ・グラデ', desc: '明るいグレー地・赤のグラデーション・カプセル',
+    name: 'ルージュ・グラデ', nameEn: 'Rouge Grad', desc: '明るいグレー地・赤のグラデーション・カプセル', descEn: 'Light grey ground, red gradients, capsules',
     schemes: [
       { bg: '#E4E2E0', fg: '#141414', sub: '#6B6866', accent: '#D40F1C', accent2: '#141414', ink: '#141414', dim: '#D8D6D4', ghostA: '#D40F1C', ghostB: '#6B6866', grad: ['#E3141F', '#4A0005'] },
       { bg: '#140405', fg: '#FFFFFF', sub: '#C98A8E', accent: '#E3141F', accent2: '#FFFFFF', ink: '#E3141F', dim: '#220A0C', ghostA: '#E3141F', ghostB: '#FFFFFF', grad: ['#FF4A52', '#6A0008'] },
@@ -138,7 +138,7 @@ J.STYLES = {
     decor: { hud: 0.8, leaders: 0.8, stripes: 0.6 }, hud: true, useGrad: true,
   },
   mono: {
-    name: 'モノ・RGB', desc: '灰色の空間・白い明朝・強いRGB分離・座標の円',
+    name: 'モノ・RGB', nameEn: 'Mono RGB', desc: '灰色の空間・白い明朝・強いRGB分離・座標の円', descEn: 'Grey space, white mincho, strong RGB split, coordinate circles',
     schemes: [
       { bg: '#3B3D41', fg: '#FFFFFF', sub: '#B9BBBF', accent: '#FFFFFF', accent2: '#FFE34D', ink: '#1A1B1D', dim: '#45474C', ghostA: '#FF2A2A', ghostB: '#2AA8FF' },
       { bg: '#141517', fg: '#FFFFFF', sub: '#9EA0A4', accent: '#FFE34D', accent2: '#FFFFFF', ink: '#FFFFFF', dim: '#1E1F22', ghostA: '#FF2A2A', ghostB: '#2AFF7A' },
@@ -172,7 +172,23 @@ J.resolveStyle = (project) => {
   }
   const fo = project.fonts || {};
   for (const role of ['display', 'serif', 'body']) if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];
+  if (J.keyMode(project)) keyStyle(st);
   return st;
 };
+/* ---- 合成用の背景（グリーンバック / ブラックバック） ----
+   Every scheme becomes white-on-black (so every part behaves as on a dark background), textures go away,
+   and the renderer turns the finished frame monochrome and — for green — screens it onto pure green.
+   Black stays the "empty" colour, so a keyer (green) or a screen / luma blend (black) gives the same result. */
+J.KEY_BG = { green: '#00FF00', black: '#000000' };
+J.keyMode = project => (project && J.KEY_BG[project.keyBg] ? project.keyBg : null);
+function keyStyle(st) {
+  st.schemes = st.schemes.map(s => {
+    const o = { bg: '#000000', fg: '#FFFFFF', sub: '#D2D2D2', accent: '#FFFFFF', accent2: '#BDBDBD', ink: '#FFFFFF', dim: '#1E1E1E', ghostA: '#9A9A9A', ghostB: '#5E5E5E' };
+    if (s.grad) o.grad = ['#FFFFFF', '#A8A8A8'];
+    return o;
+  });
+  st.texture = { grain: 0, paper: 0, scan: 0 };
+  st.key = true;
+}
 function pickDefined(o, keys) { const r = {}; for (const k of keys) if (o[k]) r[k] = o[k]; return r; }
 })();

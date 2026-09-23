@@ -37,6 +37,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .proj { display: flex; gap: 8px; flex: 1 1 280px; min-width: 0; }
 .proj input { flex: 1 1 0; min-width: 0; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+#langSelect { margin-left: 12px; border-color: var(--line2); }
+#langSelect:hover { border-color: #4a4a54; }
 
 /* ---------- controls ---------- */
 input[type=text], input[type=number], input:not([type]), select, textarea {

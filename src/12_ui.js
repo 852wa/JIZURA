@@ -5,6 +5,7 @@
 'use strict';
 if (!document.getElementById('app')) return;          // engine-only pages (tests)
 const $ = id => document.getElementById(id);
+const T = (k, v) => { let s = JI.t(k); for (const a of Object.keys(v)) s = s.split('{' + a + '}').join(String(v[a])); return s; };
 const LS_KEY = 'jizura.project.v1';
 const HUD_CHARS = '0123456789:./-_()【】・No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
 const ICON = {
@@ -46,7 +47,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="最初の公開版のあとに追加">追加</span>' : '') + (d && d.wa ? '<span class="set-badge" title="和風の演出">和</span>' : '');
+  return (d && d.extra ? `<span class="set-badge ex" title="${JI.t('ui.badge.extra.title')}">${JI.t('ui.badge.extra')}</span>` : '') + (d && d.wa ? `<span class="set-badge" title="${JI.t('ui.badge.wa.title')}">${JI.t('ui.badge.wa')}</span>` : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -105,7 +106,7 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('フォントを読み込み中…');
+  showMsg(JI.t('ui.fontsLoading'));
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
@@ -159,11 +160,11 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '一時停止');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', JI.t('aria.pause'));
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', '再生'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', JI.t('aria.play')); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -195,9 +196,10 @@ function drawTimeline() {
     x.fillStyle = `hsla(${hue},70%,58%,0.28)`; x.fillRect(x0, top, Math.max(1, x1 - x0 - 1), bot - top);
     x.fillStyle = `hsla(${hue},80%,62%,0.95)`; x.fillRect(x0, top, Math.max(1, 2 * dpr), bot - top);
     if (x1 - x0 > 34 * dpr) {
+      const L = J.LAYOUTS[cut.layout];
       x.fillStyle = 'rgba(236,231,225,0.85)'; x.font = `${10 * dpr}px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
       x.save(); x.beginPath(); x.rect(x0, top, x1 - x0 - 3, bot - top); x.clip();
-      x.fillText((J.LAYOUTS[cut.layout] || {}).name || cut.layout, x0 + 5 * dpr, top + 13 * dpr); x.restore();
+      x.fillText(L ? JI.tName(L) : cut.layout, x0 + 5 * dpr, top + 13 * dpr); x.restore();
     }
   }
   x.font = `${10 * dpr}px monospace`;
@@ -224,17 +226,17 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; return; }
+  if (!cut) { el.innerHTML = `<span class="hint">${JI.t('ui.noCut')}</span>`; return; }
   const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
-  const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
+  const n = (tbl, k) => (tbl[k] ? JI.tName(tbl[k]) : k);
   el.innerHTML = [
     `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-    chip('l', 'レイアウト', n(J.LAYOUTS, cut.layout)), chip('e', '登場', n(J.ENTER, cut.enter)), chip('h', '保持', n(J.HOLD, cut.hold)), chip('x', '退場', n(J.EXIT, cut.exit)),
-    cut.decor && cut.decor.length ? chip('', '装飾', cut.decor.map(d => n(J.DECOR, d.id)).join('・')) : '',
-    cut.treat && cut.treat !== 'none' ? chip('t', '加工', n(J.TREAT, cut.treat)) : '',
-    cut.bg && cut.bg !== 'none' ? chip('b', '背景', n(J.BG, cut.bg)) : '',
-    cut.cam && cut.cam !== 'push' ? chip('c', 'カメラ', n(J.CAMERA, cut.cam)) : '',
-    cut.trans ? chip('c', 'つなぎ', n(J.TRANS, cut.trans)) : '',
+    chip('l', JI.t('ui.chip.layout'), n(J.LAYOUTS, cut.layout)), chip('e', JI.t('ui.chip.enter'), n(J.ENTER, cut.enter)), chip('h', JI.t('ui.chip.hold'), n(J.HOLD, cut.hold)), chip('x', JI.t('ui.chip.exit'), n(J.EXIT, cut.exit)),
+    cut.decor && cut.decor.length ? chip('', JI.t('ui.chip.decor'), cut.decor.map(d => n(J.DECOR, d.id)).join(JI.t('ui.sep'))) : '',
+    cut.treat && cut.treat !== 'none' ? chip('t', JI.t('ui.chip.treat'), n(J.TREAT, cut.treat)) : '',
+    cut.bg && cut.bg !== 'none' ? chip('b', JI.t('ui.chip.bg'), n(J.BG, cut.bg)) : '',
+    cut.cam && cut.cam !== 'push' ? chip('c', JI.t('ui.chip.cam'), n(J.CAMERA, cut.cam)) : '',
+    cut.trans ? chip('c', JI.t('ui.chip.trans'), n(J.TRANS, cut.trans)) : '',
   ].join('');
 }
 
@@ -242,19 +244,19 @@ function updateCutInfo() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides;
-  const layoutOpts = '<option value="">自動</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const layoutOpts = `<option value="">${JI.t('opt.auto')}</option>` + J.LAYOUT_ORDER.map(k => `<option value="${k}">${JI.tName(J.LAYOUTS[k])}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln';
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="${JI.t(manual ? 'ui.lineTime.title.manual' : 'ui.lineTime.title.auto')}" aria-label="${T('ui.lineTime.aria', { n: i + 1 })}" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(ln.text)}">${escapeHtml(ln.text)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <select aria-label="レイアウト指定">${layoutOpts}</select>
-        <button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>
-        <button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>
+        <select aria-label="${JI.t('ui.selectLayout')}">${layoutOpts}</select>
+        <button class="icon ghost dice" title="${JI.t('ui.rerollLine')}">${ICON.dice}</button>
+        <button class="icon ghost lock" title="${JI.t('ui.lockLine')}" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>
       </span></div>`;
     li.querySelector('select').value = o.layout || '';
     li.querySelector('.time').addEventListener('change', e => {
@@ -274,14 +276,14 @@ function renderLines() {
     });
     const cutsEl = li.querySelector('.cuts');
     S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach(c => {
-      const sp = document.createElement('span'); sp.textContent = J.LAYOUTS[c.layout].name; sp.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
+      const sp = document.createElement('span'); sp.textContent = JI.tName(J.LAYOUTS[c.layout]); sp.title = T('ui.cutTitle', { text: c.text, enter: JI.tName(J.ENTER[c.enter]), exit: JI.tName(J.EXIT[c.exit]) });
       sp.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       cutsEl.appendChild(sp);
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length}行 / ${S.plan.cuts.length}カット`;
+  $('linesInfo').textContent = T('ui.linesInfo', { lines: S.plan.lines.length, cuts: S.plan.cuts.length });
 }
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
@@ -296,8 +298,8 @@ function drawStyleGrid() {
   if (!g.children.length) {
     J.STYLE_ORDER.forEach(k => {
       const b = document.createElement('button'); b.className = 'stile'; b.dataset.k = k;
-      b.title = J.STYLES[k].desc;
-      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${J.STYLES[k].name}</span><span class="badges">${setBadges(J.STYLES[k])}</span>`;
+      b.title = JI.tDesc(J.STYLES[k]);
+      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${JI.tName(J.STYLES[k])}</span><span class="badges">${setBadges(J.STYLES[k])}</span>`;
       b.addEventListener('click', () => { remember(); S.project.style = k; S.project.colors.enabled = false; syncUI(); replan(); commit(); });
       g.appendChild(b);
     });
@@ -307,7 +309,8 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（追加分がオフのため、おまかせでは選ばれません）' : '（和風の演出がオフのため、おまかせでは選ばれません）') : '');
+    b.querySelector('span').textContent = JI.tName(st);
+    b.title = JI.tDesc(st) + (off ? (st.extra && S.project.extra !== true ? JI.t('ui.styleOff.extra') : JI.t('ui.styleOff.wa')) : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
@@ -320,19 +323,21 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
+  return `<option value="">${JI.t('ui.fontDefault')}</option>` + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
 }
+const FONT_ROLES = [['display', 'ui.font.display'], ['serif', 'ui.font.serif'], ['body', 'ui.font.body']];
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', '見出し'], ['serif', '明朝枠'], ['body', '小さな文字']].forEach(([role, label]) => {
+  FONT_ROLES.forEach(([role, key]) => {
+    const label = JI.t(key);
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}のフォント">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${T('ui.font.aria', { label })}">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', '背景'], ['fg', '文字'], ['sub', '補助']];
-const ACCENT_KEYS = [['accent', 'アクセント'], ['ghostA', 'ズレ色A'], ['ghostB', 'ズレ色B']];
+const BASE_KEYS = [['bg', 'ui.col.bg'], ['fg', 'ui.col.fg'], ['sub', 'ui.col.sub']];
+const ACCENT_KEYS = [['accent', 'ui.col.accent'], ['ghostA', 'ui.col.ghostA'], ['ghostB', 'ui.col.ghostB']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -340,10 +345,10 @@ function renderColors() {
   $('accentOn').checked = !!c.accentOn;
   const fill = (rowId, keys, flag) => {
     const row = $(rowId); row.innerHTML = '';
-    keys.forEach(([k, label]) => {
+    keys.forEach(([k, key]) => {
       const l = document.createElement('label');
       const v = (c[flag] && c[k]) || c[k] || sc[k];
-      l.innerHTML = `${label}<input type="color" value="${toColorInput(v)}">`;
+      l.innerHTML = `${JI.t(key)}<input type="color" value="${toColorInput(v)}">`;
       l.querySelector('input').addEventListener('input', e => {
         c[k] = e.target.value.toUpperCase();
         if (!c[flag]) { c[flag] = true; $(flag === 'enabled' ? 'colorOn' : 'accentOn').checked = true; }
@@ -371,7 +376,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('配色：アクセント・ズレ色A/Bを変更', [p.accent, p.ghostA, p.ghostB]);
+  toast(JI.t('toast.palette'), [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -397,7 +402,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} 案目`);
+  toast(T('toast.hist', { i: j + 1, total: H.list.length }));
   restartPreview();
 }
 function updateHist() {
@@ -415,7 +420,7 @@ function omakase() {
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`おまかせ：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast(T('toast.omakase', { style: JI.tName(J.STYLES[r.style]), mood: JI.tName(J.MOODS[r.mood]) }), r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -429,14 +434,14 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `スタイル：${J.STYLES[P.style].name}`;
+    msg = T('toast.style', { name: JI.tName(J.STYLES[P.style]) });
   } else if (part === 'mood') {
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
-    msg = `雰囲気：${J.MOODS[r.mood].name}`;
+    msg = T('toast.mood', { name: JI.tName(J.MOODS[r.mood]) });
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = '構成：レイアウトと動きを再抽選';
+    msg = JI.t('toast.cut');
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -445,18 +450,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'カスタム';
+  const moodName = P.mood && J.MOODS[P.mood] ? JI.tName(J.MOODS[P.mood]) : JI.t('ui.custom');
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('スタイル', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('雰囲気', escapeHtml(moodName))
-    + row('配色', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">ランダム</span>' : ''}`)
-    + row('見出し書体', escapeHtml(fontName))
-    + row('構成', `${cuts.length} カット・レイアウト ${kinds} 種`)
-    + row('演出', `加工 ${cuts.filter(c => c.treat && c.treat !== 'none').length}・背景 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size}種・カメラ ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row(JI.t('ui.now.style'), `<b>${escapeHtml(JI.tName(J.STYLES[P.style]))}</b>`)
+    + row(JI.t('ui.now.mood'), escapeHtml(moodName))
+    + row(JI.t('ui.now.palette'), `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? `<span class="tagl">${JI.t('ui.tagRandom')}</span>` : ''}`)
+    + row(JI.t('ui.now.font'), escapeHtml(fontName))
+    + row(JI.t('ui.now.layout'), T('ui.now.cuts', { cuts: cuts.length, kinds }))
+    + row(JI.t('ui.now.fx'), T('ui.now.counts', { treat: cuts.filter(c => c.treat && c.treat !== 'none').length, bg: new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size, cam: cuts.filter(c => c.cam && c.cam !== 'push').length }));
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -481,13 +486,13 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', '動きの強さ'], ['glitch', 'グリッチ'], ['chroma', '色ズレ'], ['decor', '装飾の量'], ['density', 'カットの細かさ'], ['texture', '質感'], ['bgSwitch', '背景の切替']];
+const FX = [['motion', 'ui.fx.motion'], ['glitch', 'ui.fx.glitch'], ['chroma', 'ui.fx.chroma'], ['decor', 'ui.fx.decor'], ['density', 'ui.fx.density'], ['texture', 'ui.fx.texture'], ['bgSwitch', 'ui.fx.bgSwitch']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
-  FX.forEach(([k, label]) => {
+  FX.forEach(([k, key]) => {
     const row = document.createElement('div'); row.className = 'slider';
     const v = S.project.fx[k] ?? 0.5;
-    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`;
+    row.innerHTML = `<label for="fx_${k}">${JI.t(key)}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`;
     const inp = row.querySelector('input'), out = row.querySelector('output');
     inp.addEventListener('input', () => { S.project.fx[k] = +inp.value; S.project.mood = null; out.textContent = Math.round(inp.value * 100); replanSoon(120); });
     box.appendChild(row);
@@ -499,29 +504,31 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
+const GROUPS = [['layout', 'ui.grp.layout'], ['enter', 'ui.grp.enter'], ['hold', 'ui.grp.hold'], ['exit', 'ui.grp.exit'], ['decor', 'ui.grp.decor'], ['treat', 'ui.grp.treat'], ['bg', 'ui.grp.bg'], ['cam', 'ui.grp.cam'], ['fx', 'ui.grp.fx'], ['trans', 'ui.grp.trans']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 function renderTech() {
   const box = $('techLists'); box.innerHTML = '';
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
-  GROUPS.forEach(([g, label]) => {
+  GROUPS.forEach(([g, gKey]) => {
+    const label = JI.t(gKey);
     const tbl = J.registry(g), items = techItems(g), en = S.project.enabled[g] || (S.project.enabled[g] = {});
-    const shown = q ? items.filter(k => (tbl[k].name + ' ' + k).toLowerCase().includes(q)) : items;
+    const shown = q ? items.filter(k => (`${JI.tName(tbl[k])} ${tbl[k].name} ${k}`).toLowerCase().includes(q)) : items;
     const onN = items.filter(k => en[k] !== false).length;
     total += items.length; onAll += onN;
     if (q && !shown.length) return;
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
     d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">${JI.t('ui.allOn')}</button><button class="ghost small" data-a="off">${JI.t('ui.allOff')}</button><button class="ghost small" data-a="flip">${JI.t('ui.invert')}</button></div>`;
     const list = document.createElement('div'); list.className = 'checks';
     shown.forEach(k => {
       const l = document.createElement('label');
-      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
+      const tags = tbl[k].tags && tbl[k].tags.length ? T('ui.techTags', { tags: tbl[k].tags.map(m => (J.MOODS[m] ? JI.tName(J.MOODS[m]) : m)).join(JI.t('ui.sep')) }) : '';
+      l.title = k + tags;
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? JI.t('ui.techOff.extra') : JI.t('ui.techOff.wa'); }
+      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(JI.tName(tbl[k]))}${setBadges(tbl[k])}`;
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
@@ -545,16 +552,24 @@ function syncOut() {
   $('outAspect').value = S.project.aspect; $('outRes').value = String(S.project.res); $('outFps').value = String(S.project.fps);
   $('eAspect').value = S.project.aspect; $('eRes').value = String(S.project.res); $('eFps').value = String(S.project.fps);
   $('outQuality').value = S.project.quality || 'high'; $('outAudio').checked = S.project.includeAudio !== false;
+  const k = J.keyMode(S.project) || 'off';
+  $('outKey').value = k; $('eKey').value = k;
+  const kb = $('keyBadge');
+  kb.hidden = k === 'off';
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? JI.t('key.badge.green') : JI.t('key.badge.black')}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
+  $('codecNote').textContent = vc ? T('ui.codec.ok', { vc: vc.label, w, h, fps: S.project.fps }) : JI.t('ui.codec.none');
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  if (!vc) $('eMP4').title = JI.t('ui.codec.mp4off');
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'eMP4'];
-function baseName() { return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura'); }
+function baseName() {
+  const k = J.keyMode(S.project);
+  return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
+}
 async function runExport(kind) {
   if (S.exporting) return;
   pause();
@@ -563,7 +578,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('準備中…');
+  setText(JI.t('ui.export.prep'));
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -571,16 +586,17 @@ async function runExport(kind) {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     if (kind === 'mp4') {
       const r = await J.exportMP4({ plan: S.plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal });
-      txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB・${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
+      const codec = r.codec + (r.audio ? ' + ' + r.audio.toUpperCase() : '');
+      txt.textContent = T('ui.export.done', { mb: (r.blob.size / 1048576).toFixed(1), codec, sec: ((performance.now() - t0) / 1000).toFixed(0) });
       const res = await J.saveFile(baseName() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+      if (res === 'declined') txt.textContent += JI.t('ui.export.declined');
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', onProgress, signal: ac.signal });
-      txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = T('ui.export.donePng', { mb: (blob.size / 1048576).toFixed(1) });
       await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : '') + '_png.zip', blob);
     }
   } catch (e) {
-    txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
+    txt.textContent = JI.t('ui.export.err') + (e && e.message ? e.message : e);
     console.error(e);
   } finally {
     S.exporting = null; S.need = true;
@@ -608,12 +624,21 @@ function tapNow() {
 function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); }
 function updateTap() { const ln = S.plan.lines[S.tap.i]; $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.text}` : '—'; }
 
+let audioLbl = null;
+function applyAudioName() {
+  const el = $('audioName');
+  if (!audioLbl) { el.textContent = JI.t('lbl.noAudio'); return; }
+  if (audioLbl.s === 'analyzing') { el.textContent = JI.t('ui.audio.analyzing'); return; }
+  if (audioLbl.s === 'error') { el.textContent = T('ui.audio.error', { msg: audioLbl.m }); return; }
+  el.textContent = T('ui.audio.loaded', { file: audioLbl.f, dur: audioLbl.d, bpm: audioLbl.b });
+}
+
 /* ---------------- sync all inputs from project ---------------- */
 function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `自動 ${S.audio.bpm}` : 'なし';
+  $('bpm').placeholder = S.audio ? `${JI.t('ph.auto')} ${S.audio.bpm}` : JI.t('ui.na');
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -635,14 +660,14 @@ function bind() {
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    $('audioName').textContent = '解析中…';
+    audioLbl = { s: 'analyzing' }; applyAudioName();
     try {
       pause();
       S.audio = await J.analyzeAudio(f);
-      $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）`;
+      audioLbl = { s: 'loaded', f: f.name, d: J.fmtTime(S.audio.duration), b: S.audio.bpm }; applyAudioName();
       S.project.timing.snap = true;
       syncUI(); replan();
-    } catch (err) { $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; }
+    } catch (err) { audioLbl = { s: 'error', m: err.message }; applyAudioName(); S.audio = null; }
   });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
@@ -666,15 +691,15 @@ function bind() {
   }));
   $('fxFlash').addEventListener('change', e => { S.project.fx.flash = e.target.checked; replan(); });
   $('techFilter').addEventListener('input', () => renderTech());
-  const setSwitch = (cls, key, on, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+  const setSwitch = (cls, key, kOn, kOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
     remember();
     S.project[key] = e.target.checked;
     document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
-    toast(e.target.checked ? msgOn : msgOff);
+    toast(JI.t(e.target.checked ? kOn : kOff));
   }));
-  setSwitch('extra-toggle', 'extra', true, '追加分の演出：使う', '追加分の演出：使わない（最初の公開版の演出だけ）');
-  setSwitch('wa-toggle', 'wa', true, '和風の演出：使う', '和風の演出：使わない（おまかせ・シャッフルで選ばれません）');
+  setSwitch('extra-toggle', 'extra', 'toast.extraOn', 'toast.extraOff');
+  setSwitch('wa-toggle', 'wa', 'toast.waOn', 'toast.waOff');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -700,12 +725,17 @@ function bind() {
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
-    catch (err) { showMsg('フォントを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg(JI.t('err.fontLoad')); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
   ['outFps', 'eFps'].forEach(id => $(id).addEventListener('change', e => { S.project.fps = +e.target.value; syncOut(); replan(); codecNote(); }));
   $('outQuality').addEventListener('change', e => { S.project.quality = e.target.value; autosave(); });
+  ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
+    S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
+    const k = J.keyMode(S.project);
+    toast(k ? JI.t(k === 'green' ? 'key.toast.green' : 'key.toast.black') : JI.t('key.toast.off'));
+  }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
@@ -733,7 +763,7 @@ function bind() {
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg(JI.t('err.projectLoad')); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -749,6 +779,15 @@ function bind() {
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
+  document.addEventListener('jizura:lang', () => {
+    syncUI();
+    renderLines();
+    drawTimeline();
+    lastCutIdx = -2; updateCutInfo();
+    showNow();
+    codecNote();
+    applyAudioName();
+  });
 }
 
 /* ---------------- boot ---------------- */

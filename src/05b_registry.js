@@ -21,25 +21,25 @@
 (() => {
 'use strict';
 
-J.TREAT = { none: { name: 'なし', apply() {} } };
+J.TREAT = { none: { name: 'なし', nameEn: 'None', apply() {} } };
 J.TREAT_ORDER = ['none'];
-J.BG = { none: { name: '無地', draw() {} } };
+J.BG = { none: { name: '無地', nameEn: 'Plain', draw() {} } };
 J.BG_ORDER = ['none'];
 J.CAMERA = {
-  push: { name: 'ゆっくり寄る', tags: ['calm', 'editorial', 'emotional', 'graphic', 'pop', 'glitch'], w: 5,
+  push: { name: 'ゆっくり寄る', nameEn: 'Slow push-in', tags: ['calm', 'editorial', 'emotional', 'graphic', 'pop', 'glitch'], w: 5,
     get: (env) => ({ s: 1 + 0.03 * (env.fx.motion ?? 0.7) * J.clamp(env.lt / Math.max(0.3, env.cut.dur)) }) },
 };
 J.CAMERA_ORDER = ['push'];
 // post / transition effects. Entries without draw() are handled by the renderer's built-in branch.
 J.FXE = {
-  slice:  { name: 'スライスグリッチ', builtin: true },
-  block:  { name: 'ブロックグリッチ', builtin: true },
-  invert: { name: '反転', builtin: true },
-  flash:  { name: 'フラッシュ', builtin: true },
-  zoom:   { name: 'ズームブラー', builtin: true },
-  mosaic: { name: 'モザイク', builtin: true },
-  shake:  { name: '揺れ', builtin: true },
-  chroma: { name: '色ズレの跳ね', builtin: true },
+  slice:  { name: 'スライスグリッチ', nameEn: 'Slice glitch', builtin: true },
+  block:  { name: 'ブロックグリッチ', nameEn: 'Block glitch', builtin: true },
+  invert: { name: '反転', nameEn: 'Invert', builtin: true },
+  flash:  { name: 'フラッシュ', nameEn: 'Flash', builtin: true },
+  zoom:   { name: 'ズームブラー', nameEn: 'Zoom blur', builtin: true },
+  mosaic: { name: 'モザイク', nameEn: 'Mosaic', builtin: true },
+  shake:  { name: '揺れ', nameEn: 'Shake', builtin: true },
+  chroma: { name: '色ズレの跳ね', nameEn: 'Chroma bounce', builtin: true },
 };
 J.FXE_ORDER = ['chroma', 'shake', 'slice', 'block', 'invert', 'flash', 'zoom', 'mosaic'];
 // cut-to-cut transitions: draw(ctx, A, B, p, info) composites the previous cut (A) and this cut (B) in device pixels

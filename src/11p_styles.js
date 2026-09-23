@@ -7,7 +7,7 @@
 const S = {
   /* ---------------------------------------------------------------- 桜 */
   sakura: {
-    name: 'サクラ', desc: '淡い桜色・深い梅紫・夜桜・丸文字と明朝', moods: ['emotional', 'calm'],
+    name: 'サクラ', nameEn: 'Sakura', desc: '淡い桜色・深い梅紫・夜桜・丸文字と明朝', descEn: 'Pale blossom pink, deep plum, night sakura, round type and mincho', moods: ['emotional', 'calm'],
     schemes: [
       { bg: '#F8E4EB', fg: '#4A1434', sub: '#8A4A69', accent: '#D93A74', accent2: '#6F8F4E', ink: '#4A1434', dim: '#F0D3DE', ghostA: '#EC6A9A', ghostB: '#9A8AE6', paper: true },
       { bg: '#26091B', fg: '#FCE8F0', sub: '#D69DB6', accent: '#FF86B0', accent2: '#B9E0A2', ink: '#FCE8F0', dim: '#351127', ghostA: '#FF5C95', ghostB: '#8A78FF' },
@@ -30,7 +30,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 深海 */
   ocean: {
-    name: '深海', desc: '濃紺の深海・シアンの発光・泡と細いゴシック', moods: ['calm', 'emotional'],
+    name: '深海', nameEn: 'Deep Sea', desc: '濃紺の深海・シアンの発光・泡と細いゴシック', descEn: 'Navy depths, cyan glow, bubbles and a light gothic', moods: ['calm', 'emotional'],
     schemes: [
       { bg: '#031A2E', fg: '#E4FAFF', sub: '#7FB2C8', accent: '#1FD2E6', accent2: '#4C7DFF', ink: '#E4FAFF', dim: '#0A2842', ghostA: '#1FD2E6', ghostB: '#3B5BFF' },
       { bg: '#0B5566', fg: '#FFFFFF', sub: '#A9E3EA', accent: '#04182A', accent2: '#7FF3FF', ink: '#E4FAFF', dim: '#0E6173', ghostA: '#27E3F2', ghostB: '#031A2E' },
@@ -53,7 +53,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 夕焼け */
   sunset: {
-    name: '夕焼けグラデ', desc: '橙から菫へのグラデーション・太い明朝・逆光', moods: ['emotional', 'pop'],
+    name: '夕焼けグラデ', nameEn: 'Sunset Grad', desc: '橙から菫へのグラデーション・太い明朝・逆光', descEn: 'Orange-to-violet gradient, heavy mincho, backlight', moods: ['emotional', 'pop'],
     schemes: [
       { bg: '#2A0F44', fg: '#FFF0DC', sub: '#E6A98F', accent: '#FF7A30', accent2: '#FF4A86', ink: '#FFB347', dim: '#361456', ghostA: '#FF7A30', ghostB: '#B84BFF', grad: ['#FFC15E', '#FF4A7A'] },
       { bg: '#FF8A3D', fg: '#2A0F44', sub: '#5A1F55', accent: '#2A0F44', accent2: '#FFF0DC', ink: '#2A0F44', dim: '#F57F32', ghostA: '#E0306A', ghostB: '#7A2BC0', grad: ['#6A1B9A', '#2A0F44'] },
@@ -76,7 +76,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 森 */
   forest: {
-    name: '森の手帖', desc: '苔と生成り・樹皮の茶・鉛筆の手書き文字', moods: ['calm', 'editorial', 'emotional'],
+    name: '森の手帖', nameEn: 'Forest Notes', desc: '苔と生成り・樹皮の茶・鉛筆の手書き文字', descEn: 'Moss and cream, bark brown, pencil handwriting', moods: ['calm', 'editorial', 'emotional'],
     schemes: [
       { bg: '#1D291B', fg: '#EFE9D6', sub: '#A8B08A', accent: '#B7C95A', accent2: '#C4833F', ink: '#EFE9D6', dim: '#263423', ghostA: '#8FB04A', ghostB: '#C4833F' },
       { bg: '#EDE6D1', fg: '#22301F', sub: '#5D6647', accent: '#4F7A35', accent2: '#8A5A32', ink: '#22301F', dim: '#E1D9C2', ghostA: '#6F9A45', ghostB: '#B0703A', paper: true },
@@ -99,7 +99,7 @@ const S = {
 
   /* ---------------------------------------------------------------- ヴェイパー */
   vapor: {
-    name: 'ヴェイパー', desc: '薄紫とパステルのピンク/水色・明朝・VHSのにじみ', moods: ['pop', 'emotional', 'glitch'],
+    name: 'ヴェイパー', nameEn: 'Vapor', desc: '薄紫とパステルのピンク/水色・明朝・VHSのにじみ', descEn: 'Lavender and pastel pink/blue, mincho, VHS bleed', moods: ['pop', 'emotional', 'glitch'],
     schemes: [
       { bg: '#3A2A6E', fg: '#FFFFFF', sub: '#D6C8FF', accent: '#FF8FD8', accent2: '#7DF9FF', ink: '#7DF9FF', dim: '#45347C', ghostA: '#FF71CE', ghostB: '#01CDFE', grad: ['#FF8FD8', '#7DF9FF'] },
       { bg: '#FFC6EC', fg: '#3A2A6E', sub: '#74489A', accent: '#7A3BFF', accent2: '#0F9FC8', ink: '#3A2A6E', dim: '#F7B8E2', ghostA: '#2EC8F0', ghostB: '#B04BFF', grad: ['#7A3BFF', '#0B7FB0'] },
@@ -122,7 +122,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 新聞 */
   newsprint: {
-    name: '新聞', desc: '灰色の更紙・墨と赤・見出し明朝・CMYの版ズレと網点', moods: ['editorial', 'graphic'],
+    name: '新聞', nameEn: 'Newsprint', desc: '灰色の更紙・墨と赤・見出し明朝・CMYの版ズレと網点', descEn: 'Grey newsprint, ink and red, headline mincho, CMY misregistration', moods: ['editorial', 'graphic'],
     schemes: [
       { bg: '#E6E5E0', fg: '#111111', sub: '#4E4E4C', accent: '#D8141B', accent2: '#0A82C8', ink: '#111111', dim: '#D8D7D1', ghostA: '#E4007F', ghostB: '#00A0E9', paper: true },
       { bg: '#111111', fg: '#F2F2EE', sub: '#A5A5A0', accent: '#F5D300', accent2: '#E4007F', ink: '#F2F2EE', dim: '#1F1F1F', ghostA: '#E4007F', ghostB: '#00A0E9', paper: true },
@@ -144,7 +144,7 @@ const S = {
 
   /* ---------------------------------------------------------------- シンセ */
   synth80: {
-    name: 'シンセ80s', desc: '黒地にネオンのマゼンタ/シアン・立体文字・走査線', moods: ['pop', 'glitch', 'emotional'],
+    name: 'シンセ80s', nameEn: 'Synth 80s', desc: '黒地にネオンのマゼンタ/シアン・立体文字・走査線', descEn: 'Black ground, neon magenta/cyan, 3D type, scanlines', moods: ['pop', 'glitch', 'emotional'],
     schemes: [
       { bg: '#0B0414', fg: '#FF4FD8', sub: '#A98BFF', accent: '#22E6FF', accent2: '#FFE45C', ink: '#22E6FF', dim: '#1A0B2E', ghostA: '#22E6FF', ghostB: '#6A3BFF' },
       { bg: '#0B0414', fg: '#22E6FF', sub: '#8FA8FF', accent: '#E62EBE', accent2: '#FFE45C', ink: '#FF4FD8', dim: '#140A28', ghostA: '#FF4FD8', ghostB: '#FFE45C' },
@@ -167,7 +167,7 @@ const S = {
 
   /* ---------------------------------------------------------------- クラフト紙 */
   kraft: {
-    name: 'クラフト紙', desc: 'クラフト紙と生成り・スタンプの朱と藍・マステ', moods: ['pop', 'editorial', 'graphic'],
+    name: 'クラフト紙', nameEn: 'Kraft Paper', desc: 'クラフト紙と生成り・スタンプの朱と藍・マステ', descEn: 'Kraft and cream, vermilion and indigo stamps, masking tape', moods: ['pop', 'editorial', 'graphic'],
     schemes: [
       { bg: '#C49A6C', fg: '#1A1410', sub: '#46301E', accent: '#B8361B', accent2: '#F3E9D2', ink: '#1A1410', dim: '#B98F62', ghostA: '#C33A1F', ghostB: '#2E5E8C', paper: true },
       { bg: '#F1E6CF', fg: '#1A1410', sub: '#6A5540', accent: '#C33A1F', accent2: '#2E5E8C', ink: '#1A1410', dim: '#E6D8BC', ghostA: '#C33A1F', ghostB: '#2E5E8C', paper: true },
@@ -190,7 +190,7 @@ const S = {
 
   /* ---------------------------------------------------------------- キャンディ */
   candy: {
-    name: 'キャンディ', desc: 'ミント/いちご/レモン/ぶどうのパステル・丸く弾む文字', moods: ['pop'],
+    name: 'キャンディ', nameEn: 'Candy', desc: 'ミント/いちご/レモン/ぶどうのパステル・丸く弾む文字', descEn: 'Mint/strawberry/lemon/grape pastels, bouncy rounded type', moods: ['pop'],
     schemes: [
       { bg: '#BDF0E2', fg: '#3E2A8C', sub: '#5A4A9A', accent: '#EE3A88', accent2: '#FFB020', ink: '#3E2A8C', dim: '#AEE8D8', ghostA: '#FF5FA2', ghostB: '#8A6BFF' },
       { bg: '#FFDDEB', fg: '#7A2BB8', sub: '#A2468E', accent: '#EE3A88', accent2: '#2FC2B8', ink: '#7A2BB8', dim: '#FDD0E2', ghostA: '#FF5FA2', ghostB: '#3FB8FF' },
@@ -213,7 +213,7 @@ const S = {
 
   /* ---------------------------------------------------------------- アシッド */
   acid: {
-    name: 'アシッド', desc: '黒×酸性グリーン×マゼンタ・荒い書体と壊れた画面', moods: ['glitch', 'graphic'],
+    name: 'アシッド', nameEn: 'Acid', desc: '黒×酸性グリーン×マゼンタ・荒い書体と壊れた画面', descEn: 'Black × acid green × magenta, rough type, broken screen', moods: ['glitch', 'graphic'],
     schemes: [
       { bg: '#050505', fg: '#C6FF00', sub: '#86A800', accent: '#FF2BD6', accent2: '#FFFFFF', ink: '#C6FF00', dim: '#111A00', ghostA: '#FF2BD6', ghostB: '#3D5BFF' },
       { bg: '#C6FF00', fg: '#050505', sub: '#2A3A00', accent: '#050505', accent2: '#FF2BD6', ink: '#050505', dim: '#B8F000', ghostA: '#FF2BD6', ghostB: '#2B3DFF' },
@@ -236,7 +236,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 墨 */
   sumi: {
-    name: '墨と朱', desc: '和紙の生成り・墨の筆文字・朱の落款', moods: ['calm', 'emotional', 'editorial'],
+    name: '墨と朱', nameEn: 'Ink & Vermilion', desc: '和紙の生成り・墨の筆文字・朱の落款', descEn: 'Washi cream, black brush strokes, vermilion seals', moods: ['calm', 'emotional', 'editorial'],
     schemes: [
       { bg: '#EFE5CF', fg: '#16130F', sub: '#5E574C', accent: '#B83A22', accent2: '#16130F', ink: '#16130F', dim: '#E3D8BF', ghostA: '#9A9284', ghostB: '#CC4A2E', paper: true },
       { bg: '#121110', fg: '#EFE8D8', sub: '#9A9286', accent: '#D9402A', accent2: '#EFE8D8', ink: '#EFE8D8', dim: '#1E1C1A', ghostA: '#5C5750', ghostB: '#D9402A', paper: true },
@@ -259,7 +259,7 @@ const S = {
 
   /* ---------------------------------------------------------------- 金夜 */
   gold: {
-    name: '金夜', desc: '漆黒と金箔・象牙の明朝・きらめく光', moods: ['emotional', 'calm', 'editorial'],
+    name: '金夜', nameEn: 'Gold Night', desc: '漆黒と金箔・象牙の明朝・きらめく光', descEn: 'Lacquer black and gold leaf, ivory mincho, glittering light', moods: ['emotional', 'calm', 'editorial'],
     schemes: [
       { bg: '#0A0907', fg: '#F3E7C4', sub: '#B39A62', accent: '#D4AF37', accent2: '#F3E7C4', ink: '#D4AF37', dim: '#17140E', ghostA: '#D4AF37', ghostB: '#7A5230', grad: ['#FFE9A8', '#B8862B'] },
       { bg: '#C9A24A', fg: '#0A0907', sub: '#3A2C12', accent: '#0A0907', accent2: '#FFF4D6', ink: '#0A0907', dim: '#BD9740', ghostA: '#8A5A1A', ghostB: '#3A2C12', grad: ['#2A1E08', '#0A0907'] },

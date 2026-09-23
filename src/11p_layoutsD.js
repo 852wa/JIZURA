@@ -137,7 +137,7 @@ const rrPath = (ctx, x, y, w, h, r) => {
 /* outline of a polygon (main pass) */
 const outline = (env, pts, col, lw, a = 1) => { if (pts.length > 1) env.line(pts.concat([pts[0]]), col, lw, a, false); };
 /* pool of glyphs taken from the line (for decoys / fillers) */
-const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
+const KANA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const _pool = new Map();
 const poolOf = cut => {
   const key = (cut.lineText || '') + '|' + cut.text;
@@ -173,7 +173,7 @@ const cubeFaces = (cx, cy, h, th, ph) => {
   return faces;
 };
 reg('cube', {
-  name: '立方体', tags: ['graphic', 'pop'], w: 0.8, treat: 'safe', emph: 1.2, ae: 'pill', fits: n => n >= 1 && n <= 16,
+  name: '立方体', nameEn: 'Cube', tags: ['graphic', 'pop'], w: 0.8, treat: 'safe', emph: 1.2, ae: 'pill', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 1.6, blur: 1.2, pop: 1.1, slice: 0.4, wipe: 0.5, stretch: 0.5 },
   plan(rng, cut, st) {
     const n = cut.n;
@@ -265,12 +265,12 @@ reg('cube', {
 
 /* ================================================================== 2 cylinder — 円筒 */
 reg('cylinder', {
-  name: '円筒', tags: ['graphic', 'calm', 'emotional'], w: 0.9, ae: 'ring', fits: n => n >= 2 && n <= 16,
+  name: '円筒', nameEn: 'Cylinder', tags: ['graphic', 'calm', 'emotional'], w: 0.9, ae: 'ring', fits: n => n >= 2 && n <= 16,
   enterBias: { cut: 1.4, blur: 1.3, slice: 0.3, wipe: 0.4, stretch: 0.5 },
   plan(rng, cut, st) {
     return {
       font: rng.pick(fontsOf(st, ['display', 'serif'])), fs: rng.pick(fontsOf(st, ['body', 'display'])), rings: rng.pick([2, 4, 4, 6]), band: rng.chance(0.45),
-      dir: rng.pick([1, -1]), speed: rng.range(0.25, 0.45), tilt: rng.range(0.13, 0.2), sep: rng.pick([' ・ ', ' / ', ' — ']), glass: rng.chance(0.7),
+      dir: rng.pick([1, -1]), speed: rng.range(0.25, 0.45), tilt: rng.range(0.13, 0.2),       sep: rng.pick([' · ', ' / ', ' — ']), glass: rng.chance(0.7),
     };
   },
   render(env) {
@@ -367,7 +367,7 @@ reg('cylinder', {
 
 /* ================================================================== 3 flipCards — カード列 */
 reg('flipCards', {
-  name: 'カードめくり', tags: ['pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 14,
+  name: 'カードめくり', nameEn: 'Card flip', tags: ['pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 3, pop: 0.8, blur: 0.5, slice: 0.2, wipe: 0.2, stretch: 0.3, assemble: 0.2 },
   plan(rng, cut, st) {
     return {
@@ -433,7 +433,7 @@ reg('flipCards', {
           if (Pm.peek) {
             // one decoy peeks now and then (flips up, shows a random glyph, flips back)
             const T = 1.3, kk = Math.floor(env.ltb / T), f = env.ltb / T - kk;
-            if (kk >= 1 && J.h(s, kk, 5) % (per * 2) === j + (rr0 < 0 ? 0 : per)) { p = f < 0.25 ? E.inOutCubic(f / 0.25) : f < 0.6 ? 1 : 1 - E.inOutCubic((f - 0.6) / 0.25); ch = J.h(s, kk, 6) % 2 ? '？' : '★'; }
+            if (kk >= 1 && J.h(s, kk, 5) % (per * 2) === j + (rr0 < 0 ? 0 : per)) { p = f < 0.25 ? E.inOutCubic(f / 0.25) : f < 0.6 ? 1 : 1 - E.inOutCubic((f - 0.6) / 0.25); ch = J.h(s, kk, 6) % 2 ? '?' : '★'; }
           }
           const r = drawCard(x, y, p, ch, false, 0, ta * 0.8, 1);
           if (r.up && ch) env.draw({ text: ch, font: Pm.font, size: k * 0.46, x, y, sx: Math.abs(r.c) * r.sc2, sy: r.sc2, color: sc.accent === faceC ? faceT : sc.accent, alpha: ta * 0.8, ghost: false });
@@ -465,7 +465,7 @@ reg('flipCards', {
 
 /* ================================================================== 4 accordion — 蛇腹 */
 reg('accordion', {
-  name: '蛇腹', tags: ['pop', 'graphic', 'editorial'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 2 && n <= 16,
+  name: '蛇腹', nameEn: 'Accordion', tags: ['pop', 'graphic', 'editorial'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 2 && n <= 16,
   enterBias: { cut: 2, blur: 1, pop: 0.8, slice: 0.3, wipe: 0.4 },
   plan(rng, cut, st) {
     const port = cut.H > cut.W * 1.08;
@@ -544,7 +544,7 @@ reg('accordion', {
 
 /* ================================================================== 5 flag — はためく旗 */
 reg('flag', {
-  name: 'はためく旗', tags: ['emotional', 'pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'wave', fits: n => n >= 1 && n <= 16,
+  name: 'はためく旗', nameEn: 'Waving flag', tags: ['emotional', 'pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'wave', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 1.6, blur: 1.2, pop: 0.6, slice: 0.3, wipe: 0.6 },
   plan(rng, cut, st) {
     return {
@@ -642,7 +642,7 @@ reg('flag', {
 
 /* ================================================================== 6 ribbon — リボン */
 reg('ribbon', {
-  name: 'リボン', tags: ['pop', 'emotional', 'graphic'], w: 0.9, treat: 'safe', portrait: 0.7, ae: 'wave', fits: n => n >= 2 && n <= 16,
+  name: 'リボン', nameEn: 'Ribbon', tags: ['pop', 'emotional', 'graphic'], w: 0.9, treat: 'safe', portrait: 0.7, ae: 'wave', fits: n => n >= 2 && n <= 16,
   enterBias: { cut: 1.8, blur: 1.2, pop: 0.8, slice: 0.3, stretch: 0.4 },
   plan(rng, cut, st) {
     return {
@@ -742,7 +742,7 @@ reg('ribbon', {
 
 /* ================================================================== 7 pendulum — 振り子 */
 reg('pendulum', {
-  name: '振り子', tags: ['calm', 'pop', 'emotional'], w: 0.8, treat: 'safe', portrait: 1.2, ae: 'labels', fits: n => n >= 1 && n <= 16,
+  name: '振り子', nameEn: 'Pendulum', tags: ['calm', 'pop', 'emotional'], w: 0.8, treat: 'safe', portrait: 1.2, ae: 'labels', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 2, drop: 1.4, pop: 1.2, blur: 0.8, slice: 0.2, wipe: 0.3, stretch: 0.3 },
   plan(rng, cut, st) {
     const n = cut.n, port = cut.H > cut.W * 1.08, spaced = /\s/.test(String(cut.text).trim());
@@ -860,7 +860,7 @@ reg('pendulum', {
 
 /* ================================================================== 8 pile — 文字の山 */
 reg('pile', {
-  name: '文字の山', tags: ['pop', 'emotional', 'graphic'], w: 0.8, ae: 'scatter', fits: n => n >= 1 && n <= 14,
+  name: '文字の山', nameEn: 'Character pile', tags: ['pop', 'emotional', 'graphic'], w: 0.8, ae: 'scatter', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2.4, drop: 1.2, pop: 0.8, slice: 0.2, wipe: 0.2, stretch: 0.3, assemble: 0.4 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), hf: rng.pick(fontsOf(st, ['body', 'display', 'serif'])), peak: rng.range(-0.12, 0.12), hgt: rng.range(0.26, 0.34), order: rng.pick(['ltr', 'random', 'random']), dust: rng.chance(0.7) };
@@ -955,7 +955,7 @@ reg('pile', {
 
 /* ================================================================== 9 blocks — 積み木 */
 reg('blocks', {
-  name: '積み木', tags: ['pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 14,
+  name: '積み木', nameEn: 'Blocks', tags: ['pop', 'graphic'], w: 0.8, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2.5, drop: 1.4, pop: 1, blur: 0.4, slice: 0.2, wipe: 0.2, stretch: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), deco: rng.chance(0.75), tilt: rng.chance(0.5), hop: rng.chance(0.7), side: rng.pick([1, -1]), colOff: rng.int(0, 5) };
@@ -1047,7 +1047,7 @@ reg('blocks', {
 
 /* ================================================================== 10 balloons — 文字風船 */
 reg('balloons', {
-  name: '文字風船', tags: ['pop', 'emotional', 'calm'], w: 0.8, treat: false, ae: 'scatter', fits: n => n >= 1 && n <= 14,
+  name: '文字風船', nameEn: 'Letter balloon', tags: ['pop', 'emotional', 'calm'], w: 0.8, treat: false, ae: 'scatter', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 1.8, pop: 1.5, drop: 0.6, blur: 0.8, slice: 0.2, wipe: 0.2, assemble: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), tie: rng.pick(['bunch', 'bunch', 'free']), arc: rng.range(0.02, 0.06), colOff: rng.int(0, 4), mono: rng.chance(0.3) };
@@ -1116,7 +1116,7 @@ reg('balloons', {
 /* ================================================================== 11 magnets — マグネット文字 */
 const DECOY = 'ABCDEFGHKMNPRSTXYZ0123456789★♥♪?!';
 reg('magnets', {
-  name: 'マグネット', tags: ['pop', 'graphic'], w: 0.7, treat: false, busy: true, ae: 'scatter', fits: n => n >= 1 && n <= 14,
+  name: 'マグネット', nameEn: 'Magnet', tags: ['pop', 'graphic'], w: 0.7, treat: false, busy: true, ae: 'scatter', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2.5, pop: 1.3, drop: 0.8, slice: 0.2, wipe: 0.2, stretch: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), df: rng.pick(fontsOf(st, ['display', 'body'])), decoys: rng.int(6, 11), handle: rng.pick([1, -1]), colOff: rng.int(0, 4), tilt: rng.range(6, 12) };
@@ -1196,7 +1196,7 @@ reg('magnets', {
 const LPTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 const tilePts = ch => { const up = ch.toUpperCase(); if (LPTS[up]) return LPTS[up]; if (J.isKanji(ch)) return 3 + (J.sid(ch) % 8); if (J.isSmallKana(ch)) return 5; if (J.isPunct(ch)) return 0; if (J.isKata(ch)) return 2 + (J.sid(ch) % 2); return 1 + (J.sid(ch) % 3); };
 reg('tiles', {
-  name: '文字タイル', tags: ['pop', 'editorial', 'graphic'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'labels', fits: n => n >= 1 && n <= 14,
+  name: '文字タイル', nameEn: 'Letter tiles', tags: ['pop', 'editorial', 'graphic'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'labels', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 3, pop: 0.8, blur: 0.4, slice: 0.2, wipe: 0.2, stretch: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), from: rng.pick(['right', 'right', 'drop']), rack: rng.pick(['accent', 'ink', 'sub']), score: rng.chance(0.75) };
@@ -1291,7 +1291,7 @@ const rrPts = (x, y, w, h, r, nc = 5) => {
 
 /* ================================================================== 13 bulbs — 電球サイン */
 reg('bulbs', {
-  name: '電球サイン', tags: ['pop', 'emotional', 'graphic'], w: 0.8, treat: 'safe', emph: 1.3, ae: 'center', fits: n => n >= 1 && n <= 14,
+  name: '電球サイン', nameEn: 'Bulb sign', tags: ['pop', 'emotional', 'graphic'], w: 0.8, treat: 'safe', emph: 1.3, ae: 'center', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 1.8, flicker: 1.6, pop: 1.2, blur: 0.6, slice: 0.3, wipe: 0.4 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), shape: rng.pick(['board', 'board', 'arrow', 'double']), chase: rng.pick(['chase', 'chase', 'alt', 'wave']), dir: rng.pick([1, -1]), sub: rng.chance(0.6) };
@@ -1384,7 +1384,7 @@ const ledTile = (kind, col, bg, T) => {
   return cv;
 };
 reg('ledScroll', {
-  name: '電光掲示板', tags: ['pop', 'graphic', 'glitch'], w: 0.8, treat: false, portrait: 1.1, ae: 'marquee', fits: n => n >= 1 && n <= 24,
+  name: '電光掲示板', nameEn: 'Flip board', tags: ['pop', 'graphic', 'glitch'], w: 0.8, treat: false, portrait: 1.1, ae: 'marquee', fits: n => n >= 1 && n <= 24,
   enterBias: { cut: 4, flicker: 0.8, type: 0.4, blur: 0.2, slice: 0.1, wipe: 0.2, assemble: 0.1, scramble: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(['dot', 'dot', ...fontsOf(st, ['display', 'body'])]), col: rng.pick(['accent', 'accent', 'fg', 'accent2']), info: rng.pick(['top', 'bottom', 'none', 'bottom']), mods: rng.int(3, 6), y: rng.pick([0.5, 0.5, 0.42, 0.58]) };
@@ -1463,7 +1463,7 @@ reg('ledScroll', {
 
 /* ================================================================== 15 billboard — 看板 */
 reg('billboard', {
-  name: '看板', tags: ['pop', 'emotional', 'graphic'], w: 0.8, treat: 'safe', ae: 'center', fits: n => n >= 1 && n <= 16,
+  name: '看板', nameEn: 'Signboard', tags: ['pop', 'emotional', 'graphic'], w: 0.8, treat: 'safe', ae: 'center', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 1.6, flicker: 1.5, blur: 1, pop: 0.8, slice: 0.4, wipe: 0.6 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), face: rng.pick(['light', 'light', 'accent']), lamps: rng.int(3, 4), sweep: rng.range(8, 16), tag: rng.chance(0.7) };
@@ -1540,9 +1540,9 @@ reg('billboard', {
 });
 
 /* ================================================================== 16 crowdBubbles — 吹き出しの群れ */
-const REACT = ['…', '！？', '♪', '？', '！', '…！', '♡'];
+const REACT = ['…', '!?', '♪', '?', '!', '…!', '♡'];
 reg('crowdBubbles', {
-  name: '吹き出しの群れ', tags: ['pop', 'emotional', 'editorial'], w: 0.8, busy: true, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 16,
+  name: '吹き出しの群れ', nameEn: 'Speech bubbles', tags: ['pop', 'emotional', 'editorial'], w: 0.8, busy: true, treat: 'safe', ae: 'labels', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 1.8, pop: 1.6, blur: 0.8, slice: 0.3, wipe: 0.4 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'body'])), sf: rng.pick(fontsOf(st, ['body', 'display'])), big: rng.pick(['round', 'round', 'rect', 'shout']), style: rng.pick(['mixed', 'outline', 'filled']), count: rng.int(10, 16), side: rng.pick([1, -1]) };
@@ -1612,7 +1612,7 @@ reg('crowdBubbles', {
 
 /* ================================================================== 17 crossword — クロスワード */
 reg('crossword', {
-  name: 'クロスワード', tags: ['editorial', 'graphic', 'pop'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'type', fits: n => n >= 2 && n <= 16,
+  name: 'クロスワード', nameEn: 'Crossword', tags: ['editorial', 'graphic', 'pop'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'type', fits: n => n >= 2 && n <= 16,
   enterBias: { cut: 3, type: 0.6, flicker: 0.6, blur: 0.4, slice: 0.2, wipe: 0.2, stretch: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), dens: rng.range(0.14, 0.22), fill: rng.int(2, 3), clue: rng.chance(0.8) };
@@ -1708,7 +1708,7 @@ reg('crossword', {
       const cxl = below ? gx : gx + gw + W * 0.035, cyl = below ? gy + gh + fs * 1.6 : gy + fs;
       const a = tin(env, 0.35, 0.4, E.outCubic) * out;
       const n1 = num.get(key(rowsW[0], c0[0])) || 1;
-      const lines = [['ヨコのカギ', sc.accent, monoF(env)], [n1 + '  ' + (cut.note || romajiOf(env) || '(' + n + ')'), sc.fg, bodyF(env)], ['タテのカギ', sc.accent, monoF(env)], [(num.size > 3 ? 3 : 2) + '  ─', sc.sub, bodyF(env)]];
+      const lines = [['HOR', sc.accent, monoF(env)], [n1 + '  ' + (cut.note || romajiOf(env) || '(' + n + ')'), sc.fg, bodyF(env)], ['VERT', sc.accent, monoF(env)], [(num.size > 3 ? 3 : 2) + '  ─', sc.sub, bodyF(env)]];
       lines.forEach(([t, col, f], i) => {
         const tt = t.length > 22 ? t.slice(0, 21) + '…' : t;
         const yy = below ? cyl + (i % 2) * fs * 1.7 : cyl + i * fs * 1.9 + (i >= 2 ? fs * 0.8 : 0), xx = below && i >= 2 ? cxl + gw * 0.55 : cxl;
@@ -1721,7 +1721,7 @@ reg('crossword', {
 
 /* ================================================================== 18 wordSearch — 文字探し */
 reg('wordSearch', {
-  name: '文字探し', tags: ['pop', 'graphic', 'editorial'], w: 0.7, treat: 'safe', ae: 'tile', fits: n => n >= 2 && n <= 14,
+  name: '文字探し', nameEn: 'Word search', tags: ['pop', 'graphic', 'editorial'], w: 0.7, treat: 'safe', ae: 'tile', fits: n => n >= 2 && n <= 14,
   enterBias: { cut: 3, flicker: 0.8, blur: 0.6, slice: 0.2, wipe: 0.2, stretch: 0.2, assemble: 0.3 },
   plan(rng, cut, st) {
     const port = cut.H > cut.W * 1.08, n = cut.n;
@@ -1775,25 +1775,12 @@ reg('wordSearch', {
     // grid letters (one item; glyphs placed on cells)
     if (env.pass === 'main' && ga > 0) {
       const gs = cell * 0.56;
-      if ('letterSpacing' in ctx) {
-        // one fillText per row: full-width glyphs advance exactly one em, the spacing makes up the cell pitch
-        ctx.save(); ctx.font = J.fontCSS(Pm.gf, gs); ctx.letterSpacing = (cell - gs).toFixed(2) + 'px'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = sc.sub;
-        for (let r = 0; r < R; r++) {
-          const a = J.clamp(ga * (R + 2) - r) * 0.75 * out;
-          if (a <= 0.01) continue;
-          let row = '';
-          for (let c = 0; c < C; c++) row += onPath.has(r * 64 + c) ? '\u3000' : pool[J.h(s, r, c, 9) % NP];
-          ctx.globalAlpha = a; ctx.fillText(row, gx + (cell - gs) / 2, gy + (r + 0.5) * cell);
-        }
-        ctx.restore();
-      } else {
-        const cellsTxt = [], pos = [];
-        for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) { if (onPath.has(r * 64 + c)) continue; cellsTxt.push(pool[J.h(s, r, c, 9) % NP]); pos.push([gx + (c + 0.5) * cell, gy + (r + 0.5) * cell, r]); }
-        const it = { text: cellsTxt.join(''), font: Pm.gf, size: gs, x: 0, y: 0, color: sc.sub, ghost: false, alpha: 0.75 * out };
-        it._lay = J.layoutText(it);
-        it.charFn = (i, g) => { const q = pos[i]; if (!q) return { hide: true }; const a = J.clamp(ga * (R + 2) - q[2]); return { dx: q[0] - g.x, dy: q[1] - g.y, a }; };
-        env.draw(it);
-      }
+      const cellsTxt = [], pos = [];
+      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) { if (onPath.has(r * 64 + c)) continue; cellsTxt.push(pool[J.h(s, r, c, 9) % NP]); pos.push([gx + (c + 0.5) * cell, gy + (r + 0.5) * cell, r]); }
+      const it = { text: cellsTxt.join(''), font: Pm.gf, size: gs, x: 0, y: 0, color: sc.sub, ghost: false, alpha: 0.75 * out };
+      it._lay = J.layoutText(it);
+      it.charFn = (i, g) => { const q = pos[i]; if (!q) return { hide: true }; const a = J.clamp(ga * (R + 2) - q[2]); return { dx: q[0] - g.x, dy: q[1] - g.y, a }; };
+      env.draw(it);
     }
     // the find: capsule sweeps along the lyric, glyphs light up as it passes
     const T1 = 0.35, sweep = J.clamp(cut.dur * 0.3, 0.35, 0.8);
@@ -1826,7 +1813,7 @@ const jigPath = (ctx, x, y, w, h, t, r, b, l) => {
   ctx.moveTo(x, y); jigEdge(ctx, x, y, x + w, y, t); jigEdge(ctx, x + w, y, x + w, y + h, r); jigEdge(ctx, x + w, y + h, x, y + h, b); jigEdge(ctx, x, y + h, x, y, l); ctx.closePath();
 };
 reg('puzzle', {
-  name: 'パズル', tags: ['pop', 'graphic', 'emotional'], w: 0.8, treat: 'safe', ae: 'center', fits: n => n >= 1 && n <= 16,
+  name: 'パズル', nameEn: 'Puzzle', tags: ['pop', 'graphic', 'emotional'], w: 0.8, treat: 'safe', ae: 'center', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 3, blur: 0.5, pop: 0.4, slice: 0.2, wipe: 0.2, stretch: 0.2, assemble: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), plate: rng.pick(['accent', 'light', 'ink']), rows: rng.pick([2, 2, 3]), last: rng.chance(0.65), spread: rng.range(0.6, 1) };
@@ -1917,7 +1904,7 @@ reg('puzzle', {
 
 /* ================================================================== 20 shadowPlay — 影絵 */
 reg('shadowPlay', {
-  name: '影絵', tags: ['emotional', 'calm', 'graphic'], w: 0.9, ae: 'stack', fits: n => n >= 1 && n <= 14,
+  name: '影絵', nameEn: 'Shadow puppet', tags: ['emotional', 'calm', 'graphic'], w: 0.9, ae: 'stack', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 1.2, blur: 1.3, drop: 1.2, pop: 0.6, slice: 0.4 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'display', 'serif'])), mode: rng.pick(['floor', 'floor', 'wall']), dir: rng.pick([1, -1]), sweep: rng.range(0.7, 1), sun: rng.chance(0.8) };
@@ -1992,7 +1979,7 @@ reg('shadowPlay', {
 
 /* ================================================================== 21 kaleido — 万華鏡 */
 reg('kaleido', {
-  name: '万華鏡', tags: ['glitch', 'emotional', 'graphic'], w: 0.8, busy: true, ae: 'ring', fits: n => n >= 1 && n <= 14,
+  name: '万華鏡', nameEn: 'Kaleidoscope', tags: ['glitch', 'emotional', 'graphic'], w: 0.8, busy: true, ae: 'ring', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 1.4, zoom: 1.4, spin: 1.3, blur: 1.2, slice: 0.3, wipe: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), N: rng.pick([6, 8, 8, 10, 12]), speed: rng.range(4, 10) * rng.pick([1, -1]), flow: rng.range(0.15, 0.3), center: rng.pick(['disc', 'disc', 'band']), tint: rng.pick(['sub', 'accent', 'mixed']) };
@@ -2053,7 +2040,7 @@ reg('kaleido', {
 /* ================================================================== 22 dominoes — ドミノ */
 const PIPS = [[], [[0, 0]], [[-1, -1], [1, 1]], [[-1, -1], [0, 0], [1, 1]], [[-1, -1], [1, -1], [-1, 1], [1, 1]], [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]], [[-1, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1]]];
 reg('dominoes', {
-  name: 'ドミノ', tags: ['pop', 'graphic'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'labels', fits: n => n >= 2 && n <= 14,
+  name: 'ドミノ', nameEn: 'Domino', tags: ['pop', 'graphic'], w: 0.7, treat: 'safe', portrait: 0.7, ae: 'labels', fits: n => n >= 2 && n <= 14,
   enterBias: { cut: 3, blur: 0.5, pop: 0.6, slice: 0.2, wipe: 0.2, stretch: 0.2, drop: 0.5 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), face: rng.pick(['light', 'light', 'ink']), pips: rng.chance(0.8) };
@@ -2118,7 +2105,7 @@ reg('dominoes', {
 
 /* ================================================================== 23 burst — 爆発プレート */
 reg('burst', {
-  name: 'ドカン', tags: ['pop', 'graphic', 'emotional'], w: 0.8, treat: 'safe', emph: 1.6, ae: 'circle', fits: n => n >= 1 && n <= 12,
+  name: 'ドカン', nameEn: 'Burst', tags: ['pop', 'graphic', 'emotional'], w: 0.8, treat: 'safe', emph: 1.6, ae: 'circle', fits: n => n >= 1 && n <= 12,
   enterBias: { cut: 1.6, pop: 1.6, zoom: 1.4, blur: 0.5, slice: 0.3, wipe: 0.3, type: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), spikes: rng.int(13, 19), sharp: rng.range(0.66, 0.78), tilt: rng.range(-9, 9), lines: rng.chance(0.75), debris: rng.chance(0.8), order: rng.pick(['accent', 'ink']) };
@@ -2179,7 +2166,7 @@ reg('burst', {
 
 /* ================================================================== 24 fisheye — 魚眼 */
 reg('fisheye', {
-  name: '魚眼レンズ', tags: ['pop', 'graphic', 'glitch'], w: 0.8, portrait: 0.7, ae: 'mixed', fits: n => n >= 3 && n <= 16,
+  name: '魚眼レンズ', nameEn: 'Fisheye lens', tags: ['pop', 'graphic', 'glitch'], w: 0.8, portrait: 0.7, ae: 'mixed', fits: n => n >= 3 && n <= 16,
   enterBias: { cut: 1.4, blur: 1.2, pop: 1, slice: 0.4, wipe: 0.6, type: 0.8 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), mode: rng.pick(['sweep', 'sweep', 'pingpong']), glass: rng.pick(['lens', 'lens', 'grid', 'none']), amp: rng.range(0.7, 1.1) };
@@ -2247,7 +2234,7 @@ reg('fisheye', {
 
 /* ================================================================== 25 wall — 壁面パース */
 reg('wall', {
-  name: '壁面パース', tags: ['graphic', 'editorial', 'emotional'], w: 0.8, busy: true, portrait: 0.6, ae: 'diag', fits: n => n >= 1 && n <= 16,
+  name: '壁面パース', nameEn: 'Perspective wall', tags: ['graphic', 'editorial', 'emotional'], w: 0.8, busy: true, portrait: 0.6, ae: 'diag', fits: n => n >= 1 && n <= 16,
   enterBias: { cut: 1.6, blur: 1.2, wipe: 1, slice: 0.5, pop: 0.4 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'display', 'serif'])), side: rng.pick([1, -1]), yaw: rng.range(36, 46), orbit: rng.range(8, 14), stripe: rng.chance(0.7), eye: rng.range(-0.06, 0.06), tone: rng.pick(['plate', 'plain']) };
@@ -2293,7 +2280,7 @@ reg('wall', {
     // other wall: rows of the line in small type
     const oc = flat(cut.lineText || cut.text), rowsO = port ? 3 : 4, fsO = Ht * 0.12;
     if (env.pass === 'main') {
-      const fo = bodyF(env), chars = [...(oc + '　・　' + oc + '　・　' + oc)].slice(0, 40);
+      const fo = bodyF(env), chars = [...(oc + ' · ' + oc + ' · ' + oc)].slice(0, 40);
       const ads = chars.map(ch => adv(fo, ch) * fsO * 1.1);
       let tot = 0, cnt = 0; for (const a of ads) { if (tot + a > LO * 0.86) break; tot += a; cnt++; }
       for (let r = 0; r < rowsO; r++) {
@@ -2301,7 +2288,7 @@ reg('wall', {
         let uu = 0;
         for (let i = 0; i < cnt; i++) {
           const ch = chars[i], a = ads[i], mid = uu + a / 2; uu += a;
-          if (ch === ' ' || ch === '　') continue;
+          if (ch === ' ') continue;
           drawAffPlain(env, { text: ch, font: fo, size: fsO, x: 0, y: 0, color: J.mix(dimW, onCol(sc, dimW), 0.55), alpha: wa * J.clamp((lt - 0.2 - r * 0.08) / 0.3), ghost: false }, glyphM(dO, posOn(dO, LO, mid, tot, LO * 0.07), Y, dO[0] < 0));
         }
       }
@@ -2331,7 +2318,7 @@ reg('wall', {
 
 /* ================================================================== 26 origami — 折り紙 */
 reg('origami', {
-  name: '折り紙', tags: ['calm', 'pop', 'emotional'], w: 0.8, treat: 'safe', ae: 'circle', fits: n => n >= 1 && n <= 14,
+  name: '折り紙', nameEn: 'Origami', tags: ['calm', 'pop', 'emotional'], w: 0.8, treat: 'safe', ae: 'circle', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2.5, blur: 0.8, pop: 0.6, slice: 0.2, wipe: 0.3 },
   plan(rng, cut, st) {
     const port = cut.H > cut.W * 1.08;
@@ -2425,7 +2412,7 @@ reg('origami', {
 
 /* ================================================================== 27 zipper — ジッパー */
 reg('zipper', {
-  name: 'ジッパー', tags: ['pop', 'graphic', 'emotional'], w: 0.7, busy: true, ae: 'center', portrait: 1.1, fits: n => n >= 1 && n <= 14,
+  name: 'ジッパー', nameEn: 'Zipper', tags: ['pop', 'graphic', 'emotional'], w: 0.7, busy: true, ae: 'center', portrait: 1.1, fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2, blur: 1, pop: 0.8, slice: 0.3, wipe: 0.5 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), cloth: rng.pick(['ink', 'accent', 'ink']), dir: rng.pick([1, -1]), stitch: rng.chance(0.8) };
@@ -2503,7 +2490,7 @@ reg('zipper', {
 
 /* ================================================================== 28 sliceStack — スライス積層 */
 reg('sliceStack', {
-  name: 'スライス積層', tags: ['glitch', 'graphic', 'pop'], w: 0.9, emph: 1.2, ae: 'stack', fits: n => n >= 1 && n <= 14,
+  name: 'スライス積層', nameEn: 'Stacked slices', tags: ['glitch', 'graphic', 'pop'], w: 0.9, emph: 1.2, ae: 'stack', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2, blur: 0.8, flicker: 0.8, slice: 0.2, wipe: 0.4 },
   plan(rng, cut, st) {
     const mode = rng.pick(['blinds', 'blinds', 'stack', 'wave']);
@@ -2590,7 +2577,7 @@ reg('sliceStack', {
 
 /* ================================================================== 29 glitchGrid — グリッチ格子 */
 reg('glitchGrid', {
-  name: 'グリッチ格子', tags: ['glitch', 'graphic'], w: 0.8, busy: true, ae: 'tile', fits: n => n >= 1 && n <= 14,
+  name: 'グリッチ格子', nameEn: 'Glitch lattice', tags: ['glitch', 'graphic'], w: 0.8, busy: true, ae: 'tile', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 2.5, flicker: 1.5, scramble: 1.2, blur: 0.4, slice: 0.8, wipe: 0.3 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), rate: rng.int(3, 6), inv: rng.range(0.1, 0.22), labels: rng.chance(0.75), gut: rng.range(0.008, 0.016) };
@@ -2667,7 +2654,7 @@ const mosaicSample = (text, font, D, lead) => memo('mos|' + text + '|' + font + 
   return { cols, rows, lit };
 });
 reg('mosaicTiles', {
-  name: 'タイル画', tags: ['pop', 'graphic', 'glitch'], w: 0.7, treat: false, ae: 'center', fits: n => n >= 1 && n <= 12,
+  name: 'タイル画', nameEn: 'Tile grid', tags: ['pop', 'graphic', 'glitch'], w: 0.7, treat: false, ae: 'center', fits: n => n >= 1 && n <= 12,
   enterBias: { cut: 3, flicker: 0.8, blur: 0.3, slice: 0.2, wipe: 0.3, assemble: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), D: rng.int(9, 12), wave: rng.pick(['diag', 'random', 'center']), rot: rng.chance(0.4), col: rng.pick(['fg', 'accent', 'fg']), floor: rng.chance(0.75) };
@@ -2751,7 +2738,7 @@ const tileCv = (key, w, h, paint) => {
   return cv;
 };
 reg('maskReveal', {
-  name: '文字窓', tags: ['graphic', 'pop', 'emotional'], w: 0.9, treat: false, emph: 1.3, ae: 'huge', fits: n => n >= 1 && n <= 12,
+  name: '文字窓', nameEn: 'Text window', tags: ['graphic', 'pop', 'emotional'], w: 0.9, treat: false, emph: 1.3, ae: 'huge', fits: n => n >= 1 && n <= 12,
   enterBias: { cut: 1.4, blur: 1.2, wipe: 1.2, slice: 0.8, stretch: 0.8, pop: 0.6, assemble: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), scene: rng.pick(['stripes', 'lines', 'dots', 'shine', 'stripes']), ang: rng.range(20, 35) * rng.pick([1, -1]), speed: rng.range(0.6, 1.2), rim: rng.chance(0.65), label: rng.chance(0.6) };
@@ -2786,7 +2773,7 @@ reg('maskReveal', {
         tile = tileCv('dt' + A + B + T, T, T, (x, w, h) => { x.fillStyle = B; x.fillRect(0, 0, w, h); x.fillStyle = A; x.beginPath(); x.arc(w / 2, h / 2, w * 0.3, 0, J.TAU); x.fill(); });
         m2 = m2.rotate(Pm.ang).translate((tb * size * 0.3) % per, (tb * size * 0.3) % per).scale(per / T);
       } else {
-        const ls = size * 0.16, unit = flat(cut.lineText || cut.text) + '　・　', f = bodyF(env);
+        const ls = size * 0.16, unit = flat(cut.lineText || cut.text) + ' · ', f = bodyF(env);
         const uw = Math.max(ls, J.measure({ text: unit, font: f, size: ls }).w), rh = ls * 1.3;
         const Tw = Math.max(8, Math.round(uw * sk)), Th = Math.max(4, Math.round(rh * 2 * sk));
         tile = tileCv('ln' + unit + f + A + B + Tw + Th, Tw, Th, (x, w, h) => {
@@ -2815,7 +2802,7 @@ reg('maskReveal', {
 
 /* ================================================================== 32 contour — 等高線 */
 reg('contour', {
-  name: '等高線', tags: ['calm', 'graphic', 'emotional'], w: 0.9, ae: 'huge', fits: n => n >= 1 && n <= 16,
+  name: '等高線', nameEn: 'Contour lines', tags: ['calm', 'graphic', 'emotional'], w: 0.9, ae: 'huge', fits: n => n >= 1 && n <= 16,
   enterBias: { blur: 1.3, cut: 1.2, wipe: 1, slice: 0.6 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display', 'serif'])), fb: rng.pick(fontsOf(st, ['display'])), side: rng.pick([1, -1]), rings: rng.int(4, 6), speed: rng.range(0.25, 0.5), col: rng.pick(['sub', 'accent', 'sub']), place: rng.pick(['low', 'center', 'low']) };
@@ -2883,7 +2870,7 @@ const coverage = (text, font, lead, track) => memo('cov|' + text + '|' + font + 
   return { S, cw, ch, a };
 });
 reg('halftoneBig', {
-  name: '網点巨大文字', tags: ['pop', 'graphic', 'editorial'], w: 0.9, treat: false, emph: 1.3, ae: 'huge', fits: n => n >= 1 && n <= 10,
+  name: '網点巨大文字', nameEn: 'Halftone giant text', tags: ['pop', 'graphic', 'editorial'], w: 0.9, treat: false, emph: 1.3, ae: 'huge', fits: n => n >= 1 && n <= 10,
   enterBias: { cut: 1.6, blur: 1, wipe: 1, slice: 0.6, stretch: 0.6, assemble: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), mode: rng.pick(['duo', 'duo', 'tone']), ang: rng.range(15, 40) * rng.pick([1, -1]), shape: rng.pick(['dot', 'dot', 'line']), speed: rng.range(0.4, 0.8), crop: rng.chance(0.35) };
@@ -2937,7 +2924,7 @@ reg('halftoneBig', {
 
 /* ================================================================== 34 stencil — ステンシル */
 reg('stencil', {
-  name: 'ステンシル', tags: ['graphic', 'pop', 'editorial'], w: 0.8, treat: false, ae: 'center', fits: n => n >= 1 && n <= 14,
+  name: 'ステンシル', nameEn: 'Stencil', tags: ['graphic', 'pop', 'editorial'], w: 0.8, treat: false, ae: 'center', fits: n => n >= 1 && n <= 14,
   enterBias: { cut: 1.8, wipe: 1.4, blur: 0.8, slice: 0.4, pop: 0.4, assemble: 0.2 },
   plan(rng, cut, st) {
     return { font: rng.pick(fontsOf(st, ['display'])), col: rng.pick(['accent', 'fg', 'accent']), drips: rng.int(1, 3), marks: rng.chance(0.75), dir: rng.pick([1, -1]), tilt: rng.range(-3, 3) };

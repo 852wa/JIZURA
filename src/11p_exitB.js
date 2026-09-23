@@ -186,9 +186,9 @@ const beatIdx = (env, fb) => (env.beat ? env.beat.index : Math.floor(env.ltb / f
 const darkBg = env => J.lum(env.sc.bg) < 0.5;
 const primary = it => (it.alpha ?? 1) > 0.9 && it.fill !== false;      // decorations only once per cut, not on faded / outline copies
 
-const KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
-const RAIN = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
-const REEL = '夢光影空夜星雨涙心恋声花月風愛嘘罪色音海アイウエオカキクケコサシスセソ0123456789';
+const KANA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const RAIN = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const REEL = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 /* ============================== EXITS ============================== */
 const X = {};
@@ -197,7 +197,7 @@ const X = {};
 
 /* sticker peel: a fold line crosses the text diagonally; the peeled part is drawn mirrored (the back of the sticker) */
 X.peelOff = {
-  name: 'ステッカー剥がし', tags: ['pop', 'graphic'], w: 1, ae: 'wipe',
+  name: 'ステッカー剥がし', nameEn: 'Sticker peel', tags: ['pop', 'graphic'], w: 1, ae: 'wipe',
   outDur: dur => J.clamp(dur * 0.36, 0.3, 0.7),
   apply(env, it, p) {
     const q = isSingle(env, it) ? win(p, orderOf(env, it)(0, 1), 0.4) : p;
@@ -234,7 +234,7 @@ X.peelOff = {
 
 /* crumple into a ball in three quick squeezes, then toss it away */
 X.crumpleOut = {
-  name: '丸めて捨てる', tags: ['pop', 'emotional'], w: 0.9, ae: 'shrink', minDur: 0.8,
+  name: '丸めて捨てる', nameEn: 'Crumple toss', tags: ['pop', 'emotional'], w: 0.9, ae: 'shrink', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.42, 0.36, 0.85),
   apply(env, it, p) {
     const seed = it.seed | 0, W = env.W, H = env.H, bg = env.sc.bg, c0 = colOf(it);
@@ -274,7 +274,7 @@ X.crumpleOut = {
 
 /* torn in two along a jagged line; the halves rotate apart and fall away */
 X.tearOut = {
-  name: '破り捨て', tags: ['emotional', 'graphic'], w: 0.9, ae: 'slice',
+  name: '破り捨て', nameEn: 'Tear away', tags: ['emotional', 'graphic'], w: 0.9, ae: 'slice',
   outDur: dur => J.clamp(dur * 0.38, 0.3, 0.75),
   apply(env, it, p) {
     const vert = !!it.vertical, seed = it.seed | 0, sz = it.size;
@@ -324,7 +324,7 @@ X.tearOut = {
 
 /* a burning front with a rough, flickering edge eats across the text: heated band, glowing rim, soot, embers */
 X.scorchOut = {
-  name: '焦げて消える', tags: ['emotional', 'glitch'], w: 0.8, ae: 'wipe',
+  name: '焦げて消える', nameEn: 'Scorch away', tags: ['emotional', 'glitch'], w: 0.8, ae: 'wipe',
   outDur: dur => J.clamp(dur * 0.4, 0.32, 0.8),
   apply(env, it, p) {
     const single = isSingle(env, it), q = p;          // single-glyph items share one screen-wide front
@@ -383,7 +383,7 @@ X.scorchOut = {
 
 /* overexposure: the text blows out to white (bleaches to the paper on light schemes) with a bloom and a lens streak */
 X.overexposeOut = {
-  name: '白飛び', tags: ['emotional', 'calm', 'pop'], w: 1, ae: 'blur',
+  name: '白飛び', nameEn: 'Blowout', tags: ['emotional', 'calm', 'pop'], w: 1, ae: 'blur',
   apply(env, it, p) {
     const dark = darkBg(env), c0 = colOf(it), sz = it.size, acc = env.sc.accent;
     const hot = dark ? '#ffffff' : env.sc.bg;
@@ -422,7 +422,7 @@ X.overexposeOut = {
 
 /* a bright scan line runs down; behind it the raster breaks into interlaced lines that shear sideways and thin out */
 X.scanOut = {
-  name: '走査線消去', tags: ['glitch', 'graphic'], w: 0.9, ae: 'slice',
+  name: '走査線消去', nameEn: 'Scan erase', tags: ['glitch', 'graphic'], w: 0.9, ae: 'slice',
   apply(env, it, p) {
     const sz = it.size, seed = it.seed | 0, bb = dBox(it, sz * 0.3), h = bb.y1 - bb.y0;
     let pitch = Math.max(2.5, sz * 0.065); if (h / pitch > 64) pitch = h / 64;
@@ -466,7 +466,7 @@ X.scanOut = {
 
 /* slanted stripes, each wiped along its own length, alternating direction and staggered across the text */
 X.stripesOut = {
-  name: 'ストライプ消去', tags: ['graphic', 'pop'], w: 0.9, ae: 'wipe',
+  name: 'ストライプ消去', nameEn: 'Stripe erase', tags: ['graphic', 'pop'], w: 0.9, ae: 'wipe',
   apply(env, it, p) {
     const sz = it.size, bb = dBox(it, sz * 0.12), acc = env.sc.accent;
     const ang = (cutBit(env, 41) ? 64 : 116) * DEG;
@@ -507,7 +507,7 @@ X.stripesOut = {
 
 /* the fill breaks into a halftone screen whose dots shrink away in a sweep */
 X.halftoneOut = {
-  name: '網点に消える', tags: ['graphic', 'calm'], w: 0.9, ae: 'shrink',
+  name: '網点に消える', nameEn: 'Halftone out', tags: ['graphic', 'calm'], w: 0.9, ae: 'shrink',
   apply(env, it, p) {
     const sz = it.size, bb = dBox(it, sz * 0.1), w = bb.x1 - bb.x0, h = bb.y1 - bb.y0, vert = !!it.vertical;
     let c = Math.max(3, sz * 0.15);
@@ -530,7 +530,7 @@ X.halftoneOut = {
 
 /* blackboard eraser: a felt block zig-zags lane by lane, leaving a faint chalky smear that fades */
 X.eraserOut = {
-  name: '黒板消し', tags: ['editorial', 'calm'], w: 0.9, ae: 'wipe', minDur: 0.9,
+  name: '黒板消し', nameEn: 'Eraser', tags: ['editorial', 'calm'], w: 0.9, ae: 'wipe', minDur: 0.9,
   outDur: dur => J.clamp(dur * 0.42, 0.36, 0.85),
   apply(env, it, p) {
     const sz = it.size, vert = !!it.vertical, single = isSingle(env, it), W = env.W, H = env.H;
@@ -581,7 +581,7 @@ X.eraserOut = {
 
 /* sucked into a single point beyond the end of the line, nearest glyph first, stretching as it goes */
 X.vacuumOut = {
-  name: '一点に吸われる', tags: ['pop', 'graphic'], w: 0.9, ae: 'shrink',
+  name: '一点に吸われる', nameEn: 'Vacuum out', tags: ['pop', 'graphic'], w: 0.9, ae: 'shrink',
   apply(env, it, p) {
     const vert = !!it.vertical, sz = it.size, acc = env.sc.accent, rev = cutBit(env, 61), seed = it.seed | 0;
     const single = isSingle(env, it);
@@ -633,7 +633,7 @@ X.vacuumOut = {
 
 /* weathered into sand: grains lift off from the upwind side and stream away on the wind */
 X.sandOut = {
-  name: '砂になって飛ぶ', tags: ['emotional', 'calm'], w: 1, ae: 'drift',
+  name: '砂になって飛ぶ', nameEn: 'Sand away', tags: ['emotional', 'calm'], w: 1, ae: 'drift',
   outDur: dur => J.clamp(dur * 0.44, 0.36, 0.9), minDur: 0.8,
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, vert = !!it.vertical, W = env.W;
@@ -675,7 +675,7 @@ X.sandOut = {
 
 /* fed down into a shredder slot: above it the text is intact, below it comes out as curling strips */
 X.shredOut = {
-  name: 'シュレッダー', tags: ['graphic', 'pop'], w: 0.8, ae: 'fall', minDur: 0.9,
+  name: 'シュレッダー', nameEn: 'Shredder', tags: ['graphic', 'pop'], w: 0.8, ae: 'fall', minDur: 0.9,
   outDur: dur => J.clamp(dur * 0.44, 0.38, 0.9),
   apply(env, it, p) {
     const sz = it.size, seed = it.seed | 0, single = isSingle(env, it), H = env.H;
@@ -718,7 +718,7 @@ X.shredOut = {
 
 /* dominoes: each glyph topples over its bottom corner onto the next, in a chain */
 X.dominoOut = {
-  name: 'ドミノ倒し', tags: ['pop', 'graphic'], w: 0.9, ae: 'fall', minDur: 0.8,
+  name: 'ドミノ倒し', nameEn: 'Domino topple', tags: ['pop', 'graphic'], w: 0.9, ae: 'fall', minDur: 0.8,
   outDur: (dur, n) => J.clamp(dur * 0.42, 0.36, 0.85),
   apply(env, it, p) {
     const ord0 = orderOf(env, it), rev = cutBit(env, 91), sgn = rev ? -1 : 1, sx0 = it.sx || 1, sy0 = it.sy || 1, sz = it.size;
@@ -741,7 +741,7 @@ X.dominoOut = {
 
 /* one pin pops: the text swings down on the other one, settles, then drops away */
 X.hingeOut = {
-  name: '片留めが外れる', tags: ['pop', 'editorial'], w: 0.9, ae: 'fall', minDur: 0.9,
+  name: '片留めが外れる', nameEn: 'Hinge release', tags: ['pop', 'editorial'], w: 0.9, ae: 'fall', minDur: 0.9,
   outDur: dur => J.clamp(dur * 0.46, 0.42, 0.95),
   apply(env, it, p) {
     const single = isSingle(env, it);
@@ -768,7 +768,7 @@ X.hingeOut = {
 
 /* launch: every glyph squats, shakes, then blasts upward off the screen on an exhaust trail */
 X.rocketOff = {
-  name: '打ち上げ', tags: ['pop'], w: 0.9, ae: 'drift', minDur: 0.8,
+  name: '打ち上げ', nameEn: 'Launch', tags: ['pop'], w: 0.9, ae: 'drift', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.44, 0.36, 0.9),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, acc = env.sc.accent, sub = env.sc.sub, sy0 = it.sy || 1, lay = layOf(it);
@@ -826,7 +826,7 @@ function hops(q) {
   return { h: 0, land: 0 };
 }
 X.bounceOff = {
-  name: '弾んで去る', tags: ['pop'], w: 0.9, ae: 'scatter', minDur: 0.8,
+  name: '弾んで去る', nameEn: 'Bounce away', tags: ['pop'], w: 0.9, ae: 'scatter', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.45, 0.38, 0.9),
   apply(env, it, p) {
     const dir = cutBit(env, 121) ? 1 : -1, sz = it.size, ord = orderOf(env, it), sy0 = it.sy || 1;
@@ -849,7 +849,7 @@ X.bounceOff = {
 
 /* balloons: each glyph floats up on a string, swaying like a pendulum below its balloon */
 X.balloonOff = {
-  name: '風船で飛ぶ', tags: ['emotional', 'calm', 'pop'], w: 0.9, ae: 'drift', minDur: 0.9,
+  name: '風船で飛ぶ', nameEn: 'Balloon rise', tags: ['emotional', 'calm', 'pop'], w: 0.9, ae: 'drift', minDur: 0.9,
   outDur: dur => J.clamp(dur * 0.48, 0.42, 1.0),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, sub = env.sc.sub, sy0 = it.sy || 1, lay = layOf(it);
@@ -890,7 +890,7 @@ X.balloonOff = {
 
 /* a let-go balloon: each glyph puffs up, then zips around erratically while it shrinks to nothing */
 X.deflateOut = {
-  name: 'しぼんで飛ぶ', tags: ['pop'], w: 0.8, ae: 'scatter',
+  name: 'しぼんで飛ぶ', nameEn: 'Deflate scatter', tags: ['pop'], w: 0.8, ae: 'scatter',
   outDur: dur => J.clamp(dur * 0.42, 0.36, 0.85),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size;
@@ -919,7 +919,7 @@ X.deflateOut = {
 
 /* heat haze: the text wobbles in rippling slices, stretches upward and thins into the air */
 X.hazeOut = {
-  name: '陽炎に消える', tags: ['emotional', 'calm'], w: 0.9, ae: 'blur',
+  name: '陽炎に消える', nameEn: 'Haze away', tags: ['emotional', 'calm'], w: 0.9, ae: 'blur',
   apply(env, it, p) {
     const sz = it.size, t = env.ltb, vert = !!it.vertical, e = E.inQuad(p);
     const b0 = box(it);
@@ -943,7 +943,7 @@ X.hazeOut = {
 
 /* a pane of glass: an impact cracks it radially, then the shards drop away */
 X.glassBreak = {
-  name: 'ガラス割れ', tags: ['graphic', 'pop', 'glitch'], w: 0.8, ae: 'explode',
+  name: 'ガラス割れ', nameEn: 'Glass break', tags: ['graphic', 'pop', 'glitch'], w: 0.8, ae: 'explode',
   outDur: dur => J.clamp(dur * 0.42, 0.36, 0.85),
   apply(env, it, p) {
     const single = isSingle(env, it);
@@ -1018,7 +1018,7 @@ X.glassBreak = {
 
 /* zipper: a slider runs along each line; behind it the glyphs are pinched shut onto a line of teeth */
 X.zipOut = {
-  name: 'ジッパー', tags: ['graphic', 'pop'], w: 0.8, ae: 'wipe',
+  name: 'ジッパー', nameEn: 'Zipper', tags: ['graphic', 'pop'], w: 0.8, ae: 'wipe',
   apply(env, it, p) {
     const vert = !!it.vertical, sz = it.size, acc = env.sc.accent, rev = cutBit(env, 161), sub = env.sc.sub;
     const single = isSingle(env, it), N = cutN(env);
@@ -1064,7 +1064,7 @@ X.zipOut = {
 
 /* both halves slam into a seam at the centre and vanish into it, with an impact flash */
 X.clapShut = {
-  name: '中央で閉じる', tags: ['graphic', 'pop'], w: 0.9, ae: 'wipe',
+  name: '中央で閉じる', nameEn: 'Clap shut', tags: ['graphic', 'pop'], w: 0.9, ae: 'wipe',
   apply(env, it, p) {
     const vert = !!it.vertical, sz = it.size, acc = env.sc.accent, W = env.W;
     const e = E.inCubic(J.clamp(p / 0.62)), hit = J.clamp((p - 0.6) / 0.4);
@@ -1116,7 +1116,7 @@ X.clapShut = {
 
 /* the sign loses power: glyphs flicker on a failing supply and die one by one, leaving dark tubes that fade */
 X.lampOff = {
-  name: '消灯', tags: ['glitch', 'emotional'], w: 0.8, ae: 'glitch',
+  name: '消灯', nameEn: 'Lamp off', tags: ['glitch', 'emotional'], w: 0.8, ae: 'glitch',
   apply(env, it, p) {
     const seed = it.seed | 0, step = env.step, c0 = colOf(it), bg = env.sc.bg, dark = darkBg(env), sz = it.size;
     const dimC = mixC(c0, bg, 0.78), hot = dark ? mixC(c0, '#ffffff', 0.5) : c0;
@@ -1138,7 +1138,7 @@ X.lampOff = {
 
 /* slot reels: every glyph spins up like a reel, faster and faster, and stops on an empty cell */
 X.slotOut = {
-  name: 'スロット回転', tags: ['glitch', 'pop'], w: 0.8, ae: 'glitch',
+  name: 'スロット回転', nameEn: 'Slot reels', tags: ['glitch', 'pop'], w: 0.8, ae: 'glitch',
   outDur: dur => J.clamp(dur * 0.38, 0.3, 0.7),
   apply(env, it, p) {
     const seed = it.seed | 0, ord = orderOf(env, it), sy0 = it.sy || 1, acc = env.sc.accent;
@@ -1168,7 +1168,7 @@ X.slotOut = {
 
 /* clock wipe: every glyph is swept away by its own little clock hand (a square "cooldown" wipe), one after another */
 X.clockOut = {
-  name: '時計ワイプ', tags: ['graphic', 'editorial'], w: 0.9, ae: 'wipe',
+  name: '時計ワイプ', nameEn: 'Clock wipe', tags: ['graphic', 'editorial'], w: 0.9, ae: 'wipe',
   apply(env, it, p) {
     const sz = it.size, acc = env.sc.accent, cw = !cutBit(env, 191), sg = cw ? 1 : -1, a0 = -Math.PI / 2;
     const ord = orderOf(env, it), lay = layOf(it), vert = !!it.vertical, sx0 = it.sx || 1, sy0 = it.sy || 1;
@@ -1212,7 +1212,7 @@ X.clockOut = {
 
 /* digital rain: glyphs decode into falling columns of characters that pour off the bottom */
 X.matrixOut = {
-  name: 'デジタル雨', tags: ['glitch'], w: 0.8, ae: 'glitch',
+  name: 'デジタル雨', nameEn: 'Digital rain', tags: ['glitch'], w: 0.8, ae: 'glitch',
   outDur: dur => J.clamp(dur * 0.42, 0.34, 0.85),
   apply(env, it, p) {
     const seed = it.seed | 0, step = env.step, sz = it.size, sy0 = it.sy || 1, acc = env.sc.accent, c0 = colOf(it);
@@ -1245,7 +1245,7 @@ X.matrixOut = {
 
 /* tornado: the glyphs are caught in a vortex, orbiting a vertical axis (front / back depth) while they are lifted away */
 X.tornadoOut = {
-  name: '竜巻', tags: ['pop'], w: 0.8, ae: 'scatter', minDur: 0.8,
+  name: '竜巻', nameEn: 'Tornado', tags: ['pop'], w: 0.8, ae: 'scatter', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.45, 0.38, 0.9),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, dir = cutBit(env, 211) ? 1 : -1, single = isSingle(env, it), W = env.W;
@@ -1282,7 +1282,7 @@ X.tornadoOut = {
 
 /* rolled up like a poster: a paper roll travels along the line, swallowing the text as it goes */
 X.rollUpOut = {
-  name: '巻き取る', tags: ['graphic', 'editorial'], w: 0.8, ae: 'wipe',
+  name: '巻き取る', nameEn: 'Roll up', tags: ['graphic', 'editorial'], w: 0.8, ae: 'wipe',
   outDur: dur => J.clamp(dur * 0.4, 0.32, 0.8),
   apply(env, it, p) {
     const sz = it.size, vert = !!it.vertical, rev = cutBit(env, 221), single = isSingle(env, it), c0 = colOf(it), bg = env.sc.bg;
@@ -1327,7 +1327,7 @@ X.rollUpOut = {
 
 /* train: the line runs along itself, bends round a curve and leaves the screen, every glyph following the one before */
 X.snakeOut = {
-  name: '列になって去る', tags: ['calm', 'pop'], w: 0.9, ae: 'stretch', minDur: 0.8,
+  name: '列になって去る', nameEn: 'Train out', tags: ['calm', 'pop'], w: 0.9, ae: 'stretch', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.45, 0.38, 0.9),
   apply(env, it, p) {
     const sz = it.size, rev = cutBit(env, 231), n = cutBit(env, 232) ? 1 : -1, W = env.W, H = env.H;
@@ -1366,7 +1366,7 @@ X.snakeOut = {
 
 /* paper leaves: glyphs detach one by one and flutter down, swaying, tilting and flipping over */
 X.flutterOut = {
-  name: 'ひらひら落ちる', tags: ['emotional', 'calm'], w: 1, ae: 'fall', minDur: 0.8,
+  name: 'ひらひら落ちる', nameEn: 'Flutter down', tags: ['emotional', 'calm'], w: 1, ae: 'fall', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.48, 0.42, 1.0),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, bb = dBox(it, 0), D = env.H - bb.y0 + sz * 1.2, c0 = colOf(it), back = mixC(c0, env.sc.bg, 0.45);
@@ -1386,7 +1386,7 @@ X.flutterOut = {
 
 /* rolling boxes: each glyph tips over its corner and rolls away like a die, leading edge first */
 X.rollOff = {
-  name: '転がって去る', tags: ['pop'], w: 0.8, ae: 'scatter', minDur: 0.8,
+  name: '転がって去る', nameEn: 'Roll away', tags: ['pop'], w: 0.8, ae: 'scatter', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.45, 0.38, 0.9),
   apply(env, it, p) {
     const dir = cutBit(env, 251) ? 1 : -1, sz = it.size, ord = orderOf(env, it), sx0 = it.sx || 1, sy0 = it.sy || 1;
@@ -1409,7 +1409,7 @@ X.rollOff = {
 
 /* folding fan: the line bends into an arc round a pivot, then the ribs close onto one edge and the fan shrinks away */
 X.fanClose = {
-  name: '扇を閉じる', tags: ['graphic', 'editorial', 'emotional'], w: 0.9, ae: 'shrink', minDur: 0.8,
+  name: '扇を閉じる', nameEn: 'Fan close', tags: ['graphic', 'editorial', 'emotional'], w: 0.9, ae: 'shrink', minDur: 0.8,
   outDur: dur => J.clamp(dur * 0.44, 0.36, 0.85),
   apply(env, it, p) {
     const sz = it.size, rev = cutBit(env, 261), bend = E.inOutSine(J.clamp(p / 0.3)), close = E.inOutCubic(J.clamp((p - 0.24) / 0.5));
@@ -1446,7 +1446,7 @@ X.fanClose = {
 
 /* colour separation: the text splits into its ghost / accent channels which drift apart with a jitter and fade */
 X.rgbSplitOut = {
-  name: '色分解', tags: ['glitch', 'pop'], w: 0.9, ae: 'glitch',
+  name: '色分解', nameEn: 'Channel split', tags: ['glitch', 'pop'], w: 0.9, ae: 'glitch',
   apply(env, it, p) {
     const sc = env.sc, sz = it.size, seed = it.seed | 0, step = env.step, dark = darkBg(env);
     const cols = [sc.ghostA || sc.accent, sc.ghostB || sc.fg, sc.accent];
@@ -1468,7 +1468,7 @@ X.rgbSplitOut = {
 
 /* shockwave: an implosion, then a ring bursts outward and every glyph is blown away as the ring passes it */
 X.shockOut = {
-  name: '衝撃波', tags: ['pop', 'graphic'], w: 0.9, ae: 'explode',
+  name: '衝撃波', nameEn: 'Shockwave', tags: ['pop', 'graphic'], w: 0.9, ae: 'explode',
   apply(env, it, p) {
     const sz = it.size, seed = it.seed | 0, acc = env.sc.accent, single = isSingle(env, it);
     const pre = Math.sin(Math.PI * J.clamp(p / 0.16)) * (p < 0.16 ? 1 : 0);
@@ -1505,7 +1505,7 @@ X.shockOut = {
 
 /* flood: a wavy water line rises through the text; what is under water wobbles, tints and sinks out of sight */
 X.floodOut = {
-  name: '水没', tags: ['emotional', 'calm'], w: 0.9, ae: 'wipe',
+  name: '水没', nameEn: 'Submerge', tags: ['emotional', 'calm'], w: 0.9, ae: 'wipe',
   outDur: dur => J.clamp(dur * 0.4, 0.32, 0.8),
   apply(env, it, p) {
     const sz = it.size, t = env.ltb, acc = env.sc.accent, c0 = colOf(it), single = isSingle(env, it), H = env.H;
@@ -1541,7 +1541,7 @@ X.floodOut = {
 
 /* one clean sword stroke: a flash along the line, a beat, then the upper half slides off along the cut */
 X.slashOut = {
-  name: '一刀両断', tags: ['graphic', 'emotional', 'pop'], w: 1, ae: 'slice',
+  name: '一刀両断', nameEn: 'Slash', tags: ['graphic', 'emotional', 'pop'], w: 1, ae: 'slice',
   outDur: dur => J.clamp(dur * 0.4, 0.32, 0.8),
   apply(env, it, p) {
     const sz = it.size, vert = !!it.vertical, acc = env.sc.accent, b = lBox(it, sz * 0.2), seed = it.seed | 0;
@@ -1580,7 +1580,7 @@ X.slashOut = {
 /* mosaic: the text is pixelated into ever larger blocks (an off-screen low-res copy scaled up without smoothing) */
 let MOS = null;
 X.mosaicOut = {
-  name: 'モザイク', tags: ['glitch', 'graphic'], w: 0.9, ae: 'glitch',
+  name: 'モザイク', nameEn: 'Mosaic', tags: ['glitch', 'graphic'], w: 0.9, ae: 'glitch',
   apply(env, it, p) {
     const sz = it.size, blk = sz * (0.01 + 0.34 * Math.pow(p, 1.5));
     if (blk * (env.scale || 1) < 1.6) return;
@@ -1606,7 +1606,7 @@ X.mosaicOut = {
 
 /* scribbled out: a thick marker scrawls back and forth over each line, then text and scribble fade together */
 X.scribbleOut = {
-  name: 'ぐしゃぐしゃ消し', tags: ['editorial', 'emotional', 'pop'], w: 0.8, ae: 'wipe',
+  name: 'ぐしゃぐしゃ消し', nameEn: 'Scribble out', tags: ['editorial', 'emotional', 'pop'], w: 0.8, ae: 'wipe',
   outDur: dur => J.clamp(dur * 0.4, 0.32, 0.8),
   apply(env, it, p) {
     const sz = it.size, seed = it.seed | 0, vert = !!it.vertical, acc = env.sc.accent, lines = lineExt(it);
@@ -1657,7 +1657,7 @@ X.scribbleOut = {
 
 /* blown out like candles: a breath travels along the line, each glyph leans, flickers, goes out and leaves a curl of smoke */
 X.candleOut = {
-  name: '吹き消す', tags: ['emotional', 'calm'], w: 0.9, ae: 'drift',
+  name: '吹き消す', nameEn: 'Blow out', tags: ['emotional', 'calm'], w: 0.9, ae: 'drift',
   outDur: dur => J.clamp(dur * 0.45, 0.38, 0.9),
   apply(env, it, p) {
     const seed = it.seed | 0, sz = it.size, step = env.step, ord0 = orderOf(env, it), dir = cutBit(env, 321) ? 1 : -1;
@@ -1704,7 +1704,7 @@ const H = {};
 
 /* candle glow: a warm halo that breathes and gutters irregularly, with a tiny upward lick of the glyphs */
 H.glowFlicker = {
-  name: '灯火のゆらぎ', tags: ['calm', 'emotional'], w: 0.5, ae: 'breathe',
+  name: '灯火のゆらぎ', nameEn: 'Candle glow', tags: ['calm', 'emotional'], w: 0.5, ae: 'breathe',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const t = env.ltb, seed = it.seed | 0, sz = it.size, kk = Math.min(1, k), sy0 = it.sy || 1;
@@ -1723,7 +1723,7 @@ H.glowFlicker = {
 
 /* gusts: every couple of seconds a gust sweeps along the line, the glyphs lean and are pushed, then spring back */
 H.windGust = {
-  name: '突風', tags: ['pop', 'emotional'], w: 0.5, ae: 'wave',
+  name: '突風', nameEn: 'Wind gust', tags: ['pop', 'emotional'], w: 0.5, ae: 'wave',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const cs = env.cut.seed | 0, sz = it.size, ord = orderOf(env, it);
@@ -1742,7 +1742,7 @@ H.windGust = {
 
 /* dangling: every glyph hangs from its own top edge and swings like a small pendulum, each at its own tempo */
 H.dangle = {
-  name: 'ぶら下がり', tags: ['calm', 'emotional'], w: 0.5, ae: 'wave',
+  name: 'ぶら下がり', nameEn: 'Dangle', tags: ['calm', 'emotional'], w: 0.5, ae: 'wave',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const t = env.ltb, seed = it.seed | 0, sz = it.size, sy0 = it.sy || 1, vert = !!it.vertical;
@@ -1757,7 +1757,7 @@ H.dangle = {
 
 /* equaliser: glyphs stretch up from their baseline like level-meter bars, driven by the song's loudness */
 H.eqBounce = {
-  name: '音圧で伸びる', tags: ['pop', 'graphic'], w: 0.5, ae: 'breathe',
+  name: '音圧で伸びる', nameEn: 'Level stretch', tags: ['pop', 'graphic'], w: 0.5, ae: 'breathe',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const t = env.ltb, seed = it.seed | 0, sz = it.size, sy0 = it.sy || 1, acc = env.sc.accent, c0 = colOf(it), vert = !!it.vertical;
@@ -1774,7 +1774,7 @@ H.eqBounce = {
 
 /* beat flash: on every beat one glyph is punched out in inverse video — an accent block with the glyph knocked out */
 H.flashBox = {
-  name: '拍で反転', tags: ['pop', 'graphic', 'glitch'], w: 0.4, ae: 'glitchtick',
+  name: '拍で反転', nameEn: 'Beat invert', tags: ['pop', 'graphic', 'glitch'], w: 0.4, ae: 'glitchtick',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.35) return;
     const len = beatLen(env, 0.62), since = beatSince(env, 0.62), idx = beatIdx(env, 0.62);
@@ -1800,7 +1800,7 @@ H.flashBox = {
 
 /* glint: now and then a slanted band of light slides across the letters */
 H.glintSweep = {
-  name: '光沢', tags: ['graphic', 'calm'], w: 0.5, ae: 'still',
+  name: '光沢', nameEn: 'Gloss sweep', tags: ['graphic', 'calm'], w: 0.5, ae: 'still',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.05 || env.pass !== 'main') return;
     const per = 2.4, T = env.ltb - 0.5 - (+it.mi || 0) * 0.04, u = ((T % per) + per) % per / 0.75;   // first sweep ~0.5 s into the cut
@@ -1822,7 +1822,7 @@ H.glintSweep = {
 
 /* flip swap: now and then one glyph flips over like a card, shows a stray katakana on its back, and flips home */
 H.flipSwap = {
-  name: '時々裏返る', tags: ['glitch', 'pop'], w: 0.4, ae: 'glitchtick',
+  name: '時々裏返る', nameEn: 'Flip swap', tags: ['glitch', 'pop'], w: 0.4, ae: 'glitchtick',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.5) return;
     const cs = env.cut.seed | 0, per = 1.6, T = env.ltb - 0.45, cyc = Math.floor(T / per), u = (T - cyc * per) / 0.95;
@@ -1847,7 +1847,7 @@ H.flipSwap = {
 
 /* swaying shadow: a long soft shadow that swings slowly as if the light source were moving */
 H.shadowSway = {
-  name: '影が揺れる', tags: ['calm', 'emotional'], w: 0.5, ae: 'drift',
+  name: '影が揺れる', nameEn: 'Shadow sway', tags: ['calm', 'emotional'], w: 0.5, ae: 'drift',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01 || it.extrude || env.pass !== 'main') return;
     const t = env.ltb, seed = it.seed | 0, sz = it.size;
@@ -1859,7 +1859,7 @@ H.shadowSway = {
 
 /* magnetism: an invisible magnet wanders round the text; nearby glyphs lean and buzz towards it */
 H.magnetJiggle = {
-  name: '磁力', tags: ['pop', 'glitch'], w: 0.4, ae: 'jitter',
+  name: '磁力', nameEn: 'Magnetism', tags: ['pop', 'glitch'], w: 0.4, ae: 'jitter',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const t = env.ltb, seed = it.seed | 0, sz = it.size, step = env.step;
@@ -1883,7 +1883,7 @@ H.magnetJiggle = {
 
 /* typewriter: an uneven, hand-struck baseline; on each beat a few keys are struck again — a dip, then a new resting place */
 H.typeRattle = {
-  name: 'タイプの震え', tags: ['editorial', 'glitch'], w: 0.5, ae: 'jitter',
+  name: 'タイプの震え', nameEn: 'Type rattle', tags: ['editorial', 'glitch'], w: 0.5, ae: 'jitter',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const idx = beatIdx(env, 0.45), since = beatSince(env, 0.45), seed = it.seed | 0, sz = it.size, kk = Math.min(1, k);
@@ -1898,7 +1898,7 @@ H.typeRattle = {
 
 /* rack focus: a plane of focus drifts along the line; glyphs away from it soften and grow slightly */
 H.focusRack = {
-  name: 'ピント送り', tags: ['calm', 'emotional'], w: 0.5, ae: 'breathe',
+  name: 'ピント送り', nameEn: 'Rack focus', tags: ['calm', 'emotional'], w: 0.5, ae: 'breathe',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     const ord = orderOf(env, it), t = env.ltb, seed = it.seed | 0, sz = it.size, kk = Math.min(1, k);
@@ -1914,7 +1914,7 @@ H.focusRack = {
 
 /* plucked string: the line vibrates as a standing wave between its ends, plucked again every few beats and ringing down */
 H.pluckString = {
-  name: '弦の振動', tags: ['pop', 'emotional'], w: 0.4, ae: 'wave',
+  name: '弦の振動', nameEn: 'Plucked string', tags: ['pop', 'emotional'], w: 0.4, ae: 'wave',
   apply(env, it, amt) {
     const k = amt * motionK(env); if (k < 0.01) return;
     let tau;

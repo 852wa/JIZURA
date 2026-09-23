@@ -72,7 +72,9 @@ class Renderer {
     ctx.clearRect(0, 0, cw, ch);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     // ---------- background ----------
-    if (!opt.transparent) {
+    const key = plan.keyBg && J.KEY_BG && J.KEY_BG[plan.keyBg] ? plan.keyBg : null;   // 合成用: white-on-black, finished in keyFinish()
+    if (key && !opt.transparent) { ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H); }
+    else if (!opt.transparent) {
       ctx.fillStyle = sc.bg; ctx.fillRect(0, 0, W, H);
       const g = ctx.createRadialGradient(W / 2, H * 0.45, 0, W / 2, H / 2, Math.hypot(W, H) * 0.6);
       const lift = J.lum(sc.bg) < 0.5 ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.10)';
@@ -106,7 +108,7 @@ class Renderer {
     const beatInfo = plan.beats && plan.beats.length ? beatAt(plan.beats, tq) : null;
     const energy = plan.energy ? plan.energy[Math.min(plan.energy.length - 1, Math.max(0, Math.floor(t * plan.energyRate)))] : null;
     // ---------- background graphic (per line) ----------
-    if (!opt.transparent && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
+    if (!opt.transparent && !key && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: tq - mainCut.start, ltb: tq - mainCut.start, step, scale, allowFilter, energy, beat: beatInfo, bgOnly: true });
       ctx.save();
       try { J.BG[mainCut.bg].draw(env, mainCut.bgP || {}); } catch (e) { console.warn('bg', mainCut.bg, e); }
@@ -192,6 +194,33 @@ class Renderer {
     ctx.restore();
     // ---------- post ----------
     if (!opt.noPost) this.post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter);
+    if (key && !opt.noPost) this.keyFinish(ctx, key, opt);
+  }
+
+  /* 合成用の背景: make the finished frame monochrome (white text + effects only) and put it on the key colour.
+     black: as rendered (black = empty).  green: screened onto #00FF00, so black → green, white stays white and
+     the soft greys (ghosts, glow, fades) turn into partial transparency when keyed — the same result as
+     screen-blending the black version. */
+  keyFinish(ctx, key, opt) {
+    const cw = ctx.canvas.width, ch = ctx.canvas.height;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none';
+    if (opt.transparent) {
+      // keep the alpha: desaturate through a copy
+      const S = this.ensure(this.scratch, cw, ch), sx = S.getContext('2d');
+      sx.setTransform(1, 0, 0, 1, 0, 0); sx.globalAlpha = 1; sx.globalCompositeOperation = 'copy';
+      if (this.filterOK) { sx.filter = 'grayscale(1)'; sx.drawImage(ctx.canvas, 0, 0); sx.filter = 'none'; }
+      else {
+        sx.drawImage(ctx.canvas, 0, 0); sx.globalCompositeOperation = 'saturation'; sx.fillStyle = '#808080'; sx.fillRect(0, 0, cw, ch);
+        sx.globalCompositeOperation = 'destination-in'; sx.drawImage(ctx.canvas, 0, 0);
+      }
+      sx.globalCompositeOperation = 'source-over';
+      ctx.globalCompositeOperation = 'copy'; ctx.drawImage(S, 0, 0);
+    } else {
+      // opaque frame: the 'saturation' blend with any grey keeps luminosity and drops colour
+      ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, cw, ch);
+      if (key === 'green') { ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = J.KEY_BG.green; ctx.fillRect(0, 0, cw, ch); }
+    }
+    ctx.restore();
   }
 
   makeEnv(ctx, plan, cut, sc, o) {
@@ -338,7 +367,7 @@ class Renderer {
       sx.filter = `blur(${Math.max(2, Math.round(sw / 160))}px)`; sx.globalCompositeOperation = 'copy'; sx.drawImage(ctx.canvas, 0, 0, sw, sh); sx.filter = 'none'; sx.globalCompositeOperation = 'source-over';
       ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = glow * 0.55; ctx.drawImage(Sm, 0, 0, cw, ch); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     }
-    if (!opt.transparent) {
+    if (!opt.transparent && !plan.keyBg) {
       // scanlines
       const scan = (st.texture.scan || 0) * (fx.texture ?? 0.6);
       if (scan > 0.03) {

@@ -97,7 +97,7 @@ const tracing = i => i.dash != null && i.dash < 1;
 /* ================= TREATMENTS ================= */
 
 /* ---- neon tube: bright thin outline + coloured bloom, no fill, rare flicker ---- */
-reg('treat', 'neonOutline', { name: 'ネオン管', tags: ['glitch', 'emotional', 'pop'], w: 0.8,
+reg('treat', 'neonOutline', { name: 'ネオン管', nameEn: 'Neon tube', tags: ['glitch', 'emotional', 'pop'], w: 0.8,
   plan: rng => ({ k: rng.range(0.024, 0.032), fl: rng.chance(0.75) }),
   apply(env, it, P) {
     if (!alive(it, 0.5) || inPieces(env, it)) return;
@@ -123,7 +123,7 @@ reg('treat', 'neonOutline', { name: 'ネオン管', tags: ['glitch', 'emotional'
   } });
 
 /* ---- chrome: multi-stop metallic fill with a hard horizon + keyline ---- */
-reg('treat', 'chrome', { name: 'クローム', tags: ['pop', 'graphic'], w: 0.7,
+reg('treat', 'chrome', { name: 'クローム', nameEn: 'Chrome', tags: ['pop', 'graphic'], w: 0.7,
   plan: rng => ({ v: rng.pick(['silver', 'silver', 'sunset']), h: rng.range(0.5, 0.56) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -140,7 +140,7 @@ reg('treat', 'chrome', { name: 'クローム', tags: ['pop', 'graphic'], w: 0.7,
   } });
 
 /* ---- rainbow: colours drift across the glyphs through the scheme palette ---- */
-reg('treat', 'rainbow', { name: '虹色', tags: ['pop', 'emotional'], w: 0.7,
+reg('treat', 'rainbow', { name: '虹色', nameEn: 'Rainbow', tags: ['pop', 'emotional'], w: 0.7,
   plan: rng => ({ v: rng.pick(['drift', 'drift', 'steps']), sp: rng.range(0.28, 0.45), dir: rng.chance(0.5) ? 1 : -1 }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -158,7 +158,7 @@ reg('treat', 'rainbow', { name: '虹色', tags: ['pop', 'emotional'], w: 0.7,
   } });
 
 /* ---- colour-plate misregistration: two tinted copies split sideways, jolting on glitch steps ---- */
-reg('treat', 'glitchSplit', { name: '色版ズレ', tags: ['glitch', 'pop'], w: 0.8,
+reg('treat', 'glitchSplit', { name: '色版ズレ', nameEn: 'Color misregistration', tags: ['glitch', 'pop'], w: 0.8,
   plan: rng => ({ d: rng.range(0.06, 0.08), up: rng.chance(0.3) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -180,7 +180,7 @@ reg('treat', 'glitchSplit', { name: '色版ズレ', tags: ['glitch', 'pop'], w: 
   } });
 
 /* ---- stacked shadows: 3 separated copies in different scheme colours ---- */
-reg('treat', 'shadowStack', { name: '多重影', tags: ['pop', 'graphic'], w: 0.8,
+reg('treat', 'shadowStack', { name: '多重影', nameEn: 'Multi echo', tags: ['pop', 'graphic'], w: 0.8,
   plan: rng => ({ d: rng.range(0.04, 0.055), dir: rng.pick([[1, 1], [1, 1], [-1, 1], [1, 0.5], [0, 1]]), n: rng.pick([3, 3, 4]) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -202,7 +202,7 @@ reg('treat', 'shadowStack', { name: '多重影', tags: ['pop', 'graphic'], w: 0.
   } });
 
 /* ---- stencil: bridges cut through every glyph (per-glyph clips, so the chromatic ghosts get them too); they open during the entrance ---- */
-reg('treat', 'stencilGap', { name: 'ステンシル字', tags: ['graphic', 'editorial', 'glitch'], w: 0.6,
+reg('treat', 'stencilGap', { name: 'ステンシル字', nameEn: 'Stencil text', tags: ['graphic', 'editorial', 'glitch'], w: 0.6,
   plan: rng => ({ v: rng.pick(['one', 'one', 'two']), at: rng.range(-0.05, 0.06), g: rng.range(0.034, 0.048) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -223,7 +223,7 @@ reg('treat', 'stencilGap', { name: 'ステンシル字', tags: ['graphic', 'edit
   } });
 
 /* ---- water level: outlined glyphs fill up with colour, the surface bobs, drains on exit ---- */
-reg('treat', 'waterline', { name: '水位', tags: ['emotional', 'pop', 'calm'], w: 0.6,
+reg('treat', 'waterline', { name: '水位', nameEn: 'Water level', tags: ['emotional', 'pop', 'calm'], w: 0.6,
   plan: rng => ({ lvl: rng.range(0.46, 0.58), c: rng.int(0, 1), k: rng.range(0.02, 0.026) }),
   apply(env, it, P) {
     if (!alive(it, 0.5) || inPieces(env, it)) return;
@@ -237,7 +237,7 @@ reg('treat', 'waterline', { name: '水位', tags: ['emotional', 'pop', 'calm'], 
   } });
 
 /* ---- karaoke: a colour wipe runs through the words over the length of the cut ---- */
-reg('treat', 'karaoke', { name: 'カラオケ', tags: ['emotional', 'pop', 'editorial'], w: 0.9,
+reg('treat', 'karaoke', { name: 'カラオケ', nameEn: 'Karaoke highlight', tags: ['emotional', 'pop', 'editorial'], w: 0.9,
   plan: rng => ({ sp: rng.range(0.7, 0.85), ol: rng.chance(0.55) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -275,7 +275,7 @@ reg('treat', 'karaoke', { name: 'カラオケ', tags: ['emotional', 'pop', 'edit
   } });
 
 /* ---- size rhythm: glyph sizes alternate / follow script / ramp away, re-spaced tightly on a shared baseline ---- */
-reg('treat', 'sizeWave', { name: '大小リズム', tags: ['pop', 'graphic', 'editorial'], w: 0.7,
+reg('treat', 'sizeWave', { name: '大小リズム', nameEn: 'Size rhythm', tags: ['pop', 'graphic', 'editorial'], w: 0.7,
   plan: rng => ({ v: rng.pick(['alt', 'kanji', 'kanji', 'ramp', 'wave']), k: rng.range(0.64, 0.74), rev: rng.chance(0.4) }),
   apply(env, it, P) {
     if (!alive(it, 0.5)) return;
@@ -316,7 +316,7 @@ reg('treat', 'sizeWave', { name: '大小リズム', tags: ['pop', 'graphic', 'ed
   } });
 
 /* ---- alternating tilt: glyphs lean left / right like hand-set type ---- */
-reg('treat', 'rotateAlt', { name: '揺れ字', tags: ['pop', 'emotional'], w: 0.7, safe: true,
+reg('treat', 'rotateAlt', { name: '揺れ字', nameEn: 'Alternating tilt', tags: ['pop', 'emotional'], w: 0.7, safe: true,
   plan: rng => ({ a: rng.range(9, 14), v: rng.pick(['alt', 'alt', 'rand']) }),
   apply(env, it, P) {
     if (!alive(it, 0.5)) return;
@@ -329,7 +329,7 @@ reg('treat', 'rotateAlt', { name: '揺れ字', tags: ['pop', 'emotional'], w: 0.
   } });
 
 /* ---- baseline shift: alternate up/down, stairs or an arch ---- */
-reg('treat', 'baselineShift', { name: '段違い', tags: ['pop', 'graphic'], w: 0.7, safe: true,
+reg('treat', 'baselineShift', { name: '段違い', nameEn: 'Staggered baseline', tags: ['pop', 'graphic'], w: 0.7, safe: true,
   plan: rng => ({ v: rng.pick(['alt', 'alt', 'stairs', 'arc']), k: rng.range(0.08, 0.11), dir: rng.chance(0.5) ? 1 : -1 }),
   apply(env, it, P) {
     if (!alive(it, 0.5)) return;
@@ -345,7 +345,7 @@ reg('treat', 'baselineShift', { name: '段違い', tags: ['pop', 'graphic'], w: 
   } });
 
 /* ---- faux bold: same-colour stroke thickens every stem ---- */
-reg('treat', 'fauxBold', { name: '極太', tags: ['graphic', 'pop', 'editorial'], w: 0.5, safe: true,
+reg('treat', 'fauxBold', { name: '極太', nameEn: 'Extra bold', tags: ['graphic', 'pop', 'editorial'], w: 0.5, safe: true,
   plan: rng => ({ k: rng.range(0.035, 0.05) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -354,7 +354,7 @@ reg('treat', 'fauxBold', { name: '極太', tags: ['graphic', 'pop', 'editorial']
   } });
 
 /* ---- circled glyphs: each character sits in its own ring (or solid disc) ---- */
-reg('treat', 'circled', { name: '丸囲み', tags: ['pop', 'graphic', 'editorial'], w: 0.6,
+reg('treat', 'circled', { name: '丸囲み', nameEn: 'Circle mark', tags: ['pop', 'graphic', 'editorial'], w: 0.6,
   plan: rng => ({ v: rng.pick(['ring', 'ring', 'disc']), k: rng.range(0.68, 0.74) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -378,7 +378,7 @@ reg('treat', 'circled', { name: '丸囲み', tags: ['pop', 'graphic', 'editorial
 
 /* ---- 「」 corner quotes drawn around the whole lyric ---- */
 const QUOTED = new WeakMap();
-reg('treat', 'bracketsQuote', { name: 'かぎ括弧', tags: ['editorial', 'emotional', 'calm'], w: 0.6,
+reg('treat', 'bracketsQuote', { name: 'かぎ括弧', nameEn: 'Quote brackets', tags: ['editorial', 'emotional', 'calm'], w: 0.6,
   plan: rng => ({ v: rng.pick(['single', 'single', 'double']), k: rng.range(0.05, 0.065) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -422,7 +422,7 @@ reg('treat', 'bracketsQuote', { name: 'かぎ括弧', tags: ['editorial', 'emoti
   } });
 
 /* ---- reflection: a flipped, fading copy of the last line on an imaginary floor ---- */
-reg('treat', 'reflection', { name: '映り込み', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
+reg('treat', 'reflection', { name: '映り込み', nameEn: 'Reflection', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
   plan: rng => ({ k: rng.range(0.6, 0.78), a: rng.range(0.34, 0.46), gap: rng.range(0.04, 0.09) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -445,7 +445,7 @@ reg('treat', 'reflection', { name: '映り込み', tags: ['emotional', 'calm', '
   } });
 
 /* ---- inline (インライン): a hairline in the background colour runs just inside every stroke, like display type ---- */
-reg('treat', 'inline', { name: 'インライン', tags: ['editorial', 'pop', 'graphic'], w: 0.6,
+reg('treat', 'inline', { name: 'インライン', nameEn: 'Inline', tags: ['editorial', 'pop', 'graphic'], w: 0.6,
   plan: rng => ({ a: rng.range(0.017, 0.022), b: rng.range(0.016, 0.021), c: rng.chance(0.3) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -461,7 +461,7 @@ reg('treat', 'inline', { name: 'インライン', tags: ['editorial', 'pop', 'gr
   } });
 
 /* ---- die-cut sticker: thick white paper border (+ keyline for light text), soft drop shadow, slightly tilted ---- */
-reg('treat', 'sticker', { name: 'シール縁', tags: ['pop', 'graphic'], w: 0.8,
+reg('treat', 'sticker', { name: 'シール縁', nameEn: 'Sticker edge', tags: ['pop', 'graphic'], w: 0.8,
   plan: rng => ({ k: rng.range(0.13, 0.17), rot: rng.range(2, 4) * (rng.chance(0.5) ? 1 : -1), sh: rng.range(0.035, 0.05) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -483,7 +483,7 @@ reg('treat', 'sticker', { name: 'シール縁', tags: ['pop', 'graphic'], w: 0.8
   } });
 
 /* ---- glint sweep / tide: an animated gradient runs through the letters ---- */
-reg('treat', 'gradientSweep', { name: '光沢スイープ', tags: ['pop', 'emotional'], w: 0.7,
+reg('treat', 'gradientSweep', { name: '光沢スイープ', nameEn: 'Gloss sweep', tags: ['pop', 'emotional'], w: 0.7,
   plan: rng => ({ v: rng.pick(['glint', 'glint', 'tide']), per: rng.range(1.5, 2.3), ph: rng.range(0, 1) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -500,7 +500,7 @@ reg('treat', 'gradientSweep', { name: '光沢スイープ', tags: ['pop', 'emoti
   } });
 
 /* ---- wide tracking: letter-spaced, a size smaller (editorial caption look) ---- */
-reg('treat', 'kerningWide', { name: '字間広め', tags: ['editorial', 'calm', 'emotional'], w: 0.6, safe: true,
+reg('treat', 'kerningWide', { name: '字間広め', nameEn: 'Wide tracking', tags: ['editorial', 'calm', 'emotional'], w: 0.6, safe: true,
   plan: rng => ({ t: rng.range(0.32, 0.55), grow: rng.range(1.04, 1.14) }),
   apply(env, it, P) {
     if (!it.text || glyphN(it.text) < 2) return;
@@ -513,7 +513,7 @@ reg('treat', 'kerningWide', { name: '字間広め', tags: ['editorial', 'calm', 
   } });
 
 /* ---- manuscript paper (原稿用紙): glyphs snap into equal square cells of a ruled grid ---- */
-reg('treat', 'monoGrid', { name: '原稿用紙風', tags: ['editorial', 'calm', 'emotional'], w: 0.5,
+reg('treat', 'monoGrid', { name: '原稿用紙風', nameEn: 'Manuscript paper', tags: ['editorial', 'calm', 'emotional'], w: 0.5,
   plan: rng => ({ pitch: rng.range(1.18, 1.26), c: rng.chance(0.65) ? 1 : 0 }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -557,7 +557,7 @@ reg('treat', 'monoGrid', { name: '原稿用紙風', tags: ['editorial', 'calm', 
   } });
 
 /* ---- misregistered print: hollow outline on top, solid colour fill knocked off-register ---- */
-reg('treat', 'outlineOffset', { name: '版ズレ袋文字', tags: ['pop', 'graphic', 'editorial'], w: 0.8,
+reg('treat', 'outlineOffset', { name: '版ズレ袋文字', nameEn: 'Misregistered outline', tags: ['pop', 'graphic', 'editorial'], w: 0.8,
   plan: rng => ({ d: rng.range(0.055, 0.08), dir: rng.pick([[1, 1], [1, 1], [-1, 1], [1, 0.35], [0.4, 1]]), k: rng.range(0.022, 0.03) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -572,7 +572,7 @@ reg('treat', 'outlineOffset', { name: '版ズレ袋文字', tags: ['pop', 'graph
   } });
 
 /* ---- screen-tone shadow: an offset shadow printed as dots / hatching (manga tone) ---- */
-reg('treat', 'toneShadow', { name: 'トーン影', tags: ['pop', 'graphic', 'editorial'], w: 0.7,
+reg('treat', 'toneShadow', { name: 'トーン影', nameEn: 'Tone shadow', tags: ['pop', 'graphic', 'editorial'], w: 0.7,
   plan: rng => ({ v: rng.pick(['dots', 'dots', 'hatch', 'stripes']), d: rng.range(0.09, 0.12), dir: rng.pick([[1, 1], [1, 1], [-1, 1], [1, 0.6]]) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -586,7 +586,7 @@ reg('treat', 'toneShadow', { name: 'トーン影', tags: ['pop', 'graphic', 'edi
   } });
 
 /* ---- fade: glyph opacity trails off along the line (or toward both ends) ---- */
-reg('treat', 'fadeChars', { name: '余韻', tags: ['emotional', 'calm'], w: 0.5, safe: true,
+reg('treat', 'fadeChars', { name: '余韻', nameEn: 'Lingering fade', tags: ['emotional', 'calm'], w: 0.5, safe: true,
   plan: rng => ({ v: rng.pick(['tail', 'tail', 'both', 'head']), lo: rng.range(0.3, 0.4) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -599,7 +599,7 @@ reg('treat', 'fadeChars', { name: '余韻', tags: ['emotional', 'calm'], w: 0.5,
   } });
 
 /* ---- cut & shift: every glyph is sliced through, the lower (vertical: right) half slides off ---- */
-reg('treat', 'cutShift', { name: '断ち切り', tags: ['graphic', 'glitch', 'pop'], w: 0.7,
+reg('treat', 'cutShift', { name: '断ち切り', nameEn: 'Cut and shift', tags: ['graphic', 'glitch', 'pop'], w: 0.7,
   plan: rng => ({ at: rng.range(-0.08, 0.06), d: rng.range(0.11, 0.16) * (rng.chance(0.5) ? 1 : -1), line: rng.chance(0.6) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -627,7 +627,7 @@ reg('treat', 'cutShift', { name: '断ち切り', tags: ['graphic', 'glitch', 'po
   } });
 
 /* ---- rack focus: a band of sharpness travels through the line, the rest is soft ---- */
-reg('treat', 'focusPull', { name: 'ぼかし送り', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
+reg('treat', 'focusPull', { name: 'ぼかし送り', nameEn: 'Focus travel', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
   plan: rng => ({ b: rng.range(0.035, 0.05), rev: rng.chance(0.3) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -648,7 +648,7 @@ reg('treat', 'focusPull', { name: 'ぼかし送り', tags: ['emotional', 'calm',
 
 const SPOT = new WeakMap();
 /* ---- spotlight glyph: one character (a kanji) is set in an accent disc / square / diamond ---- */
-reg('treat', 'spotChar', { name: '一字マーク', tags: ['pop', 'graphic', 'editorial', 'emotional'], w: 0.7,
+reg('treat', 'spotChar', { name: '一字マーク', nameEn: 'Spot glyph', tags: ['pop', 'graphic', 'editorial', 'emotional'], w: 0.7,
   plan: rng => ({ v: rng.pick(['disc', 'disc', 'square', 'diamond']), k: rng.range(1.06, 1.14), r: rng.range(0, 1) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -685,7 +685,7 @@ reg('treat', 'spotChar', { name: '一字マーク', tags: ['pop', 'graphic', 'ed
   } });
 
 /* ---- ransom note (切り抜き文字): every glyph on its own scrap of paper, tilted and resized ---- */
-reg('treat', 'ransom', { name: '切り貼り文字', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
+reg('treat', 'ransom', { name: '切り貼り文字', nameEn: 'Ransom text', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
   plan: rng => ({ s: rng.int(1, 1e6) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -751,7 +751,7 @@ const trReg = (k, d) => reg('trans', k, Object.assign({}, d, {
 const dirPick = (rng, list = ['L', 'R', 'U', 'D'], w) => (w ? rng.wpick(list.map((k, i) => [k, w[i]])) : rng.pick(list));
 
 /* ---- straight wipe with a bright leading edge ---- */
-trReg('wipe', { name: 'エッジワイプ', tags: ['graphic', 'editorial', 'pop'], w: 1.2, dur: 0.35,
+trReg('wipe', { name: 'エッジワイプ', nameEn: 'Edge wipe', tags: ['graphic', 'editorial', 'pop'], w: 1.2, dur: 0.35,
   plan: rng => ({ dir: dirPick(rng, ['L', 'R', 'U', 'D'], [3, 2, 1.4, 0.8]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), lw = lwOf(I, 0.007), ac = tAcc(I);
@@ -770,7 +770,7 @@ trReg('wipe', { name: 'エッジワイプ', tags: ['graphic', 'editorial', 'pop'
   } });
 
 /* ---- slanted wipe: an accent band runs ahead of the new cut ---- */
-trReg('diagonalWipe', { name: '斜め帯ワイプ', tags: ['pop', 'graphic'], w: 1, dur: 0.35,
+trReg('diagonalWipe', { name: '斜め帯ワイプ', nameEn: 'Diagonal wipe', tags: ['pop', 'graphic'], w: 1, dur: 0.35,
   plan: rng => ({ k: rng.range(0.3, 0.55) * (rng.chance(0.5) ? 1 : -1), rev: rng.chance(0.4) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), sl = P.k * ch, band = minD(I) * 0.07 * bell(p);
@@ -789,7 +789,7 @@ trReg('diagonalWipe', { name: '斜め帯ワイプ', tags: ['pop', 'graphic'], w:
   } });
 
 /* ---- clock wipe: a radial sweep from 12 o'clock ---- */
-trReg('clockWipe', { name: 'クロックワイプ', tags: ['graphic', 'pop', 'editorial'], w: 0.7, dur: 0.45,
+trReg('clockWipe', { name: 'クロックワイプ', nameEn: 'Clock wipe', tags: ['graphic', 'pop', 'editorial'], w: 0.7, dur: 0.45,
   plan: rng => ({ dir: rng.chance(0.7) ? 1 : -1, a0: rng.pick([-90, -90, 0, 180]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), cx = cw / 2, cy = ch / 2, R = Math.hypot(cw, ch) / 2 + 4;
@@ -803,7 +803,7 @@ trReg('clockWipe', { name: 'クロックワイプ', tags: ['graphic', 'pop', 'ed
   } });
 
 /* ---- iris: a circle opens on the new cut, rimmed with two accent rings ---- */
-trReg('irisOpen', { name: 'アイリスイン', tags: ['emotional', 'pop', 'editorial'], w: 0.8, dur: 0.4,
+trReg('irisOpen', { name: 'アイリスイン', nameEn: 'Iris in', tags: ['emotional', 'pop', 'editorial'], w: 0.8, dur: 0.4,
   plan: rng => ({ x: 0.5 + rng.range(-0.12, 0.12), y: 0.5 + rng.range(-0.1, 0.1) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, cx = cw * P.x, cy = ch * P.y, e = E.inOutCubic(p);
@@ -818,7 +818,7 @@ trReg('irisOpen', { name: 'アイリスイン', tags: ['emotional', 'pop', 'edit
   } });
 
 /* ---- push: the new cut shoves the old one out ---- */
-trReg('pushSlide', { name: 'プッシュ', tags: ['graphic', 'pop', 'editorial'], w: 1, dur: 0.35,
+trReg('pushSlide', { name: 'プッシュ', nameEn: 'Push', tags: ['graphic', 'pop', 'editorial'], w: 1, dur: 0.35,
   plan: rng => ({ dir: dirPick(rng, ['L', 'R', 'U', 'D'], [3, 1.6, 1.4, 0.6]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), h = P.dir === 'L' || P.dir === 'R';
@@ -830,7 +830,7 @@ trReg('pushSlide', { name: 'プッシュ', tags: ['graphic', 'pop', 'editorial']
   } });
 
 /* ---- cover: the new cut slides in over the old one, which dims and drifts back ---- */
-trReg('cover', { name: 'カバー', tags: ['editorial', 'graphic', 'calm'], w: 0.9, dur: 0.35,
+trReg('cover', { name: 'カバー', nameEn: 'Cover', tags: ['editorial', 'graphic', 'calm'], w: 0.9, dur: 0.35,
   plan: rng => ({ dir: dirPick(rng, ['L', 'R', 'U', 'D'], [2, 2, 1.5, 1]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), h = P.dir === 'L' || P.dir === 'R', sg = P.dir === 'L' || P.dir === 'U' ? -1 : 1;
@@ -848,7 +848,7 @@ trReg('cover', { name: 'カバー', tags: ['editorial', 'graphic', 'calm'], w: 0
   } });
 
 /* ---- uncover: the old cut slides away and uncovers the new one waiting underneath ---- */
-trReg('uncover', { name: 'アンカバー', tags: ['editorial', 'calm', 'emotional'], w: 0.8, dur: 0.35,
+trReg('uncover', { name: 'アンカバー', nameEn: 'Uncover', tags: ['editorial', 'calm', 'emotional'], w: 0.8, dur: 0.35,
   plan: rng => ({ dir: dirPick(rng, ['L', 'R', 'U', 'D'], [2, 2, 1.6, 1]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), h = P.dir === 'L' || P.dir === 'R', sg = P.dir === 'L' || P.dir === 'U' ? -1 : 1;
@@ -866,7 +866,7 @@ trReg('uncover', { name: 'アンカバー', tags: ['editorial', 'calm', 'emotion
   } });
 
 /* ---- zoom through: the old cut rushes past the camera while the new one settles in ---- */
-trReg('zoomThrough', { name: 'ズームスルー', tags: ['pop', 'emotional', 'glitch'], w: 1, dur: 0.35,
+trReg('zoomThrough', { name: 'ズームスルー', nameEn: 'Zoom through', tags: ['pop', 'emotional', 'glitch'], w: 1, dur: 0.35,
   plan: rng => ({ z: rng.range(1.5, 2.2) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, sa = 1 + (P.z - 1) * Math.pow(p, 1.4), aa = 1 - E.inCubic(clamp(p * 1.12)), sb = 0.86 + 0.14 * E.outCubic(p);
@@ -879,7 +879,7 @@ trReg('zoomThrough', { name: 'ズームスルー', tags: ['pop', 'emotional', 'g
   } });
 
 /* ---- doors: the old cut splits down the middle and swings open ---- */
-trReg('doorsOpen', { name: '観音開き', tags: ['graphic', 'pop', 'emotional'], w: 0.7, dur: 0.4,
+trReg('doorsOpen', { name: '観音開き', nameEn: 'Double doors', tags: ['graphic', 'pop', 'emotional'], w: 0.7, dur: 0.4,
   plan: rng => ({ vert: rng.chance(0.3) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inOutCubic(p), lw = lwOf(I, 0.005), ac = tAcc(I);
@@ -900,7 +900,7 @@ trReg('doorsOpen', { name: '観音開き', tags: ['graphic', 'pop', 'emotional']
   } });
 
 /* ---- blinds: slats flip over one after another ---- */
-trReg('blinds', { name: 'ブラインド転換', tags: ['graphic', 'editorial', 'calm'], w: 0.7, dur: 0.4,
+trReg('blinds', { name: 'ブラインド転換', nameEn: 'Blinds transition', tags: ['graphic', 'editorial', 'calm'], w: 0.7, dur: 0.4,
   plan: rng => ({ n: rng.int(7, 12), vert: rng.chance(0.35), rev: rng.chance(0.4) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, n = P.n, L = P.vert ? cw : ch, lw = Math.max(1, lwOf(I, 0.003)), ac = tAcc(I);
@@ -917,7 +917,7 @@ trReg('blinds', { name: 'ブラインド転換', tags: ['graphic', 'editorial', 
   } });
 
 /* ---- checker: squares open in two chequered waves ---- */
-trReg('checker', { name: '市松転換', tags: ['pop', 'graphic'], w: 0.6, dur: 0.45,
+trReg('checker', { name: '市松転換', nameEn: 'Checker transition', tags: ['pop', 'graphic'], w: 0.6, dur: 0.45,
   plan: rng => ({ n: rng.int(4, 6), rev: rng.chance(0.5) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, cell = minD(I) / P.n, cols = Math.ceil(cw / cell), rows = Math.ceil(ch / cell);
@@ -936,7 +936,7 @@ trReg('checker', { name: '市松転換', tags: ['pop', 'graphic'], w: 0.6, dur: 
   } });
 
 /* ---- block dissolve: random blocks flip to the new cut, each with a short accent flash ---- */
-trReg('blockDissolve', { name: 'ブロック崩し', tags: ['glitch', 'graphic'], w: 0.8, dur: 0.4,
+trReg('blockDissolve', { name: 'ブロック崩し', nameEn: 'Block dissolve', tags: ['glitch', 'graphic'], w: 0.8, dur: 0.4,
   plan: rng => ({ n: rng.int(7, 11), side: rng.pick([0, 0, 1, 2]) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, cell = minD(I) / P.n, cols = Math.ceil(cw / cell), rows = Math.ceil(ch / cell), s0 = I.seed | 0, ac = tAcc(I);
@@ -954,7 +954,7 @@ trReg('blockDissolve', { name: 'ブロック崩し', tags: ['glitch', 'graphic']
   } });
 
 /* ---- whip pan: both frames rush sideways, smeared by motion blur ---- */
-trReg('whipPan', { name: 'ホイップパン', tags: ['pop', 'emotional', 'glitch'], w: 1, dur: 0.3,
+trReg('whipPan', { name: 'ホイップパン', nameEn: 'Whip pan', tags: ['pop', 'emotional', 'glitch'], w: 1, dur: 0.3,
   plan: rng => ({ dir: rng.chance(0.65) ? -1 : 1, vert: rng.chance(0.2) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = ioQuart(p), L = P.vert ? ch : cw, off = e * L * P.dir;
@@ -971,7 +971,7 @@ trReg('whipPan', { name: 'ホイップパン', tags: ['pop', 'emotional', 'glitc
   } });
 
 /* ---- spin out: the old cut spins away into the distance, revealing the new one ---- */
-trReg('spinOut', { name: '回転アウト', tags: ['pop', 'glitch'], w: 0.6, dur: 0.45,
+trReg('spinOut', { name: '回転アウト', nameEn: 'Spin out', tags: ['pop', 'glitch'], w: 0.6, dur: 0.45,
   plan: rng => ({ rot: rng.range(100, 200) * (rng.chance(0.5) ? 1 : -1) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, e = E.inCubic(p), s = 1 - e, sb = 1.08 - 0.08 * E.outCubic(p);
@@ -1000,7 +1000,7 @@ const blobPath = (ctx, cx, cy, r, s0, ph, n = 56) => {
   for (let i = 1; i <= n; i++) { const q = pts[i % n], m = mid(i); ctx.quadraticCurveTo(q[0], q[1], m[0], m[1]); }
   ctx.closePath();
 };
-trReg('inkBlob', { name: 'インク', tags: ['emotional', 'calm', 'pop'], w: 0.7, dur: 0.5,
+trReg('inkBlob', { name: 'インク', nameEn: 'Ink bleed', tags: ['emotional', 'calm', 'pop'], w: 0.7, dur: 0.5,
   plan: rng => ({ x: rng.pick([0.5, 0.5, 0.15, 0.85]) + rng.range(-0.08, 0.08), y: rng.pick([0.5, 0.25, 0.8]) + rng.range(-0.06, 0.06) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, cx = cw * P.x, cy = ch * P.y, s0 = I.seed | 0;
@@ -1020,7 +1020,7 @@ trReg('inkBlob', { name: 'インク', tags: ['emotional', 'calm', 'pop'], w: 0.7
   } });
 
 /* ---- shatter: the old cut breaks into tiles that tumble down ---- */
-trReg('shatterTiles', { name: 'タイル崩落', tags: ['glitch', 'pop', 'emotional'], w: 0.6, dur: 0.5,
+trReg('shatterTiles', { name: 'タイル崩落', nameEn: 'Tile collapse', tags: ['glitch', 'pop', 'emotional'], w: 0.6, dur: 0.5,
   plan: rng => ({ n: rng.int(6, 9), x: rng.range(0.3, 0.7), y: rng.range(0.3, 0.6) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, cell = Math.max(cw, ch) / P.n, cols = Math.ceil(cw / cell), rows = Math.ceil(ch / cell), s0 = I.seed | 0;
@@ -1050,7 +1050,7 @@ trReg('shatterTiles', { name: 'タイル崩落', tags: ['glitch', 'pop', 'emotio
   } });
 
 /* ---- slice shift: horizontal strips slide in alternate directions, trading the old cut for the new ---- */
-trReg('sliceShift', { name: '短冊ずらし', tags: ['glitch', 'graphic', 'pop'], w: 0.8, dur: 0.35,
+trReg('sliceShift', { name: '短冊ずらし', nameEn: 'Strip shift', tags: ['glitch', 'graphic', 'pop'], w: 0.8, dur: 0.35,
   plan: rng => ({ n: rng.int(5, 9), vert: rng.chance(0.25) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, n = P.n, L = P.vert ? cw : ch, M = P.vert ? ch : cw, lw = Math.max(1, lwOf(I, 0.003)), ac = tAcc(I);
@@ -1065,7 +1065,7 @@ trReg('sliceShift', { name: '短冊ずらし', tags: ['glitch', 'graphic', 'pop'
   } });
 
 /* ---- cube turn: faux-3D rotation — the old cut turns away as the next face comes round ---- */
-trReg('cubeTurn', { name: 'キューブ', tags: ['graphic', 'pop'], w: 0.6, dur: 0.45,
+trReg('cubeTurn', { name: 'キューブ', nameEn: 'Cube turn', tags: ['graphic', 'pop'], w: 0.6, dur: 0.45,
   plan: rng => ({ dir: rng.chance(0.6) ? 1 : -1 }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, phi = E.inOutCubic(p) * Math.PI / 2, D = 3.4, f = D - 1, cs = Math.cos(phi), sn = Math.sin(phi);
@@ -1096,7 +1096,7 @@ trReg('cubeTurn', { name: 'キューブ', tags: ['graphic', 'pop'], w: 0.6, dur:
   } });
 
 /* ---- flash cross: a quick flash of light carries the cut over ---- */
-trReg('flashCross', { name: 'フラッシュ転換', tags: ['emotional', 'pop', 'calm'], w: 0.9, dur: 0.3,
+trReg('flashCross', { name: 'フラッシュ転換', nameEn: 'Flash transition', tags: ['emotional', 'pop', 'calm'], w: 0.9, dur: 0.3,
   plan: rng => ({ c: rng.chance(0.3) ? 'accent' : 'white' }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, pb = (I.scPrev || I.sc).bg, light = J.lum(pb) > 0.62 && J.lum(I.sc.bg) > 0.62;
@@ -1109,7 +1109,7 @@ trReg('flashCross', { name: 'フラッシュ転換', tags: ['emotional', 'pop', 
   } });
 
 /* ---- pixelate: the old cut breaks down into big pixels, the new one resolves out of them ---- */
-trReg('pixelate', { name: 'モザイク転換', tags: ['glitch', 'pop'], w: 0.6, dur: 0.4,
+trReg('pixelate', { name: 'モザイク転換', nameEn: 'Mosaic transition', tags: ['glitch', 'pop'], w: 0.6, dur: 0.4,
   plan: rng => ({ k: rng.range(11, 17) }),
   draw(ctx, A, B, p, I, P) {
     const { cw, ch } = I, maxB = minD(I) / P.k;

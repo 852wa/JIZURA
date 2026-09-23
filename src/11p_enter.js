@@ -142,14 +142,14 @@ function masked(g, fx, fy, isx, isy) {
 }
 const glyphPos = (g, isx, isy) => [(g.x + g.vx) * isx, (g.y + g.vy) * isy];
 
-const SIGNS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン＃＊＋＝／＜＞※◇◆□△○01';
+const SIGNS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+=/\\<>◇◆□△○';
 
 /* ================================================================ */
 const DEFS = {
 
   /* ---------- glyph masks ---------- */
   riseMask: {
-    name: '下から出現', tags: ['editorial', 'graphic', 'calm', 'emotional'], w: 1.4,
+    name: '下から出現', nameEn: 'Rise up', tags: ['editorial', 'graphic', 'calm', 'emotional'], w: 1.4,
     apply(env, it, p) {
       const isx = it.sx || 1, isy = it.sy || 1;
       glyphs(it, (i, g, n) => {
@@ -161,7 +161,7 @@ const DEFS = {
   },
 
   dropMask: {
-    name: '上から出現', tags: ['editorial', 'graphic', 'pop'], w: 1.2,
+    name: '上から出現', nameEn: 'Drop in', tags: ['editorial', 'graphic', 'pop'], w: 1.2,
     apply(env, it, p) {
       const isx = it.sx || 1, isy = it.sy || 1;
       glyphs(it, (i, g, n) => {
@@ -174,7 +174,7 @@ const DEFS = {
 
   /* ---------- slides ---------- */
   slideL: {
-    name: '左からスライド', tags: ['editorial', 'calm', 'pop'], w: 1,
+    name: '左からスライド', nameEn: 'Slide from left', tags: ['editorial', 'calm', 'pop'], w: 1,
     apply(env, it, p) {
       const size = it.size;
       glyphs(it, (i, g, n) => {
@@ -188,7 +188,7 @@ const DEFS = {
 
   slideR: {
     // each glyph slides in from the right inside its own box
-    name: '右からスライド', tags: ['editorial', 'graphic', 'pop'], w: 1,
+    name: '右からスライド', nameEn: 'Slide from right', tags: ['editorial', 'graphic', 'pop'], w: 1,
     apply(env, it, p) {
       const isx = it.sx || 1, isy = it.sy || 1;
       glyphs(it, (i, g, n) => {
@@ -200,7 +200,7 @@ const DEFS = {
   },
 
   slideWhole: {
-    name: '全体スライド', tags: ['pop', 'graphic'], w: 0.9,
+    name: '全体スライド', nameEn: 'Whole slide', tags: ['pop', 'graphic'], w: 0.9,
     apply(env, it, p) {
       const dir = dirOf(env, 11), e = oBack(p, 1.7);
       const D = it.size * (glyphN(it) <= 1 ? 1.3 : 3.2) * (0.7 + 0.6 * env.fx.motion);
@@ -212,7 +212,7 @@ const DEFS = {
   /* ---------- flips & folds ---------- */
   flipX: {
     // card flip around the vertical axis: an accent tile turns over to reveal each glyph
-    name: '縦軸フリップ', tags: ['pop', 'graphic', 'editorial'], w: 1,
+    name: '縦軸フリップ', nameEn: 'Card flip', tags: ['pop', 'graphic', 'editorial'], w: 1,
     apply(env, it, p) {
       const col = colOf(it), bg = pick(env.sc.bg), back = it.color === env.sc.accent ? pick(env.sc.accent2, env.sc.fg) : pick(env.sc.accent, env.sc.fg);
       glyphs(it, (i, g, n) => {
@@ -227,7 +227,7 @@ const DEFS = {
 
   flipY: {
     // three-quarter tumble around the horizontal axis (shows the mirrored back once)
-    name: '横軸フリップ', tags: ['pop', 'graphic'], w: 0.9,
+    name: '横軸フリップ', nameEn: 'Tumble flip', tags: ['pop', 'graphic'], w: 0.9,
     apply(env, it, p) {
       const col = colOf(it), bg = pick(env.sc.bg);
       glyphs(it, (i, g, n) => {
@@ -241,7 +241,7 @@ const DEFS = {
   },
 
   domino: {
-    name: 'ドミノ', tags: ['pop'], w: 0.7, minDur: 0.5,
+    name: 'ドミノ', nameEn: 'Domino', tags: ['pop'], w: 0.7, minDur: 0.5,
     inDur: dur => clamp(dur * 0.42, 0.15, 0.75),
     apply(env, it, p) {
       const isx = it.sx || 1, isy = it.sy || 1;
@@ -258,7 +258,7 @@ const DEFS = {
 
   fold: {
     // accordion: glyphs unfold alternately from their top and bottom edge
-    name: '折り開き', tags: ['graphic', 'editorial'], w: 0.9,
+    name: '折り開き', nameEn: 'Accordion open', tags: ['graphic', 'editorial'], w: 0.9,
     apply(env, it, p) {
       const isy = it.sy || 1, col = colOf(it), bg = pick(env.sc.bg);
       glyphs(it, (i, g, n) => {
@@ -272,7 +272,7 @@ const DEFS = {
   },
 
   unroll: {
-    name: '巻き開き', tags: ['calm', 'editorial', 'emotional'], w: 0.9,
+    name: '巻き開き', nameEn: 'Unroll', tags: ['calm', 'editorial', 'emotional'], w: 0.9,
     apply(env, it, p) {
       const vert = !!it.vertical, isx = it.sx || 1, isy = it.sy || 1, size = it.size;
       const q = (i, n) => stg(p, ordLR(i, n), 0.5);
@@ -299,7 +299,7 @@ const DEFS = {
 
   /* ---------- line work ---------- */
   strokeDraw: {
-    name: '線画から塗り', tags: ['calm', 'emotional', 'editorial'], w: 1, minDur: 0.8,
+    name: '線画から塗り', nameEn: 'Line to fill', tags: ['calm', 'emotional', 'editorial'], w: 1, minDur: 0.8,
     inDur: dur => clamp(dur * 0.5, 0.2, 0.95),
     apply(env, it, p) {
       it.dash = E.outQuad(clamp(p / 0.86));
@@ -309,7 +309,7 @@ const DEFS = {
   },
 
   outlineFill: {
-    name: '輪郭→塗り', tags: ['graphic', 'pop', 'editorial'], w: 1, minDur: 0.7,
+    name: '輪郭→塗り', nameEn: 'Outline to fill', tags: ['graphic', 'pop', 'editorial'], w: 1, minDur: 0.7,
     inDur: dur => clamp(dur * 0.5, 0.2, 0.9),
     apply(env, it, p) {
       const sw = it.stroke > 0 ? it.stroke : Math.max(1.2, it.size * 0.028);
@@ -344,7 +344,7 @@ const DEFS = {
 
   splitJoin: {
     // top and bottom halves of every glyph slide in from opposite sides, each inside the glyph's own box
-    name: '上下合体', tags: ['graphic', 'editorial'], w: 0.9,
+    name: '上下合体', nameEn: 'Split join', tags: ['graphic', 'editorial'], w: 0.9,
     apply(env, it, p) {
       const vert = !!it.vertical, isx = it.sx || 1, isy = it.sy || 1, dir = dirOf(env, 13);
       const q = (i, n) => stg(p, ordLR(i, n), 0.4);
@@ -362,7 +362,7 @@ const DEFS = {
 
   /* ---------- graphic masks ---------- */
   vSlice: {
-    name: '縦スライス', tags: ['graphic', 'glitch'], w: 1,
+    name: '縦スライス', nameEn: 'Vertical slice', tags: ['graphic', 'glitch'], w: 1,
     apply(env, it, p) {
       const b = box(it), R = dRange(it, b), size = it.size;
       const pad = size * 0.3, X0 = R.x0 - pad, X1 = R.x1 + pad;
@@ -378,7 +378,7 @@ const DEFS = {
   },
 
   shutter: {
-    name: 'シャッター', tags: ['graphic', 'editorial'], w: 1,
+    name: 'シャッター', nameEn: 'Shutter', tags: ['graphic', 'editorial'], w: 1,
     apply(env, it, p) {
       const vert = !!it.vertical, size = it.size;
       const grow = oQuint(p / 0.32), open = ioQuart((p - 0.18) / 0.82);
@@ -405,7 +405,7 @@ const DEFS = {
   },
 
   iris: {
-    name: 'アイリス', tags: ['pop', 'emotional', 'graphic'], w: 0.8,
+    name: 'アイリス', nameEn: 'Iris', tags: ['pop', 'emotional', 'graphic'], w: 0.8,
     apply(env, it, p) {
       const e = oQuart(p);
       scaleAbout(it, lerp(1.14, 1, e));
@@ -420,7 +420,7 @@ const DEFS = {
 
   diagWipe: {
     // a slanted accent block sweeps in, covers the line, then retracts and leaves the text behind it
-    name: '斜めワイプ', tags: ['graphic', 'editorial', 'pop'], w: 1,
+    name: '斜めワイプ', nameEn: 'Diagonal wipe', tags: ['graphic', 'editorial', 'pop'], w: 1,
     apply(env, it, p) {
       const vert = !!it.vertical, size = it.size, dir = dirOf(env, 17), k = 0.5;
       const eL = oQuart(p / 0.5), eT = E.inOutCubic((p - 0.18) / 0.74);
@@ -444,7 +444,7 @@ const DEFS = {
   },
 
   blinds: {
-    name: 'ブラインド', tags: ['graphic', 'editorial'], w: 0.8,
+    name: 'ブラインド', nameEn: 'Blinds', tags: ['graphic', 'editorial'], w: 0.8,
     apply(env, it, p) {
       const vert = !!it.vertical, size = it.size;
       clipLocal(it, (ctx, b) => {
@@ -464,7 +464,7 @@ const DEFS = {
   },
 
   checker: {
-    name: '市松', tags: ['graphic', 'glitch', 'pop'], w: 0.7,
+    name: '市松', nameEn: 'Checker', tags: ['graphic', 'glitch', 'pop'], w: 0.7,
     apply(env, it, p) {
       const size = it.size, seed = env.cut.seed | 0;
       const tiles = (b, fn) => {
@@ -494,7 +494,7 @@ const DEFS = {
   },
 
   randomOrder: {
-    name: 'ランダム順', tags: ['pop', 'glitch'], w: 1,
+    name: 'ランダム順', nameEn: 'Random order', tags: ['pop', 'glitch'], w: 1,
     apply(env, it, p) {
       const seed = it.seed | 0, fl = it.color === env.sc.accent ? pick(env.sc.accent2, env.sc.fg) : pick(env.sc.accent, env.sc.fg);
       glyphs(it, (i, g, n) => {
@@ -510,7 +510,7 @@ const DEFS = {
 
   /* ---------- squash & stretch ---------- */
   bounceBig: {
-    name: '大ジャンプ', tags: ['pop'], w: 0.7, minDur: 0.7,
+    name: '大ジャンプ', nameEn: 'Big jump', tags: ['pop'], w: 0.7, minDur: 0.7,
     inDur: dur => clamp(dur * 0.5, 0.2, 0.95),
     apply(env, it, p) {
       const isy = it.sy || 1, seed = it.seed | 0;
@@ -530,7 +530,7 @@ const DEFS = {
   },
 
   squashDrop: {
-    name: '潰れて着地', tags: ['pop'], w: 0.8, minDur: 0.5,
+    name: '潰れて着地', nameEn: 'Squash landing', tags: ['pop'], w: 0.8, minDur: 0.5,
     inDur: dur => clamp(dur * 0.42, 0.15, 0.75),
     apply(env, it, p) {
       const isy = it.sy || 1;
@@ -548,7 +548,7 @@ const DEFS = {
   },
 
   rubber: {
-    name: 'ゴム伸び', tags: ['pop'], w: 0.8, minDur: 0.45,
+    name: 'ゴム伸び', nameEn: 'Rubber stretch', tags: ['pop'], w: 0.8, minDur: 0.45,
     inDur: dur => clamp(dur * 0.42, 0.15, 0.75),
     apply(env, it, p) {
       glyphs(it, (i, g, n) => {
@@ -563,7 +563,7 @@ const DEFS = {
 
   /* ---------- digital ---------- */
   glitchIn: {
-    name: 'グリッチ出現', tags: ['glitch'], w: 1.2,
+    name: 'グリッチ出現', nameEn: 'Glitch in', tags: ['glitch'], w: 1.2,
     apply(env, it, p) {
       const seed = it.seed | 0, step = env.step, size = it.size, sc = env.sc;
       const cols = [sc.accent, sc.ghostA, sc.ghostB, sc.accent2].filter(isHex);
@@ -585,7 +585,7 @@ const DEFS = {
 
   echoIn: {
     // concentric accent outlines of every glyph collapse onto it while the glyph fades in
-    name: '残像集束', tags: ['graphic', 'emotional', 'pop'], w: 1,
+    name: '残像集束', nameEn: 'Echo converge', tags: ['graphic', 'emotional', 'pop'], w: 1,
     apply(env, it, p) {
       const col = pick(env.sc.accent, env.sc.fg);
       const qf = (i, n) => stg(p, ordLR(i, n), 0.35);
@@ -610,7 +610,7 @@ const DEFS = {
 
   /* ---------- motion ---------- */
   whip: {
-    name: 'ホイップ', tags: ['pop', 'graphic'], w: 1,
+    name: 'ホイップ', nameEn: 'Whip', tags: ['pop', 'graphic'], w: 1,
     inDur: dur => clamp(dur * 0.3, 0.12, 0.45),
     apply(env, it, p) {
       const dir = dirOf(env, 19), b = box(it);
@@ -625,7 +625,7 @@ const DEFS = {
   },
 
   skewIn: {
-    name: 'スキュー', tags: ['editorial', 'graphic'], w: 0.9,
+    name: 'スキュー', nameEn: 'Skew', tags: ['editorial', 'graphic'], w: 0.9,
     apply(env, it, p) {
       const dir = dirOf(env, 23), isy = it.sy || 1, size = it.size;
       glyphs(it, (i, g, n) => {
@@ -638,7 +638,7 @@ const DEFS = {
   },
 
   trackIn: {
-    name: '字間収束', tags: ['calm', 'editorial', 'emotional'], w: 1.2,
+    name: '字間収束', nameEn: 'Track in', tags: ['calm', 'editorial', 'emotional'], w: 1.2,
     apply(env, it, p) {
       const e = oQuint(p);
       if (glyphN(it) <= 1) it.x = env.W / 2 + (it.x - env.W / 2) * (1 + 0.9 * (1 - e));
@@ -648,7 +648,7 @@ const DEFS = {
   },
 
   trackOut: {
-    name: '字間拡張', tags: ['calm', 'editorial', 'pop'], w: 1,
+    name: '字間拡張', nameEn: 'Track out', tags: ['calm', 'editorial', 'pop'], w: 1,
     apply(env, it, p) {
       const e = oQuint(p);
       if (glyphN(it) <= 1) { it.x = lerp(env.W / 2, it.x, e); it.y = lerp(env.H / 2, it.y, e); }
@@ -660,7 +660,7 @@ const DEFS = {
 
   /* ---------- soft ---------- */
   blurStagger: {
-    name: 'ブラー段差', tags: ['calm', 'emotional'], w: 1.2,
+    name: 'ブラー段差', nameEn: 'Staggered blur', tags: ['calm', 'emotional'], w: 1.2,
     apply(env, it, p) {
       const size = it.size, bl = Math.min(42, size * 0.14);
       glyphs(it, (i, g, n) => {
@@ -673,7 +673,7 @@ const DEFS = {
   },
 
   fadeStagger: {
-    name: '字ごとフェード', tags: ['calm', 'emotional'], w: 1.2,
+    name: '字ごとフェード', nameEn: 'Per-glyph fade', tags: ['calm', 'emotional'], w: 1.2,
     inDur: dur => clamp(dur * 0.45, 0.15, 0.85),
     apply(env, it, p) {
       const size = it.size;
@@ -686,7 +686,7 @@ const DEFS = {
   },
 
   waveIn: {
-    name: '波立ち', tags: ['pop', 'emotional'], w: 0.9, minDur: 0.5,
+    name: '波立ち', nameEn: 'Wave rise', tags: ['pop', 'emotional'], w: 0.9, minDur: 0.5,
     inDur: dur => clamp(dur * 0.45, 0.15, 0.85),
     apply(env, it, p) {
       const size = it.size, damp = Math.pow(1 - p, 1.6);
@@ -700,7 +700,7 @@ const DEFS = {
   },
 
   spiralIn: {
-    name: '螺旋集合', tags: ['pop', 'emotional'], w: 0.7, minDur: 0.5,
+    name: '螺旋集合', nameEn: 'Spiral assemble', tags: ['pop', 'emotional'], w: 0.7, minDur: 0.5,
     inDur: dur => clamp(dur * 0.42, 0.15, 0.75),
     apply(env, it, p) {
       const b = box(it), isx = it.sx || 1, isy = it.sy || 1, size = it.size, dir = dirOf(env, 29), seed = env.cut.seed | 0;
@@ -718,7 +718,7 @@ const DEFS = {
   },
 
   zoomOut: {
-    name: '巨大→等倍', tags: ['pop', 'graphic', 'glitch'], w: 1,
+    name: '巨大→等倍', nameEn: 'Giant to normal', tags: ['pop', 'graphic', 'glitch'], w: 1,
     apply(env, it, p) {
       const e = E.outExpo(p);
       const dip = 0.035 * Math.sin(PI * clamp((p - 0.22) / 0.58));
@@ -729,7 +729,7 @@ const DEFS = {
 
   /* ---------- reveal devices ---------- */
   resolve: {
-    name: '解読', tags: ['glitch', 'editorial'], w: 0.9, minDur: 0.6,
+    name: '解読', nameEn: 'Decode', tags: ['glitch', 'editorial'], w: 0.9, minDur: 0.6,
     inDur: (dur, n) => clamp(0.2 + n * 0.045, 0.3, Math.max(0.3, Math.min(0.95, dur * 0.55))),
     apply(env, it, p) {
       const seed = it.seed | 0, step = env.step, sc = env.sc, isx = it.sx || 1, isy = it.sy || 1;
@@ -754,7 +754,7 @@ const DEFS = {
   },
 
   magnet: {
-    name: '磁石', tags: ['pop', 'graphic'], w: 0.8, minDur: 0.6,
+    name: '磁石', nameEn: 'Magnet', tags: ['pop', 'graphic'], w: 0.8, minDur: 0.6,
     inDur: dur => clamp(dur * 0.48, 0.2, 0.85),
     apply(env, it, p) {
       const seed = it.seed | 0, size = it.size;
@@ -774,7 +774,7 @@ const DEFS = {
   },
 
   inkBleed: {
-    name: 'にじみ', tags: ['calm', 'emotional'], w: 1,
+    name: 'にじみ', nameEn: 'Ink bleed', tags: ['calm', 'emotional'], w: 1,
     inDur: dur => clamp(dur * 0.45, 0.15, 0.8),
     apply(env, it, p) {
       const seed = it.seed | 0, size = it.size, bl = Math.min(36, size * 0.16);
@@ -791,7 +791,7 @@ const DEFS = {
   },
 
   neonOn: {
-    name: 'ネオン点灯', tags: ['glitch', 'emotional', 'pop'], w: 0.8, minDur: 0.6,
+    name: 'ネオン点灯', nameEn: 'Neon on', tags: ['glitch', 'emotional', 'pop'], w: 0.8, minDur: 0.6,
     inDur: dur => clamp(dur * 0.5, 0.2, 0.9),
     apply(env, it, p) {
       const seed = it.seed | 0, step = env.step;
@@ -809,7 +809,7 @@ const DEFS = {
   },
 
   cursorSweep: {
-    name: 'カーソル掃引', tags: ['editorial', 'graphic'], w: 1,
+    name: 'カーソル掃引', nameEn: 'Cursor sweep', tags: ['editorial', 'graphic'], w: 1,
     inDur: dur => clamp(dur * 0.4, 0.14, 0.7),
     apply(env, it, p) {
       const vert = !!it.vertical, size = it.size, isx = it.sx || 1, isy = it.sy || 1;
@@ -835,7 +835,7 @@ const DEFS = {
   },
 
   stamp: {
-    name: 'スタンプ', tags: ['pop', 'graphic'], w: 0.9,
+    name: 'スタンプ', nameEn: 'Stamp', tags: ['pop', 'graphic'], w: 0.9,
     inDur: dur => clamp(dur * 0.4, 0.14, 0.7),
     apply(env, it, p) {
       const tI = 0.42, dir = dirOf(env, 37), b = box(it), size = it.size;

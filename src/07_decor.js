@@ -11,7 +11,7 @@ const inOut = env => E.outCubic(J.clamp(env.lt / 0.3)) * (1 - E.inCubic(env.pOut
 J.DECOR = {
   /* ---------------- back layer ---------------- */
   grid: {
-    name: 'グリッド', layer: 'back',
+    name: 'グリッド', nameEn: 'Grid', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc } = env, g = H / (P.n || 8), a = 0.12 * inOut(env);
       if (a <= 0) return;
@@ -21,7 +21,7 @@ J.DECOR = {
     },
   },
   stripes: {
-    name: 'ストライプ', layer: 'back',
+    name: 'ストライプ', nameEn: 'Stripes', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc, ctx } = env, e = inOut(env);
       if (e <= 0) return;
@@ -32,7 +32,7 @@ J.DECOR = {
     },
   },
   blobs: {
-    name: 'インクの染み', layer: 'back',
+    name: 'インクの染み', nameEn: 'Ink blot', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc, ctx } = env, s = P.seed;
       const e = E.outBack(J.clamp(env.lt / 0.35), 1.2) * (1 - E.inCubic(env.pOut));
@@ -49,7 +49,7 @@ J.DECOR = {
     },
   },
   bars: {
-    name: '荒い帯', layer: 'back',
+    name: '荒い帯', nameEn: 'Rough band', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc } = env, s = P.seed, n = P.n || 3;
       for (let k = 0; k < n; k++) {
@@ -68,7 +68,7 @@ J.DECOR = {
     },
   },
   shapes: {
-    name: '図形', layer: 'back',
+    name: '図形', nameEn: 'Shapes', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc, ctx } = env, s = P.seed, n = P.n || 5;
       for (let k = 0; k < n; k++) {
@@ -91,7 +91,7 @@ J.DECOR = {
     },
   },
   counter: {
-    name: '大きな数字', layer: 'back',
+    name: '大きな数字', nameEn: 'Big numbers', layer: 'back',
     draw(env, bb, P) {
       const { W, H, sc } = env;
       const a = inOut(env); if (a <= 0) return;
@@ -102,7 +102,7 @@ J.DECOR = {
 
   /* ---------------- front layer ---------------- */
   brackets: {
-    name: '枠マーク', layer: 'front',
+    name: '枠マーク', nameEn: 'Frame marks', layer: 'front',
     draw(env, bb, P) {
       bb = center(env, bb); const { sc } = env;
       const e = E.outExpo(J.clamp(env.lt / 0.35)) * (1 - E.inCubic(env.pOut)); if (e <= 0) return;
@@ -118,7 +118,7 @@ J.DECOR = {
     },
   },
   rings: {
-    name: '座標の円', layer: 'front',
+    name: '座標の円', nameEn: 'Coordinate circles', layer: 'front',
     draw(env, bb, P) {
       bb = center(env, bb); const { W, H, sc } = env, s = P.seed;
       const e = E.outExpo(J.clamp(env.lt / 0.5)) * (1 - E.inCubic(env.pOut)); if (e <= 0) return;
@@ -134,7 +134,7 @@ J.DECOR = {
     },
   },
   dots: {
-    name: 'ドットの輪', layer: 'front',
+    name: 'ドットの輪', nameEn: 'Dot ring', layer: 'front',
     draw(env, bb, P) {
       bb = center(env, bb); const { H, sc } = env;
       const e = inOut(env); if (e <= 0) return;
@@ -144,7 +144,7 @@ J.DECOR = {
     },
   },
   arrows: {
-    name: '矢印', layer: 'front',
+    name: '矢印', nameEn: 'Arrows', layer: 'front',
     draw(env, bb, P) {
       bb = center(env, bb); const { W, H, sc } = env;
       const e = E.outExpo(J.clamp(env.lt / 0.4)) * (1 - E.inCubic(env.pOut)); if (e <= 0) return;
@@ -167,7 +167,7 @@ J.DECOR = {
     },
   },
   slash: {
-    name: 'スラッシュ', layer: 'front',
+    name: 'スラッシュ', nameEn: 'Slashes', layer: 'front',
     draw(env, bb, P) {
       const { W, H, sc } = env, s = P.seed;
       for (let k = 0; k < (P.n || 1); k++) {
@@ -180,7 +180,7 @@ J.DECOR = {
     },
   },
   sparks: {
-    name: 'スパーク', layer: 'front',
+    name: 'スパーク', nameEn: 'Sparks', layer: 'front',
     draw(env, bb, P) {
       const { W, H, sc } = env, s = P.seed;
       for (let k = 0; k < (P.n || 6); k++) {
@@ -192,7 +192,7 @@ J.DECOR = {
     },
   },
   leaders: {
-    name: '引き出し線', layer: 'front',
+    name: '引き出し線', nameEn: 'Leader lines', layer: 'front',
     draw(env, bb, P) {
       bb = center(env, bb); const { W, H, sc } = env, s = P.seed;
       const e = E.outExpo(J.clamp((env.lt - 0.1) / 0.45)) * (1 - E.inCubic(env.pOut)); if (e <= 0) return;
@@ -209,7 +209,7 @@ J.DECOR = {
     },
   },
   waveform: {
-    name: '波形', layer: 'front',
+    name: '波形', nameEn: 'Waveform', layer: 'front',
     draw(env, bb, P) {
       const { W, H, sc } = env; const e = inOut(env); if (e <= 0) return;
       const y = H * (P.low ? 0.86 : 0.14), n = 120, pts = [];
@@ -224,7 +224,7 @@ J.DECOR = {
     },
   },
   barcode: {
-    name: 'バーコード', layer: 'front',
+    name: 'バーコード', nameEn: 'Barcode', layer: 'front',
     draw(env, bb, P) {
       const { W, H, sc } = env, s = P.seed; const e = inOut(env); if (e <= 0) return;
       const x0 = P.right ? W * 0.84 : W * 0.06, y0 = P.low ? H * 0.84 : H * 0.07, h = H * 0.05;

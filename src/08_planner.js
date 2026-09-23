@@ -4,10 +4,10 @@
 (() => {
 'use strict';
 
-J.SAMPLE_LYRICS = `夜明けの色を/覚えてる
-ほどけた声が遠くで鳴った
-ねえ、まだ間に合うかな
-*透明*なままじゃ終われない!`;
+J.SAMPLE_LYRICS = `City lights across the bay
+Hold on / we still have time
+I hear your voice on the late train home
+*Bright* and unbroken tonight!`;
 
 J.defaultProject = () => ({
   version: 1,
@@ -16,6 +16,7 @@ J.defaultProject = () => ({
   style: 'noir', mood: null,
   extra: false,                   // random picks may use the parts added after the first version (追加分)
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
+  keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
@@ -180,6 +181,7 @@ J.plan = (project, audio) => {
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
+    keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
   };
   const beats = plan.beats;
   const snap = (t) => {

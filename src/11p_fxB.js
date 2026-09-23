@@ -67,7 +67,7 @@ const fx = (k, d) => J.register('fx', k, Object.assign({}, d, {
 }), PK);
 
 /* ================= lens / optics ================= */
-fx('radialChroma', { name: '放射色収差', tags: ['glitch', 'emotional', 'pop'], w: 0.9, dur: 4, amp: 1, mid: true, scratch: true, ae: 'chroma',
+fx('radialChroma', { name: '放射色収差', nameEn: 'Radial chromatic aberration', tags: ['glitch', 'emotional', 'pop'], w: 0.9, dur: 4, amp: 1, mid: true, scratch: true, ae: 'chroma',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const dk = isDark(sc.bg), s = evS(ev);
@@ -80,7 +80,7 @@ fx('radialChroma', { name: '放射色収差', tags: ['glitch', 'emotional', 'pop
     ctx.globalAlpha = 0.45; drawScaled(ctx, R, 1 + d * 2.2, cx, cy, cw, ch);
   } });
 
-fx('bloomFlash', { name: 'ブルーム', tags: ['pop', 'emotional', 'calm'], w: 1, dur: 6, amp: 1, mid: true, scratch: true, ae: 'flash',
+fx('bloomFlash', { name: 'ブルーム', nameEn: 'Bloom', tags: ['pop', 'emotional', 'calm'], w: 1, dur: 6, amp: 1, mid: true, scratch: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = clamp(ampOf(ev), 0.5, 1.3) * (k < 0.12 ? E.outCubic(k / 0.12) : Math.pow(1 - (k - 0.12) / 0.88, 1.5));
@@ -106,7 +106,7 @@ fx('bloomFlash', { name: 'ブルーム', tags: ['pop', 'emotional', 'calm'], w: 
   } });
 
 // separable lens warp: columns then rows, piecewise-linear strips (no seams)
-fx('bulge', { name: '魚眼', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 5, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('bulge', { name: '魚眼', nameEn: 'Fisheye', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 5, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const s = evS(ev), pinch = J.r(s, 1) < 0.25;
@@ -135,7 +135,7 @@ fx('bulge', { name: '魚眼', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 5
 
 /* ================= glitch ================= */
 // vertical "melt": runs of columns whose window is stretched down (or up), coherent via smooth noise
-fx('pixelSort', { name: 'ピクセルソート', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'slice',
+fx('pixelSort', { name: 'ピクセルソート', nameEn: 'Pixel sort', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'slice',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const a = ampOf(ev), s = evS(ev), st = I.step * 19 + s, up = J.r(s, 1) < 0.3;
@@ -161,7 +161,7 @@ const rowTile = L => {
   const x = t.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 1, L);
   ROWS.set(L, t); return t;
 };
-fx('interlace', { name: 'インターレース', tags: ['glitch', 'emotional'], w: 0.7, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'slice',
+fx('interlace', { name: 'インターレース', nameEn: 'Interlace', tags: ['glitch', 'emotional'], w: 0.7, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'slice',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = ampOf(ev), st = I.step * 7 + evS(ev), L = Math.max(1, Math.round(ch / 200));
@@ -178,7 +178,7 @@ fx('interlace', { name: 'インターレース', tags: ['glitch', 'emotional'], 
   } });
 
 // compression artefacts: grid-aligned blocks go flat, smear down from their top row, quantise or slip
-fx('macroBlock', { name: 'ブロックノイズ', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'block',
+fx('macroBlock', { name: 'ブロックノイズ', nameEn: 'Block noise', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true, ae: 'block',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = ampOf(ev), st = I.step * 23 + evS(ev), B = Math.max(6, Math.round(Math.min(cw, ch) / 18));
@@ -225,7 +225,7 @@ const dotTile = (c, r) => {
   if (DOT.size > 64) DOT.clear();
   DOT.set(key, t); return t;
 };
-fx('halftone', { name: '網点', tags: ['pop', 'graphic', 'editorial'], w: 0.9, dur: 5, amp: 1, mid: true, ae: 'mosaic',
+fx('halftone', { name: '網点', nameEn: 'Halftone', tags: ['pop', 'graphic', 'editorial'], w: 0.9, dur: 5, amp: 1, mid: true, ae: 'mosaic',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I;
     const c = Math.max(5, Math.round(Math.min(cw, ch) / 44)), amt = ahr(k, 0.3, 0.72);
@@ -238,7 +238,7 @@ fx('halftone', { name: '網点', tags: ['pop', 'graphic', 'editorial'], w: 0.9, 
     ctx.globalCompositeOperation = 'destination-over'; ctx.fillStyle = J.mix(sc.bg, sc.fg, 0.16); ctx.fillRect(0, 0, cw, ch);
   } });
 
-fx('duotone', { name: 'ダブルトーン', tags: ['pop', 'emotional', 'graphic'], w: 0.8, dur: 4, amp: 1, mid: true, ae: 'chroma',
+fx('duotone', { name: 'ダブルトーン', nameEn: 'Duotone', tags: ['pop', 'emotional', 'graphic'], w: 0.8, dur: 4, amp: 1, mid: true, ae: 'chroma',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev);
     const a = clamp(ampOf(ev), 0.6, 1) * ahr(k, 0.12, 0.7);
@@ -262,7 +262,7 @@ const bayerTile = () => {
   BAYER = c; return c;
 };
 // ordered dither → hard threshold (contrast filter) → mapped to the scheme's darkest / lightest colour
-fx('ditherBit', { name: '1bitディザ', tags: ['glitch', 'graphic', 'pop'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true, ae: 'mosaic',
+fx('ditherBit', { name: '1bitディザ', nameEn: '1-bit dither', tags: ['glitch', 'graphic', 'pop'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true, ae: 'mosaic',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const p = Math.max(2, Math.round(ch / 200) * (k < 0.34 ? 2 : 1)), w = Math.ceil(cw / p), h = Math.ceil(ch / p);
@@ -279,7 +279,7 @@ fx('ditherBit', { name: '1bitディザ', tags: ['glitch', 'graphic', 'pop'], w: 
   } });
 
 /* ================= frame motion ================= */
-fx('rotateSnap', { name: '傾きスナップ', tags: ['pop', 'graphic', 'glitch'], w: 0.9, dur: 5, amp: 1, mid: true, scratch: true, ae: 'shake',
+fx('rotateSnap', { name: '傾きスナップ', nameEn: 'Tilt snap', tags: ['pop', 'graphic', 'glitch'], w: 0.9, dur: 5, amp: 1, mid: true, scratch: true, ae: 'shake',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), dir = J.r(s, 1) < 0.5 ? 1 : -1;
@@ -296,7 +296,7 @@ fx('rotateSnap', { name: '傾きスナップ', tags: ['pop', 'graphic', 'glitch'
   } });
 
 // stepped after-images of the frame ('lighten' on dark schemes / 'darken' on light ones keeps the background untouched)
-fx('echoFrames', { name: '残像エコー', tags: ['emotional', 'pop', 'glitch'], w: 0.9, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('echoFrames', { name: '残像エコー', nameEn: 'Afterimage echo', tags: ['emotional', 'pop', 'glitch'], w: 0.9, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), dk = isDark(sc.bg), a = clamp(ampOf(ev), 0.5, 1.3);
@@ -308,7 +308,7 @@ fx('echoFrames', { name: '残像エコー', tags: ['emotional', 'pop', 'glitch']
   } });
 
 // n mirrored wedges around the centre (true kaleidoscope, not an axis mirror)
-fx('kaleido', { name: '万華鏡', tags: ['pop', 'graphic', 'emotional'], w: 0.6, dur: 4, amp: 1, mid: true, scratch: true, ae: 'block',
+fx('kaleido', { name: '万華鏡', nameEn: 'Kaleidoscope', tags: ['pop', 'graphic', 'emotional'], w: 0.6, dur: 4, amp: 1, mid: true, scratch: true, ae: 'block',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const s = evS(ev), n = J.r(s, 1) < 0.5 ? 6 : 8, th = TAU / n, R = Math.hypot(cw, ch);
@@ -324,7 +324,7 @@ fx('kaleido', { name: '万華鏡', tags: ['pop', 'graphic', 'emotional'], w: 0.6
   } });
 
 /* ================= inversion / light ================= */
-fx('bandInvert', { name: '帯反転', tags: ['glitch', 'graphic'], w: 0.7, dur: 3, amp: 1, glitchy: true, mid: true, ae: 'invert',
+fx('bandInvert', { name: '帯反転', nameEn: 'Band invert', tags: ['glitch', 'graphic'], w: 0.7, dur: 3, amp: 1, glitchy: true, mid: true, ae: 'invert',
   draw(ctx, ev, k, I) {
     const { cw, ch } = I, s = evS(ev), st = I.step * 13 + s, n = 2 + (J.h(st, 1) % 4), vert = J.r(s, 2) < 0.22;
     const L = vert ? cw : ch, M = vert ? ch : cw, a = clamp(ampOf(ev), 0.6, 1.3);
@@ -336,7 +336,7 @@ fx('bandInvert', { name: '帯反転', tags: ['glitch', 'graphic'], w: 0.7, dur: 
     }
   } });
 
-fx('lightRays', { name: '光芒', tags: ['emotional', 'pop', 'calm'], w: 0.9, dur: 8, amp: 1, mid: true, ae: 'flash',
+fx('lightRays', { name: '光芒', nameEn: 'Light rays', tags: ['emotional', 'pop', 'calm'], w: 0.9, dur: 8, amp: 1, mid: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), dk = isDark(sc.bg);
     const a = clamp(ampOf(ev), 0.5, 1.2) * Math.pow(bell(k), 0.6) * (0.9 + 0.1 * J.r(I.step, 5));
@@ -359,7 +359,7 @@ fx('lightRays', { name: '光芒', tags: ['emotional', 'pop', 'calm'], w: 0.9, du
     ctx.fillStyle = g2; ctx.fillRect(cx - M * 0.3, cy - M * 0.3, M * 0.6, M * 0.6);
   } });
 
-fx('anamorphic', { name: 'アナモフレア', tags: ['emotional', 'pop', 'calm'], w: 0.8, dur: 7, amp: 1, mid: true, ae: 'flash',
+fx('anamorphic', { name: 'アナモフレア', nameEn: 'Anamorphic flare', tags: ['emotional', 'pop', 'calm'], w: 0.8, dur: 7, amp: 1, mid: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), dk = isDark(sc.bg);
     const a = clamp(ampOf(ev), 0.5, 1.2) * Math.pow(bell(k), 0.5) * (0.88 + 0.12 * J.r(I.step, 7));
@@ -391,7 +391,7 @@ fx('anamorphic', { name: 'アナモフレア', tags: ['emotional', 'pop', 'calm'
   } });
 
 // double heartbeat: a coloured vignette closes in twice with a slight push
-fx('heartbeat', { name: '鼓動', tags: ['emotional', 'calm'], w: 0.8, dur: 10, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('heartbeat', { name: '鼓動', nameEn: 'Heartbeat', tags: ['emotional', 'calm'], w: 0.8, dur: 10, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const pulse = (x, c, w) => { const u = (x - c) / w; return u < 0 || u > 1 ? 0 : u < 0.22 ? E.outCubic(u / 0.22) : 1 - E.inOutCubic((u - 0.22) / 0.78); };
@@ -417,7 +417,7 @@ const staticTex = () => {
   x.putImageData(id, 0, 0);
   STATIC = c; return c;
 };
-fx('tvStatic', { name: '砂嵐', tags: ['glitch', 'emotional'], w: 0.6, dur: 5, pre: 2, amp: 1, glitchy: true, ae: 'block',
+fx('tvStatic', { name: '砂嵐', nameEn: 'Static noise', tags: ['glitch', 'emotional'], w: 0.6, dur: 5, pre: 2, amp: 1, glitchy: true, ae: 'block',
   draw(ctx, ev, k, I) {
     const { cw, ch } = I, st = I.step * 3 + evS(ev), b = 0.4;
     const cov = (k < b ? 0.5 + 0.5 * E.outQuad(k / b) : 1 - E.outQuad((k - b) / (1 - b))) * clamp(ampOf(ev), 0.7, 1.1);
@@ -433,7 +433,7 @@ fx('tvStatic', { name: '砂嵐', tags: ['glitch', 'emotional'], w: 0.6, dur: 5, 
     for (let i = 0; i < 4; i++) ctx.fillRect(0, J.r(st, i, 4) * ch, cw, Math.max(1, ch * 0.003));
   } });
 
-fx('dustScratches', { name: 'フィルム傷', tags: ['emotional', 'calm', 'editorial'], w: 0.8, dur: 8, amp: 1, mid: true,
+fx('dustScratches', { name: 'フィルム傷', nameEn: 'Film scratches', tags: ['emotional', 'calm', 'editorial'], w: 0.8, dur: 8, amp: 1, mid: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), st = I.step * 31 + s, dk = isDark(sc.bg);
     const a = ahr(k, 0.08, 0.7) * clamp(ampOf(ev), 0.6, 1.2);
@@ -466,7 +466,7 @@ fx('dustScratches', { name: 'フィルム傷', tags: ['emotional', 'calm', 'edit
 /* ================= film strip / 3D / water ================= */
 const rrect = (ctx, x, y, w, h, r) => { r = Math.min(r, w / 2, h / 2); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); };
 // the picture shrinks onto a strip of film with sprocket holes and the strip is pulled on by one frame
-fx('filmAdvance', { name: 'フィルム送り', tags: ['emotional', 'editorial', 'calm'], w: 0.6, dur: 9, pre: 4, amp: 1, scratch: true, ae: 'slice',
+fx('filmAdvance', { name: 'フィルム送り', nameEn: 'Film advance', tags: ['emotional', 'editorial', 'calm'], w: 0.6, dur: 9, pre: 4, amp: 1, scratch: true, ae: 'slice',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const s = evS(ev), dir = J.r(s, 1) < 0.7 ? 1 : -1, env = ahr(k, 0.22, 0.78, E.inOutCubic, E.inOutCubic);
@@ -487,7 +487,7 @@ fx('filmAdvance', { name: 'フィルム送り', tags: ['emotional', 'editorial',
   } });
 
 // the frame swings in 3D around its vertical (or horizontal) axis: projected strips form a perspective trapezoid
-fx('perspectiveTilt', { name: 'パース揺れ', tags: ['pop', 'graphic', 'emotional'], w: 0.8, dur: 8, amp: 1, mid: true, scratch: true, ae: 'shake',
+fx('perspectiveTilt', { name: 'パース揺れ', nameEn: 'Perspective tilt', tags: ['pop', 'graphic', 'emotional'], w: 0.8, dur: 8, amp: 1, mid: true, scratch: true, ae: 'shake',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), cols = J.r(s, 1) < (cw >= ch ? 0.7 : 0.35), dir = J.r(s, 2) < 0.5 ? 1 : -1;
@@ -509,7 +509,7 @@ fx('perspectiveTilt', { name: 'パース揺れ', tags: ['pop', 'graphic', 'emoti
   } });
 
 // water ripple: annuli around the drop point are each re-drawn slightly scaled (radial displacement)
-fx('ripple', { name: '波紋', tags: ['emotional', 'calm', 'pop'], w: 0.8, dur: 10, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('ripple', { name: '波紋', nameEn: 'Ripples', tags: ['emotional', 'calm', 'pop'], w: 0.8, dur: 10, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), cx = cw * (0.5 + J.rs(s, 1) * 0.1), cy = ch * (0.5 + J.rs(s, 2) * 0.08), M = Math.min(cw, ch), dk = isDark(sc.bg);
@@ -537,7 +537,7 @@ fx('ripple', { name: '波紋', tags: ['emotional', 'calm', 'pop'], w: 0.8, dur: 
 /* ================= manga / graphic overlays ================= */
 const inkCol = sc => (isDark(sc.bg) ? lightest([sc.fg, sc.ink, '#FFFFFF']) : darkest([sc.fg, sc.ink, '#111111']));
 // 集中線: thin wedges converging on the centre, redrawn every frame like hand-drawn animation
-fx('focusLines', { name: '集中線', tags: ['pop', 'graphic', 'emotional'], w: 0.9, dur: 6, amp: 1, mid: true, ae: 'zoom',
+fx('focusLines', { name: '集中線', nameEn: 'Speed lines', tags: ['pop', 'graphic', 'emotional'], w: 0.9, dur: 6, amp: 1, mid: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), st = I.step * 5 + s, a = ahr(k, 0.1, 0.72);
     if (a < 0.02) return;
@@ -555,7 +555,7 @@ fx('focusLines', { name: '集中線', tags: ['pop', 'graphic', 'emotional'], w: 
   } });
 
 // 流線: tapered streaks racing across the frame (clear of the centre band)
-fx('speedLines', { name: '流線', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp: 1, mid: true,
+fx('speedLines', { name: '流線', nameEn: 'Streamlines', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp: 1, mid: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), a = ahr(k, 0.12, 0.7);
     if (a < 0.02) return;
@@ -576,7 +576,7 @@ fx('speedLines', { name: '流線', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp
   } });
 
 // キラッ: 8-point glints popping in sequence around the lyric band
-fx('starGlint', { name: 'キラッ', tags: ['pop', 'emotional'], w: 0.8, dur: 9, amp: 1, mid: true, ae: 'flash',
+fx('starGlint', { name: 'キラッ', nameEn: 'Sparkle', tags: ['pop', 'emotional'], w: 0.8, dur: 9, amp: 1, mid: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), dk = isDark(sc.bg), M = Math.min(cw, ch), col = vivid(sc), n = 2 + (J.h(s, 1) % 3);
     const port = ch > cw;
@@ -601,7 +601,7 @@ fx('starGlint', { name: 'キラッ', tags: ['pop', 'emotional'], w: 0.8, dur: 9,
   } });
 
 // thin scheme-coloured bars sweeping across the frame at different speeds
-fx('colorBars', { name: 'カラーバー', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, ae: 'slice',
+fx('colorBars', { name: 'カラーバー', nameEn: 'Color bars', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, ae: 'slice',
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), vert = J.r(s, 1) < (cw >= ch ? 0.35 : 0.15), dir = J.r(s, 2) < 0.5 ? 1 : -1;
     let cols = [sc.accent, sc.accent2, sc.ghostA, sc.ghostB, sc.fg].filter(c => c && J.contrast(c, sc.bg) > 1.35);
@@ -619,7 +619,7 @@ fx('colorBars', { name: 'カラーバー', tags: ['pop', 'graphic', 'glitch'], w
   } });
 
 // three hard zoom steps (ダダダン), each with its own slight focus shift, then snap back
-fx('zoomStutter', { name: 'ズーム連打', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('zoomStutter', { name: 'ズーム連打', nameEn: 'Zoom stutter', tags: ['pop', 'graphic', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const s = evS(ev), j = Math.min(2, Math.floor(k * 3)), a = clamp(ampOf(ev), 0.5, 1.3);
@@ -629,7 +629,7 @@ fx('zoomStutter', { name: 'ズーム連打', tags: ['pop', 'graphic', 'glitch'],
 
 /* ================= graphic inversions / stylise ================= */
 // an inverted ring (circle or diamond) bursts out from the centre, a thinner echo ring follows
-fx('negativeRing', { name: '反転リング', tags: ['graphic', 'pop', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, ae: 'invert',
+fx('negativeRing', { name: '反転リング', nameEn: 'Inverted ring', tags: ['graphic', 'pop', 'glitch'], w: 0.8, dur: 6, amp: 1, mid: true, ae: 'invert',
   draw(ctx, ev, k, I) {
     const { cw, ch } = I, s = evS(ev), M = Math.min(cw, ch), dia = J.r(s, 1) < 0.35;
     const cx = cw / 2 + J.rs(s, 2) * cw * 0.05, cy = ch / 2 + J.rs(s, 3) * ch * 0.05, Rm = Math.hypot(cw, ch) * (dia ? 0.75 : 0.56);
@@ -646,7 +646,7 @@ fx('negativeRing', { name: '反転リング', tags: ['graphic', 'pop', 'glitch']
 
 // edge detection: |frame - shifted frame| → neon outlines on dark schemes, ink line drawing on light ones
 const invHex = h => { const [r, g, b] = J.hex(h); return J.toHex(255 - r, 255 - g, 255 - b); };
-fx('edgeDetect', { name: '輪郭抽出', tags: ['graphic', 'glitch', 'editorial'], w: 0.7, dur: 4, amp: 1, mid: true, scratch: true, ae: 'invert',
+fx('edgeDetect', { name: '輪郭抽出', nameEn: 'Edge detect', tags: ['graphic', 'glitch', 'editorial'], w: 0.7, dur: 4, amp: 1, mid: true, scratch: true, ae: 'invert',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const dk = isDark(sc.bg), a = ahr(k, 0.1, 0.72);
@@ -670,7 +670,7 @@ fx('edgeDetect', { name: '輪郭抽出', tags: ['graphic', 'glitch', 'editorial'
   } });
 
 // glass shatter: cracks appear on the old frame, the new frame arrives in shards that drift apart and knit back together
-fx('shatter', { name: 'ガラス割れ', tags: ['glitch', 'pop', 'emotional'], w: 0.5, dur: 8, pre: 1, amp: 1, scratch: true, ae: 'block',
+fx('shatter', { name: 'ガラス割れ', nameEn: 'Glass shatter', tags: ['glitch', 'pop', 'emotional'], w: 0.5, dur: 8, pre: 1, amp: 1, scratch: true, ae: 'block',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), M = Math.min(cw, ch), dk = isDark(sc.bg), a = clamp(ampOf(ev), 0.6, 1.3);
@@ -711,7 +711,7 @@ fx('shatter', { name: 'ガラス割れ', tags: ['glitch', 'pop', 'emotional'], w
   } });
 
 // rack focus: the picture drops out of focus (peak at the cut) and snaps back
-fx('defocus', { name: 'ピンぼけ', tags: ['emotional', 'calm', 'editorial'], w: 0.9, dur: 8, pre: 4, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('defocus', { name: 'ピンぼけ', nameEn: 'Defocus', tags: ['emotional', 'calm', 'editorial'], w: 0.9, dur: 8, pre: 4, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const amt = (k < 0.5 ? E.inOutCubic(k / 0.5) : 1 - E.inOutCubic((k - 0.5) / 0.5)) * clamp(ampOf(ev), 0.6, 1.2);
@@ -728,7 +728,7 @@ fx('defocus', { name: 'ピンぼけ', tags: ['emotional', 'calm', 'editorial'], 
   } });
 
 // camera shutter: white flash, the frame becomes a tilted instant photo on a dimmed backdrop, then zooms back
-fx('snapshot', { name: 'シャッター', tags: ['pop', 'emotional', 'editorial'], w: 0.6, dur: 10, amp: 1, mid: true, scratch: true, ae: 'flash',
+fx('snapshot', { name: 'シャッター', nameEn: 'Shutter', tags: ['pop', 'emotional', 'editorial'], w: 0.6, dur: 10, amp: 1, mid: true, scratch: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), M = Math.min(cw, ch);
@@ -748,7 +748,7 @@ fx('snapshot', { name: 'シャッター', tags: ['pop', 'emotional', 'editorial'
   } });
 
 // elastic squash & stretch of the whole frame (damped spring)
-fx('squash', { name: '伸縮', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
+fx('squash', { name: '伸縮', nameEn: 'Squash and stretch', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp: 1, mid: true, scratch: true, ae: 'zoom',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), hor = J.r(s, 1) < 0.6;
@@ -760,7 +760,7 @@ fx('squash', { name: '伸縮', tags: ['pop', 'graphic'], w: 0.8, dur: 6, amp: 1,
   } });
 
 // scanner: a glowing bar sweeps the frame; what it has not reached yet is dimmed, rows just behind it jitter
-fx('scanBar', { name: 'スキャン', tags: ['graphic', 'editorial', 'glitch'], w: 0.7, dur: 8, amp: 1, mid: true, scratch: true, ae: 'flash',
+fx('scanBar', { name: 'スキャン', nameEn: 'Scan', tags: ['graphic', 'editorial', 'glitch'], w: 0.7, dur: 8, amp: 1, mid: true, scratch: true, ae: 'flash',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), dk = isDark(sc.bg), down = J.r(s, 1) < 0.7, st = I.step * 3 + s;
@@ -781,7 +781,7 @@ fx('scanBar', { name: 'スキャン', tags: ['graphic', 'editorial', 'glitch'], 
   } });
 
 // the whole frame scrolls one full width (wrapping round) with motion blur — ends exactly where it started
-fx('loopScroll', { name: '横ループ', tags: ['pop', 'graphic', 'glitch'], w: 0.7, dur: 6, pre: 3, amp: 1, scratch: true, ae: 'slice',
+fx('loopScroll', { name: '横ループ', nameEn: 'Horizontal loop', tags: ['pop', 'graphic', 'glitch'], w: 0.7, dur: 6, pre: 3, amp: 1, scratch: true, ae: 'slice',
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), vert = cw < ch ? J.r(s, 1) < 0.6 : J.r(s, 1) < 0.2, dir = J.r(s, 2) < 0.5 ? 1 : -1;

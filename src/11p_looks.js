@@ -96,7 +96,7 @@ const lineFracs = (it) => {
 };
 
 /* ================= TREATMENTS ================= */
-reg('treat', 'outline', { name: '袋文字', tags: ['graphic', 'pop', 'glitch', 'emotional'], w: 1.2,
+reg('treat', 'outline', { name: '袋文字', nameEn: 'Outline text', tags: ['graphic', 'pop', 'glitch', 'emotional'], w: 1.2,
   plan: rng => ({ k: rng.range(0.022, 0.038) }),
   apply(env, it, P) {
     if (!alive(it, 0.5) || inPieces(env, it)) return;
@@ -104,7 +104,7 @@ reg('treat', 'outline', { name: '袋文字', tags: ['graphic', 'pop', 'glitch', 
     sized(it, env, i => { i.stroke = Math.max(1.4, i.size * (P.k || 0.03)); });
   } });
 
-reg('treat', 'outlineFill', { name: '縁取り', tags: ['pop', 'graphic'], w: 1,
+reg('treat', 'outlineFill', { name: '縁取り', nameEn: 'Outline fill', tags: ['pop', 'graphic'], w: 1,
   plan: rng => ({ k: rng.range(0.075, 0.12), c: rng.int(0, 2) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -114,7 +114,7 @@ reg('treat', 'outlineFill', { name: '縁取り', tags: ['pop', 'graphic'], w: 1,
     sized(it, env, i => { i.stroke = Math.max(2, i.size * (P.k || 0.09)); });
   } });
 
-reg('treat', 'doubleOutline', { name: '二重縁', tags: ['pop', 'graphic'], w: 0.7,
+reg('treat', 'doubleOutline', { name: '二重縁', nameEn: 'Double outline', tags: ['pop', 'graphic'], w: 0.7,
   plan: rng => ({ a: rng.range(0.07, 0.09), b: rng.range(0.08, 0.11) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -130,7 +130,7 @@ reg('treat', 'doubleOutline', { name: '二重縁', tags: ['pop', 'graphic'], w: 
     });
   } });
 
-reg('treat', 'extrude', { name: '立体', tags: ['pop', 'graphic'], w: 0.9,
+reg('treat', 'extrude', { name: '立体', nameEn: '3D block', tags: ['pop', 'graphic'], w: 0.9,
   plan: rng => ({ d: rng.range(0.09, 0.13), dir: rng.pick([[1, 1], [1, 1], [-1, 1], [1, 0.55]]), c: rng.int(0, 1) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -140,7 +140,7 @@ reg('treat', 'extrude', { name: '立体', tags: ['pop', 'graphic'], w: 0.9,
     sized(it, env, i => { const L = i.size * P.d; i.extrude = { n: clamp(Math.round(L / 2.5), 4, N > 10 ? 12 : 22), dx: P.dir[0] * L, dy: P.dir[1] * L, color: ec }; });
   } });
 
-reg('treat', 'longShadow', { name: '長い影', tags: ['pop', 'graphic'], w: 0.6,
+reg('treat', 'longShadow', { name: '長い影', nameEn: 'Long shadow', tags: ['pop', 'graphic'], w: 0.6,
   plan: rng => ({ L: rng.range(0.35, 0.65), ang: rng.pick([45, 45, 35, 60, 135]) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -150,7 +150,7 @@ reg('treat', 'longShadow', { name: '長い影', tags: ['pop', 'graphic'], w: 0.6
     sized(it, env, i => { const L = i.size * P.L; i.extrude = { n: clamp(Math.round(L / Math.max(2, i.size * 0.018)), 10, N > 10 ? 14 : 24), dx: ca * L, dy: sa * L, color: sh, fade: true, a: 0.9 }; });
   } });
 
-reg('treat', 'hardShadow', { name: 'ずらし影', tags: ['pop', 'graphic', 'glitch'], w: 1,
+reg('treat', 'hardShadow', { name: 'ずらし影', nameEn: 'Offset shadow', tags: ['pop', 'graphic', 'glitch'], w: 1,
   plan: rng => ({ d: rng.range(0.05, 0.085), dir: rng.pick([[1, 1], [1, 1], [-1, 1], [1, -1], [0.45, 1]]) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -158,7 +158,7 @@ reg('treat', 'hardShadow', { name: 'ずらし影', tags: ['pop', 'graphic', 'gli
     sized(it, env, i => { const L = i.size * P.d; i.extrude = { n: 1, dx: P.dir[0] * L, dy: P.dir[1] * L, color: sh }; });
   } });
 
-reg('treat', 'softShadow', { name: 'ぼかし影', tags: ['calm', 'emotional', 'editorial'], w: 0.8, safe: true,
+reg('treat', 'softShadow', { name: 'ぼかし影', nameEn: 'Soft shadow', tags: ['calm', 'emotional', 'editorial'], w: 0.8, safe: true,
   plan: rng => ({ b: rng.range(0.08, 0.14), dy: rng.range(0.03, 0.07) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -197,7 +197,7 @@ const halo = (e, i, col, b, dk) => {
   ctx.drawImage(B, 0, 0, wp, hp, x0, y0, Wd, Hd); if (dk) ctx.drawImage(B, 0, 0, wp, hp, x0, y0, Wd, Hd);
   ctx.restore();
 };
-reg('treat', 'glow', { name: '発光', tags: ['emotional', 'calm', 'glitch'], w: 0.9, safe: true,
+reg('treat', 'glow', { name: '発光', nameEn: 'Glow', tags: ['emotional', 'calm', 'glitch'], w: 0.9, safe: true,
   plan: rng => ({ b: rng.range(0.16, 0.26), self: rng.chance(0.5) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -209,7 +209,7 @@ reg('treat', 'glow', { name: '発光', tags: ['emotional', 'calm', 'glitch'], w:
     addPre(it, (e, i) => { if (e.pass === 'main' && e.allowFilter && !small(i)) withFx(e, i, () => halo(e, i, gc, P.b * (0.9 + 0.1 * Math.sin(e.ltb * 3.2)), dk), false); });
   } });
 
-reg('treat', 'marker', { name: 'マーカー', tags: ['pop', 'graphic', 'editorial'], w: 1,
+reg('treat', 'marker', { name: 'マーカー', nameEn: 'Marker', tags: ['pop', 'graphic', 'editorial'], w: 1,
   plan: rng => ({ v: rng.pick(['box', 'box', 'skew', 'half']), c: rng.int(0, 1) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -242,7 +242,7 @@ reg('treat', 'marker', { name: 'マーカー', tags: ['pop', 'graphic', 'editori
     }));
   } });
 
-reg('treat', 'underline', { name: '下線', tags: ['editorial', 'calm', 'graphic'], w: 0.8,
+reg('treat', 'underline', { name: '下線', nameEn: 'Underline', tags: ['editorial', 'calm', 'graphic'], w: 0.8,
   plan: rng => ({ v: rng.pick(['bar', 'bar', 'double', 'wave']), k: rng.range(0.05, 0.075) }),
   apply(env, it, P) {
     if (!alive(it, 0.9) || glyphN(it.text) < 2) return;
@@ -268,7 +268,7 @@ reg('treat', 'underline', { name: '下線', tags: ['editorial', 'calm', 'graphic
     }));
   } });
 
-reg('treat', 'strike', { name: '取り消し線', tags: ['glitch', 'editorial', 'emotional'], w: 0.5,
+reg('treat', 'strike', { name: '取り消し線', nameEn: 'Strikethrough', tags: ['glitch', 'editorial', 'emotional'], w: 0.5,
   plan: rng => ({ v: rng.pick(['one', 'one', 'two']), ang: rng.range(-4, 4), k: rng.range(0.06, 0.085) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -291,7 +291,7 @@ reg('treat', 'strike', { name: '取り消し線', tags: ['glitch', 'editorial', 
     }));
   } });
 
-reg('treat', 'boxed', { name: '箱組', tags: ['graphic', 'editorial', 'pop'], w: 0.7,
+reg('treat', 'boxed', { name: '箱組', nameEn: 'Glyph boxes', tags: ['graphic', 'editorial', 'pop'], w: 0.7,
   plan: rng => ({ v: rng.pick(['solid', 'solid', 'alt', 'frame']) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -318,7 +318,7 @@ reg('treat', 'boxed', { name: '箱組', tags: ['graphic', 'editorial', 'pop'], w
   } });
 
 const twoTone = (sc, col) => firstOK([sc.accent, sc.accent2, sc.ghostA, sc.ghostB], c => ctr(c, col) >= 1.5 && ctr(c, sc.bg) >= 2, J.mix(col, sc.bg, 0.45));
-reg('treat', 'gradientV', { name: '縦グラデ', tags: ['emotional', 'pop'], w: 0.9,
+reg('treat', 'gradientV', { name: '縦グラデ', nameEn: 'Vertical gradient', tags: ['emotional', 'pop'], w: 0.9,
   plan: rng => ({ up: rng.chance(0.4), g: rng.chance(0.5) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -328,7 +328,7 @@ reg('treat', 'gradientV', { name: '縦グラデ', tags: ['emotional', 'pop'], w:
     it.gradient = g;
   } });
 
-reg('treat', 'splitColor', { name: '上下二色', tags: ['pop', 'graphic'], w: 0.8,
+reg('treat', 'splitColor', { name: '上下二色', nameEn: 'Top-bottom split', tags: ['pop', 'graphic'], w: 0.8,
   plan: rng => ({ sp: rng.range(0.5, 0.57), top: rng.chance(0.35) }),
   apply(env, it, P) {
     if (!alive(it) || inPieces(env, it)) return;
@@ -344,11 +344,11 @@ const patternTreat = (kind, alt) => function (env, it, P) {
   if (P.v === 'duo') it.patternBg = accentFor(sc, col, 1.6);
   else { it.patternBg = J.mix(col, sc.bg, 0.62); it.strokeColor = col; sized(it, env, i => { i.stroke = Math.max(1.2, i.size * 0.018); }); }
 };
-reg('treat', 'halftone', { name: '網点', tags: ['pop', 'graphic'], w: 0.7, plan: rng => ({ v: rng.pick(['tone', 'tone', 'duo']) }), apply: patternTreat('dots') });
-reg('treat', 'stripes', { name: 'ストライプ', tags: ['pop', 'graphic'], w: 0.6, plan: rng => ({ v: rng.pick(['tone', 'duo', 'lines']) }), apply: patternTreat('stripes', 'lines') });
-reg('treat', 'hatch', { name: '斜線', tags: ['graphic', 'editorial', 'glitch'], w: 0.5, plan: rng => ({ v: rng.pick(['tone', 'tone', 'duo']) }), apply: patternTreat('hatch') });
+reg('treat', 'halftone', { name: '網点', nameEn: 'Halftone', tags: ['pop', 'graphic'], w: 0.7, plan: rng => ({ v: rng.pick(['tone', 'tone', 'duo']) }), apply: patternTreat('dots') });
+reg('treat', 'stripes', { name: 'ストライプ', nameEn: 'Stripes', tags: ['pop', 'graphic'], w: 0.6, plan: rng => ({ v: rng.pick(['tone', 'duo', 'lines']) }), apply: patternTreat('stripes', 'lines') });
+reg('treat', 'hatch', { name: '斜線', nameEn: 'Hatch lines', tags: ['graphic', 'editorial', 'glitch'], w: 0.5, plan: rng => ({ v: rng.pick(['tone', 'tone', 'duo']) }), apply: patternTreat('hatch') });
 
-reg('treat', 'dotted', { name: '点線輪郭', tags: ['calm', 'editorial', 'graphic'], w: 0.5,
+reg('treat', 'dotted', { name: '点線輪郭', nameEn: 'Dotted outline', tags: ['calm', 'editorial', 'graphic'], w: 0.5,
   plan: rng => ({ k: rng.range(0.03, 0.04), spd: rng.pick([0, 1, 1]) }),
   apply(env, it, P) {
     if (!alive(it, 0.5) || inPieces(env, it)) return;
@@ -361,7 +361,7 @@ reg('treat', 'dotted', { name: '点線輪郭', tags: ['calm', 'editorial', 'grap
     });
   } });
 
-reg('treat', 'alternate', { name: '交互色', tags: ['pop', 'graphic'], w: 0.8,
+reg('treat', 'alternate', { name: '交互色', nameEn: 'Alternating colors', tags: ['pop', 'graphic'], w: 0.8,
   plan: rng => ({ v: rng.pick(['alt', 'alt', 'kanji']) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -373,7 +373,7 @@ reg('treat', 'alternate', { name: '交互色', tags: ['pop', 'graphic'], w: 0.8,
     else { const off = it.mi | 0; it.charFns.push((gi) => ((gi + off) % 2 ? { color: c2 } : null)); }
   } });
 
-reg('treat', 'italic', { name: '斜体', tags: ['editorial', 'pop', 'emotional'], w: 0.8, safe: true,
+reg('treat', 'italic', { name: '斜体', nameEn: 'Italic', tags: ['editorial', 'pop', 'emotional'], w: 0.8, safe: true,
   plan: rng => ({ a: rng.range(10, 15) }),
   apply(env, it, P) {
     if (!it.text) return;
@@ -381,7 +381,7 @@ reg('treat', 'italic', { name: '斜体', tags: ['editorial', 'pop', 'emotional']
     else it.skew = (it.skew || 0) - P.a;
   } });
 
-reg('treat', 'wide', { name: '平体', tags: ['graphic', 'pop'], w: 0.7, safe: true,
+reg('treat', 'wide', { name: '平体', nameEn: 'Wide type', tags: ['graphic', 'pop'], w: 0.7, safe: true,
   apply(env, it) {
     if (!it.text) return;
     if (!it.vertical) {            // keep lines that fitted the frame inside it
@@ -392,7 +392,7 @@ reg('treat', 'wide', { name: '平体', tags: ['graphic', 'pop'], w: 0.7, safe: t
     it.sy = (it.sy || 1) * 0.84;
   } });
 
-reg('treat', 'tall', { name: '長体', tags: ['editorial', 'calm', 'graphic', 'emotional'], w: 0.7, safe: true,
+reg('treat', 'tall', { name: '長体', nameEn: 'Condensed', tags: ['editorial', 'calm', 'graphic', 'emotional'], w: 0.7, safe: true,
   apply(env, it) {
     if (!it.text) return;
     it.sx = (it.sx || 1) * 0.8;
@@ -400,7 +400,7 @@ reg('treat', 'tall', { name: '長体', tags: ['editorial', 'calm', 'graphic', 'e
     else { it.sy = (it.sy || 1) * 1.05; it.size *= 1.05; }
   } });
 
-reg('treat', 'echoOutline', { name: '輪郭の残響', tags: ['glitch', 'emotional', 'graphic'], w: 0.7,
+reg('treat', 'echoOutline', { name: '輪郭の残響', nameEn: 'Outline echo', tags: ['glitch', 'emotional', 'graphic'], w: 0.7,
   plan: rng => ({ v: rng.pick(['diag', 'diag', 'zoom', 'rise', 'side']), n: rng.int(3, 4), d: rng.range(0.045, 0.07) }),
   apply(env, it, P) {
     if (!alive(it)) return;
@@ -417,7 +417,7 @@ reg('treat', 'echoOutline', { name: '輪郭の残響', tags: ['glitch', 'emotion
     });
   } });
 
-reg('treat', 'emphasisDots', { name: '傍点', tags: ['editorial', 'emotional', 'calm'], w: 0.8,
+reg('treat', 'emphasisDots', { name: '傍点', nameEn: 'Emphasis dots', tags: ['editorial', 'emotional', 'calm'], w: 0.8,
   plan: rng => ({ v: rng.pick(['dot', 'dot', 'sesame', 'ring']) }),
   apply(env, it, P) {
     if (!alive(it, 0.9)) return;
@@ -462,7 +462,7 @@ const bgT = env => {
 const wrap = (v, m) => ((v % m) + m) % m;
 const bgReg = (k, d) => reg('bg', k, Object.assign({}, d, { draw(env, P) { const ctx = env.ctx; ctx.save(); try { d.draw(env, P || {}, ctx); } finally { ctx.restore(); } } }));
 
-bgReg('sunburst', { name: '放射', tags: ['pop', 'graphic'], w: 0.8,
+bgReg('sunburst', { name: '放射', nameEn: 'Radial', tags: ['pop', 'graphic'], w: 0.8,
   plan: rng => ({ seed: bs(rng), n: rng.pick([12, 16, 20, 24]), cx: rng.pick([0.5, 0.5, 0.3, 0.7]), cy: rng.pick([0.5, 0.5, 0.62, 1.05]), spd: rng.range(3, 7) * rng.pick([1, -1]), k: rng.range(0.07, 0.1) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, cx = W * (P.cx ?? 0.5), cy = H * (P.cy ?? 0.5), n = P.n || 16;
@@ -476,7 +476,7 @@ bgReg('sunburst', { name: '放射', tags: ['pop', 'graphic'], w: 0.8,
     const rr = Umin(env) * 0.55; ctx.fillStyle = g; ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
   } });
 
-bgReg('concentric', { name: '同心円', tags: ['calm', 'graphic', 'emotional'], w: 0.9,
+bgReg('concentric', { name: '同心円', nameEn: 'Concentric rings', tags: ['calm', 'graphic', 'emotional'], w: 0.9,
   plan: rng => ({ seed: bs(rng), gap: rng.range(0.07, 0.11), spd: rng.range(0.15, 0.35) * rng.pick([1, 1, -1]), k: rng.range(0.08, 0.12), cy: rng.pick([0.5, 0.5, 0.58]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, cx = W / 2, cy = H * (P.cy || 0.5), gap = Umin(env) * (P.gap || 0.09);
@@ -490,7 +490,7 @@ bgReg('concentric', { name: '同心円', tags: ['calm', 'graphic', 'emotional'],
 
 // halftone field is pre-rendered once per line / size / colour (drawing ~2000 dots every frame is too slow) and scrolled by < 1 cell
 const htCache = new Map();
-bgReg('halftoneFade', { name: '網点グラデ', tags: ['pop', 'graphic', 'editorial'], w: 1,
+bgReg('halftoneFade', { name: '網点グラデ', nameEn: 'Halftone gradient', tags: ['pop', 'graphic', 'editorial'], w: 1,
   plan: rng => ({ seed: bs(rng), dir: rng.pick([0, 45, 90, 135, 180, 225, 270, 315]), cell: rng.range(0.032, 0.045), k: rng.range(0.12, 0.17) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, cell = Umin(env) * (P.cell || 0.032), col = layC(sc, P.k || 0.14), q = Math.min(1, env.scale || 1);
@@ -518,7 +518,7 @@ bgReg('halftoneFade', { name: '網点グラデ', tags: ['pop', 'graphic', 'edito
     ctx.drawImage(cv, -cell * 2 + wrap(env.t * cell * 0.35, cell), -cell, W + cell * 2, H + cell * 2);
   } });
 
-bgReg('bigStripes', { name: '大きな斜線', tags: ['graphic', 'pop'], w: 0.9,
+bgReg('bigStripes', { name: '大きな斜線', nameEn: 'Large diagonal stripes', tags: ['graphic', 'pop'], w: 0.9,
   plan: rng => ({ seed: bs(rng), ang: rng.pick([30, 45, -30, -45, 60]), w: rng.range(0.06, 0.11), spd: rng.range(0.03, 0.08) * rng.pick([1, -1]), fill: rng.pick([0.5, 0.5, 0.3]), k: rng.range(0.05, 0.08) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, R = Math.hypot(W, H) / 2 + 10, per = Umin(env) * (P.w || 0.08) * 2;
@@ -530,7 +530,7 @@ bgReg('bigStripes', { name: '大きな斜線', tags: ['graphic', 'pop'], w: 0.9,
   } });
 
 const splitCol = (sc, P) => (P.c === 'tint' ? tintC(sc, (P.k || 0.08) * 1.8) : layC(sc, P.k || 0.08));
-bgReg('splitV', { name: '左右二色', tags: ['graphic', 'editorial', 'pop'], w: 1,
+bgReg('splitV', { name: '左右二色', nameEn: 'Left-right split', tags: ['graphic', 'editorial', 'pop'], w: 1,
   plan: rng => ({ seed: bs(rng), side: rng.pick([1, -1]), pos: rng.range(0.4, 0.6), c: rng.pick(['lay', 'lay', 'tint']), k: rng.range(0.08, 0.12) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, e = E.outExpo(clamp(bgT(env) / 0.5)), x = W * ((P.pos || 0.5) + 0.012 * Math.sin(env.t * 0.6));
@@ -540,7 +540,7 @@ bgReg('splitV', { name: '左右二色', tags: ['graphic', 'editorial', 'pop'], w
     ctx.globalAlpha = 0.6 * e; ctx.fillStyle = tintC(sc, 0.45); ctx.fillRect(edge - 1, 0, 2, H);
   } });
 
-bgReg('splitH', { name: '上下二色', tags: ['graphic', 'editorial', 'calm'], w: 0.9,
+bgReg('splitH', { name: '上下二色', nameEn: 'Top-bottom split', tags: ['graphic', 'editorial', 'calm'], w: 0.9,
   plan: rng => ({ seed: bs(rng), side: rng.pick([1, -1]), pos: rng.range(0.42, 0.6), c: rng.pick(['lay', 'lay', 'tint']), k: rng.range(0.08, 0.12) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, e = E.outExpo(clamp(bgT(env) / 0.5)), y = H * ((P.pos || 0.5) + 0.012 * Math.sin(env.t * 0.5));
@@ -550,7 +550,7 @@ bgReg('splitH', { name: '上下二色', tags: ['graphic', 'editorial', 'calm'], 
     ctx.globalAlpha = 0.6 * e; ctx.fillStyle = tintC(sc, 0.45); ctx.fillRect(0, edge - 1, W, 2);
   } });
 
-bgReg('splitDiag', { name: '斜め二色', tags: ['graphic', 'pop'], w: 1,
+bgReg('splitDiag', { name: '斜め二色', nameEn: 'Diagonal split', tags: ['graphic', 'pop'], w: 1,
   plan: rng => ({ seed: bs(rng), side: rng.pick([1, -1]), pos: rng.range(0.42, 0.58), ang: rng.range(14, 30) * rng.pick([1, -1]), c: rng.pick(['lay', 'lay', 'tint']), k: rng.range(0.08, 0.12) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, e = E.outExpo(clamp(bgT(env) / 0.5)), side = (P.side || 1) > 0 ? 1 : -1;
@@ -560,7 +560,7 @@ bgReg('splitDiag', { name: '斜め二色', tags: ['graphic', 'pop'], w: 1,
     ctx.globalAlpha = 0.6 * e; ctx.strokeStyle = tintC(sc, 0.45); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xt, -1); ctx.lineTo(xb, H + 1); ctx.stroke();
   } });
 
-bgReg('gradientSweep', { name: 'グラデ', tags: ['calm', 'emotional', 'pop'], w: 1, subtle: true,
+bgReg('gradientSweep', { name: 'グラデ', nameEn: 'Gradient', tags: ['calm', 'emotional', 'pop'], w: 1, subtle: true,
   plan: rng => ({ seed: bs(rng), spd: rng.range(0.25, 0.5), k: rng.range(0.16, 0.26), c: rng.pick(['accent', 'accent', 'accent2', 'fg']), a0: rng.range(0, 6.28) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, ang = (P.a0 || 0) + env.t * 0.12, dx = Math.cos(ang), dy = Math.sin(ang), L = Math.hypot(W, H) / 2;
@@ -570,7 +570,7 @@ bgReg('gradientSweep', { name: 'グラデ', tags: ['calm', 'emotional', 'pop'], 
     ctx.globalAlpha = E.outCubic(clamp(bgT(env) / 0.6)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   } });
 
-bgReg('spotlight', { name: 'スポットライト', tags: ['emotional', 'calm', 'editorial'], w: 0.9, subtle: true,
+bgReg('spotlight', { name: 'スポットライト', nameEn: 'Spotlight', tags: ['emotional', 'calm', 'editorial'], w: 0.9, subtle: true,
   plan: rng => ({ seed: bs(rng), beam: rng.chance(0.6), k: rng.range(0.1, 0.16) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, s = P.seed || 1, U = Umin(env), dk = isDark(sc.bg);
@@ -589,7 +589,7 @@ bgReg('spotlight', { name: 'スポットライト', tags: ['emotional', 'calm', 
     }
   } });
 
-bgReg('tvBars', { name: 'テレビの帯', tags: ['glitch', 'graphic', 'emotional'], w: 0.6,
+bgReg('tvBars', { name: 'テレビの帯', nameEn: 'TV bars', tags: ['glitch', 'graphic', 'emotional'], w: 0.6,
   plan: rng => ({ seed: bs(rng), n: rng.int(4, 7), spd: rng.range(0.05, 0.14), k: rng.range(0.06, 0.09) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, k = P.k || 0.07;
@@ -602,7 +602,7 @@ bgReg('tvBars', { name: 'テレビの帯', tags: ['glitch', 'graphic', 'emotiona
     }
   } });
 
-bgReg('checker', { name: '市松', tags: ['graphic', 'pop'], w: 0.7,
+bgReg('checker', { name: '市松', nameEn: 'Checker', tags: ['graphic', 'pop'], w: 0.7,
   plan: rng => ({ seed: bs(rng), n: rng.int(5, 8), k: rng.range(0.04, 0.065), spd: rng.range(0.1, 0.25), rot: rng.pick([0, 0, 45]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, cell = Umin(env) / (P.n || 6) * (P.rot ? 1.2 : 1), R = Math.hypot(W, H) / 2 + cell * 2;
@@ -613,7 +613,7 @@ bgReg('checker', { name: '市松', tags: ['graphic', 'pop'], w: 0.7,
     ctx.fill();
   } });
 
-bgReg('bigChar', { name: '巨大文字', tags: ['editorial', 'emotional', 'graphic', 'calm'], w: 1, subtle: true,
+bgReg('bigChar', { name: '巨大文字', nameEn: 'Giant text', tags: ['editorial', 'emotional', 'graphic', 'calm'], w: 1, subtle: true,
   plan: rng => ({ seed: bs(rng), side: rng.pick([-1, 1]), font: rng.pick(['display', 'serif']), outline: rng.chance(0.3), k: rng.range(0.07, 0.1) }),
   draw(env, P) {
     const { W, H, sc } = env, txt = String(env.cut.lineText || env.cut.text || '').replace(/\s+/g, '');
@@ -626,7 +626,7 @@ bgReg('bigChar', { name: '巨大文字', tags: ['editorial', 'emotional', 'graph
     env.draw(it);
   } });
 
-bgReg('speedLines', { name: '集中線', tags: ['pop', 'emotional', 'graphic'], w: 0.7,
+bgReg('speedLines', { name: '集中線', nameEn: 'Speed lines', tags: ['pop', 'emotional', 'graphic'], w: 0.7,
   plan: rng => ({ seed: bs(rng), n: rng.int(90, 140), k: rng.range(0.2, 0.28), clear: rng.range(0.3, 0.36) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, st = env.step, n = P.n || 100, cx = W / 2, cy = H / 2;
@@ -640,7 +640,7 @@ bgReg('speedLines', { name: '集中線', tags: ['pop', 'emotional', 'graphic'], 
     ctx.fill();
   } });
 
-bgReg('scanBars', { name: '走査線の帯', tags: ['calm', 'glitch', 'editorial'], w: 0.9, subtle: true,
+bgReg('scanBars', { name: '走査線の帯', nameEn: 'Scan bars', tags: ['calm', 'glitch', 'editorial'], w: 0.9, subtle: true,
   plan: rng => ({ seed: bs(rng), n: rng.int(2, 3), spd: rng.range(0.06, 0.12), k: rng.range(0.05, 0.08) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, k = P.k || 0.06;
@@ -653,7 +653,7 @@ bgReg('scanBars', { name: '走査線の帯', tags: ['calm', 'glitch', 'editorial
     }
   } });
 
-bgReg('dotGrid', { name: 'ドット格子', tags: ['calm', 'editorial', 'graphic'], w: 1, subtle: true,
+bgReg('dotGrid', { name: 'ドット格子', nameEn: 'Dot grid', tags: ['calm', 'editorial', 'graphic'], w: 1, subtle: true,
   plan: rng => ({ seed: bs(rng), sp: rng.range(0.045, 0.065), k: rng.range(0.22, 0.3), plus: rng.chance(0.4) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, U = Umin(env), sp = U * (P.sp || 0.055), r = Math.max(1.5, U * 0.0036);
@@ -671,7 +671,7 @@ bgReg('dotGrid', { name: 'ドット格子', tags: ['calm', 'editorial', 'graphic
     if (acc.length) { ctx.fillStyle = tintC(sc, 0.55); ctx.beginPath(); for (const [x, y] of acc) { ctx.moveTo(x + r * 2, y); ctx.arc(x, y, r * 2, 0, TAU); } ctx.fill(); }
   } });
 
-bgReg('retroGrid', { name: 'レトロ格子', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
+bgReg('retroGrid', { name: 'レトロ格子', nameEn: 'Retro grid', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
   plan: rng => ({ seed: bs(rng), hz: rng.range(0.56, 0.64), spd: rng.range(0.4, 0.8), sun: rng.chance(0.4), k: rng.range(0.38, 0.5) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, yh = H * (P.hz || 0.6), col = tintC(sc, P.k || 0.35), e = E.outCubic(clamp(bgT(env) / 0.6));
@@ -701,7 +701,7 @@ bgReg('retroGrid', { name: 'レトロ格子', tags: ['pop', 'glitch', 'graphic']
     ctx.fillStyle = J.rgba(col, 0.8 * e); ctx.fillRect(0, yh - 1, W, 2);
   } });
 
-bgReg('bokehBg', { name: 'ボケ玉', tags: ['emotional', 'calm', 'pop'], w: 1,
+bgReg('bokehBg', { name: 'ボケ玉', nameEn: 'Bokeh', tags: ['emotional', 'calm', 'pop'], w: 1,
   plan: rng => ({ seed: bs(rng), n: rng.int(12, 20), k: rng.range(0.18, 0.28) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, U = Umin(env), t = env.t, dk = isDark(sc.bg);
@@ -718,7 +718,7 @@ bgReg('bokehBg', { name: 'ボケ玉', tags: ['emotional', 'calm', 'pop'], w: 1,
     }
   } });
 
-bgReg('particlesBg', { name: '舞い上がる粒', tags: ['emotional', 'calm', 'pop'], w: 1,
+bgReg('particlesBg', { name: '舞い上がる粒', nameEn: 'Floating particles', tags: ['emotional', 'calm', 'pop'], w: 1,
   plan: rng => ({ seed: bs(rng), n: rng.int(60, 100), k: rng.range(0.45, 0.65), sq: rng.chance(0.4) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, U = Umin(env), t = env.t;
@@ -733,7 +733,7 @@ bgReg('particlesBg', { name: '舞い上がる粒', tags: ['emotional', 'calm', '
     }
   } });
 
-bgReg('ripples', { name: '波紋', tags: ['calm', 'emotional', 'graphic'], w: 0.9,
+bgReg('ripples', { name: '波紋', nameEn: 'Ripples', tags: ['calm', 'emotional', 'graphic'], w: 0.9,
   plan: rng => ({ seed: bs(rng), centre: rng.chance(0.4), life: rng.range(1.6, 2.4), k: rng.range(0.24, 0.34) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, U = Umin(env), life = P.life || 1.8, rings = [];
@@ -755,7 +755,7 @@ bgReg('ripples', { name: '波紋', tags: ['calm', 'emotional', 'graphic'], w: 0.
     }
   } });
 
-bgReg('polka', { name: '水玉', tags: ['pop', 'graphic'], w: 0.7,
+bgReg('polka', { name: '水玉', nameEn: 'Polka dots', tags: ['pop', 'graphic'], w: 0.7,
   plan: rng => ({ seed: bs(rng), sp: rng.range(0.11, 0.16), r: rng.range(0.2, 0.3), k: rng.range(0.06, 0.09), acc: rng.chance(0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, sp = Umin(env) * (P.sp || 0.13), r = sp * (P.r || 0.25), rh = sp * 0.866;
@@ -766,7 +766,7 @@ bgReg('polka', { name: '水玉', tags: ['pop', 'graphic'], w: 0.7,
     ctx.fill();
   } });
 
-bgReg('eqBars', { name: '背景イコライザー', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
+bgReg('eqBars', { name: '背景イコライザー', nameEn: 'Background equalizer', tags: ['pop', 'glitch', 'graphic'], w: 0.6,
   plan: rng => ({ seed: bs(rng), n: rng.pick([24, 32, 40]), mode: rng.pick(['bottom', 'bottom', 'mirror', 'center']), seg: rng.chance(0.4), k: rng.range(0.09, 0.14) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, n = P.n || 32, bw = W / n, t = env.t;
@@ -791,7 +791,7 @@ bgReg('eqBars', { name: '背景イコライザー', tags: ['pop', 'glitch', 'gra
     if (tops.length) { ctx.fillStyle = cap; ctx.beginPath(); for (const [x, y] of tops) ctx.rect(x, y - bw * 0.3, bw * 0.62, Math.max(2, bw * 0.12)); ctx.fill(); }
   } });
 
-bgReg('borderFrame', { name: '太枠', tags: ['graphic', 'pop', 'editorial'], w: 0.7,
+bgReg('borderFrame', { name: '太枠', nameEn: 'Bold frame', tags: ['graphic', 'pop', 'editorial'], w: 0.7,
   plan: rng => ({ seed: bs(rng), th: rng.range(0.012, 0.022), m: rng.range(0.03, 0.05), acc: rng.chance(0.6), dbl: rng.chance(0.4) }),
   draw(env, P) {
     const { W, H, sc } = env, U = Umin(env), m = U * (P.m || 0.04), th = U * (P.th || 0.016), e = E.inOutCubic(clamp(bgT(env) / 0.6));
@@ -806,7 +806,7 @@ bgReg('borderFrame', { name: '太枠', tags: ['graphic', 'pop', 'editorial'], w:
     }
   } });
 
-bgReg('letterbox', { name: 'シネスコ帯', tags: ['emotional', 'editorial', 'calm'], w: 0.6,
+bgReg('letterbox', { name: 'シネスコ帯', nameEn: 'Cinemascope bars', tags: ['emotional', 'editorial', 'calm'], w: 0.6,
   plan: rng => ({ seed: bs(rng), k: rng.range(0.085, 0.11), line: rng.chance(0.6) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, e = E.outExpo(clamp(bgT(env) / 0.55));
@@ -818,7 +818,7 @@ bgReg('letterbox', { name: 'シネスコ帯', tags: ['emotional', 'editorial', '
     if (P.line || isDark(sc.bg)) { ctx.fillRect(0, bh, W, Math.max(1.2, H * 0.0015)); ctx.fillRect(0, H - bh - Math.max(1.2, H * 0.0015), W, Math.max(1.2, H * 0.0015)); }
   } });
 
-bgReg('noiseField', { name: 'ノイズの揺らぎ', tags: ['glitch', 'emotional'], w: 0.6,
+bgReg('noiseField', { name: 'ノイズの揺らぎ', nameEn: 'Noise shimmer', tags: ['glitch', 'emotional'], w: 0.6,
   plan: rng => ({ seed: bs(rng), n: rng.int(14, 22), k: rng.range(0.05, 0.085), th: rng.range(0.56, 0.66) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, cell = Umin(env) / (P.n || 18), t = env.t, st = env.step;
@@ -845,27 +845,27 @@ const cuOf = env => clamp(env.lt / Math.max(0.3, env.cut.dur));
 const panP = u => u * 0.6 + E.inOutSine(u) * 0.4;
 const lagOf = env => Math.max(0, (env.ltb ?? env.lt) - env.lt);
 
-reg('cam', 'pullOut', { name: '引き', tags: ['calm', 'emotional', 'editorial'], w: 1,
+reg('cam', 'pullOut', { name: '引き', nameEn: 'Pull out', tags: ['calm', 'emotional', 'editorial'], w: 1,
   plan: rng => ({ a: rng.range(0.06, 0.09) }),
   get: (env, P) => ({ s: 1 + (P.a || 0.07) * KM(env) * (1 - E.outCubic(cuOf(env))) }) });
 
-reg('cam', 'panL', { name: '左パン', tags: ['calm', 'editorial', 'emotional', 'graphic'], w: 0.9,
+reg('cam', 'panL', { name: '左パン', nameEn: 'Pan left', tags: ['calm', 'editorial', 'emotional', 'graphic'], w: 0.9,
   plan: rng => ({ a: rng.range(0.018, 0.028) }),
   get: (env, P) => ({ x: (panP(cuOf(env)) - 0.5) * 2 * env.W * (P.a || 0.022) * KM(env), s: 1.02 }) });
 
-reg('cam', 'panR', { name: '右パン', tags: ['calm', 'editorial', 'emotional', 'graphic'], w: 0.9,
+reg('cam', 'panR', { name: '右パン', nameEn: 'Pan right', tags: ['calm', 'editorial', 'emotional', 'graphic'], w: 0.9,
   plan: rng => ({ a: rng.range(0.018, 0.028) }),
   get: (env, P) => ({ x: -(panP(cuOf(env)) - 0.5) * 2 * env.W * (P.a || 0.022) * KM(env), s: 1.02 }) });
 
-reg('cam', 'tiltUp', { name: 'ティルト', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
+reg('cam', 'tiltUp', { name: 'ティルト', nameEn: 'Tilt up', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
   plan: rng => ({ a: rng.range(0.02, 0.03) }),
   get: (env, P) => ({ y: (panP(cuOf(env)) - 0.5) * 2 * env.H * (P.a || 0.025) * KM(env), s: 1.02 }) });
 
-reg('cam', 'dutch', { name: 'ダッチ', tags: ['emotional', 'glitch', 'graphic'], w: 0.8,
+reg('cam', 'dutch', { name: 'ダッチ', nameEn: 'Dutch angle', tags: ['emotional', 'glitch', 'graphic'], w: 0.8,
   plan: rng => ({ dir: rng.pick([1, -1]), a: rng.range(2.5, 4.5) }),
   get: (env, P) => { const K = KM(env); return { rot: (P.dir || 1) * Math.min(5, (P.a || 3.5) * K) * E.inOutSine(clamp(env.lt / Math.max(0.3, env.cut.dur * 0.8))), s: 1 + 0.03 * K * cuOf(env) }; } });
 
-reg('cam', 'handheld', { name: '手持ち', tags: ['emotional', 'calm', 'editorial'], w: 1,
+reg('cam', 'handheld', { name: '手持ち', nameEn: 'Handheld', tags: ['emotional', 'calm', 'editorial'], w: 1,
   plan: rng => ({ f: rng.range(0.8, 1.3) }),
   get: (env, P) => {
     const K = KM(env), f = P.f || 1, t = env.lt, sd = env.cut.seed | 0;
@@ -874,7 +874,7 @@ reg('cam', 'handheld', { name: '手持ち', tags: ['emotional', 'calm', 'editori
       rot: J.noise1(t * f * 0.8, sd + 4) * 0.7 * K, s: 1.012 };
   } });
 
-reg('cam', 'beatPunch', { name: '拍でズーム', tags: ['pop', 'glitch', 'graphic'], w: 0.9,
+reg('cam', 'beatPunch', { name: '拍でズーム', nameEn: 'Beat zoom', tags: ['pop', 'glitch', 'graphic'], w: 0.9,
   plan: rng => ({ a: rng.range(0.03, 0.045) }),
   get: (env, P) => {
     let since, len = 0.5;
@@ -884,7 +884,7 @@ reg('cam', 'beatPunch', { name: '拍でズーム', tags: ['pop', 'glitch', 'grap
     return { s: 1 + (P.a || 0.035) * KM(env) * k, y: -env.H * 0.004 * KM(env) * k };
   } });
 
-reg('cam', 'whipIn', { name: 'ホイップイン', tags: ['pop', 'glitch', 'graphic'], w: 0.7, strong: true,
+reg('cam', 'whipIn', { name: 'ホイップイン', nameEn: 'Whip in', tags: ['pop', 'glitch', 'graphic'], w: 0.7, strong: true,
   plan: rng => ({ dir: rng.pick(['L', 'R', 'L', 'R', 'U', 'D']), d: rng.range(0.16, 0.24) }),
   get: (env, P) => {
     const K = KM(env), r = 1 - E.outExpo(clamp(env.lt / 0.3)), d = (P.d || 0.2) * K * r;
@@ -893,7 +893,7 @@ reg('cam', 'whipIn', { name: 'ホイップイン', tags: ['pop', 'glitch', 'grap
     return { x: hor ? sg * env.W * d : 0, y: hor ? 0 : sg * env.H * d * 0.7, skx: hor ? sg * 9 * r * K : 0, s: 1 + 0.04 * r, blur: 22 * K * r };
   } });
 
-reg('cam', 'crashZoom', { name: 'クラッシュズーム', tags: ['pop', 'glitch', 'emotional'], w: 0.6, strong: true,
+reg('cam', 'crashZoom', { name: 'クラッシュズーム', nameEn: 'Crash zoom', tags: ['pop', 'glitch', 'emotional'], w: 0.6, strong: true,
   plan: rng => ({ at: rng.range(0.6, 0.75), a: rng.range(0.08, 0.11) }),
   get: (env, P) => {
     const K = KM(env), dur = env.cut.dur, tc = dur < 0.8 ? dur * 0.5 : Math.max(dur * (P.at || 0.65), dur - 0.6), dt = env.lt - tc;
@@ -903,19 +903,19 @@ reg('cam', 'crashZoom', { name: 'クラッシュズーム', tags: ['pop', 'glitc
       x: J.rs(sd, env.step, 1) * env.W * 0.004 * sh * K, y: J.rs(sd, env.step, 2) * env.H * 0.004 * sh * K };
   } });
 
-reg('cam', 'bounce', { name: 'バウンス', tags: ['pop', 'graphic'], w: 0.9,
+reg('cam', 'bounce', { name: 'バウンス', nameEn: 'Bounce', tags: ['pop', 'graphic'], w: 0.9,
   plan: rng => ({ a: rng.range(0.045, 0.065) }),
   get: (env, P) => { const K = KM(env), t = env.lt, d = Math.exp(-t * 5.5); return { s: 1 - (P.a || 0.07) * K * d * Math.cos(t * 16), y: -env.H * 0.012 * K * d * Math.sin(t * 16) }; } });
 
-reg('cam', 'roll', { name: 'ロール', tags: ['emotional', 'calm', 'glitch'], w: 0.8,
+reg('cam', 'roll', { name: 'ロール', nameEn: 'Roll', tags: ['emotional', 'calm', 'glitch'], w: 0.8,
   plan: rng => ({ dir: rng.pick([1, -1]), a: rng.range(2.5, 4) }),
   get: (env, P) => ({ rot: (P.dir || 1) * (cuOf(env) - 0.5) * (P.a || 3) * KM(env), s: 1.025 }) });
 
-reg('cam', 'driftDiag', { name: '斜めドリフト', tags: ['calm', 'emotional', 'editorial', 'graphic'], w: 1,
+reg('cam', 'driftDiag', { name: '斜めドリフト', nameEn: 'Diagonal drift', tags: ['calm', 'emotional', 'editorial', 'graphic'], w: 1,
   plan: rng => ({ dx: rng.pick([1, -1]), dy: rng.pick([1, -1]) }),
   get: (env, P) => { const K = KM(env), u = E.inOutSine(cuOf(env)) * 0.5 + cuOf(env) * 0.5; return { x: (u - 0.5) * env.W * 0.035 * K * (P.dx || 1), y: (u - 0.5) * env.H * 0.03 * K * (P.dy || 1), s: 1.02 + 0.025 * K * u }; } });
 
-reg('cam', 'shakeHard', { name: '強い揺れ', tags: ['glitch', 'pop', 'emotional'], w: 0.6, strong: true,
+reg('cam', 'shakeHard', { name: '強い揺れ', nameEn: 'Hard shake', tags: ['glitch', 'pop', 'emotional'], w: 0.6, strong: true,
   get: (env) => {
     const K = KM(env), amp = Math.exp(-env.lt * 4.5) * K;
     if (amp < 0.01) return {};
@@ -923,7 +923,7 @@ reg('cam', 'shakeHard', { name: '強い揺れ', tags: ['glitch', 'pop', 'emotion
     return { x: J.rs(sd, st, 1) * env.W * 0.022 * amp, y: J.rs(sd, st, 2) * env.H * 0.02 * amp, rot: J.rs(sd, st, 3) * 1.6 * amp, s: 1 + 0.03 * amp, blur: 2.5 * amp };
   } });
 
-reg('cam', 'dollyIn', { name: 'ドリー', tags: ['emotional', 'calm', 'editorial'], w: 1,
+reg('cam', 'dollyIn', { name: 'ドリー', nameEn: 'Dolly in', tags: ['emotional', 'calm', 'editorial'], w: 1,
   plan: rng => ({ a: rng.range(0.08, 0.11) }),
   get: (env, P) => { const K = KM(env), q = E.inCubic(cuOf(env)); return { s: 1 + Math.min(0.14, (P.a || 0.1) * K) * q, y: -env.H * 0.008 * K * q }; } });
 
@@ -944,7 +944,7 @@ const stepTimes = (env, n) => {
   stepCache.set(c, { n, v });
   return v;
 };
-reg('cam', 'stepZoom', { name: '段階ズーム', tags: ['pop', 'graphic', 'glitch'], w: 0.8,
+reg('cam', 'stepZoom', { name: '段階ズーム', nameEn: 'Step zoom', tags: ['pop', 'graphic', 'glitch'], w: 0.8,
   plan: rng => ({ n: rng.int(2, 3), a: rng.range(0.035, 0.045) }),
   get: (env, P) => {
     const K = KM(env), a = (P.a || 0.04) * K;
@@ -965,7 +965,7 @@ const cover = (k, b, inE = E.inCubic, outE = E.outCubic) => (k < b ? inE(k / b) 
 const inkOf = sc => firstOK([sc.ink, sc.fg], c => ctr(c, sc.bg) >= 1.6, sc.fg);
 const fxReg = (k, d) => reg('fx', k, Object.assign({}, d, { draw(ctx, ev, k2, I) { ctx.save(); try { d.draw(ctx, ev, k2, I); } finally { ctx.restore(); } } }));
 
-fxReg('panelWipe', { name: 'パネルワイプ', tags: ['pop', 'graphic'], w: 1, dur: 5, pre: 2, amp: 1,
+fxReg('panelWipe', { name: 'パネルワイプ', nameEn: 'Panel wipe', tags: ['pop', 'graphic'], w: 1, dur: 5, pre: 2, amp: 1,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), b = 0.4, dir = J.r(s, 1) < 0.5 ? 1 : -1, vert = J.r(s, 2) < 0.28;
     const L = vert ? ch : cw, M = vert ? cw : ch, sl = M * 0.3;
@@ -983,7 +983,7 @@ fxReg('panelWipe', { name: 'パネルワイプ', tags: ['pop', 'graphic'], w: 1,
     band(a0, a1, sc.accent);
   } });
 
-fxReg('irisTrans', { name: 'アイリス', tags: ['pop', 'editorial'], w: 0.7, dur: 8, pre: 4, amp: 1,
+fxReg('irisTrans', { name: 'アイリス', nameEn: 'Iris', tags: ['pop', 'editorial'], w: 0.7, dur: 8, pre: 4, amp: 1,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), c = cover(k, 0.5);
     const cx = cw / 2 + J.rs(s, 1) * cw * 0.08, cy = ch / 2 + J.rs(s, 2) * ch * 0.06;
@@ -993,7 +993,7 @@ fxReg('irisTrans', { name: 'アイリス', tags: ['pop', 'editorial'], w: 0.7, d
     if (r > 1 && c > 0.02) { ctx.strokeStyle = sc.accent; ctx.lineWidth = Math.max(2, ch * 0.008); ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke(); }
   } });
 
-fxReg('doors', { name: '扉', tags: ['graphic', 'pop'], w: 0.7, dur: 8, pre: 4, amp: 1,
+fxReg('doors', { name: '扉', nameEn: 'Doors', tags: ['graphic', 'pop'], w: 0.7, dur: 8, pre: 4, amp: 1,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), c = cover(k, 0.5, E.inQuad, E.outCubic), vert = J.r(s, 3) < 0.3;
     if (c <= 0.001) return;
@@ -1005,7 +1005,7 @@ fxReg('doors', { name: '扉', tags: ['graphic', 'pop'], w: 0.7, dur: 8, pre: 4, 
     ctx.globalAlpha = 0.35; R(half - lw * 4, 0, lw * 0.5, M); R(L - half + lw * 3.5, 0, lw * 0.5, M);
   } });
 
-fxReg('blindsTrans', { name: 'ブラインド', tags: ['graphic', 'editorial'], w: 0.7, dur: 6, pre: 3, amp: 1,
+fxReg('blindsTrans', { name: 'ブラインド', nameEn: 'Blinds', tags: ['graphic', 'editorial'], w: 0.7, dur: 6, pre: 3, amp: 1,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), c = cover(k, 0.5), n = 7 + (J.h(s, 4) % 6), vert = J.r(s, 5) < 0.35;
     if (c <= 0.001) return;
@@ -1019,7 +1019,7 @@ fxReg('blindsTrans', { name: 'ブラインド', tags: ['graphic', 'editorial'], 
     ctx.fill();
   } });
 
-fxReg('rgbSplit', { name: 'RGB分離', tags: ['glitch', 'emotional'], w: 1, dur: 4, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('rgbSplit', { name: 'RGB分離', nameEn: 'RGB split', tags: ['glitch', 'emotional'], w: 1, dur: 4, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = ampOf(ev), dk = isDark(sc.bg), st = I.step + evS(ev);
@@ -1038,7 +1038,7 @@ fxReg('rgbSplit', { name: 'RGB分離', tags: ['glitch', 'emotional'], w: 1, dur:
     ctx.drawImage(T1, 0, 0, hw, hh, -d, -dy, cw, ch); ctx.drawImage(T2, 0, 0, hw, hh, d, dy, cw, ch);
   } });
 
-fxReg('smear', { name: '横スミア', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('smear', { name: '横スミア', nameEn: 'Horizontal smear', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const a = ampOf(ev), st = I.step * 13 + evS(ev), n = 7 + (J.h(st, 2) % 6), sw = Math.max(1, Math.round(cw * 0.003));
@@ -1050,7 +1050,7 @@ fxReg('smear', { name: '横スミア', tags: ['glitch'], w: 0.8, dur: 3, amp: 1,
     }
   } });
 
-fxReg('vhsRoll', { name: 'VHSロール', tags: ['glitch', 'emotional'], w: 0.8, dur: 6, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('vhsRoll', { name: 'VHSロール', nameEn: 'VHS roll', tags: ['glitch', 'emotional'], w: 0.8, dur: 6, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const a = ampOf(ev), st = I.step * 7 + evS(ev), oy = Math.round(ch * 0.2 * a * bell(k)), dx = Math.round(J.rs(st, 1) * cw * 0.004 * a);
@@ -1079,7 +1079,7 @@ const noiseTex = () => {
   x.putImageData(id, 0, 0);
   NOISE = c; return c;
 };
-fxReg('trackingNoise', { name: 'トラッキングノイズ', tags: ['glitch', 'emotional'], w: 0.8, dur: 4, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('trackingNoise', { name: 'トラッキングノイズ', nameEn: 'Tracking noise', tags: ['glitch', 'emotional'], w: 0.8, dur: 4, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = ampOf(ev), s = evS(ev), st = I.step * 5 + s, N = noiseTex(), dk = isDark(sc.bg);
@@ -1100,7 +1100,7 @@ fxReg('trackingNoise', { name: 'トラッキングノイズ', tags: ['glitch', '
     band(ch * (0.1 + 0.8 * J.r(s, 8)) - k * ch * 0.08, ch * 0.018 * a, 2);
   } });
 
-fxReg('mirrorFlash', { name: 'ミラー', tags: ['glitch', 'graphic'], w: 0.6, dur: 2, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('mirrorFlash', { name: 'ミラー', nameEn: 'Mirror', tags: ['glitch', 'graphic'], w: 0.6, dur: 2, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const m = J.h(evS(ev), 9) % 4, hw = Math.floor(cw / 2), hh = Math.floor(ch / 2);
@@ -1114,13 +1114,13 @@ fxReg('mirrorFlash', { name: 'ミラー', tags: ['glitch', 'graphic'], w: 0.6, d
     }
   } });
 
-fxReg('strobe', { name: 'ストロボ', tags: ['glitch', 'pop'], w: 0.5, dur: 4, amp: 1, mid: true,
+fxReg('strobe', { name: 'ストロボ', nameEn: 'Strobe', tags: ['glitch', 'pop'], w: 0.5, dur: 4, amp: 1, mid: true,
   draw(ctx, ev, k, I) {
     if (Math.floor(k * 4) % 2) return;
     ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, I.cw, I.ch);
   } });
 
-fxReg('posterize', { name: 'ポスタリゼ', tags: ['glitch', 'pop', 'graphic'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
+fxReg('posterize', { name: 'ポスタリゼ', nameEn: 'Posterize', tags: ['glitch', 'pop', 'graphic'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { S } = I; if (!S) return;
     const a = ampOf(ev) * Math.pow(1 - k, 1.2);
@@ -1129,7 +1129,7 @@ fxReg('posterize', { name: 'ポスタリゼ', tags: ['glitch', 'pop', 'graphic']
     else { ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(S, 0, 0); }
   } });
 
-fxReg('hueShift', { name: '色相シフト', tags: ['glitch', 'pop', 'emotional'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
+fxReg('hueShift', { name: '色相シフト', nameEn: 'Hue shift', tags: ['glitch', 'pop', 'emotional'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), a = Math.pow(1 - k, 0.8) * Math.min(1, ampOf(ev)), deg = Math.round(90 + 180 * J.r(s, 3)), dk = isDark(sc.bg);
@@ -1138,7 +1138,7 @@ fxReg('hueShift', { name: '色相シフト', tags: ['glitch', 'pop', 'emotional'
     ctx.fillStyle = J.r(s, 4) < 0.5 ? sc.ghostA : sc.ghostB; ctx.fillRect(0, 0, cw, ch);
   } });
 
-fxReg('tileShift', { name: 'タイルずらし', tags: ['glitch', 'graphic'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('tileShift', { name: 'タイルずらし', nameEn: 'Tile shift', tags: ['glitch', 'graphic'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const a = ampOf(ev), s0 = I.step * 11 + evS(ev), gx = 3 + (J.h(s0, 1) % 4), gy = 2 + (J.h(s0, 2) % 3);
@@ -1153,7 +1153,7 @@ fxReg('tileShift', { name: 'タイルずらし', tags: ['glitch', 'graphic'], w:
     }
   } });
 
-fxReg('filmBurn', { name: 'フィルム焼け', tags: ['emotional', 'calm', 'editorial'], w: 0.7, dur: 7, pre: 2, amp: 1, mid: true,
+fxReg('filmBurn', { name: 'フィルム焼け', nameEn: 'Film burn', tags: ['emotional', 'calm', 'editorial'], w: 0.7, dur: 7, pre: 2, amp: 1, mid: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), b = 2 / 7;
     let a = (k < b ? E.outCubic(k / b) : 1 - E.inOutCubic((k - b) / (1 - b))) * clamp(ampOf(ev), 0.5, 1.2) * (0.85 + 0.15 * J.r(I.step, 3));
@@ -1171,7 +1171,7 @@ fxReg('filmBurn', { name: 'フィルム焼け', tags: ['emotional', 'calm', 'edi
     ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(0, 0, cw, ch);
   } });
 
-fxReg('whipBlur', { name: 'ホイップブラー', tags: ['pop', 'graphic', 'emotional'], w: 1, dur: 5, pre: 2, amp: 1, scratch: true,
+fxReg('whipBlur', { name: 'ホイップブラー', nameEn: 'Whip blur', tags: ['pop', 'graphic', 'emotional'], w: 1, dur: 5, pre: 2, amp: 1, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const amt = cover(k, 0.4), d = cw * 0.045 * ampOf(ev) * amt, vert = J.r(evS(ev), 2) < 0.25;
@@ -1190,10 +1190,10 @@ const koma = (col) => ({ tags: col === '#000000' ? ['editorial', 'emotional', 'g
     if (one && k >= 0.5) return;
     ctx.fillStyle = col; ctx.fillRect(0, 0, I.cw, I.ch);
   } });
-fxReg('blackFrame', Object.assign(koma('#000000'), { name: '黒コマ', w: 0.6 }));
-fxReg('whiteFrame', Object.assign(koma('#ffffff'), { name: '白コマ', w: 0.5 }));
+fxReg('blackFrame', Object.assign(koma('#000000'), { name: '黒コマ', nameEn: 'Black frame', w: 0.6 }));
+fxReg('whiteFrame', Object.assign(koma('#ffffff'), { name: '白コマ', nameEn: 'White frame', w: 0.5 }));
 
-fxReg('gridRepeat', { name: '画面分割', tags: ['pop', 'graphic', 'glitch'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
+fxReg('gridRepeat', { name: '画面分割', nameEn: 'Split screen', tags: ['pop', 'graphic', 'glitch'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const f = J.r(evS(ev), 1) < 0.5, n = (k < 0.6) === f ? 2 : 3, tw = cw / n, th = ch / n, g = Math.max(2, Math.round(ch * 0.006));
@@ -1203,7 +1203,7 @@ fxReg('gridRepeat', { name: '画面分割', tags: ['pop', 'graphic', 'glitch'], 
     for (let i = 1; i < n; i++) { ctx.fillRect(i * tw - g / 2, 0, g, ch); ctx.fillRect(0, i * th - g / 2, cw, g); }
   } });
 
-fxReg('waveWarp', { name: '波ゆがみ', tags: ['emotional', 'glitch'], w: 0.7, dur: 5, amp: 1, mid: true, scratch: true,
+fxReg('waveWarp', { name: '波ゆがみ', nameEn: 'Wave warp', tags: ['emotional', 'glitch'], w: 0.7, dur: 5, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const s = evS(ev), A = cw * 0.034 * ampOf(ev) * bell(k);
@@ -1215,7 +1215,7 @@ fxReg('waveWarp', { name: '波ゆがみ', tags: ['emotional', 'glitch'], w: 0.7,
     }
   } });
 
-fxReg('pixelDrift', { name: 'ピクセルずれ', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
+fxReg('pixelDrift', { name: 'ピクセルずれ', nameEn: 'Pixel drift', tags: ['glitch'], w: 0.8, dur: 3, amp: 1, glitchy: true, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const a = ampOf(ev), s0 = I.step * 7 + evS(ev), m = 16 + (J.h(s0, 1) % 14);
@@ -1227,7 +1227,7 @@ fxReg('pixelDrift', { name: 'ピクセルずれ', tags: ['glitch'], w: 0.8, dur:
     }
   } });
 
-fxReg('zoomPunch', { name: 'ズームパンチ', tags: ['pop', 'graphic', 'glitch'], w: 1, dur: 4, amp: 1, mid: true, scratch: true,
+fxReg('zoomPunch', { name: 'ズームパンチ', nameEn: 'Zoom punch', tags: ['pop', 'graphic', 'glitch'], w: 1, dur: 4, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     const amt = k < 0.25 ? E.outExpo(k / 0.25) : 1 - E.inOutCubic((k - 0.25) / 0.75);
@@ -1236,7 +1236,7 @@ fxReg('zoomPunch', { name: 'ズームパンチ', tags: ['pop', 'graphic', 'glitc
     ctx.drawImage(S, cw / 2 - cw * z / 2, ch / 2 - ch * z / 2, cw * z, ch * z);
   } });
 
-fxReg('lightSweep', { name: '光の筋', tags: ['pop', 'emotional', 'calm'], w: 0.9, dur: 7, amp: 1, mid: true,
+fxReg('lightSweep', { name: '光の筋', nameEn: 'Light streak', tags: ['pop', 'emotional', 'calm'], w: 0.9, dur: 7, amp: 1, mid: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, sc } = I, s = evS(ev), dk = isDark(sc.bg);
     const ang = (20 + 20 * J.r(s, 1)) * DEG * (J.r(s, 2) < 0.5 ? 1 : -1), p = E.inOutCubic(k), dir = J.r(s, 3) < 0.5 ? 1 : -1;
@@ -1253,7 +1253,7 @@ fxReg('lightSweep', { name: '光の筋', tags: ['pop', 'emotional', 'calm'], w: 
     strip(0, bw, 0.6 * a); strip(-bw * 0.95 * dir, bw * 0.25, 0.45 * a);
   } });
 
-fxReg('crtOff', { name: 'ブラウン管オフ', tags: ['glitch', 'emotional'], w: 0.3, dur: 8, pre: 4, amp: 1, scratch: true,
+fxReg('crtOff', { name: 'ブラウン管オフ', nameEn: 'CRT shutdown', tags: ['glitch', 'emotional'], w: 0.3, dur: 8, pre: 4, amp: 1, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S } = I; if (!S) return;
     let sy, sx, br;
@@ -1269,7 +1269,7 @@ fxReg('crtOff', { name: 'ブラウン管オフ', tags: ['glitch', 'emotional'], 
     ctx.fillStyle = g; ctx.fillRect(x - w * 0.05, ch / 2 - gh, w * 1.1, gh * 2);
   } });
 
-fxReg('splitSlide', { name: '上下スライド', tags: ['graphic', 'pop', 'glitch'], w: 0.9, dur: 6, pre: 2, amp: 1, mid: true, scratch: true,
+fxReg('splitSlide', { name: '上下スライド', nameEn: 'Split slide', tags: ['graphic', 'pop', 'glitch'], w: 0.9, dur: 6, pre: 2, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
     const s = evS(ev), amt = cover(k, 1 / 3, E.outCubic, E.inOutCubic), vert = J.r(s, 1) < 0.3, sp = 0.5 + J.rs(s, 2) * 0.08;

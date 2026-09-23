@@ -192,7 +192,7 @@ const rowW = (text, font, size) => { let w = 0; for (const ch of text) w += J.me
    1  lowerThird — 下部テロップ
    ====================================================================== */
 reg('lowerThird', {
-  name: '下部テロップ', tags: ['editorial', 'calm', 'emotional'], w: 1.1, fits: n => n <= 20, portrait: 0.9,
+  name: '下部テロップ', nameEn: 'Lower third', tags: ['editorial', 'calm', 'emotional'], w: 1.1, fits: n => n <= 20, portrait: 0.9,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'display', 'serif'])), side: rng.pick(['left', 'left', 'right']), bar: rng.pick(['line', 'tab', 'line']), label: rng.pick(['romaji', 'no', 'copy']), lift: rng.range(0, 0.04) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -249,7 +249,7 @@ reg('lowerThird', {
    2  corners — 対角配置
    ====================================================================== */
 reg('corners', {
-  name: '対角配置', tags: ['graphic', 'editorial', 'calm'], w: 1, fits: n => n >= 2 && n <= 18,
+  name: '対角配置', nameEn: 'Diagonal placement', tags: ['graphic', 'editorial', 'calm'], w: 1, fits: n => n >= 2 && n <= 18,
   plan: (rng, cut, st) => ({ chunks: splitK(cut.text, 2, 2), font: rng.pick(fontsOf(st, ['display', 'serif'])), diag: rng.pick(['main', 'main', 'anti']), link: rng.pick(['elbow', 'straight', 'elbow']), ratio: rng.pick([1, 1, 0.76]) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -311,7 +311,7 @@ reg('corners', {
    3  staircase — 階段
    ====================================================================== */
 reg('staircase', {
-  name: '階段', tags: ['graphic', 'pop', 'editorial'], w: 1, fits: n => n >= 2 && n <= 18,
+  name: '階段', nameEn: 'Staircase', tags: ['graphic', 'pop', 'editorial'], w: 1, fits: n => n >= 2 && n <= 18,
   plan: (rng, cut, st) => {
     const port = cut.H > cut.W * 1.08, n = cut.n;
     const latin = /[A-Za-z]/.test(cut.text);
@@ -376,7 +376,7 @@ reg('staircase', {
    4  zigzag — ジグザグ
    ====================================================================== */
 reg('zigzag', {
-  name: 'ジグザグ', tags: ['pop', 'graphic'], w: 0.9, fits: n => n >= 3 && n <= 16,
+  name: 'ジグザグ', nameEn: 'Zigzag', tags: ['pop', 'graphic'], w: 0.9, fits: n => n >= 3 && n <= 16,
   plan: (rng, cut, st) => {
     const port = cut.H > cut.W * 1.08;
     return { font: rng.pick(fontsOf(st, ['display'])), orient: port && cut.n > 5 ? 'v' : 'h', amp: rng.range(0.24, 0.34), phase: rng.pick([1, -1]), rails: rng.pick(['under', 'both', 'under', 'over']), tilt: rng.chance(0.35) };
@@ -431,7 +431,7 @@ reg('zigzag', {
    5  arcTop — 虹の弧
    ====================================================================== */
 reg('arcTop', {
-  name: '虹の弧', tags: ['pop', 'emotional', 'graphic'], w: 0.9, fits: n => n >= 3 && n <= 16,
+  name: '虹の弧', nameEn: 'Rainbow arc', tags: ['pop', 'emotional', 'graphic'], w: 0.9, fits: n => n >= 3 && n <= 16,
   plan: (rng, cut, st) => { const port = cut.H > cut.W * 1.08; return { font: rng.pick(fontsOf(st, ['display', 'serif', 'display'])), span: port ? rng.range(150, 190) : rng.range(105, 145), guide: rng.pick(['double', 'ticks', 'double']), under: rng.pick(['copy', 'romaji', 'no']) }; },
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env);
@@ -494,7 +494,7 @@ reg('arcTop', {
    6  spiral — 螺旋
    ====================================================================== */
 reg('spiral', {
-  name: '螺旋', tags: ['emotional', 'graphic', 'calm'], w: 0.8, fits: n => n >= 2 && n <= 16,
+  name: '螺旋', nameEn: 'Spiral', tags: ['emotional', 'graphic', 'calm'], w: 0.8, fits: n => n >= 2 && n <= 16,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), dir: rng.pick([1, -1]), speed: rng.range(4, 9), guide: rng.chance(0.7), fill: cut.n <= 7 ? 'repeat' : cut.n <= 11 ? rng.pick(['repeat', 'single']) : 'single' }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env);
@@ -502,7 +502,7 @@ reg('spiral', {
     const seq = chars.map((c, i) => ({ c, main: true, i }));
     if (p.fill === 'repeat') {
       const reps = Math.max(1, Math.ceil(20 / (n + 1)) - 1);
-      for (let r = 0; r < reps && seq.length < 40; r++) { seq.push({ c: '・', main: false }); chars.forEach(c => seq.push({ c, main: false })); }
+      for (let r = 0; r < reps && seq.length < 40; r++) { seq.push({ c: '·', main: false }); chars.forEach(c => seq.push({ c, main: false })); }
     }
     const N = seq.length;
     const f = p.fill === 'repeat' ? 0.8 : 0.58;
@@ -559,7 +559,7 @@ reg('spiral', {
    7  gridCells — 升目
    ====================================================================== */
 reg('gridCells', {
-  name: '升目', tags: ['graphic', 'editorial', 'pop'], w: 1, fits: n => n >= 2 && n <= 18, treat: 'safe',
+  name: '升目', nameEn: 'Grid cells', tags: ['graphic', 'editorial', 'pop'], w: 1, fits: n => n >= 2 && n <= 18, treat: 'safe',
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), gap: rng.pick([0, 0, 0.1, 0.16]), acc: rng.int(0, 99), fill: rng.pick(['outline', 'outline', 'ink']), nums: rng.chance(0.6) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -610,7 +610,7 @@ reg('gridCells', {
    8  dropCap — 大きな頭文字
    ====================================================================== */
 reg('dropCap', {
-  name: '大きな頭文字', tags: ['editorial', 'emotional', 'calm'], w: 1, enterBias: { blur: 1.4, wipe: 1.3, type: 1.2 }, fits: n => n >= 3 && n <= 24, portrait: 0.8,
+  name: '大きな頭文字', nameEn: 'Drop cap', tags: ['editorial', 'emotional', 'calm'], w: 1, enterBias: { blur: 1.4, wipe: 1.3, type: 1.2 }, fits: n => n >= 3 && n <= 24, portrait: 0.8,
   plan: (rng, cut, st) => ({ capFont: rng.pick(fontsOf(st, ['serif', 'display'])), font: rng.pick(fontsOf(st, ['serif', 'body', 'display'])), cap: rng.pick(['fill', 'accent', 'outline']), rules: rng.chance(0.65), meta: rng.chance(0.7) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -689,7 +689,7 @@ reg('dropCap', {
    9  justified — 版面
    ====================================================================== */
 reg('justified', {
-  name: '版面', tags: ['editorial', 'calm', 'emotional'], w: 0.8, fits: n => n >= 2 && n <= 22, busy: true, treat: 'safe',
+  name: '版面', nameEn: 'Justified text', tags: ['editorial', 'calm', 'emotional'], w: 0.8, fits: n => n >= 2 && n <= 22, busy: true, treat: 'safe',
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), fillFont: rng.pick(fontsOf(st, ['body', 'serif'])), mark: rng.pick(['band', 'under', 'bracket']), pos: rng.pick([0.28, 0.5, 0.66]), dens: rng.range(0.062, 0.078) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env);
@@ -710,7 +710,7 @@ reg('justified', {
     const r0 = Math.round(p.pos * (rowsN - span));
     const out = tout(env);
     // filler: the whole line set solid, running on through the rows
-    const src = [...(flat(env.cut.lineText || text) + (hasLatin(text) ? ' / ' : '。'))];
+    const src = [...(flat(env.cut.lineText || text) + ' / ')];
     const adv = J.metrics.adv(p.fillFont, 'あ') || 1;
     const cpr = Math.max(4, Math.floor(bw / (fs * adv * 1.06)));
     let off = 0;
@@ -758,7 +758,7 @@ reg('justified', {
    10  frameBox — 額縁
    ====================================================================== */
 reg('frameBox', {
-  name: '額縁', tags: ['editorial', 'calm', 'graphic'], w: 1.1, fits: n => n <= 20,
+  name: '額縁', nameEn: 'Picture frame', tags: ['editorial', 'calm', 'graphic'], w: 1.1, fits: n => n <= 20,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif', 'serif'])), style: rng.pick(['full', 'double', 'corners']), caps: rng.pick(['tl-br', 'top-bottom']), shape: rng.pick(['tight', 'wide']) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -826,7 +826,7 @@ function bubblePoly(shape, cx, cy, w, h, size, tailSide) {
   return { pts, tip: [tipX, tipY] };
 }
 reg('bubble', {
-  name: '吹き出し', tags: ['pop', 'emotional'], w: 0.9, enterBias: { pop: 2, drop: 1.4, spin: 0.5 }, fits: n => n <= 20, treat: 'safe',
+  name: '吹き出し', nameEn: 'Speech bubble', tags: ['pop', 'emotional'], w: 0.9, enterBias: { pop: 2, drop: 1.4, spin: 0.5 }, fits: n => n <= 20, treat: 'safe',
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'body'])), shape: rng.pick(['round', 'ellipse', 'thought', 'round']), style: rng.pick(['fill', 'outline', 'fill']), tail: rng.pick([1, -1]), off: rng.range(-0.05, 0.05), tilt: rng.range(-3, 3), burst: rng.chance(0.6) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -875,7 +875,7 @@ reg('bubble', {
    12  subtitleBar — 字幕帯
    ====================================================================== */
 reg('subtitleBar', {
-  name: '字幕帯', tags: ['emotional', 'calm', 'editorial'], w: 0.9, fits: n => n <= 26, busy: true, treat: 'safe', portrait: 0.7,
+  name: '字幕帯', nameEn: 'Subtitle bar', tags: ['emotional', 'calm', 'editorial'], w: 0.9, fits: n => n <= 26, busy: true, treat: 'safe', portrait: 0.7,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['body', 'serif'])), bigFont: rng.pick(fontsOf(st, ['display', 'serif'])), big: rng.pick(['dim', 'outline']), bar: rng.range(0.1, 0.13), tc: rng.pick(['rec', 'scene']), place: rng.pick(['bar', 'band']), drift: rng.pick([1, -1]) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -940,7 +940,7 @@ reg('subtitleBar', {
    13  ticker — ティッカー
    ====================================================================== */
 reg('ticker', {
-  name: 'ティッカー', tags: ['pop', 'glitch', 'graphic'], w: 0.9, enterBias: { wipe: 1.6, slice: 1.4, type: 1.2 }, fits: n => n <= 18,
+  name: 'ティッカー', nameEn: 'Ticker', tags: ['pop', 'glitch', 'graphic'], w: 0.9, enterBias: { wipe: 1.6, slice: 1.4, type: 1.2 }, fits: n => n <= 18,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display'])), tag: rng.pick(['LIVE', 'NOW', 'ON AIR', 'LIVE']), speed: rng.range(0.8, 1.3), main: rng.pick(['center', 'left', 'center']), bug: rng.chance(0.6) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -957,7 +957,7 @@ reg('ticker', {
     if (bw > 1) {
       env.rect(x0, bandY, bw, bandH, bandC, 1, false);
       if (env.pass === 'main') {
-        const unit = flat(env.cut.lineText || text0) + '　◆　';
+        const unit = flat(env.cut.lineText || text0) + ' ◆ ';
         const fs = bandH * 0.46;
         const per = rowW(unit, bodyF(env), fs);
         const reps = Math.min(40, Math.ceil(W * 1.2 / Math.max(1, per)) + 2);
@@ -1007,7 +1007,7 @@ reg('ticker', {
    14  splitScreen — 二分割
    ====================================================================== */
 reg('splitScreen', {
-  name: '二分割', tags: ['graphic', 'pop', 'editorial'], w: 0.9, emph: 1.6, enterBias: { wipe: 1.5, slice: 1.4, stretch: 1.2 }, fits: n => n <= 14, busy: true, treat: false,
+  name: '二分割', nameEn: 'Split screen', tags: ['graphic', 'pop', 'editorial'], w: 0.9, emph: 1.6, enterBias: { wipe: 1.5, slice: 1.4, stretch: 1.2 }, fits: n => n <= 14, busy: true, treat: false,
   plan: (rng, cut, st) => { const port = cut.H > cut.W * 1.08; return { font: rng.pick(fontsOf(st, ['display'])), split: port ? rng.pick(['h', 'diag', 'h']) : rng.pick(['v', 'diag', 'v', 'h']), plate: rng.pick(['fg', 'accent', 'fg']), side: rng.pick([1, -1]), tilt: rng.range(12, 22) }; },
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1062,7 +1062,7 @@ reg('splitScreen', {
    15  mirror — 鏡像
    ====================================================================== */
 reg('mirror', {
-  name: '鏡像', tags: ['calm', 'emotional', 'graphic'], w: 1, fits: n => n <= 16,
+  name: '鏡像', nameEn: 'Mirror image', tags: ['calm', 'emotional', 'graphic'], w: 1, fits: n => n <= 16,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), strength: rng.range(0.34, 0.5), squash: rng.pick([1, 0.7, 0.85]), ripple: rng.chance(0.5), ticks: rng.chance(0.6) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1112,7 +1112,7 @@ reg('mirror', {
    16  sideways — 縦倒し
    ====================================================================== */
 reg('sideways', {
-  name: '縦倒し', tags: ['editorial', 'graphic', 'pop'], w: 1, emph: 1.3, enterBias: { wipe: 1.4, slice: 1.3, stretch: 1.3 }, fits: n => n >= 3 && n <= 16, portrait: 1.3,
+  name: '縦倒し', nameEn: 'Sideways text', tags: ['editorial', 'graphic', 'pop'], w: 1, emph: 1.3, enterBias: { wipe: 1.4, slice: 1.3, stretch: 1.3 }, fits: n => n >= 3 && n <= 16, portrait: 1.3,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'display', 'serif'])), side: rng.pick(['left', 'right']), copy: rng.pick(['stack', 'number']), rule: rng.chance(0.75) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1168,8 +1168,8 @@ reg('sideways', {
    17  edgeFrame — 外周
    ====================================================================== */
 reg('edgeFrame', {
-  name: '外周', tags: ['graphic', 'editorial', 'glitch'], w: 0.9, fits: n => n <= 16, busy: true,
-  plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), edgeFont: rng.pick(['body', 'mono']), sep: rng.pick(['　／　', '　・　', '　—　']), speed: rng.range(0.6, 1.2) * rng.pick([1, -1]), corner: rng.pick(['square', 'cross']), inner: rng.chance(0.6) }),
+  name: '外周', nameEn: 'Perimeter', tags: ['graphic', 'editorial', 'glitch'], w: 0.9, fits: n => n <= 16, busy: true,
+  plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), edgeFont: rng.pick(['body', 'mono']), sep: rng.pick([' / ', ' · ', ' — ']), speed: rng.range(0.6, 1.2) * rng.pick([1, -1]), corner: rng.pick(['square', 'cross']), inner: rng.chance(0.6) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
     const d = u * 0.045, es = u * 0.024, band = es * 1.7;
@@ -1214,7 +1214,7 @@ reg('edgeFrame', {
    18  perspective — 奥行き
    ====================================================================== */
 reg('perspective', {
-  name: '奥行き', tags: ['graphic', 'emotional', 'glitch'], w: 0.9, emph: 1.3, enterBias: { zoom: 1.6, stretch: 1.3 }, fits: n => n <= 14,
+  name: '奥行き', nameEn: 'Perspective', tags: ['graphic', 'emotional', 'glitch'], w: 0.9, emph: 1.3, enterBias: { zoom: 1.6, stretch: 1.3 }, fits: n => n <= 14,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display'])), mode: rng.pick(['floor', 'side', 'floor']), copies: rng.int(4, 6), speed: rng.range(0.25, 0.45), guides: rng.chance(0.7), vx: rng.pick([1, -1]) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1268,7 +1268,7 @@ function sealGlyphs(text) {
   return g.slice(0, 2);
 }
 reg('hanko', {
-  name: '落款', tags: ['calm', 'emotional', 'editorial'], w: 0.8, emph: 1.3, enterBias: { blur: 1.6, wipe: 1.3, type: 1.2 }, fits: n => n >= 1 && n <= 10, portrait: 1.2,
+  name: '落款', nameEn: 'Artist seal', tags: ['calm', 'emotional', 'editorial'], w: 0.8, emph: 1.3, enterBias: { blur: 1.6, wipe: 1.3, type: 1.2 }, fits: n => n >= 1 && n <= 10, portrait: 1.2,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['serif'])), sealFont: rng.pick(fontsOf(st, ['serif', 'display'])), vert: cut.H > cut.W * 1.08 ? true : rng.chance(0.6), seal: rng.pick(['haku', 'shu', 'haku']), rot: rng.range(-7, 7) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1338,7 +1338,7 @@ reg('hanko', {
    20  genkou — 原稿用紙
    ====================================================================== */
 reg('genkou', {
-  name: '原稿用紙', tags: ['calm', 'editorial', 'emotional'], w: 0.8, enterBias: { type: 2.2, blur: 1.4, assemble: 1.3 }, fits: n => n <= 22, portrait: 1.2,
+  name: '原稿用紙', nameEn: 'Manuscript grid', tags: ['calm', 'editorial', 'emotional'], w: 0.8, enterBias: { type: 2.2, blur: 1.4, assemble: 1.3 }, fits: n => n <= 22, portrait: 1.2,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['serif'])), lineC: rng.pick(['accent', 'sub']), indent: rng.chance(0.5), pad: rng.int(2, 4) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1401,7 +1401,7 @@ function clipHalf(poly, nx, ny, c) {            // keep the part with nx*x + ny*
 }
 const pathOf = (ctx, poly) => { ctx.beginPath(); poly.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); };
 reg('panels', {
-  name: 'コマ割り', tags: ['pop', 'graphic', 'emotional'], w: 0.9, emph: 1.4, enterBias: { pop: 1.4, zoom: 1.3, slice: 1.2 }, fits: n => n >= 2 && n <= 18, busy: true, treat: 'safe',
+  name: 'コマ割り', nameEn: 'Panel grid', tags: ['pop', 'graphic', 'emotional'], w: 0.9, emph: 1.4, enterBias: { pop: 1.4, zoom: 1.3, slice: 1.2 }, fits: n => n >= 2 && n <= 18, busy: true, treat: 'safe',
   plan: (rng, cut, st) => { const k = cut.n >= 6 ? 3 : 2; return { chunks: splitK(cut.text, k, 2), font: rng.pick(fontsOf(st, ['display', 'serif'])), acc: rng.int(0, 2), fx: rng.pick(['focus', 'tone', 'focus', 'none']), slant: rng.range(5, 11), widths: [rng.range(0.8, 1.25), rng.range(0.8, 1.25), rng.range(0.8, 1.25)] }; },
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1477,7 +1477,7 @@ reg('panels', {
    22  filmstrip — フィルム
    ====================================================================== */
 reg('filmstrip', {
-  name: 'フィルム', tags: ['emotional', 'calm', 'graphic'], w: 0.8, fits: n => n >= 1 && n <= 18, busy: true, treat: 'safe', portrait: 0.8,
+  name: 'フィルム', nameEn: 'Film strip', tags: ['emotional', 'calm', 'graphic'], w: 0.8, fits: n => n >= 1 && n <= 18, busy: true, treat: 'safe', portrait: 0.8,
   plan: (rng, cut, st) => ({ chunks: splitK(cut.text, Math.min(3, cut.n), cut.n <= 4 ? 3 : 2), font: rng.pick(fontsOf(st, ['display', 'serif'])), dir: rng.pick([1, -1]), tone: rng.pick(['ink', 'fg']), codes: rng.chance(0.75), tilt: rng.pick([0, 0, -3, 3]) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1550,7 +1550,7 @@ reg('filmstrip', {
    23  quote — 引用
    ====================================================================== */
 reg('quote', {
-  name: '引用', tags: ['editorial', 'emotional', 'calm'], w: 1, emph: 1.2, enterBias: { blur: 1.4, type: 1.3, wipe: 1.2 }, fits: n => n <= 20,
+  name: '引用', nameEn: 'Quotation', tags: ['editorial', 'emotional', 'calm'], w: 1, emph: 1.2, enterBias: { blur: 1.4, type: 1.3, wipe: 1.2 }, fits: n => n <= 20,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['serif', 'display'])), markFont: rng.pick(fontsOf(st, ['serif'])), marks: /[A-Za-z]/.test(cut.text) ? 'latin' : rng.pick(['kagi', 'double', 'kagi']), markC: rng.pick(['accent', 'sub']), attrib: rng.chance(0.75) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1596,7 +1596,7 @@ function arrowHead(env, x, y, ang, s, col, a) {
   env.poly([[x, y], [x - c * s + sn * s * 0.35, y - sn * s - c * s * 0.35], [x - c * s - sn * s * 0.35, y - sn * s + c * s * 0.35]], col, a, false);
 }
 reg('ruler', {
-  name: '寸法線', tags: ['graphic', 'editorial', 'glitch'], w: 0.8, fits: n => n <= 16,
+  name: '寸法線', nameEn: 'Dimension line', tags: ['graphic', 'editorial', 'glitch'], w: 0.8, fits: n => n <= 16,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif', 'body'])), dims: rng.pick(['topRight', 'bottomLeft']), ticks: rng.chance(0.7), guides: rng.chance(0.8), unit: rng.pick(['px', 'pt', 'px']) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1662,7 +1662,7 @@ function magnifier(env, x, y, r, col, lw, a) {
   env.line([[x + r * 0.3, y + r * 0.3], [x + r * 0.8, y + r * 0.8]], col, lw * 1.2, a, false);
 }
 reg('searchBar', {
-  name: '検索窓', tags: ['pop', 'graphic'], w: 0.6, enterBias: { type: 3, scramble: 1.5, cut: 1.5 }, fits: n => n <= 18, treat: 'safe', portrait: 0.8,
+  name: '検索窓', nameEn: 'Search bar', tags: ['pop', 'graphic'], w: 0.6, enterBias: { type: 3, scramble: 1.5, cut: 1.5 }, fits: n => n <= 18, treat: 'safe', portrait: 0.8,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['body', 'display'])), shape: rng.pick(['pill', 'rect']), fill: rng.pick(['outline', 'filled']), sugg: rng.int(3, 4), pos: rng.pick(['center', 'upper']) }),
   render(env) {
     const { W, H, sc } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1722,7 +1722,7 @@ reg('searchBar', {
    26  chat — チャット
    ====================================================================== */
 reg('chat', {
-  name: 'チャット', tags: ['pop', 'emotional'], w: 0.6, enterBias: { pop: 2, cut: 1.5, type: 1.3 }, fits: n => n <= 22, treat: 'safe',
+  name: 'チャット', nameEn: 'Chat', tags: ['pop', 'emotional'], w: 0.6, enterBias: { pop: 2, cut: 1.5, type: 1.3 }, fits: n => n <= 22, treat: 'safe',
   plan: (rng, cut, st) => { const nw = (J.chunkText ? J.chunkText(cut.text) : [cut.text]).length; return { msgs: cut.n <= 4 ? [cut.text.trim()] : splitK(cut.text, J.clamp(nw, 2, cut.n > 12 ? 4 : 3)), font: rng.pick(fontsOf(st, ['body', 'display'])), side0: rng.pick([1, -1]), alt: rng.chance(0.55) }; },
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1786,7 +1786,7 @@ function noteIcon(env, x, y, s, col, a) {
   env.poly([[x + s * 0.04, y - s * 0.32], [x + s * 0.3, y - s * 0.18], [x + s * 0.04, y - s * 0.12]], col, a, false);
 }
 reg('notification', {
-  name: '通知', tags: ['pop', 'emotional', 'calm'], w: 0.5, enterBias: { cut: 1.6, type: 1.3, blur: 1.2 }, fits: n => n <= 24, treat: 'safe',
+  name: '通知', nameEn: 'Notification', tags: ['pop', 'emotional', 'calm'], w: 0.5, enterBias: { cut: 1.6, type: 1.3, blur: 1.2 }, fits: n => n <= 24, treat: 'safe',
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['body', 'display'])), pos: rng.pick(['banner', 'lock', 'center']), stack: rng.chance(0.5), app: rng.pick(['MUSIC', 'LYRICS', 'MESSAGE']) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
@@ -1843,7 +1843,7 @@ function ticketParts(x0, y0, w, h, px, nr, r) {
   return { main, stub };
 }
 reg('ticket', {
-  name: 'チケット', tags: ['pop', 'graphic', 'editorial'], w: 0.6, fits: n => n <= 18, treat: 'safe', portrait: 0.6,
+  name: 'チケット', nameEn: 'Ticket', tags: ['pop', 'graphic', 'editorial'], w: 0.6, fits: n => n <= 18, treat: 'safe', portrait: 0.6,
   plan: (rng, cut, st) => ({ font: rng.pick(fontsOf(st, ['display', 'serif'])), fill: rng.pick(['accent', 'ink', 'outline']), tilt: rng.range(-5, 5), label: rng.pick(['ADMIT ONE', 'LIVE', 'TICKET']), serial: rng.int(1, 999999) }),
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);

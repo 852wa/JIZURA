@@ -132,7 +132,7 @@ const auroraStrip = col => cached('aurS|' + col, () => {
   g.addColorStop(0, J.rgba(col, 0)); g.addColorStop(0.5, J.rgba(col, 0.22)); g.addColorStop(0.88, J.rgba(col, 0.85)); g.addColorStop(0.94, J.rgba(col, 1)); g.addColorStop(1, J.rgba(col, 0));
   x.fillStyle = g; x.fillRect(0, 0, 4, 256); return c;
 });
-bgReg('auroraRibbons', { name: 'オーロラ', tags: ['emotional', 'calm'], w: 0.9,
+bgReg('auroraRibbons', { name: 'オーロラ', nameEn: 'Aurora', tags: ['emotional', 'calm'], w: 0.9,
   plan: rng => ({ seed: bs(rng), n: rng.int(2, 3), y: rng.range(0.36, 0.48), k: rng.range(0.2, 0.28), c0: rng.int(0, 3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, t = env.t, dk = isDark(sc.bg), cols = hues(sc), e = fadeIn(env, 1.2);
@@ -160,7 +160,7 @@ bgReg('auroraRibbons', { name: 'オーロラ', tags: ['emotional', 'calm'], w: 0
     });
   } });
 
-bgReg('meshBlobs', { name: 'メッシュグラデ', tags: ['calm', 'emotional', 'pop'], w: 1, subtle: true,
+bgReg('meshBlobs', { name: 'メッシュグラデ', nameEn: 'Mesh gradient', tags: ['calm', 'emotional', 'pop'], w: 1, subtle: true,
   plan: rng => ({ seed: bs(rng), n: rng.int(3, 4), k: rng.range(0.2, 0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, s = P.seed || 1, t = env.t, cols = hues(sc), dk = isDark(sc.bg), e = fadeIn(env, 1);
@@ -180,7 +180,7 @@ bgReg('meshBlobs', { name: 'メッシュグラデ', tags: ['calm', 'emotional', 
     });
   } });
 
-bgReg('duotoneSweep', { name: '二色スイープ', tags: ['calm', 'pop', 'graphic', 'emotional'], w: 0.9, subtle: true,
+bgReg('duotoneSweep', { name: '二色スイープ', nameEn: 'Duotone sweep', tags: ['calm', 'pop', 'graphic', 'emotional'], w: 0.9, subtle: true,
   plan: rng => ({ seed: bs(rng), pos: rng.pick([[0.5, 1.2], [-0.15, 1.1], [1.15, 1.1], [0.5, -0.2], [-0.1, -0.1]]), spd: rng.range(0.08, 0.14) * rng.pick([1, -1]), k: rng.range(0.14, 0.2), a0: rng.range(0, 6.28) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, cols = hues(sc), e = fadeIn(env, 0.8), k = P.k || 0.16;
@@ -201,7 +201,7 @@ bgReg('duotoneSweep', { name: '二色スイープ', tags: ['calm', 'pop', 'graph
     });
   } });
 
-bgReg('horizonGlow', { name: '惑星の縁', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
+bgReg('horizonGlow', { name: '惑星の縁', nameEn: 'Planet glow', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), cx: rng.range(0.3, 0.7), R: rng.range(1.3, 2.1), top: rng.range(0.7, 0.8), k: rng.range(0.28, 0.4) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, dk = isDark(sc.bg), e = fadeIn(env, 1.1), U = Umin(env);
@@ -227,7 +227,7 @@ bgReg('horizonGlow', { name: '惑星の縁', tags: ['emotional', 'calm', 'editor
   } });
 
 /* ================= PATTERN ================= */
-bgReg('seigaiha', { name: '青海波', tags: ['calm', 'editorial', 'graphic'], w: 0.8,
+bgReg('seigaiha', { name: '青海波', nameEn: 'Seigaiha waves', tags: ['calm', 'editorial', 'graphic'], w: 0.8,
   plan: rng => ({ seed: bs(rng), R: rng.range(0.07, 0.1), rings: rng.int(3, 4), k: rng.range(0.075, 0.1), dir: rng.pick([1, -1]), acc: rng.chance(0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, R = Umin(env) * (P.R || 0.08), rings = P.rings || 4, e = fadeIn(env, 0.7);
@@ -251,7 +251,7 @@ bgReg('seigaiha', { name: '青海波', tags: ['calm', 'editorial', 'graphic'], w
     blit(ctx, env, pl, wrap(t * R * 0.22 * (P.dir || 1), 2 * R), wrap(R * 0.5 + Math.sin(t * 0.5) * R * 0.08 - (1 - e) * R * 0.5, R));
   } });
 
-bgReg('asanoha', { name: '麻の葉', tags: ['calm', 'editorial', 'graphic', 'emotional'], w: 0.8,
+bgReg('asanoha', { name: '麻の葉', nameEn: 'Asanoha leaves', tags: ['calm', 'editorial', 'graphic', 'emotional'], w: 0.8,
   plan: rng => ({ seed: bs(rng), a: rng.range(0.1, 0.14), k: rng.range(0.09, 0.12), dx: rng.pick([1, -1]), sweep: rng.range(0.07, 0.12) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, a = Umin(env) * (P.a || 0.12), h = a * Math.sqrt(3) / 2, e = fadeIn(env, 0.8);
@@ -284,7 +284,7 @@ bgReg('asanoha', { name: '麻の葉', tags: ['calm', 'editorial', 'graphic', 'em
     }
   } });
 
-bgReg('houndstooth', { name: '千鳥格子', tags: ['graphic', 'editorial', 'pop'], w: 0.6,
+bgReg('houndstooth', { name: '千鳥格子', nameEn: 'Chevron lattice', tags: ['graphic', 'editorial', 'pop'], w: 0.6,
   plan: rng => ({ seed: bs(rng), c: rng.range(0.04, 0.055), k: rng.range(0.055, 0.075), dx: rng.pick([1, -1]), acc: rng.chance(0.25) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, c = Umin(env) * (P.c || 0.045), e = fadeIn(env, 0.6);
@@ -307,7 +307,7 @@ bgReg('houndstooth', { name: '千鳥格子', tags: ['graphic', 'editorial', 'pop
     ctx.globalAlpha = e; blit(ctx, env, pl, wrap(d * (P.dx || 1), 2 * c), wrap(d * 0.6, 2 * c));
   } });
 
-bgReg('herringbone', { name: 'ヘリンボーン', tags: ['editorial', 'calm', 'graphic'], w: 0.6,
+bgReg('herringbone', { name: 'ヘリンボーン', nameEn: 'Herringbone', tags: ['editorial', 'calm', 'graphic'], w: 0.6,
   plan: rng => ({ seed: bs(rng), u: rng.range(0.032, 0.045), k: rng.range(0.07, 0.1), dir: rng.pick([1, -1]), rot: rng.pick([45, 45, -45]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, u = Umin(env) * (P.u || 0.038), e = fadeIn(env, 0.7), k = P.k || 0.08, rot = P.rot || 45;
@@ -334,7 +334,7 @@ bgReg('herringbone', { name: 'ヘリンボーン', tags: ['editorial', 'calm', '
     ctx.globalAlpha = e; ctx.fillStyle = gl; ctx.save(); ctx.transform(1, 0, -0.6, 1, 0, 0); ctx.fillRect(bx - bw, 0, bw * 2, H); ctx.restore();
   } });
 
-bgReg('argyle', { name: 'アーガイル', tags: ['pop', 'graphic', 'editorial'], w: 0.6,
+bgReg('argyle', { name: 'アーガイル', nameEn: 'Argyle', tags: ['pop', 'graphic', 'editorial'], w: 0.6,
   plan: rng => ({ seed: bs(rng), dw: rng.range(0.16, 0.22), asp: rng.range(1.3, 1.5), k: rng.range(0.06, 0.085), up: rng.pick([1, -1]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, dw = Umin(env) * (P.dw || 0.18), dh = dw * (P.asp || 1.4), k = P.k || 0.07, e = fadeIn(env, 0.6);
@@ -358,7 +358,7 @@ bgReg('argyle', { name: 'アーガイル', tags: ['pop', 'graphic', 'editorial']
     ctx.globalAlpha = e * 0.9; blit(ctx, env, lines, wrap(dw / 2 - W / 2 - d * 0.6, dw), wrap(-d, dh));
   } });
 
-bgReg('tartan', { name: 'タータン', tags: ['pop', 'calm', 'editorial'], w: 0.6,
+bgReg('tartan', { name: 'タータン', nameEn: 'Tartan', tags: ['pop', 'calm', 'editorial'], w: 0.6,
   plan: rng => ({ seed: bs(rng), S: rng.range(0.34, 0.5), w1: rng.range(0.18, 0.28), w2: rng.range(0.08, 0.13), k: rng.range(0.085, 0.115), acc: rng.chance(0.6) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, S = Umin(env) * (P.S || 0.42), k = P.k || 0.1, e = fadeIn(env, 0.8);
@@ -373,7 +373,7 @@ bgReg('tartan', { name: 'タータン', tags: ['pop', 'calm', 'editorial'], w: 0
     blit(ctx, env, hor, 0, wrap(t * S * 0.025 + S * 0.37, S));
   } });
 
-bgReg('chevron', { name: '山形', tags: ['pop', 'graphic'], w: 0.6,
+bgReg('chevron', { name: '山形', nameEn: 'Chevron', tags: ['pop', 'graphic'], w: 0.6,
   plan: rng => ({ seed: bs(rng), p: rng.range(0.13, 0.19), amp: rng.range(0.28, 0.42), k: rng.range(0.055, 0.075), dir: rng.pick([1, -1]), acc: rng.chance(0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, p = Umin(env) * (P.p || 0.16), D = p * 0.5, A = p * (P.amp || 0.35), e = fadeIn(env, 0.6);
@@ -390,7 +390,7 @@ bgReg('chevron', { name: '山形', tags: ['pop', 'graphic'], w: 0.6,
     blit(ctx, env, pl, wrap(p / 2 - W / 2 + Math.sin(t * 0.3) * p * 0.1, p), wrap(-t * D * 0.4 * (P.dir || 1) + (1 - e) * D, D));
   } });
 
-bgReg('isoCubes', { name: '立方体', tags: ['graphic', 'pop', 'calm'], w: 0.6,
+bgReg('isoCubes', { name: '立方体', nameEn: 'Cubes', tags: ['graphic', 'pop', 'calm'], w: 0.6,
   plan: rng => ({ seed: bs(rng), s: rng.range(0.055, 0.075), k: rng.range(0.08, 0.11), spd: rng.range(0.2, 0.35) * rng.pick([1, -1]), l0: rng.range(0, 6.28) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, s = Umin(env) * (P.s || 0.065), r3 = Math.sqrt(3), pw = r3 * s, ph = 3 * s, e = fadeIn(env, 0.6);
@@ -410,7 +410,7 @@ bgReg('isoCubes', { name: '立方体', tags: ['graphic', 'pop', 'calm'], w: 0.6,
     faces.forEach((cv, fi) => { ctx.globalAlpha = e * (0.25 + 0.75 * (0.5 + 0.5 * Math.cos(L - dirs[fi]))); blit(ctx, env, cv, ox, oy); });
   } });
 
-bgReg('hexGrid', { name: '六角格子', tags: ['graphic', 'glitch', 'calm'], w: 0.8,
+bgReg('hexGrid', { name: '六角格子', nameEn: 'Hex grid', tags: ['graphic', 'glitch', 'calm'], w: 0.8,
   plan: rng => ({ seed: bs(rng), s: rng.range(0.05, 0.07), k: rng.range(0.09, 0.12), mode: rng.pick(['ring', 'ring', 'sparkle']) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), s = U * (P.s || 0.06), r3 = Math.sqrt(3), e = fadeIn(env, 0.7);
@@ -432,7 +432,7 @@ bgReg('hexGrid', { name: '六角格子', tags: ['graphic', 'glitch', 'calm'], w:
     [0.5, 1, 1.6].forEach((m, l) => { ctx.fillStyle = tintC(sc, k * m); ctx.fill(lit[l]); });
   } });
 
-bgReg('triTess', { name: '三角モザイク', tags: ['graphic', 'calm', 'emotional'], w: 0.7,
+bgReg('triTess', { name: '三角モザイク', nameEn: 'Triangle mosaic', tags: ['graphic', 'calm', 'emotional'], w: 0.7,
   plan: rng => ({ seed: bs(rng), a: rng.range(0.1, 0.15), k: rng.range(0.07, 0.1), acc: rng.chance(0.35) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), a = U * (P.a || 0.12), h = a * Math.sqrt(3) / 2, e = fadeIn(env, 0.8);
@@ -456,7 +456,7 @@ bgReg('triTess', { name: '三角モザイク', tags: ['graphic', 'calm', 'emotio
     [0.35, 0.65, 1, 1.45].forEach((m, l) => { ctx.fillStyle = l === 3 && P.acc ? tintC(sc, k * m * 1.4) : cf(sc, k * m); ctx.fill(paths[l]); });
   } });
 
-bgReg('moire', { name: 'モアレ', tags: ['glitch', 'graphic', 'calm'], w: 0.6,
+bgReg('moire', { name: 'モアレ', nameEn: 'Moiré', tags: ['glitch', 'graphic', 'calm'], w: 0.6,
   plan: rng => ({ seed: bs(rng), gap: rng.range(0.016, 0.022), k: rng.range(0.08, 0.11), amp: rng.range(0.05, 0.09) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, U = Umin(env), gap = U * (P.gap || 0.018), amp = U * (P.amp || 0.07), e = fadeIn(env, 0.8), s = (P.seed || 1) % 17;
@@ -473,7 +473,7 @@ bgReg('moire', { name: 'モアレ', tags: ['glitch', 'graphic', 'calm'], w: 0.6,
     for (const [dx, dy] of cs) blit(ctx, env, pl, M - dx, M - dy);
   } });
 
-bgReg('squareTunnel', { name: '四角トンネル', tags: ['glitch', 'graphic', 'pop'], w: 0.6,
+bgReg('squareTunnel', { name: '四角トンネル', nameEn: 'Square tunnel', tags: ['glitch', 'graphic', 'pop'], w: 0.6,
   plan: rng => ({ seed: bs(rng), r: rng.range(1.22, 1.32), twist: rng.range(3, 7) * rng.pick([1, -1]), spd: rng.range(0.35, 0.6), k: rng.range(0.05, 0.07) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, U = Umin(env), r = P.r || 1.26, lr = Math.log(r), e = fadeIn(env, 0.5);
@@ -489,7 +489,7 @@ bgReg('squareTunnel', { name: '四角トンネル', tags: ['glitch', 'graphic', 
     ctx.fillStyle = layC(sc, P.k || 0.06); ctx.fill('evenodd');
   } });
 
-bgReg('spiralArms', { name: '渦巻き', tags: ['glitch', 'pop', 'graphic'], w: 0.6,
+bgReg('spiralArms', { name: '渦巻き', nameEn: 'Spiral', tags: ['glitch', 'pop', 'graphic'], w: 0.6,
   plan: rng => ({ seed: bs(rng), n: rng.int(3, 6), b: rng.range(0.26, 0.38), spd: rng.range(0.14, 0.24) * rng.pick([1, -1]), k: rng.range(0.055, 0.075), cy: rng.pick([0.5, 0.5, 0.56]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, U = Umin(env), n = P.n || 4, b = P.b || 0.32, e = fadeIn(env, 0.7);
@@ -510,7 +510,7 @@ bgReg('spiralArms', { name: '渦巻き', tags: ['glitch', 'pop', 'graphic'], w: 
 
 // marching squares: segment end points for each of the 16 corner cases (edges: 0 top, 1 right, 2 bottom, 3 left)
 const MS = [[], [[3, 2]], [[2, 1]], [[3, 1]], [[0, 1]], [[0, 1], [3, 2]], [[0, 2]], [[3, 0]], [[3, 0]], [[0, 2]], [[3, 0], [2, 1]], [[0, 1]], [[3, 1]], [[2, 1]], [[3, 2]], []];
-bgReg('topoLines', { name: '等高線', tags: ['calm', 'editorial', 'graphic'], w: 0.8,
+bgReg('topoLines', { name: '等高線', nameEn: 'Contour lines', tags: ['calm', 'editorial', 'graphic'], w: 0.8,
   plan: rng => ({ seed: bs(rng), n: rng.int(10, 14), fs: rng.range(1.2, 1.7), k: rng.range(0.11, 0.15), acc: rng.chance(0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), cell = U / 24, e = fadeIn(env, 0.9);
@@ -538,7 +538,7 @@ bgReg('topoLines', { name: '等高線', tags: ['calm', 'editorial', 'graphic'], 
     ctx.strokeStyle = P.acc ? tintC(sc, k * 2.2) : layC(sc, k * 1.6); ctx.lineWidth = Math.max(1.5, U * 0.0036); ctx.stroke(major);
   } });
 
-bgReg('ridgePlot', { name: '稜線グラフ', tags: ['editorial', 'emotional', 'calm'], w: 0.7,
+bgReg('ridgePlot', { name: '稜線グラフ', nameEn: 'Ridge plot', tags: ['editorial', 'emotional', 'calm'], w: 0.7,
   plan: rng => ({ seed: bs(rng), n: rng.int(18, 26), k: rng.range(0.15, 0.2), amp: rng.range(0.07, 0.1), mode: rng.pick(['center', 'center', 'wide']), spd: rng.range(0.18, 0.3) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), n = P.n || 22, e = fadeIn(env, 1);
@@ -561,7 +561,7 @@ bgReg('ridgePlot', { name: '稜線グラフ', tags: ['editorial', 'emotional', '
   } });
 
 /* ================= SCENE ================= */
-bgReg('starfield', { name: '星空', tags: ['emotional', 'calm'], w: 0.9,
+bgReg('starfield', { name: '星空', nameEn: 'Starfield', tags: ['emotional', 'calm'], w: 0.9,
   plan: rng => ({ seed: bs(rng), ang: rng.range(-0.3, 0.3) + (rng.chance(0.5) ? Math.PI : 0), spd: rng.range(0.8, 1.3), shoot: rng.chance(0.75) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 0.9);
@@ -597,7 +597,7 @@ bgReg('starfield', { name: '星空', tags: ['emotional', 'calm'], w: 0.9,
     }
   } });
 
-bgReg('nightMoon', { name: '月夜', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
+bgReg('nightMoon', { name: '月夜', nameEn: 'Moonlit night', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), side: rng.pick([1, -1]), R: rng.range(0.11, 0.15), phase: rng.pick(['full', 'crescent', 'crescent']), k: rng.range(0.18, 0.26) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 1.2), side = P.side || 1, port = H > W;
@@ -638,7 +638,7 @@ bgReg('nightMoon', { name: '月夜', tags: ['emotional', 'calm', 'editorial'], w
     }
   } });
 
-bgReg('skyline', { name: '街並み', tags: ['emotional', 'editorial', 'pop'], w: 0.8,
+bgReg('skyline', { name: '街並み', nameEn: 'City skyline', tags: ['emotional', 'editorial', 'pop'], w: 0.8,
   plan: rng => ({ seed: bs(rng), k: rng.range(0.08, 0.11), dir: rng.pick([1, -1]), win: rng.range(0.22, 0.34) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 0.9), k = P.k || 0.09;
@@ -674,7 +674,7 @@ bgReg('skyline', { name: '街並み', tags: ['emotional', 'editorial', 'pop'], w
     });
   } });
 
-bgReg('sunsetSun', { name: '夕日', tags: ['emotional', 'calm', 'pop'], w: 0.8,
+bgReg('sunsetSun', { name: '夕日', nameEn: 'Sunset', tags: ['emotional', 'calm', 'pop'], w: 0.8,
   plan: rng => ({ seed: bs(rng), hz: rng.range(0.7, 0.76), R: rng.range(0.12, 0.16), cx: rng.pick([rng.range(0.22, 0.34), rng.range(0.66, 0.78)]), k: rng.range(0.28, 0.36) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 1.2), k = P.k || 0.35;
@@ -708,7 +708,7 @@ bgReg('sunsetSun', { name: '夕日', tags: ['emotional', 'calm', 'pop'], w: 0.8,
     }
   } });
 
-bgReg('oceanWaves', { name: '海の波', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
+bgReg('oceanWaves', { name: '海の波', nameEn: 'Ocean waves', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), n: rng.int(9, 13), hz: rng.range(0.48, 0.58), k: rng.range(0.12, 0.17), dir: rng.pick([1, -1]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), n = P.n || 11, hz = P.hz || 0.52, e = fadeIn(env, 0.9), dir = P.dir || 1;
@@ -727,7 +727,7 @@ bgReg('oceanWaves', { name: '海の波', tags: ['calm', 'emotional', 'editorial'
     }
   } });
 
-bgReg('rainWindow', { name: '雨の窓', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
+bgReg('rainWindow', { name: '雨の窓', nameEn: 'Rainy window', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), ang: rng.range(4, 13) * rng.pick([1, -1]), n: rng.int(100, 140), k: rng.range(0.15, 0.2), drops: rng.int(16, 24) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), e = fadeIn(env, 0.6), k = P.k || 0.15, dk = isDark(sc.bg);
@@ -766,7 +766,7 @@ const softDot = col => cached('dot|' + col, () => {
   g.addColorStop(0, J.rgba(col, 1)); g.addColorStop(0.45, J.rgba(col, 0.75)); g.addColorStop(1, J.rgba(col, 0));
   x.fillStyle = g; x.fillRect(0, 0, 64, 64); return c;
 });
-bgReg('snowLayers', { name: '雪', tags: ['calm', 'emotional'], w: 0.9,
+bgReg('snowLayers', { name: '雪', nameEn: 'Snow', tags: ['calm', 'emotional'], w: 0.9,
   plan: rng => ({ seed: bs(rng), wind: rng.range(-0.45, 0.45), dens: rng.range(0.85, 1.2) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), e = fadeIn(env, 1);
@@ -784,7 +784,7 @@ bgReg('snowLayers', { name: '雪', tags: ['calm', 'emotional'], w: 0.9,
     });
   } });
 
-bgReg('fireworks', { name: '花火', tags: ['pop', 'emotional'], w: 0.7,
+bgReg('fireworks', { name: '花火', nameEn: 'Fireworks', tags: ['pop', 'emotional'], w: 0.7,
   plan: rng => ({ seed: bs(rng), per: rng.range(0.55, 0.8), k: rng.range(0.42, 0.55) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 0.3), cols = hues(sc);
@@ -824,7 +824,7 @@ bgReg('fireworks', { name: '花火', tags: ['pop', 'emotional'], w: 0.7,
     }
   } });
 
-bgReg('cloudLayers', { name: '雲', tags: ['calm', 'emotional', 'pop'], w: 0.8,
+bgReg('cloudLayers', { name: '雲', nameEn: 'Clouds', tags: ['calm', 'emotional', 'pop'], w: 0.8,
   plan: rng => ({ seed: bs(rng), dir: rng.pick([1, -1]), k: rng.range(0.06, 0.09) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), e = fadeIn(env, 1), k = P.k || 0.075, dir = P.dir || 1;
@@ -846,7 +846,7 @@ bgReg('cloudLayers', { name: '雲', tags: ['calm', 'emotional', 'pop'], w: 0.8,
     });
   } });
 
-bgReg('mountains', { name: '山並み', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
+bgReg('mountains', { name: '山並み', nameEn: 'Mountain range', tags: ['calm', 'emotional', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), n: rng.int(3, 4), k: rng.range(0.07, 0.1), dir: rng.pick([1, -1]), mist: rng.chance(0.7) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), e = fadeIn(env, 1.1), n = P.n || 3, k = P.k || 0.085;
@@ -874,7 +874,7 @@ bgReg('mountains', { name: '山並み', tags: ['calm', 'emotional', 'editorial']
   } });
 
 /* ================= TEXTURE / EFFECT ================= */
-bgReg('filmStrip', { name: 'フィルム', tags: ['editorial', 'emotional', 'glitch'], w: 0.7,
+bgReg('filmStrip', { name: 'フィルム', nameEn: 'Filmstrip', tags: ['editorial', 'emotional', 'glitch'], w: 0.7,
   plan: rng => ({ seed: bs(rng), dir: rng.pick([1, -1]), spd: rng.range(0.6, 1.2), scratch: rng.chance(0.7) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = E.outExpo(clamp(bgT(env) / 0.55)), vert = H > W;
@@ -927,7 +927,7 @@ const vhsNoise = (col, w, h, v) => cached(`vhs|${col}|${w}x${h}|${v}`, () => {
   }
   x.putImageData(id, 0, 0); return c;
 });
-bgReg('vhsBand', { name: 'VHSノイズ', tags: ['glitch', 'emotional'], w: 0.6,
+bgReg('vhsBand', { name: 'VHSノイズ', nameEn: 'VHS noise', tags: ['glitch', 'emotional'], w: 0.6,
   plan: rng => ({ seed: bs(rng), h: rng.range(0.07, 0.12), spd: rng.range(0.08, 0.16) * rng.pick([1, -1]), k: rng.range(0.22, 0.32) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 0.3), st = env.step;
@@ -954,7 +954,7 @@ bgReg('vhsBand', { name: 'VHSノイズ', tags: ['glitch', 'emotional'], w: 0.6,
     }
   } });
 
-bgReg('tornPaper', { name: '破れ紙', tags: ['editorial', 'emotional', 'pop'], w: 0.7,
+bgReg('tornPaper', { name: '破れ紙', nameEn: 'Torn paper', tags: ['editorial', 'emotional', 'pop'], w: 0.7,
   plan: rng => ({ seed: bs(rng), v: rng.pick(['tb', 'tb', 'diag', 'side']), k: rng.range(0.05, 0.08) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), bt = bgT(env), k = P.k || 0.065;
@@ -984,7 +984,7 @@ bgReg('tornPaper', { name: '破れ紙', tags: ['editorial', 'emotional', 'pop'],
     });
   } });
 
-bgReg('godRays', { name: '光芒', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
+bgReg('godRays', { name: '光芒', nameEn: 'God rays', tags: ['emotional', 'calm', 'editorial'], w: 0.8,
   plan: rng => ({ seed: bs(rng), x: rng.pick([rng.range(0.12, 0.35), rng.range(0.65, 0.88), 0.5]), n: rng.int(7, 11), spread: rng.range(45, 75), k: rng.range(0.11, 0.16), dust: rng.chance(0.75) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 1);
@@ -1017,7 +1017,7 @@ bgReg('godRays', { name: '光芒', tags: ['emotional', 'calm', 'editorial'], w: 
     }
   } });
 
-bgReg('vignettePulse', { name: '色の周辺光', tags: ['emotional', 'calm', 'pop'], w: 0.9, subtle: true,
+bgReg('vignettePulse', { name: '色の周辺光', nameEn: 'Color vignette', tags: ['emotional', 'calm', 'pop'], w: 0.9, subtle: true,
   plan: rng => ({ seed: bs(rng), k: rng.range(0.3, 0.42), two: rng.chance(0.6), rate: rng.range(0.35, 0.55) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, U = Umin(env), dk = isDark(sc.bg), e = fadeIn(env, 0.8), cols = hues(sc);
@@ -1038,7 +1038,7 @@ bgReg('vignettePulse', { name: '色の周辺光', tags: ['emotional', 'calm', 'p
     });
   } });
 
-bgReg('kaleidoscope', { name: '万華鏡', tags: ['pop', 'glitch', 'emotional'], w: 0.6,
+bgReg('kaleidoscope', { name: '万華鏡', nameEn: 'Kaleidoscope', tags: ['pop', 'glitch', 'emotional'], w: 0.6,
   plan: rng => ({ seed: bs(rng), n: rng.pick([6, 8, 8, 10]), m: rng.int(6, 9), k: rng.range(0.075, 0.1), spd: rng.range(0.05, 0.1) * rng.pick([1, -1]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), e = fadeIn(env, 0.8), n = P.n || 8, m = P.m || 7, k = P.k || 0.085;
@@ -1088,7 +1088,7 @@ const marbleCv = (P, px, c1, c2) => cached(`marb|${P.seed}|${px}|${c1}|${c2}|${P
   }
   x.putImageData(id, 0, 0); return c;
 });
-bgReg('marble', { name: '大理石', tags: ['calm', 'editorial', 'emotional'], w: 0.7,
+bgReg('marble', { name: '大理石', nameEn: 'Marble', tags: ['calm', 'editorial', 'emotional'], w: 0.7,
   plan: rng => ({ seed: bs(rng), ang: rng.range(0, 3.14), freq: rng.range(1.4, 2.2), turb: rng.range(7, 10), k: rng.range(0.17, 0.22), acc: rng.chance(0.5), dir: rng.pick([1, -1]) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, e = fadeIn(env, 1), U = Umin(env), M = U * 0.12, s = (P.seed || 1) % 13;
@@ -1104,7 +1104,7 @@ bgReg('marble', { name: '大理石', tags: ['calm', 'editorial', 'emotional'], w
     blit(ctx, env, pl, M + M * 0.9 * Math.sin(t * 0.06 * (P.dir || 1) + s), M + M * 0.9 * Math.cos(t * 0.045 + s * 2));
   } });
 
-bgReg('paperCut', { name: '切り絵', tags: ['pop', 'emotional', 'calm'], w: 0.7,
+bgReg('paperCut', { name: '切り絵', nameEn: 'Paper cutout', tags: ['pop', 'emotional', 'calm'], w: 0.7,
   plan: rng => ({ seed: bs(rng), L: rng.int(3, 4), lobes: rng.int(5, 9), k: rng.range(0.06, 0.09), acc: rng.chance(0.5), p: rng.range(2.4, 3.2) }),
   draw(env, P, ctx) {
     const { W, H, sc } = env, t = env.t, sd = P.seed || 1, U = Umin(env), dk = isDark(sc.bg), bt = bgT(env), L = P.L || 3, k = P.k || 0.075, pe = 2 / (P.p || 2.8);
@@ -1141,14 +1141,14 @@ const beatSince = (env, per) => {
   return wrap(env.lt, per);
 };
 
-reg('cam', 'orbitDrift', { name: '周回', tags: ['calm', 'emotional', 'graphic'], w: 0.8,
+reg('cam', 'orbitDrift', { name: '周回', nameEn: 'Orbit', tags: ['calm', 'emotional', 'graphic'], w: 0.8,
   plan: rng => ({ dir: rng.pick([1, -1]), a0: rng.range(0, 6.28), sp: rng.range(1.1, 1.6) }),
   get: (env, P) => {
     const K = KM(env), d = P.dir || 1, th = (P.a0 || 0) + d * env.lt * (P.sp || 1.3), r = E.outCubic(clamp(env.lt / 0.7));
     return { x: Math.cos(th) * env.W * 0.016 * K * r, y: Math.sin(th) * env.H * 0.02 * K * r, rot: Math.sin(th) * 0.9 * K * r * d, s: 1.02 };
   } });
 
-reg('cam', 'barrelRoll', { name: 'バレルロール', tags: ['pop', 'glitch', 'graphic'], w: 0.5, strong: true,
+reg('cam', 'barrelRoll', { name: 'バレルロール', nameEn: 'Barrel roll', tags: ['pop', 'glitch', 'graphic'], w: 0.5, strong: true,
   plan: rng => ({ dir: rng.pick([1, -1]), a: rng.range(70, 110), d: rng.range(0.42, 0.55) }),
   get: (env, P) => {
     const K = Math.min(1, KM(env)), q = clamp(env.lt / (P.d || 0.5));
@@ -1157,7 +1157,7 @@ reg('cam', 'barrelRoll', { name: 'バレルロール', tags: ['pop', 'glitch', '
     return { rot: (P.dir || 1) * (P.a || 90) * K * r, s: 1 - 0.12 * K * Math.sin(Math.PI * Math.min(1, q * 1.25)), blur: 9 * K * clamp(1 - q * 2.2) };
   } });
 
-reg('cam', 'pendulumSway', { name: '振り子', tags: ['emotional', 'pop', 'calm'], w: 0.7,
+reg('cam', 'pendulumSway', { name: '振り子', nameEn: 'Pendulum', tags: ['emotional', 'pop', 'calm'], w: 0.7,
   plan: rng => ({ a: rng.range(1.8, 2.6), per: rng.range(2, 3), side: rng.pick([1, -1]) }),
   get: (env, P) => {
     // the frame hangs from a pivot above the screen: rotation and sideways travel are coupled
@@ -1166,21 +1166,21 @@ reg('cam', 'pendulumSway', { name: '振り子', tags: ['emotional', 'pop', 'calm
     return { x: -L * Math.sin(phi), y: -L * (1 - Math.cos(phi)), rot: phi / DEG, s: 1.02 };
   } });
 
-reg('cam', 'focusIn', { name: 'ピント合わせ', tags: ['emotional', 'calm', 'editorial'], w: 0.9,
+reg('cam', 'focusIn', { name: 'ピント合わせ', nameEn: 'Focus in', tags: ['emotional', 'calm', 'editorial'], w: 0.9,
   plan: rng => ({ d: rng.range(0.5, 0.8), b: rng.range(10, 15) }),
   get: (env, P) => {
     const K = KM(env), q = E.outCubic(clamp(env.lt / (P.d || 0.65)));
     return { blur: (1 - q) * (P.b || 12) * Math.min(1, K), s: 1 + 0.03 * (1 - q) + 0.012 * K * cuOf(env) };     // lens breathing while focusing
   } });
 
-reg('cam', 'rackFocus', { name: 'ピンぼけ', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
+reg('cam', 'rackFocus', { name: 'ピンぼけ', nameEn: 'Defocus', tags: ['emotional', 'calm', 'editorial'], w: 0.6,
   plan: rng => ({ b: rng.range(5, 8), at: rng.range(0.6, 0.7) }),
   get: (env, P) => {
     const K = KM(env), dur = env.cut.dur, st = Math.max(dur * (P.at || 0.65), dur - 0.9), q = E.inOutSine(clamp((env.lt - st) / Math.max(0.2, dur - st)));
     return { blur: q * (P.b || 6.5) * Math.min(1, K), s: 1.01 - 0.02 * q * K, y: env.H * 0.004 * q };
   } });
 
-reg('cam', 'earthquake', { name: '地震', tags: ['glitch', 'pop', 'emotional'], w: 0.5, strong: true,
+reg('cam', 'earthquake', { name: '地震', nameEn: 'Earthquake', tags: ['glitch', 'pop', 'emotional'], w: 0.5, strong: true,
   plan: rng => ({ per: rng.range(0.55, 0.8), a: rng.range(0.85, 1.1) }),
   get: (env, P) => {
     // a low rumble all the time, a jolt on every beat (vertical-heavy, on the ≤24 Hz random clock)
@@ -1188,7 +1188,7 @@ reg('cam', 'earthquake', { name: '地震', tags: ['glitch', 'pop', 'emotional'],
     return { x: J.rs(sd, st, 11) * env.W * 0.005 * amp, y: J.rs(sd, st, 12) * env.H * 0.014 * amp, rot: J.rs(sd, st, 13) * 0.45 * amp, s: 1.02 + 0.012 * hit * K, blur: 1.5 * hit * K };
   } });
 
-reg('cam', 'floatNoise', { name: '浮遊', tags: ['calm', 'emotional'], w: 0.9,
+reg('cam', 'floatNoise', { name: '浮遊', nameEn: 'Float', tags: ['calm', 'emotional'], w: 0.9,
   plan: rng => ({ f: rng.range(0.8, 1.2) }),
   get: (env, P) => {
     const K = KM(env), t = env.lt * (P.f || 1), sd = seedOf(env) + 7;
@@ -1196,7 +1196,7 @@ reg('cam', 'floatNoise', { name: '浮遊', tags: ['calm', 'emotional'], w: 0.9,
       rot: J.noise1(t * 0.3 + 9, sd + 2) * 1.3 * K, s: 1.025 + 0.012 * Math.sin(t * 0.8) };
   } });
 
-reg('cam', 'vertigo', { name: 'めまい', tags: ['emotional', 'glitch'], w: 0.6,
+reg('cam', 'vertigo', { name: 'めまい', nameEn: 'Dizziness', tags: ['emotional', 'glitch'], w: 0.6,
   plan: rng => ({ dir: rng.pick([1, -1]), a: rng.range(0.05, 0.07) }),
   get: (env, P) => {
     // a creeping dolly-in whose perspective keeps warping: stretch / shear waver grows with the zoom
@@ -1204,7 +1204,7 @@ reg('cam', 'vertigo', { name: 'めまい', tags: ['emotional', 'glitch'], w: 0.6
     return { s: 1 + (P.a || 0.06) * K * z, sx: 1 + 0.03 * K * z * w, sy: 1 - 0.026 * K * z * w, skx: 2.2 * K * z * Math.sin(env.lt * 1.7) * d, rot: 0.8 * K * z * Math.sin(env.lt * 1.1 + 1) * d };
   } });
 
-reg('cam', 'tiltDown', { name: 'ティルトダウン', tags: ['calm', 'editorial', 'emotional'], w: 0.8,
+reg('cam', 'tiltDown', { name: 'ティルトダウン', nameEn: 'Tilt down', tags: ['calm', 'editorial', 'emotional'], w: 0.8,
   plan: rng => ({ a: rng.range(0.024, 0.032) }),
   get: (env, P) => {
     // camera tilts down onto the line: it rises into frame from below and settles, easing out of a slight zoom
@@ -1212,7 +1212,7 @@ reg('cam', 'tiltDown', { name: 'ティルトダウン', tags: ['calm', 'editoria
     return { y: a * (1.2 - 1.6 * q), s: 1.035 - 0.02 * q };
   } });
 
-reg('cam', 'spiralIn', { name: '渦ズーム', tags: ['pop', 'graphic', 'emotional'], w: 0.6,
+reg('cam', 'spiralIn', { name: '渦ズーム', nameEn: 'Swirl zoom', tags: ['pop', 'graphic', 'emotional'], w: 0.6,
   plan: rng => ({ dir: rng.pick([1, -1]), a0: rng.range(0, 6.28), d: rng.range(0.9, 1.3) }),
   get: (env, P) => {
     const K = KM(env), d = P.dir || 1, e = E.outCubic(clamp(env.lt / (P.d || 1.1))), r = 1 - e, th = (P.a0 || 0) + d * e * TAU * 0.8;
@@ -1227,7 +1227,7 @@ const snapTime = (env, at) => {
   for (const b of (env.plan && env.plan.beats) || []) { const r = b - c.start; if (r >= c.dur * 0.38 && r <= c.dur * 0.72) { v = r; break; } }
   snapCache.set(c, v); return v;
 };
-reg('cam', 'snapPan', { name: 'スナップパン', tags: ['pop', 'glitch', 'graphic'], w: 0.7,
+reg('cam', 'snapPan', { name: 'スナップパン', nameEn: 'Snap pan', tags: ['pop', 'glitch', 'graphic'], w: 0.7,
   plan: rng => ({ dir: rng.pick([1, -1]), a: rng.range(0.024, 0.032), at: rng.range(0.45, 0.6) }),
   get: (env, P) => {
     // holds one framing, then whips to the opposite framing mid-cut (on a beat when there is one) and holds again
@@ -1237,7 +1237,7 @@ reg('cam', 'snapPan', { name: 'スナップパン', tags: ['pop', 'glitch', 'gra
     return { x: A * (1 - 2 * q) - drift, s: 1.02 + 0.015 * bell, skx: -d * 5 * K * bell, blur: 14 * K * bell };
   } });
 
-reg('cam', 'jelly', { name: 'ぷるん', tags: ['pop', 'graphic'], w: 0.7,
+reg('cam', 'jelly', { name: 'ぷるん', nameEn: 'Jelly wobble', tags: ['pop', 'graphic'], w: 0.7,
   plan: rng => ({ a: rng.range(0.045, 0.065), f: rng.range(18, 24) }),
   get: (env, P) => {
     // squash-and-stretch wobble: lands squashed at the cut start, re-wobbles on beats

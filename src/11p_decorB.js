@@ -261,7 +261,7 @@ function withSettle(draw) {
    ============================================================ */
 
 /* 家紋 — a family crest (circles & arcs only) drawn on inside a double ring, with its name set small beneath */
-const KAMON = ['丸に三つ巴', '丸に七宝', '丸に梅鉢', '丸に輪違い', '丸に三つ輪'];
+const KAMON = ['TRISKELE', 'SHIPPO', 'PLUM', 'RINGS', 'TRIPLE'];
 function kamonPaths(kind) {            // unit-radius motif paths (closed polylines), local coordinates
   const out = [];
   if (kind === 0) {                    // mitsudomoe: three swirling commas
@@ -290,7 +290,7 @@ function kamonPaths(kind) {            // unit-radius motif paths (closed polyli
   return out;
 }
 DEF.kamon = {
-  name: '家紋', tags: ['editorial', 'calm', 'emotional'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: '家紋', nameEn: 'Family crest', tags: ['editorial', 'calm', 'emotional'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -317,7 +317,7 @@ DEF.kamon = {
 
 /* 青海波 — overlapping concentric-arc waves spreading from a screen corner, under the lyric */
 DEF.seigaiha = {
-  name: '青海波', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
+  name: '青海波', nameEn: 'Seigaiha waves', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env);
@@ -351,7 +351,7 @@ DEF.seigaiha = {
 
 /* 麻の葉 — the hemp-leaf lattice seen through a round (or square) window that irises open behind the lyric */
 DEF.asanoha = {
-  name: '麻の葉', tags: ['calm', 'editorial', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
+  name: '麻の葉', nameEn: 'Asanoha leaves', tags: ['calm', 'editorial', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc, ctx } = env, u = U(env);
@@ -392,7 +392,7 @@ DEF.asanoha = {
 
 /* 花火 — firework shells bursting in the free space around the lyric (chrysanthemum trails, peony stars or drooping willow) */
 DEF.hanabi = {
-  name: '花火', tags: ['emotional', 'pop', 'calm'], w: 0.8, layer: 'front', ae: 'sparks',
+  name: '花火', nameEn: 'Fireworks', tags: ['emotional', 'pop', 'calm'], w: 0.8, layer: 'front', ae: 'sparks',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -447,7 +447,7 @@ DEF.hanabi = {
 
 /* 提灯 — paper lanterns dropping in on strings from the top edge, swinging, each bearing a character of the lyric */
 DEF.chochin = {
-  name: '提灯', tags: ['emotional', 'pop', 'calm'], w: 0.7, layer: 'front', ae: 'shapes',
+  name: '提灯', nameEn: 'Lantern', tags: ['emotional', 'pop', 'calm'], w: 0.7, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env), m = MG(env);
@@ -499,7 +499,7 @@ DEF.chochin = {
 
 /* 注連縄 — a twisted sacred rope sagging across the free band, with zigzag shide papers and straw tassels */
 DEF.shimenawa = {
-  name: '注連縄', tags: ['editorial', 'emotional', 'calm'], w: 0.6, layer: 'front', ae: 'leaders',
+  name: '注連縄', nameEn: 'Shimenawa rope', tags: ['editorial', 'emotional', 'calm'], w: 0.6, layer: 'front', ae: 'leaders',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env), m = MG(env);
@@ -553,7 +553,7 @@ DEF.shimenawa = {
 
 /* 扇 — a folding fan that opens with pleated ribs (plain, with a red sun, or with painted wave bands) and folds shut on exit */
 DEF.sensu = {
-  name: '扇', tags: ['emotional', 'editorial', 'calm'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: '扇', nameEn: 'Fan', tags: ['emotional', 'editorial', 'calm'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -605,7 +605,7 @@ function kumo(x0, yb, L, hc) {             // stylised cloud outline: bumpy top,
   return { outline: top.concat([[x0 + L, yb], [x0, yb]]), curl };
 }
 DEF.tsukiKumo = {
-  name: '月に雲', tags: ['emotional', 'calm', 'editorial'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: '月に雲', nameEn: 'Moon and clouds', tags: ['emotional', 'calm', 'editorial'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -656,7 +656,7 @@ const MAPLE = (() => {
   return pts;
 })();
 DEF.momiji = {
-  name: '紅葉', tags: ['emotional', 'calm'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: '紅葉', nameEn: 'Autumn leaves', tags: ['emotional', 'calm'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env);
@@ -694,7 +694,7 @@ function waveCrest(x, yb, w, h) {
   return { crest: back.concat(curl), face, inner, top: [x + r0 * 0.9, yb - h] };
 }
 DEF.namiGashira = {
-  name: '波頭', tags: ['emotional', 'editorial', 'graphic'], w: 0.8, layer: 'front', ae: 'waveform',
+  name: '波頭', nameEn: 'Wave crests', tags: ['emotional', 'editorial', 'graphic'], w: 0.8, layer: 'front', ae: 'waveform',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -723,7 +723,7 @@ DEF.namiGashira = {
 
 /* 霞 — layered suyari-gasumi mist bands (rounded stepped bars) drifting behind the lyric, edged with a gold hairline */
 DEF.kasumi = {
-  name: '霞', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'bars',
+  name: '霞', nameEn: 'Mist', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'bars',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc, ctx } = env, u = U(env);
@@ -758,7 +758,7 @@ DEF.kasumi = {
 
 /* 六角格子 — a honeycomb patch whose cells ripple in, with a scan band and a few lit cells */
 DEF.hexGrid = {
-  name: '六角格子', tags: ['glitch', 'graphic'], w: 0.9, layer: 'front', ae: 'grid',
+  name: '六角格子', nameEn: 'Hex grid', tags: ['glitch', 'graphic'], w: 0.9, layer: 'front', ae: 'grid',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -797,7 +797,7 @@ DEF.hexGrid = {
 
 /* 円形スペクトラム — a radial spectrum analyser: mirrored bars around a small ring, with falling peak dots */
 DEF.spectrumRing = {
-  name: '円形スペクトラム', tags: ['glitch', 'pop', 'graphic'], w: 0.9, layer: 'front', ae: 'waveform',
+  name: '円形スペクトラム', nameEn: 'Circular spectrum', tags: ['glitch', 'pop', 'graphic'], w: 0.9, layer: 'front', ae: 'waveform',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -833,7 +833,7 @@ DEF.spectrumRing = {
 
 /* データ列 — a small memory-dump panel: address / bytes / code-point rows scrolling up, newest row flagged */
 DEF.dataColumns = {
-  name: 'データ列', tags: ['glitch', 'editorial', 'graphic'], w: 0.9, layer: 'front', ae: 'barcode',
+  name: 'データ列', nameEn: 'Data column', tags: ['glitch', 'editorial', 'graphic'], w: 0.9, layer: 'front', ae: 'barcode',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -870,7 +870,7 @@ DEF.dataColumns = {
 
 /* 読み込み — a loading spinner (segments, twin arcs or orbiting dots) that resolves into a check mark */
 DEF.spinner = {
-  name: '読み込み', tags: ['glitch', 'pop', 'graphic'], w: 0.8, layer: 'front', ae: 'rings',
+  name: '読み込み', nameEn: 'Loading', tags: ['glitch', 'pop', 'graphic'], w: 0.8, layer: 'front', ae: 'rings',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -917,7 +917,7 @@ DEF.spinner = {
 
 /* 方位テープ — a scrolling compass heading tape with a fixed pointer and a boxed readout */
 DEF.headingTape = {
-  name: '方位テープ', tags: ['glitch', 'graphic', 'editorial'], w: 0.9, layer: 'front', ae: 'grid',
+  name: '方位テープ', nameEn: 'Compass tape', tags: ['glitch', 'graphic', 'editorial'], w: 0.9, layer: 'front', ae: 'grid',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -961,7 +961,7 @@ DEF.headingTape = {
 
 /* 文字ロック — HUD lock-on corners that hop from glyph to glyph along the lyric's outer edge, leaving index ticks */
 DEF.glyphLock = {
-  name: '文字ロック', tags: ['glitch', 'graphic', 'editorial'], w: 0.9, layer: 'front', ae: 'brackets',
+  name: '文字ロック', nameEn: 'Type lock', tags: ['glitch', 'graphic', 'editorial'], w: 0.9, layer: 'front', ae: 'brackets',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1020,7 +1020,7 @@ DEF.glyphLock = {
 
 /* 原子軌道 — three tilted orbit ellipses round a small nucleus, electrons passing in front of / behind it */
 DEF.atomOrbit = {
-  name: '原子軌道', tags: ['graphic', 'glitch', 'calm'], w: 0.8, layer: 'front', ae: 'rings',
+  name: '原子軌道', nameEn: 'Atomic orbit', tags: ['graphic', 'glitch', 'calm'], w: 0.8, layer: 'front', ae: 'rings',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -1058,7 +1058,7 @@ DEF.atomOrbit = {
 
 /* 音波 — sound-wave arcs radiating outward from both sides of the lyric (above / below for vertical text), on the beat */
 DEF.sonarArcs = {
-  name: '音波', tags: ['pop', 'emotional', 'graphic'], w: 0.9, layer: 'front', ae: 'rings',
+  name: '音波', nameEn: 'Sound waves', tags: ['pop', 'emotional', 'graphic'], w: 0.9, layer: 'front', ae: 'rings',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1094,7 +1094,7 @@ DEF.sonarArcs = {
 
 /* 回路 — circuit-board traces routed with 45° bends from a screen edge toward the lyric, pads, vias and travelling pulses */
 DEF.circuit = {
-  name: '回路', tags: ['glitch', 'graphic'], w: 0.9, layer: 'front', ae: 'leaders',
+  name: '回路', nameEn: 'Circuit', tags: ['glitch', 'graphic'], w: 0.9, layer: 'front', ae: 'leaders',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env);
@@ -1145,7 +1145,7 @@ DEF.circuit = {
 
 /* 色見本 — a printer's colour-control strip built from the scheme: solids over 50 % tints, with codes and a register mark */
 DEF.swatches = {
-  name: '色見本', tags: ['editorial', 'graphic'], w: 0.9, layer: 'front', ae: 'bars',
+  name: '色見本', nameEn: 'Color swatches', tags: ['editorial', 'graphic'], w: 0.9, layer: 'front', ae: 'bars',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -1176,7 +1176,7 @@ DEF.swatches = {
 
 /* 罫線ノート — faint notebook rules drawn on across the screen behind the lyric, with a red margin line and a date header */
 DEF.ruledLines = {
-  name: '罫線ノート', tags: ['editorial', 'calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
+  name: '罫線ノート', nameEn: 'Ruled notebook', tags: ['editorial', 'calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'grid',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env);
@@ -1204,7 +1204,7 @@ DEF.ruledLines = {
 
 /* 見当合わせ — a registration target printed in three offset colours that slide into perfect register */
 DEF.registration = {
-  name: '見当合わせ', tags: ['editorial', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'brackets',
+  name: '見当合わせ', nameEn: 'Registration marks', tags: ['editorial', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'brackets',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -1237,7 +1237,7 @@ DEF.registration = {
 
 /* パンチ穴 — binder punch holes along a free screen edge, punched in one by one, with reinforcement rings and a dimension */
 DEF.punchHoles = {
-  name: 'パンチ穴', tags: ['editorial', 'calm', 'graphic'], w: 0.7, layer: 'front', ae: 'dots',
+  name: 'パンチ穴', nameEn: 'Punch holes', tags: ['editorial', 'calm', 'graphic'], w: 0.7, layer: 'front', ae: 'dots',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1294,7 +1294,7 @@ function sheetCorner(env, X, Y, sx, sy, L, e, a) {
 
 /* ホチキス — the lyric treated as a stapled sheet: paper-corner lines, a dog-ear, and a staple that snaps in diagonally */
 DEF.staple = {
-  name: 'ホチキス', tags: ['editorial', 'pop', 'emotional'], w: 0.7, layer: 'front', ae: 'shapes',
+  name: 'ホチキス', nameEn: 'Staples', tags: ['editorial', 'pop', 'emotional'], w: 0.7, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env), m = MG(env);
@@ -1339,7 +1339,7 @@ const CLIP = (() => {
   return p.map(([x, y]) => [x, y - 1.5]);                // centred vertically
 })();
 DEF.paperClip = {
-  name: 'クリップ', tags: ['editorial', 'pop', 'emotional'], w: 0.7, layer: 'front', ae: 'shapes',
+  name: 'クリップ', nameEn: 'Paper clip', tags: ['editorial', 'pop', 'emotional'], w: 0.7, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1364,7 +1364,7 @@ DEF.paperClip = {
 
 /* 見出しタブ — binder index tabs sliding out of a free screen edge; the current line's tab sticks out in the accent */
 DEF.indexTabs = {
-  name: '見出しタブ', tags: ['editorial', 'pop', 'graphic'], w: 0.8, layer: 'front', ae: 'bars',
+  name: '見出しタブ', nameEn: 'Heading tab', tags: ['editorial', 'pop', 'graphic'], w: 0.8, layer: 'front', ae: 'bars',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env);
@@ -1381,7 +1381,7 @@ DEF.indexTabs = {
     }
     if (!pick) return;
     const { ed, vertE, mid } = pick, cur = ((env.cut.line | 0) % n + n) % n;
-    const labs = [['01', '02', '03', '04', '05'], ['あ', 'か', 'さ', 'た', 'な'], ['A', 'B', 'C', 'D', 'E']][(P.v | 0) % 3];
+    const labs = [['01', '02', '03', '04', '05'], ['I', 'II', 'III', 'IV', 'V'], ['A', 'B', 'C', 'D', 'E']][(P.v | 0) % 3];
     for (let i = 0; i < n; i++) {
       const q = E.outBack(J.clamp((lt - i * 0.06) / 0.35), 1.3); if (q <= 0) continue;
       const isC = i === cur, d = (tw + (isC ? 16 * u : 0)) * q, along = mid - span / 2 + i * (th + g);
@@ -1411,7 +1411,7 @@ DEF.indexTabs = {
 
 /* 蔓 — a tendril growing in from a screen corner, sprouting leaves and curls, stopping short of the lyric */
 DEF.vines = {
-  name: '蔓', tags: ['emotional', 'calm', 'pop'], w: 0.8, layer: 'front', ae: 'leaders',
+  name: '蔓', nameEn: 'Vine', tags: ['emotional', 'calm', 'pop'], w: 0.8, layer: 'front', ae: 'leaders',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env);
@@ -1483,7 +1483,7 @@ function cloudOutline(cx, by, Wc, seed) {
   return { runs, base: [[xl, by], [xr, by]], circles: cs };
 }
 DEF.cloudPuffs = {
-  name: '雲', tags: ['calm', 'pop', 'emotional'], w: 0.8, layer: 'front', ae: 'blobs',
+  name: '雲', nameEn: 'Clouds', tags: ['calm', 'pop', 'emotional'], w: 0.8, layer: 'front', ae: 'blobs',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, sc, ctx } = env, u = U(env);
@@ -1516,7 +1516,7 @@ DEF.cloudPuffs = {
 
 /* 星空 — a fine twinkling star field behind the lyric with an occasional shooting star */
 DEF.starField = {
-  name: '星空', tags: ['calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'dots',
+  name: '星空', nameEn: 'Starfield', tags: ['calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'dots',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env);
@@ -1543,9 +1543,9 @@ DEF.starField = {
 };
 
 /* 月齢 — a row of moon-phase icons (new → full → new) with the evening's phase ringed and named */
-const MOON_NAMES = ['新月', '三日月', '上弦', '十三夜', '満月', '居待月', '下弦', '有明'];
+const MOON_NAMES = ['NEW', 'WAX', '1Q', 'GIB', 'FULL', 'WAN', 'LQ', 'OLD'];
 DEF.moonPhases = {
-  name: '月齢', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'front', ae: 'dots',
+  name: '月齢', nameEn: 'Moon phase', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'front', ae: 'dots',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1586,7 +1586,7 @@ DEF.moonPhases = {
 
 /* 陽射し — faint sunburst wedges slowly turning out of a corner (or the bottom edge), behind the lyric */
 DEF.sunRays = {
-  name: '陽射し', tags: ['emotional', 'pop', 'calm'], w: 0.8, layer: 'back', subtle: true, ae: 'stripes',
+  name: '陽射し', nameEn: 'Sunbeams', tags: ['emotional', 'pop', 'calm'], w: 0.8, layer: 'back', subtle: true, ae: 'stripes',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env);
@@ -1610,7 +1610,7 @@ DEF.sunRays = {
 
 /* 雨の波紋 — raindrops landing on a still "ground plane" in the lower screen: perspective ripple rings (under the lyric) */
 DEF.rainRipples = {
-  name: '雨の波紋', tags: ['calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'rings',
+  name: '雨の波紋', nameEn: 'Rain ripples', tags: ['calm', 'emotional'], w: 0.8, layer: 'back', subtle: true, ae: 'rings',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env);
@@ -1637,7 +1637,7 @@ DEF.rainRipples = {
 
 /* シャボン玉 — soap bubbles rising and wobbling; bubbles that drift up under the lyric pop just before touching it */
 DEF.bubbles = {
-  name: 'シャボン玉', tags: ['pop', 'emotional', 'calm'], w: 0.8, layer: 'front', ae: 'dots',
+  name: 'シャボン玉', nameEn: 'Bubbles', tags: ['pop', 'emotional', 'calm'], w: 0.8, layer: 'front', ae: 'dots',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1682,7 +1682,7 @@ DEF.bubbles = {
 
 /* 煙 — thin wisps of smoke curling upward (optionally from a stick of incense with a glowing tip), under the lyric */
 DEF.smoke = {
-  name: '煙', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'blobs',
+  name: '煙', nameEn: 'Smoke', tags: ['calm', 'emotional', 'editorial'], w: 0.8, layer: 'back', subtle: true, ae: 'blobs',
   draw(env, bb, P) {
     if (env.pass !== 'main' || env.lt < 0) return;
     const { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1715,7 +1715,7 @@ DEF.smoke = {
 
 /* 綿毛 — dandelion seeds (stalk + umbrella of filaments) drifting on the wind, optionally shed from a puffball */
 DEF.dandelion = {
-  name: '綿毛', tags: ['calm', 'emotional'], w: 0.8, layer: 'front', ae: 'sparks',
+  name: '綿毛', nameEn: 'Seed fluff', tags: ['calm', 'emotional'], w: 0.8, layer: 'front', ae: 'sparks',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1760,7 +1760,7 @@ DEF.dandelion = {
 
 /* 蛍 — fireflies wandering around the lyric, glowing on and off with soft halos and faint trails */
 DEF.fireflies = {
-  name: '蛍', tags: ['emotional', 'calm'], w: 0.8, layer: 'front', ae: 'dots',
+  name: '蛍', nameEn: 'Fireflies', tags: ['emotional', 'calm'], w: 0.8, layer: 'front', ae: 'dots',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1796,7 +1796,7 @@ DEF.fireflies = {
 
 /* メンフィス — Memphis-style squiggles, zigzags, outlined triangles, dot grids and hatch strokes placed round the lyric */
 DEF.memphis = {
-  name: 'メンフィス', tags: ['pop', 'graphic'], w: 0.9, layer: 'front', ae: 'shapes',
+  name: 'メンフィス', nameEn: 'Memphis', tags: ['pop', 'graphic'], w: 0.9, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env);
@@ -1828,7 +1828,7 @@ DEF.memphis = {
 
 /* ジグザグリボン — an accordion-folded two-tone ribbon unfurling in from a screen corner */
 DEF.zigzagRibbon = {
-  name: 'ジグザグリボン', tags: ['pop', 'graphic'], w: 0.8, layer: 'front', ae: 'bars',
+  name: 'ジグザグリボン', nameEn: 'Zigzag ribbon', tags: ['pop', 'graphic'], w: 0.8, layer: 'front', ae: 'bars',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env);
@@ -1859,7 +1859,7 @@ DEF.zigzagRibbon = {
 
 /* 水玉 — a patch of polka dots whose sizes breathe in a travelling diagonal wave */
 DEF.polkaPatch = {
-  name: '水玉', tags: ['pop', 'graphic', 'calm'], w: 0.9, layer: 'front', ae: 'dots',
+  name: '水玉', nameEn: 'Polka dots', tags: ['pop', 'graphic', 'calm'], w: 0.9, layer: 'front', ae: 'dots',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -1886,7 +1886,7 @@ DEF.polkaPatch = {
 
 /* 縞の円 — a disc filled with fine rotating stripes, ringed, with an off-register outline "shadow" */
 DEF.stripeCircle = {
-  name: '縞の円', tags: ['graphic', 'pop'], w: 0.9, layer: 'front', ae: 'stripes',
+  name: '縞の円', nameEn: 'Striped circles', tags: ['graphic', 'pop'], w: 0.9, layer: 'front', ae: 'stripes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -1917,7 +1917,7 @@ DEF.stripeCircle = {
 
 /* 装飾コーナー — art-deco corner ornaments (stepped double L, quarter arc, diamonds) drawn out from two screen corners */
 DEF.decoCorners = {
-  name: '装飾コーナー', tags: ['editorial', 'graphic', 'calm'], w: 0.9, layer: 'front', ae: 'brackets',
+  name: '装飾コーナー', nameEn: 'Decorative corners', tags: ['editorial', 'graphic', 'calm'], w: 0.9, layer: 'front', ae: 'brackets',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -1951,7 +1951,7 @@ DEF.decoCorners = {
 
 /* 半円の積層 — Bauhaus half-circles: a stacked tower of domes, a scalloped row, or nested rainbow arches */
 DEF.halfCircles = {
-  name: '半円の積層', tags: ['graphic', 'pop', 'calm'], w: 0.9, layer: 'front', ae: 'shapes',
+  name: '半円の積層', nameEn: 'Stacked half-circles', tags: ['graphic', 'pop', 'calm'], w: 0.9, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -1992,7 +1992,7 @@ DEF.halfCircles = {
 
 /* 循環矢印 — circular chasing arrows (2 or 3) rotating round a small readout, like a repeat / refresh glyph */
 DEF.loopArrows = {
-  name: '循環矢印', tags: ['graphic', 'pop', 'editorial'], w: 0.8, layer: 'front', ae: 'arrows',
+  name: '循環矢印', nameEn: 'Cycle arrows', tags: ['graphic', 'pop', 'editorial'], w: 0.8, layer: 'front', ae: 'arrows',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -2016,7 +2016,7 @@ DEF.loopArrows = {
 
 /* スターバースト — a zig-zag "sale sticker" badge that spins in beside the lyric, with a word / number inside */
 DEF.starburst = {
-  name: 'スターバースト', tags: ['pop', 'graphic'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: 'スターバースト', nameEn: 'Starburst', tags: ['pop', 'graphic'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -2043,7 +2043,7 @@ DEF.starburst = {
 /* 正の字 — hand-drawn tally marks (正) counting up stroke by stroke through the cut */
 const SEI = [[[0.1, 0.12], [0.9, 0.12]], [[0.5, 0.12], [0.5, 0.9]], [[0.5, 0.5], [0.84, 0.5]], [[0.22, 0.46], [0.22, 0.9]], [[0.02, 0.9], [0.98, 0.9]]];
 DEF.tally = {
-  name: '正の字', tags: ['editorial', 'pop', 'emotional'], w: 0.8, layer: 'front', ae: 'counter',
+  name: '正の字', nameEn: 'Tally marks', tags: ['editorial', 'pop', 'emotional'], w: 0.8, layer: 'front', ae: 'counter',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -2077,7 +2077,7 @@ DEF.tally = {
 /* カーソル — a mouse pointer glides in and clicks beside the lyric (ripple + tooltip), or drags a marching-ants selection round it */
 const CURSOR = [[0, 0], [0, 1], [0.27, 0.76], [0.45, 1.13], [0.6, 1.06], [0.42, 0.7], [0.74, 0.7]];
 DEF.cursorClick = {
-  name: 'カーソル', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'arrows',
+  name: 'カーソル', nameEn: 'Cursor', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'arrows',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env), m = MG(env);
@@ -2133,7 +2133,7 @@ DEF.cursorClick = {
 
 /* ウィンドウ — an OS window frame opening round the lyric: title bar with buttons, file name, scrollbar and status line */
 DEF.windowChrome = {
-  name: 'ウィンドウ', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'brackets',
+  name: 'ウィンドウ', nameEn: 'Window', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'brackets',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc } = env, u = U(env), m = MG(env);
@@ -2184,7 +2184,7 @@ function bandSpot(env, bb, w, h, P, gap) {
 
 /* 読み込みバー — a UI progress bar: pill track, barber-pole fill that loads in uneven bursts, file-size readout */
 DEF.progressBar = {
-  name: '読み込みバー', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'bars',
+  name: '読み込みバー', nameEn: 'Loading bar', tags: ['pop', 'graphic', 'glitch'], w: 0.8, layer: 'front', ae: 'bars',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, sc, ctx } = env, u = U(env);
@@ -2219,9 +2219,9 @@ DEF.progressBar = {
 };
 
 /* トグル — a small settings panel: two or three iOS-style switches flicking on one after another */
-const TOGGLE_LABELS = [['SHUFFLE', 'REPEAT', 'LYRICS'], ['想い', '記憶', '未練'], ['LOVE', 'MEMORY', 'REPLAY'], ['声', '光', '夜']];
+const TOGGLE_LABELS = [['SHUFFLE', 'REPEAT', 'LYRICS'], ['IDEAS', 'MEMORIES', 'REGRETS'], ['LOVE', 'MEMORY', 'REPLAY'], ['VOICE', 'LIGHT', 'NIGHT']];
 DEF.toggleSwitch = {
-  name: 'トグル', tags: ['pop', 'graphic'], w: 0.7, layer: 'front', ae: 'shapes',
+  name: 'トグル', nameEn: 'Toggle', tags: ['pop', 'graphic'], w: 0.7, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -2245,7 +2245,7 @@ DEF.toggleSwitch = {
 
 /* 通知 — a line-art bell that rings each time its red badge counts up */
 DEF.notifBell = {
-  name: '通知', tags: ['pop', 'emotional'], w: 0.7, layer: 'front', ae: 'counter',
+  name: '通知', nameEn: 'Notification', tags: ['pop', 'emotional'], w: 0.7, layer: 'front', ae: 'counter',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -2269,14 +2269,14 @@ DEF.notifBell = {
       env.circle(bx, by, br + 2 * u, null, sc.bg, 2 * u, a, false);
       label(env, cnt >= 9 ? '9+' : String(cnt), bx, by, { size: br * 1.15, font: dispF(env), align: 'center', color: J.lum(ac) > 0.6 ? '#000000' : sc.bg, alpha: a, track: 0 });
     }
-    label(env, `通知 ${pad2(cnt)}件`, cx, cy + S * 0.72 + fs * 0.8, { size: fs, font: bodyF(env), align: 'center', alpha: a * inE(env, 0.3, 0.3), track: 0.1 });
+    label(env, `NOTICE ${pad2(cnt)}`, cx, cy + S * 0.72 + fs * 0.8, { size: fs, font: bodyF(env), align: 'center', alpha: a * inE(env, 0.3, 0.3), track: 0.1 });
   },
 };
 
 /* いいね — a heart button that fills with a burst when "liked", beside a rolling like counter */
 const heartPts = (cx, cy, s) => { const o = []; for (let i = 0; i < 36; i++) { const t = i / 36 * TAU; const x = 16 * Math.pow(Math.sin(t), 3), y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t); o.push([cx + x * s / 17, cy - y * s / 17]); } return o; };
 DEF.likeCounter = {
-  name: 'いいね', tags: ['pop', 'emotional'], w: 0.8, layer: 'front', ae: 'counter',
+  name: 'いいね', nameEn: 'Like', tags: ['pop', 'emotional'], w: 0.8, layer: 'front', ae: 'counter',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc, ctx } = env, u = U(env);
@@ -2312,7 +2312,7 @@ DEF.likeCounter = {
 
 /* 再生ボタン — transport controls (prev / play / next); play morphs into pause on a click, with a running time readout */
 DEF.mediaControls = {
-  name: '再生ボタン', tags: ['pop', 'graphic', 'emotional'], w: 0.8, layer: 'front', ae: 'shapes',
+  name: '再生ボタン', nameEn: 'Play button', tags: ['pop', 'graphic', 'emotional'], w: 0.8, layer: 'front', ae: 'shapes',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -2343,7 +2343,7 @@ DEF.mediaControls = {
 
 /* 音量 — a speaker glyph with an ascending stepped volume meter that follows the music */
 DEF.volumeBars = {
-  name: '音量', tags: ['pop', 'glitch', 'graphic'], w: 0.8, layer: 'front', ae: 'waveform',
+  name: '音量', nameEn: 'Volume', tags: ['pop', 'glitch', 'graphic'], w: 0.8, layer: 'front', ae: 'waveform',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { sc } = env, u = U(env);
@@ -2371,7 +2371,7 @@ DEF.volumeBars = {
 
 /* 音符 — eighth / beamed / quarter notes floating up and swaying out of the free space beside the lyric */
 DEF.musicNotes = {
-  name: '音符', tags: ['pop', 'emotional', 'calm'], w: 0.8, layer: 'front', ae: 'sparks',
+  name: '音符', nameEn: 'Musical notes', tags: ['pop', 'emotional', 'calm'], w: 0.8, layer: 'front', ae: 'sparks',
   draw(env, bb0, P) {
     if (env.pass !== 'main') return;
     const bb = getBB(env, bb0), { W, H, sc, ctx } = env, u = U(env);
