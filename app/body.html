@@ -1,0 +1,194 @@
+<div id="app">
+  <header class="bar">
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
+    <div class="proj">
+      <input id="songTitle" type="text" placeholder="曲名（タイトルカード・HUDに表示）" aria-label="曲名">
+      <input id="songArtist" type="text" placeholder="アーティスト" aria-label="アーティスト">
+    </div>
+    <div class="modes" role="group" aria-label="表示モード">
+      <button id="modeEasy" aria-pressed="false" title="おまかせボタン中心のシンプルな画面">かんたん</button>
+      <button id="modePro" aria-pressed="true" title="すべての設定を表示">詳細</button>
+    </div>
+    <div class="acts">
+      <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
+      <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
+    </div>
+  </header>
+
+  <main class="work">
+    <!-- ================= left: lyrics & timing ================= -->
+    <section class="col col-left" aria-label="歌詞とタイミング">
+      <div class="sec">
+        <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <div id="syntax" class="syntax" hidden>
+          <ul>
+            <li>1行が1フレーズ。空行は少し間を空けます</li>
+            <li><code>夜明けの色を/覚えてる</code> … <code>/</code> でカットの切れ目を指定</li>
+            <li><code>*透明*</code> … 強調（大きく・インパクト寄りの演出）</li>
+            <li>行末の <code>!</code> … フラッシュと揺れを入れる</li>
+            <li><code>歌詞|ruby or note</code> … 注釈レイアウトの小さな文字</li>
+            <li><code>[01:23.45]歌詞</code> … LRC のタイムスタンプをそのまま使用</li>
+            <li><code>#</code> で始まる行 … コメント（無視）</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h2>曲とタイミング</h2></div>
+        <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
+        <div class="row">
+          <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
+        </div>
+        <div class="fields pro-only">
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
+          <label class="field">開始(秒)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">行の長さ<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+        </div>
+        <div class="row pro-only">
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
+          <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
+        </div>
+        <div id="tapPanel" class="tapbox" hidden>
+          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。</div>
+          <div class="next">次: <b id="tapLine">—</b></div>
+          <button id="tapBtn" class="tap">TAP</button>
+          <button id="tapStop" class="ghost">終了する</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h2>行とカット</h2><span id="linesInfo" class="muted mono"></span></div>
+        <ol id="lineList"></ol>
+      </div>
+    </section>
+
+    <!-- ================= center: stage ================= -->
+    <section class="col col-stage" aria-label="プレビュー">
+      <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
+      <div class="transport">
+        <button id="btnPlay" class="play" aria-label="再生">▶</button>
+        <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置">
+        <button id="btnLoop" class="ghost small" aria-pressed="true">ループ</button>
+        <span class="hist-btns">
+          <button id="btnPrev" class="ghost small icon-txt" title="前の案に戻る" aria-label="前の案">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="次の案へ進む" aria-label="次の案">▶</button>
+        </span>
+        <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
+        <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
+      </div>
+      <canvas id="timeline" aria-label="タイムライン（クリックで移動）"></canvas>
+      <div class="cutinfo" id="cutInfo"></div>
+    </section>
+
+    <!-- ================= right: look & output ================= -->
+    <section class="col col-right" aria-label="スタイルと書き出し">
+      <div id="easyPanel" class="easy" hidden>
+        <div class="easy-hero">
+          <button id="btnOmakaseBig" class="omakase">おまかせで作る</button>
+          <p class="hint">押すたびに、スタイル・雰囲気・動き・配色・構成がまるごと変わります。キーボードの <span class="kbd">R</span> でも実行できます。</p>
+          <div class="hist-row">
+            <button id="btnPrev2" class="ghost">◀ 前の案</button>
+            <span id="histPos" class="muted mono"></span>
+            <button id="btnNext2" class="ghost">次の案 ▶</button>
+          </div>
+        </div>
+        <div class="easy-sec">
+          <h3>いまの案</h3>
+          <div id="easyNow" class="now"></div>
+        </div>
+        <div class="easy-sec">
+          <h3>ここだけ変える</h3>
+          <div class="easy-grid">
+            <button id="eStyle" title="スタイルだけ別のものに">スタイル</button>
+            <button id="ePalette" title="アクセント・ズレ色A/Bをランダムに">配色</button>
+            <button id="eMood" title="動き・グリッチ・使う手法の雰囲気だけ">雰囲気</button>
+            <button id="eCut" title="レイアウトと動きの組み合わせだけ">構成</button>
+          </div>
+        </div>
+        <div class="easy-sec">
+          <h3>書き出し</h3>
+          <div class="fields">
+            <label class="field">画面比<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 縦</option><option value="4:3">4:3</option><option value="3:4">3:4 縦</option><option value="1:1">1:1</option><option value="4:5">4:5 縦</option><option value="21:9">21:9</option></select></label>
+            <label class="field">解像度<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
+          </div>
+          <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button></div>
+          <div class="exp-box" hidden>
+            <div class="progress"><i class="exp-bar"></i></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
+          </div>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="style" aria-selected="true">スタイル</button>
+        <button role="tab" data-tab="fx" aria-selected="false">演出</button>
+        <button role="tab" data-tab="tech" aria-selected="false">手法</button>
+        <button role="tab" data-tab="out" aria-selected="false">書き出し</button>
+      </nav>
+
+      <div class="tabpane" data-pane="style">
+        <div id="styleGrid" class="style-grid"></div>
+        <h3>フォントの役割</h3>
+        <div id="fontRoles"></div>
+        <div class="row" style="margin-top:8px">
+          <input id="localFont" type="text" placeholder="PCのフォント名（例: 游明朝）" style="flex:1">
+          <button id="btnAddFont">追加</button>
+        </div>
+        <div class="row" style="margin-top:8px"><label class="file">フォントファイル（.ttf/.otf）<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>アクセント・ズレ色</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>自分の色で上書き<small>全シーンに適用。背景に合わせて明るさを自動調整します</small></span></label>
+        <div class="color-row" id="colorRowAccent"></div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnRandPalette" class="accent">ランダムに配色</button>
+          <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
+        </div>
+        <h3>背景・文字色</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>メインの背景と文字を自分の色にする</span></label>
+        <div class="color-row" id="colorRow"></div>
+      </div>
+
+      <div class="tabpane" data-pane="fx" hidden>
+        <div id="fxSliders"></div>
+        <div class="row" style="margin-top:6px">
+          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> フラッシュ</label>
+          <label class="row" style="gap:6px">コマ打ち <select id="fxKoma" title="動きを何枚/秒で描くか（出力fpsとは別）"><option value="0">フル（出力fpsのまま）</option><option value="12">2コマ打ち（12枚/秒）</option><option value="8">3コマ打ち（8枚/秒）</option></select></label>
+        </div>
+        <div class="fields" style="margin-top:12px">
+          <label class="field">HUD<select id="fxHud"><option value="auto">スタイル次第</option><option value="on">常に表示</option><option value="off">表示しない</option></select></label>
+          <label class="field">シード<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">新しいシード</button></label>
+        </div>
+        <p class="note">同じシードなら同じ構成になります。行ごとの「再抽選」「ロック」は左の行リストから。</p>
+      </div>
+
+      <div class="tabpane" data-pane="tech" hidden>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="手法を名前で絞り込み" style="flex:1" aria-label="手法を名前で絞り込み"><span id="techTotal" class="muted mono"></span></div>
+        <div id="techLists"></div>
+      </div>
+
+      <div class="tabpane" data-pane="out" hidden>
+        <div class="fields">
+          <label class="field">画面比<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 縦</option><option value="4:3">4:3</option><option value="3:4">3:4 縦</option><option value="1:1">1:1</option><option value="4:5">4:5 縦</option><option value="21:9">21:9</option></select></label>
+          <label class="field">解像度<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
+          <label class="field">画質<select id="outQuality"><option value="standard">標準</option><option value="high">高</option><option value="max">最高</option></select></label>
+        </div>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 曲を動画に含める</label>
+        <div class="outbtns">
+          <button id="btnMP4" class="primary">MP4 を書き出す</button>
+          <button id="btnPNG">連番PNG（ZIP）</button>
+          <button id="btnPNGA">透過PNG（ZIP・背景なし）</button>
+        </div>
+        <div class="exp-box" hidden style="margin-top:12px">
+          <div class="progress"><i class="exp-bar"></i></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
+        </div>
+        <p class="note" id="codecNote">書き出しはこのブラウザの中で行われます（Chrome / Edge 推奨）。</p>
+      </div>
+    </section>
+  </main>
+</div>
