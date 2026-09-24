@@ -98,6 +98,7 @@ const segmenterOf = () => {
   if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
   return segmenters[loc];
 };
+const SPACED = /[A-Za-z\u00c0-\u024f\uac00-\ud7a3]/;   // scripts that put spaces between words (Latin, Korean hangul)
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -147,7 +148,8 @@ J.chunkText = (text) => {
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
+    // a lone Latin letter / hangul syllable after a Latin / hangul chunk is a word of its own (a, 나, 가 …) — keep the space
+    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (SPACED.test(out[i]) && SPACED.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
 };
@@ -311,7 +313,7 @@ J.plan = (project, audio) => {
     let groups;
     const nG = Math.min(nC, chunks2.length);
     if (nG <= 1) groups = [ln.text];
-    else groups = partition(chunks2, nG).map(g => g.join(/[A-Za-z]/.test(g.join('')) ? ' ' : ''));
+    else groups = partition(chunks2, nG).map(g => g.join(SPACED.test(g.join('')) ? ' ' : ''));
     const recap = !fixedN && nC > groups.length && groups.length >= 2;
     let units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
     if (recap) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
