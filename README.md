@@ -1,6 +1,7 @@
 # JIZURA 字面 — 文字PV自動構成ツール
 
-**English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)
+**English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)  
+**한국어판:** [앱 열기](https://852wa.github.io/JIZURA/ko/) · [한국어 가이드](README.ko.md)
 
 英語版 AE パネル：[ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) · [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip)
 
@@ -287,7 +288,7 @@ AE パネルは2種類あります。どちらも中の生成エンジンは同�
 ## 開発・ビルド
 
 ```
-python3 build.py              # src/ app/ vendor/ → index.html
+python3 build.py              # src/ app/ vendor/ → index.html / en/index.html / ko/index.html
 node tools/export_ae_data.js  # src/ を変えたとき：ae/data.json（AE パネルが使うスタイル・部品の情報）を更新
 python3 build_ae.py           # ae/（本体 + 移植済みパック ae/p_*.jsx）→ JIZURA_AE.jsx
 python3 build_cep.py          # index.html + ae/ + cep/ → build/com.852wa.jizura/ と build/JIZURA_CEP.zip（公開用は直下にコピー）
