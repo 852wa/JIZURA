@@ -139,7 +139,13 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .tl-row #timeline { width: 100%; display: block; }
 .tl-zoom { position: absolute; right: 6px; top: 6px; z-index: 2; display: flex; flex-direction: row; gap: 4px; }
 .tl-zoom button { width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1; background: rgba(19,19,22,0.88); border-color: var(--line2); }
+.tl-bar { overflow-x: auto; overflow-y: hidden; height: 14px; margin-top: 2px; scrollbar-width: thin; scrollbar-color: var(--line2) var(--raised); }
+.tl-bar::-webkit-scrollbar { height: 10px; }
+.tl-bar::-webkit-scrollbar-track { background: var(--raised); border-radius: 5px; }
+.tl-bar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 5px; }
+#tlBarInner { height: 1px; width: 100%; }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
+.cutinfo .cut-roll { margin-left: 2px; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
 button.chip { cursor: pointer; font: inherit; }

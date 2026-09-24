@@ -157,7 +157,13 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .tl-row #timeline { width: 100%; display: block; }
 .tl-zoom { position: absolute; right: 6px; top: 6px; z-index: 2; display: flex; flex-direction: row; gap: 4px; }
 .tl-zoom button { width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1; background: rgba(19,19,22,0.88); border-color: var(--line2); }
+.tl-bar { overflow-x: auto; overflow-y: hidden; height: 14px; margin-top: 2px; scrollbar-width: thin; scrollbar-color: var(--line2) var(--raised); }
+.tl-bar::-webkit-scrollbar { height: 10px; }
+.tl-bar::-webkit-scrollbar-track { background: var(--raised); border-radius: 5px; }
+.tl-bar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 5px; }
+#tlBarInner { height: 1px; width: 100%; }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
+.cutinfo .cut-roll { margin-left: 2px; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
 button.chip { cursor: pointer; font: inherit; }
@@ -429,6 +435,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
           <button type="button" id="btnTlMinus" class="ghost small" title="タイムラインを縮小" aria-label="縮小">−</button>
         </span>
       </div>
+      <div class="tl-bar" id="tlBar" aria-label="タイムラインの表示範囲"><div id="tlBarInner"></div></div>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick" hidden>
         <div class="cut-pick-h">
@@ -29128,7 +29135,7 @@ const ICON = {
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, tlZoom: 1, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, tlZoom: 1, tlStart: 0, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -29342,6 +29349,7 @@ function tick(now) {
       else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); }
     }
     S.t = t; S.need = true;
+    followTlPlayhead();
   }
   if (S.need) { S.need = false; draw(); }
 }
@@ -29371,25 +29379,69 @@ function seek(t) {
 /* ---------------- timeline ---------------- */
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
 const TL_ZOOM_MIN = 1, TL_ZOOM_MAX = 32;
-let tlViewHold = null;
+let tlViewHold = null, tlScrollSync = false;
+function clampTlStart() {
+  if (!S.plan) return;
+  const D = Math.max(0.001, S.plan.duration);
+  const dur = D / (S.tlZoom || 1);
+  S.tlStart = J.clamp(S.tlStart || 0, 0, Math.max(0, D - dur));
+}
 function tlView() {
+  if (!S.plan) return { start: 0, end: 1, dur: 1, D: 1 };
   if (tlViewHold) return tlViewHold;
   const D = Math.max(0.001, S.plan.duration);
   const z = S.tlZoom || 1;
   const dur = D / z;
-  let start = z <= 1 ? 0 : S.t - dur * 0.4;
-  start = J.clamp(start, 0, Math.max(0, D - dur));
-  return { start, end: start + dur, dur, D };
+  if (z <= 1) return { start: 0, end: D, dur: D, D };
+  clampTlStart();
+  return { start: S.tlStart, end: S.tlStart + dur, dur, D };
 }
 function syncTlZoom() {
   const minus = $('btnTlMinus'), plus = $('btnTlPlus');
   if (minus) minus.disabled = (S.tlZoom || 1) <= TL_ZOOM_MIN;
   if (plus) plus.disabled = (S.tlZoom || 1) >= TL_ZOOM_MAX;
 }
-function setTlZoom(next) {
-  S.tlZoom = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX);
+function syncTlScroll() {
+  if (!S.plan) return;
+  const bar = $('tlBar'), inner = $('tlBarInner');
+  if (!bar || !inner) return;
+  const z = S.tlZoom || 1;
+  inner.style.width = (Math.max(1, z) * 100) + '%';
+  const view = tlView();
+  const max = bar.scrollWidth - bar.clientWidth;
+  tlScrollSync = true;
+  bar.scrollLeft = max <= 0 || view.D <= view.dur ? 0 : (view.start / (view.D - view.dur)) * max;
+  tlScrollSync = false;
+}
+function onTlBarScroll() {
+  if (tlScrollSync) return;
+  const bar = $('tlBar'); if (!bar) return;
+  const D = Math.max(0.001, S.plan.duration);
+  const dur = D / (S.tlZoom || 1);
+  const max = bar.scrollWidth - bar.clientWidth;
+  S.tlStart = max <= 0 ? 0 : (bar.scrollLeft / max) * Math.max(0, D - dur);
   tlViewHold = null;
+  S.need = true;
+}
+function followTlPlayhead() {
+  if (!S.plan || tlViewHold || (S.tlZoom || 1) <= 1) return;
+  const view = tlView();
+  if (S.t >= view.start && S.t <= view.end) return;
+  S.tlStart = S.t - view.dur * 0.4;
+  clampTlStart();
+  syncTlScroll();
+}
+function setTlZoom(next) {
+  if (!S.plan) { S.tlZoom = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX); syncTlZoom(); return; }
+  const D = Math.max(0.001, S.plan.duration);
+  const z = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX);
+  S.tlZoom = z;
+  tlViewHold = null;
+  const dur = D / z;
+  S.tlStart = z <= 1 ? 0 : S.t - dur * 0.4;
+  clampTlStart();
   syncTlZoom();
+  syncTlScroll();
   S.need = true;
 }
 function drawTimeline() {
@@ -29467,6 +29519,21 @@ function lyricCutK(cut) {
   }
   return -1;
 }
+function cutQuietSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutQuiet && (o.cutQuiet[k] || o.cutQuiet[String(k)])) || {};
+}
+function markCutQuiet(i, k, groups, on) {
+  if (i == null || i < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  groups.forEach(g => { if (on) q[g] = true; else delete q[g]; });
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
 function cutTechSlot(line, k) {
   const o = (S.project.overrides || {})[line] || {};
   const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
@@ -29490,6 +29557,49 @@ function groupName(g, k) {
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
+function pickEnabledTech(g, opts) {
+  opts = opts || {};
+  const tbl = J.registry(g) || {};
+  const en = (S.project.enabled || {})[g] || {};
+  let keys = J.order(g).filter(key => {
+    const def = tbl[key];
+    if (!def || def.special) return false;
+    if (en[key] === false) return false;
+    return !J.randomOk || J.randomOk(S.project, g, key);
+  });
+  if (!keys.length) keys = J.order(g).filter(key => tbl[key] && !tbl[key].special && en[key] !== false);
+  if (g === 'layout' && opts.n != null) {
+    const fit = keys.filter(key => !J.LAYOUTS[key].fits || J.LAYOUTS[key].fits(opts.n));
+    if (fit.length) keys = fit;
+  }
+  if (opts.allowNone && !keys.includes('none')) keys = ['none'].concat(keys);
+  if (opts.avoid && keys.length > 1) keys = keys.filter(key => key !== opts.avoid);
+  if (!keys.length) return '';
+  return keys[(Math.random() * keys.length) | 0];
+}
+function rerollCurrentCut(kind) {
+  if (S.exporting || S.tap) return;
+  const cut = J.cutAt(S.plan, S.t);
+  const k = lyricCutK(cut);
+  if (!cut || k < 0) { toast('この位置のカットは抽選できません'); return; }
+  remember();
+  const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
+  const groups = kind === 'omakase'
+    ? CHIP_GROUPS.map(x => x[0])
+    : ['layout', 'enter', 'hold', 'exit', 'cam', 'trans'];
+  const t0 = S.t;
+  groups.forEach(g => {
+    const allowNone = g === 'decor' || g === 'trans';
+    const key = pickEnabledTech(g, { avoid: kind === 'omakase' ? cutGroupVal(cut, g) : null, allowNone, n });
+    if (key) setCutTech(cut.line, k, g, key);
+  });
+  markCutQuiet(cut.line, k, groups, true);
+  closeCutPick();
+  replan();
+  commit();
+  seek(t0);
+  toast(kind === 'omakase' ? 'このカットをおまかせ' : 'このカットをシャッフル');
+}
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
   const idx = cut ? cut.index : -1;
@@ -29501,13 +29611,19 @@ function updateCutInfo() {
   if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
   const k = lyricCutK(cut);
   const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
+  const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
   const bits = [`<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`];
   CHIP_GROUPS.forEach(([g, cls, label]) => {
-    const forced = slot[g] != null && slot[g] !== '';
+    const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このカットだけ手法をランダムに">おまかせ</button>`);
   el.innerHTML = bits.join('');
-  if (k >= 0) el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
+  if (k >= 0) {
+    el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
+    el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+  }
 }
 function closeCutPick() {
   cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
@@ -29621,9 +29737,15 @@ function setCutTech(i, k, group, key) {
   delete cutTech[String(k)];
   if (!key) delete slot[group];
   else slot[group] = key;
-  if (!Object.keys(slot).length) delete cutTech[k];
-  else cutTech[k] = slot;
+  if (Object.keys(slot).length) cutTech[k] = slot;
+  else delete cutTech[k];
   if (Object.keys(cutTech).length) cur.cutTech = cutTech; else delete cur.cutTech;
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  delete q[group];
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
   if (group === 'layout') {
     const cutLayouts = Object.assign({}, cur.cutLayouts || {});
     if (!key) delete cutLayouts[k]; else cutLayouts[k] = key;
@@ -30137,7 +30259,10 @@ function bind() {
   const btnTlPlus = $('btnTlPlus'), btnTlMinus = $('btnTlMinus');
   if (btnTlPlus) btnTlPlus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) * 2));
   if (btnTlMinus) btnTlMinus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) / 2));
+  const tlBar = $('tlBar');
+  if (tlBar) tlBar.addEventListener('scroll', onTlBarScroll, { passive: true });
   syncTlZoom();
+  syncTlScroll();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });
@@ -30234,7 +30359,7 @@ function bind() {
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.exporting) { e.preventDefault(); omakase(); }
   });
-  window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
+  window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); syncTlScroll(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
 }
 
