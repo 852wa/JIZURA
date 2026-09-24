@@ -1132,7 +1132,9 @@ fxReg('posterize', { name: 'ポスタリゼ', tags: ['glitch', 'pop', 'graphic']
 fxReg('hueShift', { name: '色相シフト', tags: ['glitch', 'pop', 'emotional'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
-    const s = evS(ev), a = Math.pow(1 - k, 0.8) * Math.min(1, ampOf(ev)), deg = Math.round(90 + 180 * J.r(s, 3)), dk = isDark(sc.bg);
+    const kk = Number.isFinite(k) ? clamp(k, 0, 1) : 1;                 // progress past the end (short event at low fps) → NaN alpha before
+    const s = evS(ev), a = Math.pow(1 - kk, 0.8) * Math.min(1, ampOf(ev)), deg = Math.round(90 + 180 * J.r(s, 3)), dk = isDark(sc.bg);
+    if (!(a > 0.002)) return;
     if (I.allowFilter) { ctx.globalAlpha = a; ctx.filter = `hue-rotate(${deg}deg) saturate(1.6)`; ctx.drawImage(S, 0, 0); ctx.filter = 'none'; }
     ctx.globalAlpha = 0.5 * a; ctx.globalCompositeOperation = dk ? 'multiply' : 'screen';
     ctx.fillStyle = J.r(s, 4) < 0.5 ? sc.ghostA : sc.ghostB; ctx.fillRect(0, 0, cw, ch);

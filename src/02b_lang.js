@@ -9,8 +9,8 @@
 (() => {
 'use strict';
 
-J.LANGS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko'];
-J.LANG_LABEL = { auto: '自動判定', ja: '日本語', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文', ko: '한국어' };
+J.LANGS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko', 'en'];
+J.LANG_LABEL = { auto: '自動判定', ja: '日本語', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文', ko: '한국어', en: 'English' };
 
 /* characters that differ between Traditional and Simplified Chinese (same order in both strings) */
 const TC = '們個說這會對時來還後過國開關與為從問間見長東車門愛聽學讓話號發點無現體經電實樣聲變離氣夢給覺當歡陽戀邊頭淚誰歲遠嗎萬難寫應讀憶樂麼麗傷將總結終紅綠線顏風飛鳥謝語請認識熱燈願獨夠紀帶滿靜輕別腦臉懷謊錯顆陣場讚淺溫記憑護壞歸媽隨銀聞態虛遙';
@@ -18,12 +18,14 @@ const SC = '们个说这会对时来还后过国开关与为从问间见长东�
 const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
 // a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
 
-/* which language are these lyrics in? (kana → ja, hangul → ko, Han only → Traditional / Simplified by the distinctive forms) */
+/* which language are these lyrics in? (almost only Latin letters → en (English / romaji), kana → ja, hangul → ko,
+   Han only → Traditional / Simplified by the distinctive forms) */
 J.detectLang = (text) => {
-  let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0;
+  let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0;
   for (const c of String(text || '')) {
     const u = c.codePointAt(0);
-    if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+    if ((u >= 0x41 && u <= 0x5a) || (u >= 0x61 && u <= 0x7a) || (u >= 0xc0 && u <= 0x24f && u !== 0xd7 && u !== 0xf7) || (u >= 0xff21 && u <= 0xff5a && (u <= 0xff3a || u >= 0xff41))) latin++;
+    else if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
     else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
     else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf) || (u >= 0x20000 && u <= 0x2ffff)) {
       han++;
@@ -31,6 +33,9 @@ J.detectLang = (text) => {
       if (SCSET.has(c)) sc++;
     }
   }
+  // a CJK character carries about as much as a short word — weigh it ×3 against single Latin letters
+  const cjk = kana + hangul + han;
+  if (latin >= 6 && latin >= (latin + cjk * 3) * 0.9) return 'en';
   if (hangul >= 2 && hangul > kana) return 'ko';
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
   if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
@@ -97,7 +102,7 @@ J.LANG_FACES = {
 /* the language fonts are drawn in right now (set by the planner / renderer from plan.lang) */
 J.lang = 'ja';
 J.setLang = (l) => {
-  l = J.LANG_FACES[l] ? l : 'ja';
+  l = J.LANG_FACES[l] || l === 'en' ? l : 'ja';               // en: the styles' own faces (they all have Latin glyphs)
   if (l === J.lang) return;
   J.lang = l;
   if (J.glyphs) J.glyphs.clear();
@@ -126,5 +131,5 @@ J.langBaseFaces = (keys) => {
   return out;
 };
 /* segmenter locale for chunking */
-J.segLocale = () => (J.lang === 'zh-Hant' ? 'zh-Hant' : J.lang === 'zh-Hans' ? 'zh-Hans' : J.lang === 'ko' ? 'ko' : 'ja');
+J.segLocale = () => (J.lang === 'zh-Hant' ? 'zh-Hant' : J.lang === 'zh-Hans' ? 'zh-Hans' : J.lang === 'ko' ? 'ko' : J.lang === 'en' ? 'en' : 'ja');
 })();

@@ -134,6 +134,21 @@ J.chunkText = (text) => {
   return out.length ? out : [text];
 };
 
+/* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
+J.phraseChunks = (words) => {
+  const out = []; let cur = [], letters = 0;
+  const flush = () => { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; };
+  for (const w of words) {
+    const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
+    cur.push(w); letters += n;
+    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+  }
+  flush();
+  // a lone short word at the end joins the previous phrase
+  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] += ' ' + last; }
+  return out.length ? out : words;
+};
+
 /* ---------------- timing ---------------- */
 J.computeTiming = (project, parsed, audio) => {
   const T = project.timing || {};
@@ -223,7 +238,7 @@ J.plan = (project, audio) => {
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
     plan.lines.push({ index: li, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
-    const chunks = ln.manual || J.chunkText(ln.text);
+    const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);
