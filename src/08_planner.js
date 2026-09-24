@@ -244,9 +244,12 @@ J.plan = (project, audio) => {
       const txt = u.text;
       const nn = [...txt.replace(/\s+/g, '')].length;
       const emph = ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
-      const layout = ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
-      let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, layout, dur, history, emph, nn);
-      let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, layout, dur, k === units.length - 1, history);
+      const pickedLayout = pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
+      const cutLay = ov.cutLayouts && (ov.cutLayouts[k] ?? ov.cutLayouts[String(k)]);
+      const layout = (cutLay && J.LAYOUTS[cutLay] && !J.LAYOUTS[cutLay].special) ? cutLay
+        : (ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickedLayout);
+      let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, pickedLayout, dur, history, emph, nn);
+      let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, pickedLayout, dur, k === units.length - 1, history);
       const hold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
       let inDur = J.clamp(dur * 0.36, 0.12, 0.6);
       if (enter === 'type') inDur = J.clamp(nn * 0.055 + 0.1, 0.15, dur * 0.65);
@@ -259,14 +262,18 @@ J.plan = (project, audio) => {
       if (inDur + outDur > dur * 0.92) { const f = dur * 0.92 / (inDur + outDur); inDur *= f; outDur *= f; }
       let sch = schemeIdx;
       if (nSchemes > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nSchemes;
+      const LD0 = J.LAYOUTS[pickedLayout];
       const LD = J.LAYOUTS[layout];
-      const params = LD.plan(rng, { text: txt, n: nn, W, H, dur }, st);
-      const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, layout, history);
-      const treat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD, emph, history);
+      let params = LD0.plan(rng, { text: txt, n: nn, W, H, dur }, st);
+      if (layout !== pickedLayout) {
+        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W, H, dur }, st); } catch (e) {}
+      }
+      const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, pickedLayout, history);
+      const treat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
       const treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
       if (!ov.bg && k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = pickBg(rng, st, en, fx, bgHistory); lineBgP = J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {}; }
       const bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
-      const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD, emph, history);
+      const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
       const camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
       // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
       const prevCut = plan.cuts[plan.cuts.length - 1];
@@ -285,7 +292,7 @@ J.plan = (project, audio) => {
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: J.h(lineSeed, k, 17), emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
         treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur });
       plan.cuts.push(cut);
-      history.push({ layout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
+      history.push({ layout: pickedLayout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
       // events at cut start
       // events at cut start — durations are on a 24fps timebase so every output rate looks the same
       const g = fx.glitch * (st.glitchBoost || 1);

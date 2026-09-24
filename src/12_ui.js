@@ -252,11 +252,9 @@ function renderLines() {
       <span class="txt" title="${escapeHtml(ln.text)}">${escapeHtml(ln.text)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <select aria-label="レイアウト指定">${layoutOpts}</select>
         <button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>
         <button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>
       </span></div>`;
-    li.querySelector('select').value = o.layout || '';
     li.querySelector('.time').addEventListener('change', e => {
       const v = parseFloat(e.target.value);
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
@@ -264,7 +262,6 @@ function renderLines() {
       replan();
     });
     li.querySelector('.txt').addEventListener('click', () => seek(ln.start + 0.001));
-    li.querySelector('select').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
     li.querySelector('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
     li.querySelector('.lock').addEventListener('click', () => {
       const cur = ov[i] || {};
@@ -273,11 +270,18 @@ function renderLines() {
       replan();
     });
     const cutsEl = li.querySelector('.cuts');
-    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach(c => {
-      const sp = document.createElement('span'); sp.textContent = J.LAYOUTS[c.layout].name; sp.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sp.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
-      sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
-      cutsEl.appendChild(sp);
+    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
+      const forced = o.cutLayouts && o.cutLayouts[k];
+      const sel = document.createElement('select');
+      sel.className = 'cut-lay' + (forced ? ' is-forced' : '');
+      sel.innerHTML = layoutOpts;
+      sel.value = forced || c.layout;
+      sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
+      sel.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}のレイアウト`);
+      sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
+      sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
+      sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
+      cutsEl.appendChild(sel);
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
@@ -286,6 +290,15 @@ function renderLines() {
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
   for (const k of Object.keys(cur)) if (cur[k] === undefined || cur[k] === false || cur[k] === '') delete cur[k];
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
+function setCutLayout(i, k, layout) {
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutLayouts = Object.assign({}, cur.cutLayouts || {});
+  if (!layout) delete cutLayouts[k];
+  else cutLayouts[k] = layout;
+  if (Object.keys(cutLayouts).length) cur.cutLayouts = cutLayouts;
+  else delete cur.cutLayouts;
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }

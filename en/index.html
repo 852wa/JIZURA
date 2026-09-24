@@ -131,6 +131,8 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; }
 .ln .cuts span { font-size: 10px; padding: 1px 6px; border-radius: 2px; border: 1px solid var(--line2); color: var(--muted); cursor: pointer; }
 .ln .cuts span:hover { color: var(--text); border-color: var(--amber); }
+.ln .cuts select.cut-lay { font-size: 10px; padding: 1px 4px; max-width: 112px; border: 1px solid var(--line2); border-radius: 2px; background: var(--raised); color: var(--text); }
+.ln .cuts select.cut-lay.is-forced { border-color: var(--amber); color: var(--text); }
 
 /* ---------- stage ---------- */
 .col-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; min-width: 0; }
@@ -3146,9 +3148,12 @@ J.plan = (project, audio) => {
       const txt = u.text;
       const nn = [...txt.replace(/\s+/g, '')].length;
       const emph = ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
-      const layout = ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
-      let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, layout, dur, history, emph, nn);
-      let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, layout, dur, k === units.length - 1, history);
+      const pickedLayout = pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
+      const cutLay = ov.cutLayouts && (ov.cutLayouts[k] ?? ov.cutLayouts[String(k)]);
+      const layout = (cutLay && J.LAYOUTS[cutLay] && !J.LAYOUTS[cutLay].special) ? cutLay
+        : (ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickedLayout);
+      let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, pickedLayout, dur, history, emph, nn);
+      let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, pickedLayout, dur, k === units.length - 1, history);
       const hold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
       let inDur = J.clamp(dur * 0.36, 0.12, 0.6);
       if (enter === 'type') inDur = J.clamp(nn * 0.055 + 0.1, 0.15, dur * 0.65);
@@ -3161,14 +3166,18 @@ J.plan = (project, audio) => {
       if (inDur + outDur > dur * 0.92) { const f = dur * 0.92 / (inDur + outDur); inDur *= f; outDur *= f; }
       let sch = schemeIdx;
       if (nSchemes > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nSchemes;
+      const LD0 = J.LAYOUTS[pickedLayout];
       const LD = J.LAYOUTS[layout];
-      const params = LD.plan(rng, { text: txt, n: nn, W, H, dur }, st);
-      const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, layout, history);
-      const treat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD, emph, history);
+      let params = LD0.plan(rng, { text: txt, n: nn, W, H, dur }, st);
+      if (layout !== pickedLayout) {
+        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W, H, dur }, st); } catch (e) {}
+      }
+      const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, pickedLayout, history);
+      const treat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
       const treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
       if (!ov.bg && k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = pickBg(rng, st, en, fx, bgHistory); lineBgP = J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {}; }
       const bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
-      const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD, emph, history);
+      const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
       const camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
       // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
       const prevCut = plan.cuts[plan.cuts.length - 1];
@@ -3187,7 +3196,7 @@ J.plan = (project, audio) => {
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: J.h(lineSeed, k, 17), emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
         treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur });
       plan.cuts.push(cut);
-      history.push({ layout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
+      history.push({ layout: pickedLayout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
       // events at cut start
       // events at cut start — durations are on a 24fps timebase so every output rate looks the same
       const g = fx.glitch * (st.glitchBoost || 1);
@@ -29279,11 +29288,9 @@ function renderLines() {
       <span class="txt" title="${escapeHtml(ln.text)}">${escapeHtml(ln.text)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <select aria-label="Choose layout">${layoutOpts}</select>
         <button class="icon ghost dice" title="Reroll this line">${ICON.dice}</button>
         <button class="icon ghost lock" title="Lock this line" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>
       </span></div>`;
-    li.querySelector('select').value = o.layout || '';
     li.querySelector('.time').addEventListener('change', e => {
       const v = parseFloat(e.target.value);
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
@@ -29291,7 +29298,6 @@ function renderLines() {
       replan();
     });
     li.querySelector('.txt').addEventListener('click', () => seek(ln.start + 0.001));
-    li.querySelector('select').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
     li.querySelector('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
     li.querySelector('.lock').addEventListener('click', () => {
       const cur = ov[i] || {};
@@ -29300,11 +29306,18 @@ function renderLines() {
       replan();
     });
     const cutsEl = li.querySelector('.cuts');
-    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach(c => {
-      const sp = document.createElement('span'); sp.textContent = J.LAYOUTS[c.layout].name; sp.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sp.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
-      sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
-      cutsEl.appendChild(sp);
+    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
+      const forced = o.cutLayouts && o.cutLayouts[k];
+      const sel = document.createElement('select');
+      sel.className = 'cut-lay' + (forced ? ' is-forced' : '');
+      sel.innerHTML = layoutOpts;
+      sel.value = forced || c.layout;
+      sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
+      sel.setAttribute('aria-label', `${i + 1}line 目 cuts${k + 1}のLayout`);
+      sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
+      sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
+      sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
+      cutsEl.appendChild(sel);
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
@@ -29313,6 +29326,15 @@ function renderLines() {
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
   for (const k of Object.keys(cur)) if (cur[k] === undefined || cur[k] === false || cur[k] === '') delete cur[k];
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
+function setCutLayout(i, k, layout) {
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutLayouts = Object.assign({}, cur.cutLayouts || {});
+  if (!layout) delete cutLayouts[k];
+  else cutLayouts[k] = layout;
+  if (Object.keys(cutLayouts).length) cur.cutLayouts = cutLayouts;
+  else delete cur.cutLayouts;
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
