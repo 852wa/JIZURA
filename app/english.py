@@ -32,6 +32,8 @@ BODY = {
     'mp3 / wav / m4a など': 'MP3, WAV, M4A and more',
     '曲を読み込む': 'Import audio', '曲を再生しながら各行の頭でタップ': 'Tap at the start of each line while the song plays',
     'タップで同期': 'Tap to sync', '開始(秒)': 'Start (s)', '行の長さ': 'Line duration',
+    'タップで同期（選択した行から）': 'Tap to sync (from this line)',
+    'いま選んでいる行からタップ同期を始める（前の行の時刻はそのまま）': 'Start tap-sync from the current line (earlier lines keep their times)',
     '拍にスナップ': 'Snap to beat', '手動タイミングを消す': 'Clear manual timing',
     '曲に合わせて、各行が始まる瞬間に': 'Press', 'かボタンを押してください。': 'or the button as each line starts.',
     '次:': 'Next:', '終了する': 'Finish', '行とカット': 'Lines and cuts',

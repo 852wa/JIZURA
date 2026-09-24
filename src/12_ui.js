@@ -888,12 +888,19 @@ async function runExport(kind) {
 }
 
 /* ---------------- tap sync ---------------- */
-function startTap() {
+function startTap(from) {
   if (!S.plan.lines.length) return;
-  S.tap = { i: 0 };
+  const n = S.plan.lines.length;
+  const i0 = J.clamp(from == null ? 0 : (from | 0), 0, n - 1);
+  S.tap = { i: i0 };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-  $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
-  seek(0); play(); updateTap();
+  $('tapPanel').hidden = false;
+  $('btnTap').setAttribute('aria-pressed', String(i0 === 0));
+  const fromBtn = $('btnTapFrom');
+  if (fromBtn) fromBtn.setAttribute('aria-pressed', String(i0 > 0));
+  const ln = S.plan.lines[i0];
+  const t0 = i0 === 0 ? 0 : Math.max(0, (ln.start || 0) - 1.2);
+  seek(t0); play(); updateTap();
   $('tapBtn').focus();
 }
 function tapNow() {
@@ -903,8 +910,20 @@ function tapNow() {
   replan();
   if (S.tap.i >= S.plan.lines.length) stopTap(); else updateTap();
 }
-function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); }
+function stopTap() {
+  S.tap = null; $('tapPanel').hidden = true;
+  $('btnTap').setAttribute('aria-pressed', 'false');
+  const fromBtn = $('btnTapFrom'); if (fromBtn) fromBtn.setAttribute('aria-pressed', 'false');
+  replan();
+}
 function updateTap() { const ln = S.plan.lines[S.tap.i]; $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.text}` : '—'; }
+function selectedLineIndex() {
+  if (S.curLine >= 0) return S.curLine;
+  const cut = typeof cutAround === 'function' ? cutAround(S.t) : J.cutAt(S.plan, S.t);
+  if (cut && cut.line >= 0) return cut.line;
+  const ln = S.plan.lines.find(l => l.start >= S.t - 0.05);
+  return ln ? ln.index : 0;
+}
 
 /* ---------------- sync all inputs from project ---------------- */
 function syncUI() {
@@ -939,7 +958,9 @@ function bind() {
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
-  $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
+  $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap(0)));
+  const btnTapFrom = $('btnTapFrom');
+  if (btnTapFrom) btnTapFrom.addEventListener('click', () => (S.tap ? stopTap() : startTap(selectedLineIndex())));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
