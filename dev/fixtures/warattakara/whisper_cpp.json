@@ -1,0 +1,4979 @@
+{
+"task": "transcribe",
+"language": "japanese",
+"duration": 219.99749755859375,
+"segments": [
+{
+"start": 0.0,
+"end": 5.96,
+"text": "夜の風が窓を揺らす 冷たままの二人のご飯",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0351,
+"words": [
+{
+"word": "夜",
+"start": 0.0,
+"end": 0.24,
+"t_dtw": 70,
+"probability": 0.992
+},
+{
+"word": "の",
+"start": 0.44,
+"end": 0.48,
+"t_dtw": 94,
+"probability": 0.999
+},
+{
+"word": "風",
+"start": 0.48,
+"end": 0.72,
+"t_dtw": 120,
+"probability": 0.999
+},
+{
+"word": "が",
+"start": 0.72,
+"end": 0.95,
+"t_dtw": 168,
+"probability": 0.999
+},
+{
+"word": "窓",
+"start": 0.95,
+"end": 1.69,
+"t_dtw": 216,
+"probability": 0.959
+},
+{
+"word": "を",
+"start": 1.69,
+"end": 1.84,
+"t_dtw": 266,
+"probability": 0.999
+},
+{
+"word": "揺",
+"start": 2.02,
+"end": 2.66,
+"t_dtw": 276,
+"probability": 0.991
+},
+{
+"word": "ら",
+"start": 2.66,
+"end": 2.9,
+"t_dtw": 292,
+"probability": 1.0
+},
+{
+"word": "す",
+"start": 2.9,
+"end": 3.23,
+"t_dtw": 320,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 3.23,
+"end": 3.24,
+"t_dtw": 330,
+"probability": 0.638
+},
+{
+"word": "冷",
+"start": 3.24,
+"end": 3.51,
+"t_dtw": 366,
+"probability": 0.928
+},
+{
+"word": "た",
+"start": 3.51,
+"end": 3.75,
+"t_dtw": 390,
+"probability": 0.888
+},
+{
+"word": "ま",
+"start": 3.82,
+"end": 4.05,
+"t_dtw": 410,
+"probability": 0.997
+},
+{
+"word": "ま",
+"start": 4.05,
+"end": 4.32,
+"t_dtw": 430,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 4.32,
+"end": 4.58,
+"t_dtw": 444,
+"probability": 1.0
+},
+{
+"word": "二",
+"start": 4.67,
+"end": 4.86,
+"t_dtw": 466,
+"probability": 0.926
+},
+{
+"word": "人",
+"start": 4.86,
+"end": 5.09,
+"t_dtw": 488,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 5.14,
+"end": 5.39,
+"t_dtw": 508,
+"probability": 1.0
+},
+{
+"word": "ご",
+"start": 5.49,
+"end": 5.67,
+"t_dtw": 530,
+"probability": 0.966
+},
+{
+"word": "飯",
+"start": 5.67,
+"end": 5.95,
+"t_dtw": 590,
+"probability": 0.981
+}
+]
+},
+{
+"start": 5.96,
+"end": 26.84,
+"text": "帰りに何か買ってきて それだけの願いだったのに",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0041,
+"words": [
+{
+"word": "帰",
+"start": 6.41,
+"end": 8.55,
+"t_dtw": 2198,
+"probability": 0.993
+},
+{
+"word": "り",
+"start": 8.55,
+"end": 9.19,
+"t_dtw": 2228,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 9.47,
+"end": 10.27,
+"t_dtw": 2248,
+"probability": 0.999
+},
+{
+"word": "何",
+"start": 10.27,
+"end": 11.13,
+"t_dtw": 2280,
+"probability": 0.997
+},
+{
+"word": "か",
+"start": 11.13,
+"end": 11.99,
+"t_dtw": 2312,
+"probability": 0.999
+},
+{
+"word": "買",
+"start": 12.26,
+"end": 12.85,
+"t_dtw": 2346,
+"probability": 0.965
+},
+{
+"word": "って",
+"start": 12.85,
+"end": 14.58,
+"t_dtw": 2374,
+"probability": 1.0
+},
+{
+"word": "き",
+"start": 14.58,
+"end": 15.44,
+"t_dtw": 2388,
+"probability": 0.987
+},
+{
+"word": "て",
+"start": 15.44,
+"end": 16.3,
+"t_dtw": 2412,
+"probability": 1.0
+},
+{
+"word": " それ",
+"start": 16.3,
+"end": 18.04,
+"t_dtw": 2470,
+"probability": 0.984
+},
+{
+"word": "だけ",
+"start": 18.04,
+"end": 19.76,
+"t_dtw": 2504,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 19.77,
+"end": 20.63,
+"t_dtw": 2526,
+"probability": 1.0
+},
+{
+"word": "願い",
+"start": 20.63,
+"end": 22.36,
+"t_dtw": 2564,
+"probability": 1.0
+},
+{
+"word": "だ",
+"start": 22.36,
+"end": 23.22,
+"t_dtw": 2594,
+"probability": 1.0
+},
+{
+"word": "った",
+"start": 23.22,
+"end": 24.95,
+"t_dtw": 2622,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 24.95,
+"end": 25.81,
+"t_dtw": 2640,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 25.81,
+"end": 26.84,
+"t_dtw": 2668,
+"probability": 1.0
+}
+]
+},
+{
+"start": 26.84,
+"end": 31.76,
+"text": "店の明かりについてから 財布がないと君は笑った",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0407,
+"words": [
+{
+"word": "店",
+"start": 26.84,
+"end": 27.04,
+"t_dtw": 2726,
+"probability": 0.985
+},
+{
+"word": "の",
+"start": 27.18,
+"end": 27.22,
+"t_dtw": 2758,
+"probability": 1.0
+},
+{
+"word": "明",
+"start": 27.29,
+"end": 27.44,
+"t_dtw": 2776,
+"probability": 0.769
+},
+{
+"word": "か",
+"start": 27.44,
+"end": 27.64,
+"t_dtw": 2792,
+"probability": 0.995
+},
+{
+"word": "り",
+"start": 27.64,
+"end": 27.8,
+"t_dtw": 2804,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 27.85,
+"end": 28.04,
+"t_dtw": 2828,
+"probability": 1.0
+},
+{
+"word": "つ",
+"start": 28.04,
+"end": 28.24,
+"t_dtw": 2840,
+"probability": 0.628
+},
+{
+"word": "いて",
+"start": 28.24,
+"end": 28.63,
+"t_dtw": 2882,
+"probability": 1.0
+},
+{
+"word": "から",
+"start": 28.85,
+"end": 29.04,
+"t_dtw": 2922,
+"probability": 0.998
+},
+{
+"word": " ",
+"start": 29.04,
+"end": 29.04,
+"t_dtw": 2946,
+"probability": 0.959
+},
+{
+"word": "財",
+"start": 29.04,
+"end": 29.64,
+"t_dtw": 2960,
+"probability": 0.998
+},
+{
+"word": "布",
+"start": 29.64,
+"end": 29.8,
+"t_dtw": 2986,
+"probability": 0.999
+},
+{
+"word": "が",
+"start": 29.81,
+"end": 30.04,
+"t_dtw": 3006,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 30.04,
+"end": 30.44,
+"t_dtw": 3030,
+"probability": 0.921
+},
+{
+"word": "と",
+"start": 30.44,
+"end": 30.58,
+"t_dtw": 3050,
+"probability": 0.998
+},
+{
+"word": "君",
+"start": 30.66,
+"end": 30.84,
+"t_dtw": 3076,
+"probability": 0.988
+},
+{
+"word": "は",
+"start": 30.84,
+"end": 31.04,
+"t_dtw": 3104,
+"probability": 1.0
+},
+{
+"word": "笑",
+"start": 31.04,
+"end": 31.24,
+"t_dtw": 3130,
+"probability": 0.997
+},
+{
+"word": "った",
+"start": 31.24,
+"end": 31.76,
+"t_dtw": 3168,
+"probability": 1.0
+}
+]
+},
+{
+"start": 31.76,
+"end": 37.06,
+"text": "一時ちょやから届く声 友達とは楽しそうね",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0066,
+"words": [
+{
+"word": "一",
+"start": 31.76,
+"end": 32.01,
+"t_dtw": 3228,
+"probability": 0.989
+},
+{
+"word": "時",
+"start": 32.2,
+"end": 32.26,
+"t_dtw": 3250,
+"probability": 0.997
+},
+{
+"word": "ちょ",
+"start": 32.26,
+"end": 32.71,
+"t_dtw": 3266,
+"probability": 0.995
+},
+{
+"word": "や",
+"start": 32.77,
+"end": 33.01,
+"t_dtw": 3282,
+"probability": 0.986
+},
+{
+"word": "から",
+"start": 33.01,
+"end": 33.51,
+"t_dtw": 3316,
+"probability": 0.997
+},
+{
+"word": "届",
+"start": 33.51,
+"end": 34.26,
+"t_dtw": 3336,
+"probability": 0.996
+},
+{
+"word": "く",
+"start": 34.26,
+"end": 34.51,
+"t_dtw": 3366,
+"probability": 1.0
+},
+{
+"word": "声",
+"start": 34.51,
+"end": 34.69,
+"t_dtw": 3400,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 34.76,
+"end": 34.76,
+"t_dtw": 3476,
+"probability": 0.998
+},
+{
+"word": "友",
+"start": 34.76,
+"end": 35.01,
+"t_dtw": 3494,
+"probability": 1.0
+},
+{
+"word": "達",
+"start": 35.01,
+"end": 35.26,
+"t_dtw": 3524,
+"probability": 0.999
+},
+{
+"word": "と",
+"start": 35.27,
+"end": 35.5,
+"t_dtw": 3550,
+"probability": 1.0
+},
+{
+"word": "は",
+"start": 35.58,
+"end": 35.76,
+"t_dtw": 3572,
+"probability": 0.981
+},
+{
+"word": "楽",
+"start": 35.76,
+"end": 36.01,
+"t_dtw": 3606,
+"probability": 1.0
+},
+{
+"word": "し",
+"start": 36.01,
+"end": 36.26,
+"t_dtw": 3628,
+"probability": 1.0
+},
+{
+"word": "そう",
+"start": 36.26,
+"end": 36.76,
+"t_dtw": 3664,
+"probability": 0.999
+},
+{
+"word": "ね",
+"start": 36.76,
+"end": 37.06,
+"t_dtw": 3700,
+"probability": 0.943
+}
+]
+},
+{
+"start": 37.06,
+"end": 41.82,
+"text": "彼女はもう諦めたって それを妥協と呼ばないで",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0014,
+"words": [
+{
+"word": "彼",
+"start": 37.06,
+"end": 37.54,
+"t_dtw": 3732,
+"probability": 1.0
+},
+{
+"word": "女",
+"start": 37.54,
+"end": 37.7,
+"t_dtw": 3760,
+"probability": 1.0
+},
+{
+"word": "は",
+"start": 37.7,
+"end": 37.86,
+"t_dtw": 3782,
+"probability": 1.0
+},
+{
+"word": "もう",
+"start": 37.86,
+"end": 38.18,
+"t_dtw": 3808,
+"probability": 1.0
+},
+{
+"word": "諦",
+"start": 38.18,
+"end": 38.66,
+"t_dtw": 3836,
+"probability": 0.989
+},
+{
+"word": "め",
+"start": 38.66,
+"end": 38.82,
+"t_dtw": 3878,
+"probability": 0.999
+},
+{
+"word": "た",
+"start": 38.82,
+"end": 38.97,
+"t_dtw": 3898,
+"probability": 0.999
+},
+{
+"word": "って",
+"start": 39.07,
+"end": 39.3,
+"t_dtw": 3926,
+"probability": 1.0
+},
+{
+"word": " それ",
+"start": 39.3,
+"end": 39.62,
+"t_dtw": 3972,
+"probability": 0.995
+},
+{
+"word": "を",
+"start": 39.62,
+"end": 39.78,
+"t_dtw": 4000,
+"probability": 1.0
+},
+{
+"word": "妥",
+"start": 39.78,
+"end": 40.26,
+"t_dtw": 4008,
+"probability": 0.998
+},
+{
+"word": "協",
+"start": 40.26,
+"end": 40.74,
+"t_dtw": 4026,
+"probability": 0.999
+},
+{
+"word": "と",
+"start": 40.74,
+"end": 40.9,
+"t_dtw": 4060,
+"probability": 1.0
+},
+{
+"word": "呼",
+"start": 40.9,
+"end": 41.06,
+"t_dtw": 4076,
+"probability": 1.0
+},
+{
+"word": "ば",
+"start": 41.06,
+"end": 41.22,
+"t_dtw": 4096,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 41.22,
+"end": 41.49,
+"t_dtw": 4124,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 41.54,
+"end": 41.82,
+"t_dtw": 4154,
+"probability": 1.0
+}
+]
+},
+{
+"start": 41.82,
+"end": 47.72,
+"text": "私が何も言わなくなれば 嵐は過ぎたと思うでしょう",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0345,
+"words": [
+{
+"word": "私",
+"start": 41.82,
+"end": 42.05,
+"t_dtw": 4332,
+"probability": 0.999
+},
+{
+"word": "が",
+"start": 42.25,
+"end": 42.28,
+"t_dtw": 4360,
+"probability": 1.0
+},
+{
+"word": "何",
+"start": 42.28,
+"end": 42.51,
+"t_dtw": 4380,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 42.51,
+"end": 42.74,
+"t_dtw": 4410,
+"probability": 0.999
+},
+{
+"word": "言",
+"start": 42.74,
+"end": 42.95,
+"t_dtw": 4428,
+"probability": 1.0
+},
+{
+"word": "わ",
+"start": 42.98,
+"end": 43.2,
+"t_dtw": 4442,
+"probability": 1.0
+},
+{
+"word": "なく",
+"start": 43.2,
+"end": 43.61,
+"t_dtw": 4472,
+"probability": 1.0
+},
+{
+"word": "な",
+"start": 43.83,
+"end": 43.9,
+"t_dtw": 4494,
+"probability": 1.0
+},
+{
+"word": "れ",
+"start": 43.9,
+"end": 44.13,
+"t_dtw": 4508,
+"probability": 1.0
+},
+{
+"word": "ば",
+"start": 44.13,
+"end": 44.36,
+"t_dtw": 4528,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 44.36,
+"end": 44.36,
+"t_dtw": 4552,
+"probability": 0.998
+},
+{
+"word": "嵐",
+"start": 44.36,
+"end": 45.05,
+"t_dtw": 4564,
+"probability": 0.999
+},
+{
+"word": "は",
+"start": 45.05,
+"end": 45.28,
+"t_dtw": 4606,
+"probability": 0.954
+},
+{
+"word": "過",
+"start": 45.28,
+"end": 45.51,
+"t_dtw": 4628,
+"probability": 0.999
+},
+{
+"word": "ぎ",
+"start": 45.51,
+"end": 45.74,
+"t_dtw": 4638,
+"probability": 1.0
+},
+{
+"word": "た",
+"start": 45.74,
+"end": 45.97,
+"t_dtw": 4656,
+"probability": 0.999
+},
+{
+"word": "と思",
+"start": 45.97,
+"end": 46.4,
+"t_dtw": 4714,
+"probability": 0.993
+},
+{
+"word": "う",
+"start": 46.49,
+"end": 46.67,
+"t_dtw": 4734,
+"probability": 0.985
+},
+{
+"word": "でしょう",
+"start": 46.67,
+"end": 47.72,
+"t_dtw": 4764,
+"probability": 0.505
+}
+]
+},
+{
+"start": 47.72,
+"end": 52.58,
+"text": "でも静かな夜の方が 心の音はよく聞こえる",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0051,
+"words": [
+{
+"word": "でも",
+"start": 48.1,
+"end": 48.18,
+"t_dtw": 4814,
+"probability": 1.0
+},
+{
+"word": "静",
+"start": 48.18,
+"end": 48.85,
+"t_dtw": 4840,
+"probability": 0.999
+},
+{
+"word": "かな",
+"start": 48.88,
+"end": 49.33,
+"t_dtw": 4890,
+"probability": 0.999
+},
+{
+"word": "夜",
+"start": 49.33,
+"end": 49.55,
+"t_dtw": 4930,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 49.73,
+"end": 49.79,
+"t_dtw": 4952,
+"probability": 1.0
+},
+{
+"word": "方",
+"start": 49.79,
+"end": 50.02,
+"t_dtw": 4980,
+"probability": 0.994
+},
+{
+"word": "が",
+"start": 50.02,
+"end": 50.25,
+"t_dtw": 5002,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 50.25,
+"end": 50.25,
+"t_dtw": 5010,
+"probability": 0.922
+},
+{
+"word": "心",
+"start": 50.25,
+"end": 50.48,
+"t_dtw": 5034,
+"probability": 0.999
+},
+{
+"word": "の",
+"start": 50.48,
+"end": 50.65,
+"t_dtw": 5068,
+"probability": 1.0
+},
+{
+"word": "音",
+"start": 50.69,
+"end": 50.93,
+"t_dtw": 5100,
+"probability": 1.0
+},
+{
+"word": "は",
+"start": 50.93,
+"end": 51.17,
+"t_dtw": 5120,
+"probability": 1.0
+},
+{
+"word": "よ",
+"start": 51.17,
+"end": 51.4,
+"t_dtw": 5134,
+"probability": 0.999
+},
+{
+"word": "く",
+"start": 51.4,
+"end": 51.63,
+"t_dtw": 5156,
+"probability": 1.0
+},
+{
+"word": "聞",
+"start": 51.63,
+"end": 51.86,
+"t_dtw": 5184,
+"probability": 0.997
+},
+{
+"word": "こ",
+"start": 51.86,
+"end": 52.09,
+"t_dtw": 5206,
+"probability": 0.999
+},
+{
+"word": "える",
+"start": 52.09,
+"end": 52.58,
+"t_dtw": 5252,
+"probability": 1.0
+}
+]
+},
+{
+"start": 52.88,
+"end": 58.72,
+"text": "笑ったからって許したわけじゃない 優しい顔ほど涙を隠してる",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0252,
+"words": [
+{
+"word": "笑",
+"start": 52.88,
+"end": 53.06,
+"t_dtw": 5346,
+"probability": 0.983
+},
+{
+"word": "った",
+"start": 53.32,
+"end": 53.43,
+"t_dtw": 5380,
+"probability": 0.999
+},
+{
+"word": "から",
+"start": 53.43,
+"end": 53.8,
+"t_dtw": 5416,
+"probability": 0.999
+},
+{
+"word": "って",
+"start": 53.8,
+"end": 54.17,
+"t_dtw": 5450,
+"probability": 1.0
+},
+{
+"word": "許",
+"start": 54.17,
+"end": 54.34,
+"t_dtw": 5476,
+"probability": 0.685
+},
+{
+"word": "した",
+"start": 54.34,
+"end": 54.67,
+"t_dtw": 5514,
+"probability": 1.0
+},
+{
+"word": "わ",
+"start": 54.72,
+"end": 54.9,
+"t_dtw": 5530,
+"probability": 0.855
+},
+{
+"word": "け",
+"start": 54.9,
+"end": 55.08,
+"t_dtw": 5546,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 55.08,
+"end": 55.79,
+"t_dtw": 5588,
+"probability": 0.998
+},
+{
+"word": " ",
+"start": 55.88,
+"end": 55.88,
+"t_dtw": 5606,
+"probability": 0.944
+},
+{
+"word": "優",
+"start": 55.88,
+"end": 56.3,
+"t_dtw": 5618,
+"probability": 1.0
+},
+{
+"word": "しい",
+"start": 56.3,
+"end": 56.58,
+"t_dtw": 5658,
+"probability": 1.0
+},
+{
+"word": "顔",
+"start": 56.58,
+"end": 57.0,
+"t_dtw": 5688,
+"probability": 1.0
+},
+{
+"word": "ほど",
+"start": 57.0,
+"end": 57.28,
+"t_dtw": 5728,
+"probability": 0.999
+},
+{
+"word": "涙",
+"start": 57.28,
+"end": 57.7,
+"t_dtw": 5754,
+"probability": 0.994
+},
+{
+"word": "を",
+"start": 57.7,
+"end": 57.84,
+"t_dtw": 5798,
+"probability": 1.0
+},
+{
+"word": "隠",
+"start": 57.84,
+"end": 58.26,
+"t_dtw": 5812,
+"probability": 1.0
+},
+{
+"word": "して",
+"start": 58.26,
+"end": 58.54,
+"t_dtw": 5846,
+"probability": 1.0
+},
+{
+"word": "る",
+"start": 58.54,
+"end": 58.72,
+"t_dtw": 5866,
+"probability": 0.998
+}
+]
+},
+{
+"start": 58.72,
+"end": 64.48,
+"text": "忘れた財布より悲しいことは 私の気持ちまで忘れられること",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0025,
+"words": [
+{
+"word": "忘",
+"start": 58.72,
+"end": 58.9,
+"t_dtw": 5906,
+"probability": 1.0
+},
+{
+"word": "れた",
+"start": 59.16,
+"end": 59.27,
+"t_dtw": 5948,
+"probability": 1.0
+},
+{
+"word": "財",
+"start": 59.27,
+"end": 59.82,
+"t_dtw": 5980,
+"probability": 0.994
+},
+{
+"word": "布",
+"start": 59.82,
+"end": 60.0,
+"t_dtw": 6008,
+"probability": 0.998
+},
+{
+"word": "よ",
+"start": 60.0,
+"end": 60.18,
+"t_dtw": 6030,
+"probability": 0.999
+},
+{
+"word": "り",
+"start": 60.18,
+"end": 60.36,
+"t_dtw": 6042,
+"probability": 1.0
+},
+{
+"word": "悲",
+"start": 60.36,
+"end": 60.91,
+"t_dtw": 6066,
+"probability": 0.996
+},
+{
+"word": "しい",
+"start": 60.91,
+"end": 61.28,
+"t_dtw": 6106,
+"probability": 1.0
+},
+{
+"word": "こと",
+"start": 61.28,
+"end": 61.63,
+"t_dtw": 6136,
+"probability": 0.984
+},
+{
+"word": "は",
+"start": 61.64,
+"end": 61.83,
+"t_dtw": 6160,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 61.83,
+"end": 61.83,
+"t_dtw": 6172,
+"probability": 0.973
+},
+{
+"word": "私",
+"start": 61.83,
+"end": 62.01,
+"t_dtw": 6200,
+"probability": 0.999
+},
+{
+"word": "の",
+"start": 62.01,
+"end": 62.18,
+"t_dtw": 6224,
+"probability": 1.0
+},
+{
+"word": "気",
+"start": 62.19,
+"end": 62.37,
+"t_dtw": 6244,
+"probability": 1.0
+},
+{
+"word": "持",
+"start": 62.37,
+"end": 62.55,
+"t_dtw": 6258,
+"probability": 1.0
+},
+{
+"word": "ち",
+"start": 62.55,
+"end": 62.73,
+"t_dtw": 6276,
+"probability": 1.0
+},
+{
+"word": "まで",
+"start": 62.73,
+"end": 63.1,
+"t_dtw": 6302,
+"probability": 1.0
+},
+{
+"word": "忘",
+"start": 63.1,
+"end": 63.28,
+"t_dtw": 6340,
+"probability": 1.0
+},
+{
+"word": "れ",
+"start": 63.28,
+"end": 63.46,
+"t_dtw": 6360,
+"probability": 1.0
+},
+{
+"word": "ら",
+"start": 63.46,
+"end": 63.64,
+"t_dtw": 6376,
+"probability": 1.0
+},
+{
+"word": "れる",
+"start": 63.64,
+"end": 64.01,
+"t_dtw": 6406,
+"probability": 0.998
+},
+{
+"word": "こと",
+"start": 64.01,
+"end": 64.48,
+"t_dtw": 6440,
+"probability": 0.998
+}
+]
+},
+{
+"start": 64.48,
+"end": 69.64,
+"text": "今夜だけでいい 言い訳をやめて 七時より先に私を見て",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0768,
+"words": [
+{
+"word": "今",
+"start": 64.48,
+"end": 64.64,
+"t_dtw": 6484,
+"probability": 0.599
+},
+{
+"word": "夜",
+"start": 64.64,
+"end": 64.8,
+"t_dtw": 6510,
+"probability": 1.0
+},
+{
+"word": "だけ",
+"start": 64.93,
+"end": 65.13,
+"t_dtw": 6538,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 65.13,
+"end": 65.29,
+"t_dtw": 6558,
+"probability": 1.0
+},
+{
+"word": "いい",
+"start": 65.29,
+"end": 65.61,
+"t_dtw": 6582,
+"probability": 0.996
+},
+{
+"word": " ",
+"start": 65.62,
+"end": 65.62,
+"t_dtw": 6604,
+"probability": 0.623
+},
+{
+"word": "言",
+"start": 65.64,
+"end": 65.78,
+"t_dtw": 6616,
+"probability": 0.999
+},
+{
+"word": "い",
+"start": 65.78,
+"end": 65.94,
+"t_dtw": 6626,
+"probability": 1.0
+},
+{
+"word": "訳",
+"start": 65.94,
+"end": 66.42,
+"t_dtw": 6638,
+"probability": 1.0
+},
+{
+"word": "を",
+"start": 66.49,
+"end": 66.59,
+"t_dtw": 6672,
+"probability": 1.0
+},
+{
+"word": "や",
+"start": 66.59,
+"end": 66.75,
+"t_dtw": 6688,
+"probability": 0.992
+},
+{
+"word": "めて",
+"start": 66.75,
+"end": 67.18,
+"t_dtw": 6716,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 67.18,
+"end": 67.18,
+"t_dtw": 6726,
+"probability": 0.585
+},
+{
+"word": "七",
+"start": 67.18,
+"end": 67.4,
+"t_dtw": 6746,
+"probability": 0.79
+},
+{
+"word": "時",
+"start": 67.41,
+"end": 67.66,
+"t_dtw": 6770,
+"probability": 0.97
+},
+{
+"word": "よ",
+"start": 67.66,
+"end": 67.9,
+"t_dtw": 6792,
+"probability": 0.962
+},
+{
+"word": "り",
+"start": 67.9,
+"end": 68.14,
+"t_dtw": 6804,
+"probability": 1.0
+},
+{
+"word": "先",
+"start": 68.14,
+"end": 68.38,
+"t_dtw": 6828,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 68.38,
+"end": 68.62,
+"t_dtw": 6856,
+"probability": 1.0
+},
+{
+"word": "私",
+"start": 68.62,
+"end": 68.86,
+"t_dtw": 6894,
+"probability": 0.999
+},
+{
+"word": "を",
+"start": 68.86,
+"end": 69.06,
+"t_dtw": 6920,
+"probability": 1.0
+},
+{
+"word": "見て",
+"start": 69.15,
+"end": 69.64,
+"t_dtw": 6950,
+"probability": 1.0
+}
+]
+},
+{
+"start": 69.64,
+"end": 79.36,
+"text": "男はみんな忘れるなんて AIの言葉を盾にして",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0537,
+"words": [
+{
+"word": "男",
+"start": 69.98,
+"end": 70.02,
+"t_dtw": 7478,
+"probability": 0.72
+},
+{
+"word": "は",
+"start": 70.09,
+"end": 70.48,
+"t_dtw": 7518,
+"probability": 0.995
+},
+{
+"word": "み",
+"start": 70.48,
+"end": 70.9,
+"t_dtw": 7536,
+"probability": 0.825
+},
+{
+"word": "んな",
+"start": 70.9,
+"end": 71.74,
+"t_dtw": 7564,
+"probability": 0.999
+},
+{
+"word": "忘",
+"start": 71.74,
+"end": 72.16,
+"t_dtw": 7596,
+"probability": 0.966
+},
+{
+"word": "れる",
+"start": 72.16,
+"end": 72.82,
+"t_dtw": 7632,
+"probability": 0.968
+},
+{
+"word": "なん",
+"start": 73.15,
+"end": 73.84,
+"t_dtw": 7654,
+"probability": 0.993
+},
+{
+"word": "て",
+"start": 73.84,
+"end": 74.22,
+"t_dtw": 7686,
+"probability": 1.0
+},
+{
+"word": " AI",
+"start": 74.31,
+"end": 75.09,
+"t_dtw": 7742,
+"probability": 0.887
+},
+{
+"word": "の",
+"start": 75.13,
+"end": 75.52,
+"t_dtw": 7780,
+"probability": 0.923
+},
+{
+"word": "言",
+"start": 75.52,
+"end": 75.67,
+"t_dtw": 7806,
+"probability": 0.995
+},
+{
+"word": "葉",
+"start": 75.94,
+"end": 76.36,
+"t_dtw": 7830,
+"probability": 1.0
+},
+{
+"word": "を",
+"start": 76.36,
+"end": 76.78,
+"t_dtw": 7852,
+"probability": 0.997
+},
+{
+"word": "盾",
+"start": 76.78,
+"end": 78.04,
+"t_dtw": 7860,
+"probability": 0.868
+},
+{
+"word": "に",
+"start": 78.04,
+"end": 78.46,
+"t_dtw": 7894,
+"probability": 1.0
+},
+{
+"word": "して",
+"start": 78.46,
+"end": 79.28,
+"t_dtw": 7926,
+"probability": 0.998
+}
+]
+},
+{
+"start": 79.36,
+"end": 84.4,
+"text": "かっこよすぎるのも困ると そんな冗談で逃げないで",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0438,
+"words": [
+{
+"word": "か",
+"start": 79.36,
+"end": 79.54,
+"t_dtw": 7982,
+"probability": 0.389
+},
+{
+"word": "っ",
+"start": 79.61,
+"end": 79.72,
+"t_dtw": 8000,
+"probability": 0.999
+},
+{
+"word": "こ",
+"start": 79.81,
+"end": 79.9,
+"t_dtw": 8010,
+"probability": 0.998
+},
+{
+"word": "よ",
+"start": 79.9,
+"end": 80.08,
+"t_dtw": 8026,
+"probability": 0.994
+},
+{
+"word": "す",
+"start": 80.08,
+"end": 80.26,
+"t_dtw": 8042,
+"probability": 0.994
+},
+{
+"word": "ぎ",
+"start": 80.26,
+"end": 80.44,
+"t_dtw": 8062,
+"probability": 1.0
+},
+{
+"word": "る",
+"start": 80.44,
+"end": 80.62,
+"t_dtw": 8080,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 80.62,
+"end": 80.8,
+"t_dtw": 8094,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 80.8,
+"end": 80.98,
+"t_dtw": 8116,
+"probability": 1.0
+},
+{
+"word": "困",
+"start": 80.98,
+"end": 81.52,
+"t_dtw": 8126,
+"probability": 0.999
+},
+{
+"word": "る",
+"start": 81.52,
+"end": 81.67,
+"t_dtw": 8158,
+"probability": 1.0
+},
+{
+"word": "と",
+"start": 81.72,
+"end": 81.88,
+"t_dtw": 8178,
+"probability": 0.999
+},
+{
+"word": " そ",
+"start": 81.88,
+"end": 82.06,
+"t_dtw": 8212,
+"probability": 0.981
+},
+{
+"word": "んな",
+"start": 82.06,
+"end": 82.42,
+"t_dtw": 8240,
+"probability": 1.0
+},
+{
+"word": "冗",
+"start": 82.42,
+"end": 82.96,
+"t_dtw": 8260,
+"probability": 0.999
+},
+{
+"word": "談",
+"start": 82.96,
+"end": 83.1,
+"t_dtw": 8302,
+"probability": 0.999
+},
+{
+"word": "で",
+"start": 83.18,
+"end": 83.36,
+"t_dtw": 8332,
+"probability": 0.999
+},
+{
+"word": "逃",
+"start": 83.36,
+"end": 83.78,
+"t_dtw": 8358,
+"probability": 0.896
+},
+{
+"word": "げ",
+"start": 83.79,
+"end": 83.93,
+"t_dtw": 8378,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 83.93,
+"end": 84.22,
+"t_dtw": 8398,
+"probability": 0.999
+},
+{
+"word": "で",
+"start": 84.22,
+"end": 84.4,
+"t_dtw": 8430,
+"probability": 1.0
+}
+]
+},
+{
+"start": 84.4,
+"end": 89.24,
+"text": "誰かに歌を盾む前に 君の言葉で伝えて欲しい",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1848,
+"words": [
+{
+"word": "誰",
+"start": 84.4,
+"end": 84.58,
+"t_dtw": 8502,
+"probability": 0.912
+},
+{
+"word": "か",
+"start": 84.65,
+"end": 84.76,
+"t_dtw": 8524,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 84.85,
+"end": 84.94,
+"t_dtw": 8542,
+"probability": 0.993
+},
+{
+"word": "歌",
+"start": 84.94,
+"end": 85.12,
+"t_dtw": 8574,
+"probability": 0.949
+},
+{
+"word": "を",
+"start": 85.12,
+"end": 85.3,
+"t_dtw": 8602,
+"probability": 0.535
+},
+{
+"word": "盾",
+"start": 85.3,
+"end": 85.85,
+"t_dtw": 8620,
+"probability": 0.145
+},
+{
+"word": "む",
+"start": 85.85,
+"end": 86.03,
+"t_dtw": 8650,
+"probability": 0.389
+},
+{
+"word": "前",
+"start": 86.03,
+"end": 86.2,
+"t_dtw": 8680,
+"probability": 0.981
+},
+{
+"word": "に",
+"start": 86.2,
+"end": 86.36,
+"t_dtw": 8714,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 86.39,
+"end": 86.39,
+"t_dtw": 8734,
+"probability": 0.99
+},
+{
+"word": "君",
+"start": 86.42,
+"end": 86.57,
+"t_dtw": 8748,
+"probability": 0.97
+},
+{
+"word": "の",
+"start": 86.57,
+"end": 86.71,
+"t_dtw": 8772,
+"probability": 0.994
+},
+{
+"word": "言",
+"start": 86.76,
+"end": 86.93,
+"t_dtw": 8798,
+"probability": 0.996
+},
+{
+"word": "葉",
+"start": 86.93,
+"end": 87.11,
+"t_dtw": 8820,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 87.11,
+"end": 87.29,
+"t_dtw": 8836,
+"probability": 0.998
+},
+{
+"word": "伝",
+"start": 87.29,
+"end": 87.84,
+"t_dtw": 8862,
+"probability": 0.992
+},
+{
+"word": "えて",
+"start": 87.91,
+"end": 88.15,
+"t_dtw": 8900,
+"probability": 1.0
+},
+{
+"word": "欲",
+"start": 88.22,
+"end": 88.76,
+"t_dtw": 8916,
+"probability": 0.78
+},
+{
+"word": "しい",
+"start": 88.76,
+"end": 89.24,
+"t_dtw": 8950,
+"probability": 0.999
+}
+]
+},
+{
+"start": 89.24,
+"end": 94.24,
+"text": "云の真ん中 地づいた壁は 冥府じゃなくて寂しさなの",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1708,
+"words": [
+{
+"word": "云",
+"start": 89.24,
+"end": 89.62,
+"t_dtw": 8976,
+"probability": 0.142
+},
+{
+"word": "の",
+"start": 89.69,
+"end": 89.8,
+"t_dtw": 9002,
+"probability": 0.611
+},
+{
+"word": "真",
+"start": 89.8,
+"end": 89.94,
+"t_dtw": 9024,
+"probability": 0.989
+},
+{
+"word": "ん",
+"start": 89.94,
+"end": 90.08,
+"t_dtw": 9042,
+"probability": 0.999
+},
+{
+"word": "中",
+"start": 90.08,
+"end": 90.2,
+"t_dtw": 9062,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 90.24,
+"end": 90.24,
+"t_dtw": 9068,
+"probability": 0.52
+},
+{
+"word": "地",
+"start": 90.25,
+"end": 90.41,
+"t_dtw": 9084,
+"probability": 0.897
+},
+{
+"word": "づ",
+"start": 90.41,
+"end": 90.92,
+"t_dtw": 9100,
+"probability": 0.638
+},
+{
+"word": "いた",
+"start": 90.92,
+"end": 91.26,
+"t_dtw": 9134,
+"probability": 0.998
+},
+{
+"word": "壁",
+"start": 91.26,
+"end": 91.77,
+"t_dtw": 9156,
+"probability": 0.993
+},
+{
+"word": "は",
+"start": 91.77,
+"end": 91.96,
+"t_dtw": 9196,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 91.96,
+"end": 91.96,
+"t_dtw": 9212,
+"probability": 0.635
+},
+{
+"word": "冥",
+"start": 91.96,
+"end": 92.38,
+"t_dtw": 9218,
+"probability": 0.933
+},
+{
+"word": "府",
+"start": 92.38,
+"end": 92.52,
+"t_dtw": 9248,
+"probability": 0.916
+},
+{
+"word": "じゃ",
+"start": 92.52,
+"end": 92.8,
+"t_dtw": 9272,
+"probability": 0.996
+},
+{
+"word": "なく",
+"start": 92.8,
+"end": 93.08,
+"t_dtw": 9292,
+"probability": 0.997
+},
+{
+"word": "て",
+"start": 93.08,
+"end": 93.24,
+"t_dtw": 9320,
+"probability": 0.996
+},
+{
+"word": "寂",
+"start": 93.24,
+"end": 93.66,
+"t_dtw": 9350,
+"probability": 0.649
+},
+{
+"word": "し",
+"start": 93.66,
+"end": 93.8,
+"t_dtw": 9380,
+"probability": 1.0
+},
+{
+"word": "さ",
+"start": 93.8,
+"end": 93.94,
+"t_dtw": 9400,
+"probability": 0.999
+},
+{
+"word": "な",
+"start": 93.94,
+"end": 94.08,
+"t_dtw": 9416,
+"probability": 0.993
+},
+{
+"word": "の",
+"start": 94.08,
+"end": 94.24,
+"t_dtw": 9422,
+"probability": 0.999
+}
+]
+},
+{
+"start": 94.24,
+"end": 100.08,
+"text": "笑っただからもう平気 君はまだそう信じている",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0505,
+"words": [
+{
+"word": "笑",
+"start": 94.24,
+"end": 94.57,
+"t_dtw": 9578,
+"probability": 0.695
+},
+{
+"word": "った",
+"start": 94.69,
+"end": 95.2,
+"t_dtw": 9616,
+"probability": 0.999
+},
+{
+"word": "だから",
+"start": 95.25,
+"end": 96.03,
+"t_dtw": 9648,
+"probability": 0.863
+},
+{
+"word": "もう",
+"start": 96.26,
+"end": 96.89,
+"t_dtw": 9688,
+"probability": 0.875
+},
+{
+"word": "平",
+"start": 96.89,
+"end": 97.16,
+"t_dtw": 9722,
+"probability": 0.977
+},
+{
+"word": "気",
+"start": 97.21,
+"end": 97.57,
+"t_dtw": 9754,
+"probability": 0.998
+},
+{
+"word": " ",
+"start": 97.57,
+"end": 97.58,
+"t_dtw": 9792,
+"probability": 0.895
+},
+{
+"word": "君",
+"start": 97.58,
+"end": 97.8,
+"t_dtw": 9808,
+"probability": 0.991
+},
+{
+"word": "は",
+"start": 97.8,
+"end": 97.98,
+"t_dtw": 9832,
+"probability": 0.996
+},
+{
+"word": "まだ",
+"start": 98.06,
+"end": 98.47,
+"t_dtw": 9858,
+"probability": 0.995
+},
+{
+"word": "そう",
+"start": 98.47,
+"end": 98.92,
+"t_dtw": 9888,
+"probability": 0.985
+},
+{
+"word": "信",
+"start": 98.92,
+"end": 99.14,
+"t_dtw": 9920,
+"probability": 0.984
+},
+{
+"word": "じ",
+"start": 99.14,
+"end": 99.33,
+"t_dtw": 9944,
+"probability": 1.0
+},
+{
+"word": "て",
+"start": 99.38,
+"end": 99.58,
+"t_dtw": 9964,
+"probability": 0.999
+},
+{
+"word": "いる",
+"start": 99.58,
+"end": 100.08,
+"t_dtw": 10002,
+"probability": 0.975
+}
+]
+},
+{
+"start": 100.08,
+"end": 105.52,
+"text": "微笑む私の背中には 八位じゃなくて十五年の日々",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1979,
+"words": [
+{
+"word": "微",
+"start": 100.08,
+"end": 100.3,
+"t_dtw": 10052,
+"probability": 0.951
+},
+{
+"word": "笑",
+"start": 100.46,
+"end": 100.52,
+"t_dtw": 10080,
+"probability": 0.999
+},
+{
+"word": "む",
+"start": 100.53,
+"end": 100.74,
+"t_dtw": 10094,
+"probability": 1.0
+},
+{
+"word": "私",
+"start": 100.74,
+"end": 100.96,
+"t_dtw": 10134,
+"probability": 0.951
+},
+{
+"word": "の",
+"start": 100.96,
+"end": 101.18,
+"t_dtw": 10158,
+"probability": 0.999
+},
+{
+"word": "背",
+"start": 101.18,
+"end": 101.4,
+"t_dtw": 10182,
+"probability": 0.995
+},
+{
+"word": "中",
+"start": 101.4,
+"end": 101.62,
+"t_dtw": 10222,
+"probability": 0.999
+},
+{
+"word": "には",
+"start": 101.62,
+"end": 101.87,
+"t_dtw": 10262,
+"probability": 0.995
+},
+{
+"word": " ",
+"start": 102.08,
+"end": 102.08,
+"t_dtw": 10272,
+"probability": 0.524
+},
+{
+"word": "八",
+"start": 102.1,
+"end": 102.31,
+"t_dtw": 10296,
+"probability": 0.217
+},
+{
+"word": "位",
+"start": 102.31,
+"end": 102.54,
+"t_dtw": 10310,
+"probability": 0.467
+},
+{
+"word": "じゃ",
+"start": 102.54,
+"end": 102.99,
+"t_dtw": 10330,
+"probability": 0.995
+},
+{
+"word": "なく",
+"start": 102.99,
+"end": 103.46,
+"t_dtw": 10352,
+"probability": 0.999
+},
+{
+"word": "て",
+"start": 103.48,
+"end": 103.76,
+"t_dtw": 10378,
+"probability": 0.996
+},
+{
+"word": "十",
+"start": 103.76,
+"end": 104.05,
+"t_dtw": 10412,
+"probability": 0.481
+},
+{
+"word": "五",
+"start": 104.05,
+"end": 104.34,
+"t_dtw": 10446,
+"probability": 0.983
+},
+{
+"word": "年",
+"start": 104.34,
+"end": 104.63,
+"t_dtw": 10476,
+"probability": 0.756
+},
+{
+"word": "の",
+"start": 104.63,
+"end": 104.92,
+"t_dtw": 10498,
+"probability": 0.946
+},
+{
+"word": "日",
+"start": 104.92,
+"end": 105.17,
+"t_dtw": 10510,
+"probability": 0.992
+},
+{
+"word": "々",
+"start": 105.22,
+"end": 105.47,
+"t_dtw": 10534,
+"probability": 0.997
+}
+]
+},
+{
+"start": 105.52,
+"end": 111.60000000000001,
+"text": "笑ったからって許したわけじゃない 怒った理由笑いにしないで",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0447,
+"words": [
+{
+"word": "笑",
+"start": 105.52,
+"end": 105.72,
+"t_dtw": 10630,
+"probability": 0.932
+},
+{
+"word": "った",
+"start": 105.96,
+"end": 106.13,
+"t_dtw": 10670,
+"probability": 0.999
+},
+{
+"word": "から",
+"start": 106.13,
+"end": 106.47,
+"t_dtw": 10706,
+"probability": 0.997
+},
+{
+"word": "って",
+"start": 106.56,
+"end": 106.95,
+"t_dtw": 10738,
+"probability": 0.998
+},
+{
+"word": "許",
+"start": 106.95,
+"end": 107.15,
+"t_dtw": 10768,
+"probability": 0.944
+},
+{
+"word": "した",
+"start": 107.15,
+"end": 107.56,
+"t_dtw": 10806,
+"probability": 1.0
+},
+{
+"word": "わ",
+"start": 107.56,
+"end": 107.76,
+"t_dtw": 10820,
+"probability": 0.967
+},
+{
+"word": "け",
+"start": 107.76,
+"end": 107.96,
+"t_dtw": 10838,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 107.96,
+"end": 108.65,
+"t_dtw": 10878,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 108.65,
+"end": 108.8,
+"t_dtw": 10900,
+"probability": 0.9
+},
+{
+"word": "怒",
+"start": 108.8,
+"end": 109.38,
+"t_dtw": 10910,
+"probability": 0.994
+},
+{
+"word": "った",
+"start": 109.38,
+"end": 109.77,
+"t_dtw": 10950,
+"probability": 1.0
+},
+{
+"word": "理",
+"start": 109.77,
+"end": 109.95,
+"t_dtw": 10978,
+"probability": 0.998
+},
+{
+"word": "由",
+"start": 109.95,
+"end": 110.1,
+"t_dtw": 10996,
+"probability": 1.0
+},
+{
+"word": "笑",
+"start": 110.19,
+"end": 110.34,
+"t_dtw": 11026,
+"probability": 0.5
+},
+{
+"word": "い",
+"start": 110.34,
+"end": 110.53,
+"t_dtw": 11052,
+"probability": 0.999
+},
+{
+"word": "に",
+"start": 110.53,
+"end": 110.72,
+"t_dtw": 11068,
+"probability": 0.999
+},
+{
+"word": "し",
+"start": 110.72,
+"end": 110.91,
+"t_dtw": 11086,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 110.91,
+"end": 111.3,
+"t_dtw": 11112,
+"probability": 0.999
+},
+{
+"word": "で",
+"start": 111.3,
+"end": 111.58,
+"t_dtw": 11144,
+"probability": 0.999
+}
+]
+},
+{
+"start": 111.60000000000001,
+"end": 114.72,
+"text": "忘れた財布なら 足捧がせるけど",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.108,
+"words": [
+{
+"word": "忘",
+"start": 111.6,
+"end": 111.77,
+"t_dtw": 11200,
+"probability": 0.64
+},
+{
+"word": "れた",
+"start": 112.04,
+"end": 112.11,
+"t_dtw": 11238,
+"probability": 0.999
+},
+{
+"word": "財",
+"start": 112.11,
+"end": 112.61,
+"t_dtw": 11268,
+"probability": 0.987
+},
+{
+"word": "布",
+"start": 112.64,
+"end": 112.79,
+"t_dtw": 11302,
+"probability": 1.0
+},
+{
+"word": "なら",
+"start": 112.79,
+"end": 113.06,
+"t_dtw": 11336,
+"probability": 0.995
+},
+{
+"word": " ",
+"start": 113.13,
+"end": 113.13,
+"t_dtw": 11344,
+"probability": 0.627
+},
+{
+"word": "足",
+"start": 113.13,
+"end": 113.3,
+"t_dtw": 11364,
+"probability": 0.966
+},
+{
+"word": "捧",
+"start": 113.3,
+"end": 113.81,
+"t_dtw": 11384,
+"probability": 0.562
+},
+{
+"word": "が",
+"start": 113.81,
+"end": 113.98,
+"t_dtw": 11414,
+"probability": 0.866
+},
+{
+"word": "せ",
+"start": 113.98,
+"end": 114.15,
+"t_dtw": 11434,
+"probability": 0.999
+},
+{
+"word": "る",
+"start": 114.15,
+"end": 114.32,
+"t_dtw": 11450,
+"probability": 0.999
+},
+{
+"word": "けど",
+"start": 114.32,
+"end": 114.71,
+"t_dtw": 11478,
+"probability": 0.984
+}
+]
+},
+{
+"start": 114.72,
+"end": 117.44,
+"text": "こぼれた言葉は元には戻らない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0751,
+"words": [
+{
+"word": "こ",
+"start": 114.72,
+"end": 114.87,
+"t_dtw": 11504,
+"probability": 0.598
+},
+{
+"word": "ぼ",
+"start": 115.1,
+"end": 115.32,
+"t_dtw": 11514,
+"probability": 0.999
+},
+{
+"word": "れた",
+"start": 115.32,
+"end": 115.62,
+"t_dtw": 11546,
+"probability": 0.998
+},
+{
+"word": "言",
+"start": 115.62,
+"end": 115.77,
+"t_dtw": 11576,
+"probability": 0.992
+},
+{
+"word": "葉",
+"start": 115.77,
+"end": 115.92,
+"t_dtw": 11598,
+"probability": 1.0
+},
+{
+"word": "は",
+"start": 115.92,
+"end": 116.07,
+"t_dtw": 11616,
+"probability": 0.995
+},
+{
+"word": "元",
+"start": 116.07,
+"end": 116.18,
+"t_dtw": 11644,
+"probability": 0.63
+},
+{
+"word": "には",
+"start": 116.23,
+"end": 116.51,
+"t_dtw": 11680,
+"probability": 0.992
+},
+{
+"word": "戻",
+"start": 116.73,
+"end": 116.97,
+"t_dtw": 11700,
+"probability": 0.952
+},
+{
+"word": "ら",
+"start": 116.97,
+"end": 117.12,
+"t_dtw": 11732,
+"probability": 0.999
+},
+{
+"word": "ない",
+"start": 117.12,
+"end": 117.44,
+"t_dtw": 11752,
+"probability": 0.997
+}
+]
+},
+{
+"start": 117.44,
+"end": 122.48,
+"text": "帰ってくるならカッコつけないで 七時より先に私を見て",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0803,
+"words": [
+{
+"word": "帰",
+"start": 117.44,
+"end": 117.87,
+"t_dtw": 11770,
+"probability": 0.81
+},
+{
+"word": "って",
+"start": 117.89,
+"end": 118.16,
+"t_dtw": 11810,
+"probability": 0.997
+},
+{
+"word": "く",
+"start": 118.16,
+"end": 118.3,
+"t_dtw": 11830,
+"probability": 0.861
+},
+{
+"word": "る",
+"start": 118.3,
+"end": 118.4,
+"t_dtw": 11848,
+"probability": 0.999
+},
+{
+"word": "なら",
+"start": 118.45,
+"end": 118.73,
+"t_dtw": 11878,
+"probability": 0.996
+},
+{
+"word": "カ",
+"start": 118.73,
+"end": 118.87,
+"t_dtw": 11898,
+"probability": 0.414
+},
+{
+"word": "ッ",
+"start": 118.87,
+"end": 119.01,
+"t_dtw": 11918,
+"probability": 0.999
+},
+{
+"word": "コ",
+"start": 119.01,
+"end": 119.15,
+"t_dtw": 11928,
+"probability": 0.999
+},
+{
+"word": "つ",
+"start": 119.15,
+"end": 119.28,
+"t_dtw": 11946,
+"probability": 0.955
+},
+{
+"word": "け",
+"start": 119.33,
+"end": 119.4,
+"t_dtw": 11964,
+"probability": 0.999
+},
+{
+"word": "ない",
+"start": 119.46,
+"end": 119.72,
+"t_dtw": 11992,
+"probability": 0.995
+},
+{
+"word": "で",
+"start": 119.72,
+"end": 119.92,
+"t_dtw": 12016,
+"probability": 0.995
+},
+{
+"word": " ",
+"start": 119.92,
+"end": 119.92,
+"t_dtw": 12018,
+"probability": 0.593
+},
+{
+"word": "七",
+"start": 119.92,
+"end": 120.17,
+"t_dtw": 12040,
+"probability": 0.943
+},
+{
+"word": "時",
+"start": 120.17,
+"end": 120.37,
+"t_dtw": 12060,
+"probability": 0.997
+},
+{
+"word": "よ",
+"start": 120.41,
+"end": 120.67,
+"t_dtw": 12082,
+"probability": 0.998
+},
+{
+"word": "り",
+"start": 120.67,
+"end": 120.92,
+"t_dtw": 12094,
+"probability": 1.0
+},
+{
+"word": "先",
+"start": 120.92,
+"end": 121.17,
+"t_dtw": 12118,
+"probability": 0.995
+},
+{
+"word": "に",
+"start": 121.17,
+"end": 121.42,
+"t_dtw": 12144,
+"probability": 0.998
+},
+{
+"word": "私",
+"start": 121.42,
+"end": 121.67,
+"t_dtw": 12184,
+"probability": 0.986
+},
+{
+"word": "を",
+"start": 121.67,
+"end": 121.87,
+"t_dtw": 12212,
+"probability": 0.998
+},
+{
+"word": "見て",
+"start": 121.92,
+"end": 122.48,
+"t_dtw": 12242,
+"probability": 0.991
+}
+]
+},
+{
+"start": 127.92,
+"end": 132.48,
+"text": "十五年ずっと喧嘩もせずに 歩き来たわけじゃない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.108,
+"words": [
+{
+"word": "十",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12820,
+"probability": 0.91
+},
+{
+"word": "五",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12842,
+"probability": 0.997
+},
+{
+"word": "年",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12864,
+"probability": 0.999
+},
+{
+"word": "ず",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12890,
+"probability": 0.961
+},
+{
+"word": "っと",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12920,
+"probability": 0.983
+},
+{
+"word": "喧",
+"start": 127.92,
+"end": 127.92,
+"t_dtw": 12940,
+"probability": 0.896
+},
+{
+"word": "嘩",
+"start": 127.92,
+"end": 128.6,
+"t_dtw": 12968,
+"probability": 0.999
+},
+{
+"word": "も",
+"start": 128.6,
+"end": 129.11,
+"t_dtw": 12990,
+"probability": 0.988
+},
+{
+"word": "せ",
+"start": 129.11,
+"end": 129.62,
+"t_dtw": 13002,
+"probability": 0.994
+},
+{
+"word": "ず",
+"start": 129.62,
+"end": 130.13,
+"t_dtw": 13026,
+"probability": 0.999
+},
+{
+"word": "に",
+"start": 130.13,
+"end": 130.64,
+"t_dtw": 13066,
+"probability": 0.997
+},
+{
+"word": " ",
+"start": 130.64,
+"end": 130.64,
+"t_dtw": 13082,
+"probability": 0.754
+},
+{
+"word": "歩",
+"start": 130.64,
+"end": 131.09,
+"t_dtw": 13098,
+"probability": 0.996
+},
+{
+"word": "き",
+"start": 131.09,
+"end": 131.24,
+"t_dtw": 13124,
+"probability": 0.599
+},
+{
+"word": "来",
+"start": 131.24,
+"end": 131.38,
+"t_dtw": 13144,
+"probability": 0.27
+},
+{
+"word": "た",
+"start": 131.4,
+"end": 131.54,
+"t_dtw": 13154,
+"probability": 0.998
+},
+{
+"word": "わ",
+"start": 131.54,
+"end": 131.66,
+"t_dtw": 13166,
+"probability": 0.925
+},
+{
+"word": "け",
+"start": 131.74,
+"end": 131.84,
+"t_dtw": 13184,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 131.84,
+"end": 132.48,
+"t_dtw": 13228,
+"probability": 0.997
+}
+]
+},
+{
+"start": 133.28,
+"end": 137.68,
+"text": "何度背中を向けた夜も 朝には同じ家にいた",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0188,
+"words": [
+{
+"word": "何",
+"start": 133.28,
+"end": 133.28,
+"t_dtw": 13360,
+"probability": 0.965
+},
+{
+"word": "度",
+"start": 133.28,
+"end": 133.28,
+"t_dtw": 13382,
+"probability": 0.998
+},
+{
+"word": "背",
+"start": 133.28,
+"end": 133.41,
+"t_dtw": 13404,
+"probability": 0.981
+},
+{
+"word": "中",
+"start": 133.66,
+"end": 133.72,
+"t_dtw": 13428,
+"probability": 0.995
+},
+{
+"word": "を",
+"start": 133.73,
+"end": 134.03,
+"t_dtw": 13452,
+"probability": 0.998
+},
+{
+"word": "向",
+"start": 134.03,
+"end": 134.34,
+"t_dtw": 13466,
+"probability": 0.97
+},
+{
+"word": "け",
+"start": 134.34,
+"end": 134.65,
+"t_dtw": 13482,
+"probability": 0.998
+},
+{
+"word": "た",
+"start": 134.65,
+"end": 134.95,
+"t_dtw": 13498,
+"probability": 1.0
+},
+{
+"word": "夜",
+"start": 134.95,
+"end": 135.08,
+"t_dtw": 13524,
+"probability": 0.996
+},
+{
+"word": "も",
+"start": 135.3,
+"end": 135.59,
+"t_dtw": 13552,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 135.6,
+"end": 135.6,
+"t_dtw": 13568,
+"probability": 0.948
+},
+{
+"word": "朝",
+"start": 135.64,
+"end": 135.83,
+"t_dtw": 13594,
+"probability": 0.996
+},
+{
+"word": "には",
+"start": 135.83,
+"end": 136.2,
+"t_dtw": 13630,
+"probability": 0.996
+},
+{
+"word": "同",
+"start": 136.25,
+"end": 136.52,
+"t_dtw": 13658,
+"probability": 0.984
+},
+{
+"word": "じ",
+"start": 136.52,
+"end": 136.74,
+"t_dtw": 13682,
+"probability": 1.0
+},
+{
+"word": "家",
+"start": 136.75,
+"end": 136.98,
+"t_dtw": 13716,
+"probability": 0.986
+},
+{
+"word": "に",
+"start": 136.98,
+"end": 137.21,
+"t_dtw": 13732,
+"probability": 0.999
+},
+{
+"word": "いた",
+"start": 137.21,
+"end": 137.68,
+"t_dtw": 13764,
+"probability": 0.849
+}
+]
+},
+{
+"start": 137.68,
+"end": 140.0,
+"text": "欲しいのは正しさじゃない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0697,
+"words": [
+{
+"word": "欲",
+"start": 137.68,
+"end": 138.17,
+"t_dtw": 13794,
+"probability": 0.561
+},
+{
+"word": "しい",
+"start": 138.17,
+"end": 138.5,
+"t_dtw": 13828,
+"probability": 0.999
+},
+{
+"word": "のは",
+"start": 138.5,
+"end": 138.81,
+"t_dtw": 13862,
+"probability": 0.997
+},
+{
+"word": "正",
+"start": 138.84,
+"end": 138.99,
+"t_dtw": 13888,
+"probability": 0.958
+},
+{
+"word": "し",
+"start": 138.99,
+"end": 139.14,
+"t_dtw": 13910,
+"probability": 0.999
+},
+{
+"word": "さ",
+"start": 139.19,
+"end": 139.31,
+"t_dtw": 13926,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 139.31,
+"end": 139.99,
+"t_dtw": 13976,
+"probability": 0.997
+}
+]
+},
+{
+"start": 140.0,
+"end": 142.4,
+"text": "上どな答えでもない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.2182,
+"words": [
+{
+"word": "上",
+"start": 140.0,
+"end": 140.26,
+"t_dtw": 14060,
+"probability": 0.544
+},
+{
+"word": "ど",
+"start": 140.44,
+"end": 140.52,
+"t_dtw": 14078,
+"probability": 0.29
+},
+{
+"word": "な",
+"start": 140.52,
+"end": 140.78,
+"t_dtw": 14094,
+"probability": 0.925
+},
+{
+"word": "答",
+"start": 140.78,
+"end": 141.01,
+"t_dtw": 14120,
+"probability": 0.989
+},
+{
+"word": "え",
+"start": 141.04,
+"end": 141.3,
+"t_dtw": 14150,
+"probability": 0.999
+},
+{
+"word": "でも",
+"start": 141.3,
+"end": 141.79,
+"t_dtw": 14190,
+"probability": 0.994
+},
+{
+"word": "ない",
+"start": 142.02,
+"end": 142.4,
+"t_dtw": 14230,
+"probability": 0.981
+}
+]
+},
+{
+"start": 142.4,
+"end": 148.88,
+"text": "たった一つのごめんねを 君の声で聞きたいだけ",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0661,
+"words": [
+{
+"word": "た",
+"start": 142.4,
+"end": 142.7,
+"t_dtw": 14314,
+"probability": 0.946
+},
+{
+"word": "った",
+"start": 142.85,
+"end": 143.3,
+"t_dtw": 14342,
+"probability": 1.0
+},
+{
+"word": "一",
+"start": 143.3,
+"end": 143.6,
+"t_dtw": 14364,
+"probability": 0.863
+},
+{
+"word": "つ",
+"start": 143.6,
+"end": 143.86,
+"t_dtw": 14390,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 143.91,
+"end": 144.19,
+"t_dtw": 14414,
+"probability": 1.0
+},
+{
+"word": "ご",
+"start": 144.2,
+"end": 144.36,
+"t_dtw": 14444,
+"probability": 0.459
+},
+{
+"word": "め",
+"start": 144.42,
+"end": 144.56,
+"t_dtw": 14462,
+"probability": 1.0
+},
+{
+"word": "ん",
+"start": 144.56,
+"end": 144.71,
+"t_dtw": 14476,
+"probability": 0.999
+},
+{
+"word": "ね",
+"start": 144.76,
+"end": 144.92,
+"t_dtw": 14492,
+"probability": 0.998
+},
+{
+"word": "を",
+"start": 144.92,
+"end": 145.12,
+"t_dtw": 14510,
+"probability": 0.995
+},
+{
+"word": " ",
+"start": 145.12,
+"end": 145.12,
+"t_dtw": 14522,
+"probability": 0.773
+},
+{
+"word": "君",
+"start": 145.12,
+"end": 145.33,
+"t_dtw": 14534,
+"probability": 0.994
+},
+{
+"word": "の",
+"start": 145.35,
+"end": 145.61,
+"t_dtw": 14556,
+"probability": 1.0
+},
+{
+"word": "声",
+"start": 145.61,
+"end": 145.86,
+"t_dtw": 14586,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 145.88,
+"end": 146.15,
+"t_dtw": 14612,
+"probability": 1.0
+},
+{
+"word": "聞",
+"start": 146.22,
+"end": 146.61,
+"t_dtw": 14640,
+"probability": 0.935
+},
+{
+"word": "き",
+"start": 146.61,
+"end": 146.98,
+"t_dtw": 14656,
+"probability": 0.999
+},
+{
+"word": "たい",
+"start": 147.07,
+"end": 147.96,
+"t_dtw": 14706,
+"probability": 1.0
+},
+{
+"word": "だけ",
+"start": 147.96,
+"end": 148.88,
+"t_dtw": 14778,
+"probability": 1.0
+}
+]
+},
+{
+"start": 148.88,
+"end": 156.4,
+"text": "笑ったからって許したわけじゃない それでも君を嫌いになれない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0331,
+"words": [
+{
+"word": "笑",
+"start": 148.88,
+"end": 149.18,
+"t_dtw": 15128,
+"probability": 0.979
+},
+{
+"word": "った",
+"start": 149.33,
+"end": 149.79,
+"t_dtw": 15166,
+"probability": 0.999
+},
+{
+"word": "から",
+"start": 149.79,
+"end": 150.4,
+"t_dtw": 15202,
+"probability": 0.999
+},
+{
+"word": "って",
+"start": 150.4,
+"end": 151.01,
+"t_dtw": 15236,
+"probability": 1.0
+},
+{
+"word": "許",
+"start": 151.01,
+"end": 151.31,
+"t_dtw": 15262,
+"probability": 0.921
+},
+{
+"word": "した",
+"start": 151.31,
+"end": 151.8,
+"t_dtw": 15302,
+"probability": 1.0
+},
+{
+"word": "わ",
+"start": 151.8,
+"end": 152.22,
+"t_dtw": 15316,
+"probability": 0.995
+},
+{
+"word": "け",
+"start": 152.23,
+"end": 152.52,
+"t_dtw": 15334,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 152.52,
+"end": 153.76,
+"t_dtw": 15370,
+"probability": 1.0
+},
+{
+"word": " それ",
+"start": 153.76,
+"end": 154.11,
+"t_dtw": 15412,
+"probability": 0.627
+},
+{
+"word": "でも",
+"start": 154.11,
+"end": 154.46,
+"t_dtw": 15446,
+"probability": 0.999
+},
+{
+"word": "君",
+"start": 154.46,
+"end": 154.63,
+"t_dtw": 15472,
+"probability": 0.979
+},
+{
+"word": "を",
+"start": 154.63,
+"end": 154.8,
+"t_dtw": 15500,
+"probability": 0.981
+},
+{
+"word": "嫌",
+"start": 154.8,
+"end": 155.32,
+"t_dtw": 15520,
+"probability": 0.999
+},
+{
+"word": "い",
+"start": 155.32,
+"end": 155.48,
+"t_dtw": 15552,
+"probability": 1.0
+},
+{
+"word": "にな",
+"start": 155.48,
+"end": 155.83,
+"t_dtw": 15580,
+"probability": 0.991
+},
+{
+"word": "れない",
+"start": 155.83,
+"end": 156.4,
+"t_dtw": 15636,
+"probability": 1.0
+}
+]
+},
+{
+"start": 156.4,
+"end": 161.32,
+"text": "詰めてしまったご飯よりも 進めない想いがまだここにある",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1141,
+"words": [
+{
+"word": "詰",
+"start": 156.56,
+"end": 156.92,
+"t_dtw": 15664,
+"probability": 0.473
+},
+{
+"word": "めて",
+"start": 156.92,
+"end": 157.27,
+"t_dtw": 15696,
+"probability": 0.998
+},
+{
+"word": "しま",
+"start": 157.27,
+"end": 157.62,
+"t_dtw": 15724,
+"probability": 0.999
+},
+{
+"word": "った",
+"start": 157.62,
+"end": 157.97,
+"t_dtw": 15764,
+"probability": 1.0
+},
+{
+"word": "ご",
+"start": 157.97,
+"end": 158.14,
+"t_dtw": 15782,
+"probability": 0.964
+},
+{
+"word": "飯",
+"start": 158.14,
+"end": 158.29,
+"t_dtw": 15808,
+"probability": 0.987
+},
+{
+"word": "よ",
+"start": 158.41,
+"end": 158.48,
+"t_dtw": 15834,
+"probability": 0.998
+},
+{
+"word": "り",
+"start": 158.48,
+"end": 158.65,
+"t_dtw": 15846,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 158.65,
+"end": 158.82,
+"t_dtw": 15868,
+"probability": 0.995
+},
+{
+"word": " ",
+"start": 158.82,
+"end": 158.82,
+"t_dtw": 15892,
+"probability": 0.636
+},
+{
+"word": "進",
+"start": 158.82,
+"end": 158.99,
+"t_dtw": 15902,
+"probability": 0.532
+},
+{
+"word": "め",
+"start": 158.99,
+"end": 159.16,
+"t_dtw": 15916,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 159.16,
+"end": 159.51,
+"t_dtw": 15944,
+"probability": 0.999
+},
+{
+"word": "想",
+"start": 159.51,
+"end": 159.68,
+"t_dtw": 15976,
+"probability": 0.544
+},
+{
+"word": "い",
+"start": 159.68,
+"end": 159.85,
+"t_dtw": 15996,
+"probability": 1.0
+},
+{
+"word": "が",
+"start": 159.85,
+"end": 160.02,
+"t_dtw": 16012,
+"probability": 1.0
+},
+{
+"word": "まだ",
+"start": 160.02,
+"end": 160.37,
+"t_dtw": 16044,
+"probability": 0.996
+},
+{
+"word": "ここ",
+"start": 160.37,
+"end": 160.72,
+"t_dtw": 16072,
+"probability": 0.996
+},
+{
+"word": "に",
+"start": 160.72,
+"end": 160.89,
+"t_dtw": 16096,
+"probability": 1.0
+},
+{
+"word": "ある",
+"start": 160.89,
+"end": 161.32,
+"t_dtw": 16126,
+"probability": 1.0
+}
+]
+},
+{
+"start": 161.32,
+"end": 168.4,
+"text": "今夜帰るなら逃げたりしないで 七時より先に私を抱いて",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0517,
+"words": [
+{
+"word": "今",
+"start": 161.32,
+"end": 161.48,
+"t_dtw": 16168,
+"probability": 0.982
+},
+{
+"word": "夜",
+"start": 161.48,
+"end": 161.64,
+"t_dtw": 16194,
+"probability": 1.0
+},
+{
+"word": "帰",
+"start": 161.77,
+"end": 162.12,
+"t_dtw": 16220,
+"probability": 0.995
+},
+{
+"word": "る",
+"start": 162.12,
+"end": 162.28,
+"t_dtw": 16244,
+"probability": 0.999
+},
+{
+"word": "なら",
+"start": 162.28,
+"end": 162.6,
+"t_dtw": 16274,
+"probability": 1.0
+},
+{
+"word": "逃",
+"start": 162.6,
+"end": 163.08,
+"t_dtw": 16294,
+"probability": 0.967
+},
+{
+"word": "げ",
+"start": 163.08,
+"end": 163.23,
+"t_dtw": 16310,
+"probability": 1.0
+},
+{
+"word": "た",
+"start": 163.33,
+"end": 163.4,
+"t_dtw": 16326,
+"probability": 1.0
+},
+{
+"word": "り",
+"start": 163.4,
+"end": 163.56,
+"t_dtw": 16342,
+"probability": 1.0
+},
+{
+"word": "し",
+"start": 163.56,
+"end": 163.72,
+"t_dtw": 16360,
+"probability": 0.999
+},
+{
+"word": "ない",
+"start": 163.72,
+"end": 164.04,
+"t_dtw": 16388,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 164.04,
+"end": 164.2,
+"t_dtw": 16418,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 164.2,
+"end": 164.2,
+"t_dtw": 16430,
+"probability": 0.946
+},
+{
+"word": "七",
+"start": 164.2,
+"end": 164.46,
+"t_dtw": 16452,
+"probability": 0.671
+},
+{
+"word": "時",
+"start": 164.46,
+"end": 164.74,
+"t_dtw": 16472,
+"probability": 0.59
+},
+{
+"word": "よ",
+"start": 164.74,
+"end": 165.01,
+"t_dtw": 16478,
+"probability": 0.984
+},
+{
+"word": "り",
+"start": 165.01,
+"end": 165.28,
+"t_dtw": 16504,
+"probability": 1.0
+},
+{
+"word": "先",
+"start": 165.28,
+"end": 165.55,
+"t_dtw": 16532,
+"probability": 0.999
+},
+{
+"word": "に",
+"start": 165.55,
+"end": 165.84,
+"t_dtw": 16578,
+"probability": 1.0
+},
+{
+"word": "私",
+"start": 165.84,
+"end": 166.35,
+"t_dtw": 16708,
+"probability": 0.755
+},
+{
+"word": "を",
+"start": 166.35,
+"end": 166.86,
+"t_dtw": 16744,
+"probability": 1.0
+},
+{
+"word": "抱",
+"start": 166.86,
+"end": 167.37,
+"t_dtw": 16760,
+"probability": 1.0
+},
+{
+"word": "いて",
+"start": 167.62,
+"end": 168.4,
+"t_dtw": 16800,
+"probability": 0.997
+}
+]
+},
+{
+"start": 168.4,
+"end": 174.8,
+"text": "笑ったからって 笑ったからって 笑ったからって",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.4684,
+"words": [
+{
+"word": "笑",
+"start": 168.4,
+"end": 168.74,
+"t_dtw": 17252,
+"probability": 0.332
+},
+{
+"word": "った",
+"start": 168.85,
+"end": 169.41,
+"t_dtw": 17282,
+"probability": 0.661
+},
+{
+"word": "から",
+"start": 169.44,
+"end": 170.1,
+"t_dtw": 17320,
+"probability": 0.692
+},
+{
+"word": "って",
+"start": 170.1,
+"end": 170.8,
+"t_dtw": 17358,
+"probability": 0.93
+},
+{
+"word": " ",
+"start": 170.8,
+"end": 170.8,
+"t_dtw": 17390,
+"probability": 0.364
+},
+{
+"word": "笑",
+"start": 170.8,
+"end": 171.31,
+"t_dtw": 17478,
+"probability": 0.362
+},
+{
+"word": "った",
+"start": 171.37,
+"end": 172.51,
+"t_dtw": 17478,
+"probability": 0.534
+},
+{
+"word": "から",
+"start": 172.51,
+"end": 173.65,
+"t_dtw": 17478,
+"probability": 0.75
+},
+{
+"word": "って",
+"start": 173.65,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.938
+},
+{
+"word": " ",
+"start": 174.8,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.359
+},
+{
+"word": "笑",
+"start": 174.8,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.545
+},
+{
+"word": "った",
+"start": 174.8,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.555
+},
+{
+"word": "から",
+"start": 174.8,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.765
+},
+{
+"word": "って",
+"start": 174.8,
+"end": 174.8,
+"t_dtw": 17478,
+"probability": 0.957
+}
+]
+},
+{
+"start": 174.8,
+"end": 183.20000000000002,
+"text": "忘れた貴方を見たからって 忘れた財布も 忘れた財布も 末だらない強がりも 朝には同じ家にいた",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.3232,
+"words": [
+{
+"word": "忘",
+"start": 174.8,
+"end": 174.9,
+"t_dtw": 17512,
+"probability": 0.994
+},
+{
+"word": "れた",
+"start": 174.9,
+"end": 175.11,
+"t_dtw": 17548,
+"probability": 1.0
+},
+{
+"word": "貴",
+"start": 175.24,
+"end": 175.42,
+"t_dtw": 17572,
+"probability": 0.993
+},
+{
+"word": "方",
+"start": 175.42,
+"end": 175.52,
+"t_dtw": 17600,
+"probability": 0.994
+},
+{
+"word": "を",
+"start": 175.52,
+"end": 175.62,
+"t_dtw": 17630,
+"probability": 0.195
+},
+{
+"word": "見",
+"start": 175.62,
+"end": 175.72,
+"t_dtw": 17728,
+"probability": 0.42
+},
+{
+"word": "た",
+"start": 175.72,
+"end": 175.81,
+"t_dtw": 17728,
+"probability": 0.176
+},
+{
+"word": "から",
+"start": 175.84,
+"end": 176.03,
+"t_dtw": 17728,
+"probability": 0.058
+},
+{
+"word": "って",
+"start": 176.03,
+"end": 176.24,
+"t_dtw": 17728,
+"probability": 0.962
+},
+{
+"word": " ",
+"start": 176.24,
+"end": 176.24,
+"t_dtw": 17728,
+"probability": 1.0
+},
+{
+"word": "忘",
+"start": 176.24,
+"end": 176.34,
+"t_dtw": 17728,
+"probability": 0.412
+},
+{
+"word": "れた",
+"start": 176.34,
+"end": 176.55,
+"t_dtw": 17728,
+"probability": 0.989
+},
+{
+"word": "財",
+"start": 176.55,
+"end": 176.85,
+"t_dtw": 17728,
+"probability": 0.846
+},
+{
+"word": "布",
+"start": 176.86,
+"end": 176.96,
+"t_dtw": 17728,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 176.96,
+"end": 177.2,
+"t_dtw": 17728,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 177.2,
+"end": 177.2,
+"t_dtw": 17758,
+"probability": 0.984
+},
+{
+"word": "忘",
+"start": 177.2,
+"end": 177.3,
+"t_dtw": 17758,
+"probability": 0.998
+},
+{
+"word": "れた",
+"start": 177.3,
+"end": 177.51,
+"t_dtw": 17758,
+"probability": 1.0
+},
+{
+"word": "財",
+"start": 177.51,
+"end": 177.81,
+"t_dtw": 17758,
+"probability": 1.0
+},
+{
+"word": "布",
+"start": 177.81,
+"end": 177.92,
+"t_dtw": 17758,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 177.92,
+"end": 178.02,
+"t_dtw": 17758,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 178.02,
+"end": 178.02,
+"t_dtw": 17758,
+"probability": 0.62
+},
+{
+"word": "末",
+"start": 178.02,
+"end": 178.33,
+"t_dtw": 17764,
+"probability": 0.038
+},
+{
+"word": "だ",
+"start": 178.33,
+"end": 178.43,
+"t_dtw": 17784,
+"probability": 0.778
+},
+{
+"word": "ら",
+"start": 178.43,
+"end": 178.53,
+"t_dtw": 17802,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 178.53,
+"end": 178.74,
+"t_dtw": 17824,
+"probability": 1.0
+},
+{
+"word": "強",
+"start": 178.74,
+"end": 178.84,
+"t_dtw": 17856,
+"probability": 1.0
+},
+{
+"word": "が",
+"start": 178.84,
+"end": 178.94,
+"t_dtw": 17882,
+"probability": 1.0
+},
+{
+"word": "り",
+"start": 178.94,
+"end": 179.04,
+"t_dtw": 17898,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 179.04,
+"end": 179.2,
+"t_dtw": 17918,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 179.2,
+"end": 179.2,
+"t_dtw": 17936,
+"probability": 0.978
+},
+{
+"word": "朝",
+"start": 179.2,
+"end": 179.64,
+"t_dtw": 17958,
+"probability": 1.0
+},
+{
+"word": "には",
+"start": 179.64,
+"end": 180.52,
+"t_dtw": 17994,
+"probability": 1.0
+},
+{
+"word": "同",
+"start": 180.52,
+"end": 180.86,
+"t_dtw": 18020,
+"probability": 1.0
+},
+{
+"word": "じ",
+"start": 181.1,
+"end": 181.4,
+"t_dtw": 18048,
+"probability": 1.0
+},
+{
+"word": "家",
+"start": 181.4,
+"end": 181.84,
+"t_dtw": 18082,
+"probability": 1.0
+},
+{
+"word": "に",
+"start": 181.84,
+"end": 182.28,
+"t_dtw": 18100,
+"probability": 1.0
+},
+{
+"word": "いた",
+"start": 182.28,
+"end": 183.2,
+"t_dtw": 18148,
+"probability": 1.0
+}
+]
+},
+{
+"start": 183.20000000000002,
+"end": 189.20000000000002,
+"text": "欲しいのは正しさじゃない 上手な答えでもない たった一つのごめんねを 君の声で聞きたいだけ",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0143,
+"words": [
+{
+"word": "欲",
+"start": 183.2,
+"end": 183.71,
+"t_dtw": 18272,
+"probability": 0.801
+},
+{
+"word": "しい",
+"start": 183.71,
+"end": 184.04,
+"t_dtw": 18306,
+"probability": 1.0
+},
+{
+"word": "のは",
+"start": 184.04,
+"end": 184.39,
+"t_dtw": 18342,
+"probability": 1.0
+},
+{
+"word": "正",
+"start": 184.39,
+"end": 184.56,
+"t_dtw": 18366,
+"probability": 1.0
+},
+{
+"word": "し",
+"start": 184.56,
+"end": 184.66,
+"t_dtw": 18406,
+"probability": 1.0
+},
+{
+"word": "さ",
+"start": 184.73,
+"end": 184.9,
+"t_dtw": 18426,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 184.9,
+"end": 185.59,
+"t_dtw": 18466,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 185.59,
+"end": 185.59,
+"t_dtw": 18500,
+"probability": 1.0
+},
+{
+"word": "上",
+"start": 185.59,
+"end": 185.76,
+"t_dtw": 18514,
+"probability": 1.0
+},
+{
+"word": "手",
+"start": 185.76,
+"end": 185.93,
+"t_dtw": 18540,
+"probability": 1.0
+},
+{
+"word": "な",
+"start": 185.93,
+"end": 186.1,
+"t_dtw": 18558,
+"probability": 1.0
+},
+{
+"word": "答",
+"start": 186.1,
+"end": 186.27,
+"t_dtw": 18584,
+"probability": 1.0
+},
+{
+"word": "え",
+"start": 186.27,
+"end": 186.44,
+"t_dtw": 18608,
+"probability": 1.0
+},
+{
+"word": "でも",
+"start": 186.44,
+"end": 186.78,
+"t_dtw": 18640,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 186.78,
+"end": 187.2,
+"t_dtw": 18724,
+"probability": 1.0
+},
+{
+"word": " た",
+"start": 187.2,
+"end": 187.38,
+"t_dtw": 18764,
+"probability": 0.802
+},
+{
+"word": "った",
+"start": 187.38,
+"end": 187.74,
+"t_dtw": 18788,
+"probability": 1.0
+},
+{
+"word": "一",
+"start": 187.74,
+"end": 187.92,
+"t_dtw": 18810,
+"probability": 0.999
+},
+{
+"word": "つ",
+"start": 187.92,
+"end": 188.1,
+"t_dtw": 18838,
+"probability": 1.0
+},
+{
+"word": "の",
+"start": 188.1,
+"end": 188.28,
+"t_dtw": 18854,
+"probability": 1.0
+},
+{
+"word": "ご",
+"start": 188.34,
+"end": 188.46,
+"t_dtw": 18876,
+"probability": 1.0
+},
+{
+"word": "め",
+"start": 188.46,
+"end": 188.59,
+"t_dtw": 18892,
+"probability": 1.0
+},
+{
+"word": "ん",
+"start": 188.69,
+"end": 188.82,
+"t_dtw": 18912,
+"probability": 1.0
+},
+{
+"word": "ね",
+"start": 188.82,
+"end": 189.0,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "を",
+"start": 189.0,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": " ",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 0.934
+},
+{
+"word": "君",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 0.999
+},
+{
+"word": "の",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "声",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "聞",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "き",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "たい",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+},
+{
+"word": "だけ",
+"start": 189.2,
+"end": 189.2,
+"t_dtw": 18918,
+"probability": 1.0
+}
+]
+},
+{
+"start": 189.20000000000002,
+"end": 197.6,
+"text": "笑ったからって 笑ったからって 笑ったからって 許したわけじゃない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.171,
+"words": [
+{
+"word": "笑",
+"start": 189.2,
+"end": 189.54,
+"t_dtw": 19208,
+"probability": 0.211
+},
+{
+"word": "った",
+"start": 189.65,
+"end": 190.21,
+"t_dtw": 19660,
+"probability": 0.962
+},
+{
+"word": "から",
+"start": 190.24,
+"end": 190.9,
+"t_dtw": 19696,
+"probability": 0.974
+},
+{
+"word": "って",
+"start": 190.9,
+"end": 191.6,
+"t_dtw": 19726,
+"probability": 0.996
+},
+{
+"word": " ",
+"start": 191.6,
+"end": 191.6,
+"t_dtw": 19726,
+"probability": 0.865
+},
+{
+"word": "笑",
+"start": 191.6,
+"end": 192.11,
+"t_dtw": 19726,
+"probability": 0.902
+},
+{
+"word": "った",
+"start": 192.17,
+"end": 193.31,
+"t_dtw": 19726,
+"probability": 0.895
+},
+{
+"word": "から",
+"start": 193.31,
+"end": 194.45,
+"t_dtw": 19726,
+"probability": 0.97
+},
+{
+"word": "って",
+"start": 194.45,
+"end": 195.6,
+"t_dtw": 19746,
+"probability": 0.997
+},
+{
+"word": " ",
+"start": 195.6,
+"end": 195.6,
+"t_dtw": 19758,
+"probability": 0.851
+},
+{
+"word": "笑",
+"start": 195.6,
+"end": 195.72,
+"t_dtw": 19758,
+"probability": 0.67
+},
+{
+"word": "った",
+"start": 195.72,
+"end": 195.96,
+"t_dtw": 19758,
+"probability": 0.805
+},
+{
+"word": "から",
+"start": 195.96,
+"end": 196.2,
+"t_dtw": 19758,
+"probability": 0.958
+},
+{
+"word": "って",
+"start": 196.2,
+"end": 196.44,
+"t_dtw": 19758,
+"probability": 0.997
+},
+{
+"word": " ",
+"start": 196.44,
+"end": 196.44,
+"t_dtw": 19758,
+"probability": 0.789
+},
+{
+"word": "許",
+"start": 196.44,
+"end": 196.56,
+"t_dtw": 19758,
+"probability": 0.64
+},
+{
+"word": "した",
+"start": 196.56,
+"end": 196.8,
+"t_dtw": 19758,
+"probability": 0.986
+},
+{
+"word": "わ",
+"start": 196.8,
+"end": 196.92,
+"t_dtw": 19758,
+"probability": 0.807
+},
+{
+"word": "け",
+"start": 196.92,
+"end": 197.04,
+"t_dtw": 19758,
+"probability": 1.0
+},
+{
+"word": "じゃない",
+"start": 197.04,
+"end": 197.6,
+"t_dtw": 19758,
+"probability": 0.994
+}
+]
+},
+{
+"start": 197.6,
+"end": 202.0,
+"text": "許したからって 許したわけじゃない 許したわけじゃない",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.3097,
+"words": [
+{
+"word": "許",
+"start": 197.6,
+"end": 197.87,
+"t_dtw": 19908,
+"probability": 0.773
+},
+{
+"word": "した",
+"start": 198.05,
+"end": 198.41,
+"t_dtw": 19946,
+"probability": 0.994
+},
+{
+"word": "から",
+"start": 198.41,
+"end": 198.95,
+"t_dtw": 19964,
+"probability": 0.464
+},
+{
+"word": "って",
+"start": 198.95,
+"end": 199.39,
+"t_dtw": 19964,
+"probability": 0.887
+},
+{
+"word": " ",
+"start": 199.39,
+"end": 199.49,
+"t_dtw": 19964,
+"probability": 0.885
+},
+{
+"word": "許",
+"start": 199.61,
+"end": 199.76,
+"t_dtw": 19964,
+"probability": 0.601
+},
+{
+"word": "した",
+"start": 199.76,
+"end": 200.3,
+"t_dtw": 19964,
+"probability": 0.988
+},
+{
+"word": "わ",
+"start": 200.3,
+"end": 200.53,
+"t_dtw": 19964,
+"probability": 0.605
+},
+{
+"word": "け",
+"start": 200.55,
+"end": 200.83,
+"t_dtw": 19980,
+"probability": 0.996
+},
+{
+"word": "じゃない",
+"start": 200.9,
+"end": 202.0,
+"t_dtw": 20026,
+"probability": 0.996
+},
+{
+"word": " ",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20044,
+"probability": 0.33
+},
+{
+"word": "許",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20234,
+"probability": 0.14
+},
+{
+"word": "した",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20248,
+"probability": 0.979
+},
+{
+"word": "わ",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20248,
+"probability": 0.844
+},
+{
+"word": "け",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20248,
+"probability": 0.998
+},
+{
+"word": "じゃない",
+"start": 202.0,
+"end": 202.0,
+"t_dtw": 20248,
+"probability": 0.998
+}
+]
+},
+{
+"start": 202.0,
+"end": 204.0,
+"text": "じゃないよ",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1114,
+"words": [
+{
+"word": "じゃない",
+"start": 202.45,
+"end": 203.6,
+"t_dtw": 20248,
+"probability": 0.735
+},
+{
+"word": "よ",
+"start": 203.6,
+"end": 203.8,
+"t_dtw": 20284,
+"probability": 0.974
+}
+]
+},
+{
+"start": 204.0,
+"end": 209.0,
+"text": "笑いたそれた後半よりも 進めない想いがまだここにある",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.1461,
+"words": [
+{
+"word": "笑",
+"start": 204.0,
+"end": 204.21,
+"t_dtw": 20436,
+"probability": 0.965
+},
+{
+"word": "いた",
+"start": 204.44,
+"end": 204.64,
+"t_dtw": 20472,
+"probability": 0.466
+},
+{
+"word": "それ",
+"start": 204.64,
+"end": 205.07,
+"t_dtw": 20504,
+"probability": 0.502
+},
+{
+"word": "た",
+"start": 205.07,
+"end": 205.28,
+"t_dtw": 20524,
+"probability": 0.696
+},
+{
+"word": "後",
+"start": 205.28,
+"end": 205.46,
+"t_dtw": 20544,
+"probability": 0.439
+},
+{
+"word": "半",
+"start": 205.51,
+"end": 205.7,
+"t_dtw": 20570,
+"probability": 0.986
+},
+{
+"word": "よ",
+"start": 205.7,
+"end": 205.89,
+"t_dtw": 20596,
+"probability": 0.923
+},
+{
+"word": "り",
+"start": 206.01,
+"end": 206.12,
+"t_dtw": 20608,
+"probability": 1.0
+},
+{
+"word": "も",
+"start": 206.12,
+"end": 206.4,
+"t_dtw": 20628,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 206.4,
+"end": 206.4,
+"t_dtw": 20652,
+"probability": 0.884
+},
+{
+"word": "進",
+"start": 206.4,
+"end": 206.58,
+"t_dtw": 20658,
+"probability": 0.979
+},
+{
+"word": "め",
+"start": 206.58,
+"end": 206.76,
+"t_dtw": 20676,
+"probability": 1.0
+},
+{
+"word": "ない",
+"start": 206.76,
+"end": 207.13,
+"t_dtw": 20706,
+"probability": 0.999
+},
+{
+"word": "想",
+"start": 207.13,
+"end": 207.31,
+"t_dtw": 20736,
+"probability": 0.903
+},
+{
+"word": "い",
+"start": 207.31,
+"end": 207.48,
+"t_dtw": 20756,
+"probability": 1.0
+},
+{
+"word": "が",
+"start": 207.5,
+"end": 207.67,
+"t_dtw": 20772,
+"probability": 0.999
+},
+{
+"word": "まだ",
+"start": 207.67,
+"end": 208.04,
+"t_dtw": 20802,
+"probability": 0.975
+},
+{
+"word": "ここ",
+"start": 208.04,
+"end": 208.41,
+"t_dtw": 20832,
+"probability": 0.978
+},
+{
+"word": "に",
+"start": 208.41,
+"end": 208.58,
+"t_dtw": 20856,
+"probability": 1.0
+},
+{
+"word": "ある",
+"start": 208.67,
+"end": 209.0,
+"t_dtw": 20888,
+"probability": 0.998
+}
+]
+},
+{
+"start": 209.0,
+"end": 220.0,
+"text": "今夜帰るなら逃げたりしないで 七時より先に私を抱いて",
+"no_speech_prob": 0.0,
+"avg_logprob": -0.0413,
+"words": [
+{
+"word": "今",
+"start": 209.0,
+"end": 209.15,
+"t_dtw": 20928,
+"probability": 0.986
+},
+{
+"word": "夜",
+"start": 209.15,
+"end": 209.3,
+"t_dtw": 20954,
+"probability": 1.0
+},
+{
+"word": "帰",
+"start": 209.45,
+"end": 209.76,
+"t_dtw": 20978,
+"probability": 0.999
+},
+{
+"word": "る",
+"start": 209.76,
+"end": 209.91,
+"t_dtw": 21004,
+"probability": 0.998
+},
+{
+"word": "なら",
+"start": 209.91,
+"end": 210.22,
+"t_dtw": 21032,
+"probability": 0.999
+},
+{
+"word": "逃",
+"start": 210.22,
+"end": 210.68,
+"t_dtw": 21052,
+"probability": 0.908
+},
+{
+"word": "げ",
+"start": 210.68,
+"end": 210.8,
+"t_dtw": 21068,
+"probability": 1.0
+},
+{
+"word": "た",
+"start": 210.82,
+"end": 210.96,
+"t_dtw": 21088,
+"probability": 0.997
+},
+{
+"word": "り",
+"start": 211.02,
+"end": 211.13,
+"t_dtw": 21100,
+"probability": 1.0
+},
+{
+"word": "し",
+"start": 211.13,
+"end": 211.28,
+"t_dtw": 21120,
+"probability": 0.995
+},
+{
+"word": "ない",
+"start": 211.28,
+"end": 211.59,
+"t_dtw": 21144,
+"probability": 1.0
+},
+{
+"word": "で",
+"start": 211.59,
+"end": 211.8,
+"t_dtw": 21174,
+"probability": 0.999
+},
+{
+"word": " ",
+"start": 211.8,
+"end": 211.8,
+"t_dtw": 21184,
+"probability": 0.917
+},
+{
+"word": "七",
+"start": 211.8,
+"end": 212.14,
+"t_dtw": 21210,
+"probability": 0.995
+},
+{
+"word": "時",
+"start": 212.14,
+"end": 212.52,
+"t_dtw": 21232,
+"probability": 0.996
+},
+{
+"word": "よ",
+"start": 212.52,
+"end": 212.88,
+"t_dtw": 21252,
+"probability": 0.999
+},
+{
+"word": "り",
+"start": 212.88,
+"end": 213.24,
+"t_dtw": 21264,
+"probability": 1.0
+},
+{
+"word": "先",
+"start": 213.24,
+"end": 213.58,
+"t_dtw": 21290,
+"probability": 0.996
+},
+{
+"word": "に",
+"start": 213.67,
+"end": 214.0,
+"t_dtw": 21340,
+"probability": 0.999
+},
+{
+"word": "私",
+"start": 214.0,
+"end": 215.05,
+"t_dtw": 21446,
+"probability": 0.43
+},
+{
+"word": "を",
+"start": 215.3,
+"end": 216.18,
+"t_dtw": 21504,
+"probability": 0.999
+},
+{
+"word": "抱",
+"start": 216.4,
+"end": 217.6,
+"t_dtw": 21520,
+"probability": 1.0
+},
+{
+"word": "いて",
+"start": 217.6,
+"end": 220.0,
+"t_dtw": 21578,
+"probability": 0.998
+}
+]
+}
+]
+}

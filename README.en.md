@@ -9,7 +9,7 @@ The English and Japanese browser editions share the same project format and save
 ## Quick start
 
 1. Paste lyrics into the left panel, one phrase per line. The built-in English sample is shown on a fresh install.
-2. Optionally import audio. JIZURA detects beats and can snap cut boundaries to them. Use **Tap to sync** to mark the start of each line by pressing Space during playback.
+2. Optionally import audio. JIZURA detects beats and can snap cut boundaries to them. Use **Tap to sync** to mark the start of each line by pressing Space during playback. **Auto sync** aligns each line to the times heard by Whisper (speech recognition) running on your own computer; your lyrics stay as written and the song is not sent anywhere else ([docs/LYRICS_SYNC.md](docs/LYRICS_SYNC.md)).
 3. Press **Create a variation** (or `R`) to randomize the style, mood, motion, palette and arrangement. **Previous** and **Next** navigate variations; **Change one thing** rerolls just one part.
 4. Set aspect ratio, resolution and frame rate, then export MP4. Advanced mode adds a PNG sequence, transparent PNGs, color key backgrounds and individual technique controls.
 

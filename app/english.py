@@ -83,6 +83,16 @@ BODY = {
     '追加': 'New', '和': 'JP', '演出': 'Effects', '手法': 'Techniques',
     'コマ打ち': 'Frame stepping', 'フラッシュ': 'Flash', 'シード': 'Seed', '新しいシード': 'New seed',
     '標準': 'Standard', '最高': 'Maximum', '高': 'High', '中止': 'Cancel',
+    # lyric auto-sync (local Whisper)
+    'この PC で動かす Whisper（音声認識）が聞き取った時刻に、各行の開始を合わせる': 'Align each line to the times heard by Whisper (speech recognition) running on this computer',
+    '自動で同期': 'Auto sync',
+    '歌詞はそのまま。Whisper（音声認識）が聞き取った「時刻」だけを使って、各行の開始を合わせます。曲はこの PC で動く Whisper にだけ送られます。':
+        'Your lyrics stay as written. Only the times Whisper (speech recognition) hears are used to align each line. The song is sent only to Whisper running on this computer.',
+    '使い方': 'How to use', 'Whisper サーバー': 'Whisper server', '先出し(秒)': 'Lead (s)',
+    'サーバーで聞き取る': 'Transcribe with server', 'JSON を読み込む': 'Import JSON',
+    'whisper.cpp / openai-whisper / mlx-whisper / faster-whisper の JSON': 'JSON from whisper.cpp, openai-whisper, mlx-whisper or faster-whisper',
+    '各行に適用': 'Apply to lines', '元に戻す': 'Undo',
+    '歌われていない行を # で無効に': 'Comment out unsung lines', 'LRC を保存': 'Save LRC',
 }
 
 UI = {
@@ -139,6 +149,26 @@ UI = {
     '解析中…': 'Analyzing audio…', '読み込めませんでした: ': 'Could not load: ',
     '約': 'about ', '（PC）': ' (installed)',
     '字面': 'JIZURA', '追加': 'New', '和': 'JP',
+    # lyric auto-sync (local Whisper)
+    '先に「曲を読み込む」で曲を選んでください。': 'Import the song first.',
+    '16kHz に変換中…': 'Converting to 16 kHz…',
+    'Whisper で聞き取り中…（${s.toFixed(0)}秒）': 'Whisper is listening… (${s.toFixed(0)} s)',
+    '聞き取り完了（${((performance.now() - t0) / 1000).toFixed(0)}秒）': 'Transcribed (${((performance.now() - t0) / 1000).toFixed(0)} s)',
+    '中止しました': 'Cancelled',
+    'Whisper サーバーに接続できませんでした（': 'Could not connect to the Whisper server (',
+    'Whisper サーバーがエラーを返しました（': 'The Whisper server returned an error (',
+    'この PC でサーバーを起動してから、もう一度押してください。': 'Start a server on this computer, then try again: ',
+    ' または ': ' or ',
+    '。Safari では、サーバーが開く ': '. In Safari, use this page from ',
+    ' からこのページを使ってください。Whisper の JSON を「JSON を読み込む」から入れることもできます。': ', which the server opens. You can also bring in a Whisper JSON file with Import JSON.',
+    'Whisper の JSON として読めませんでした。': 'This is not a Whisper JSON file.',
+    '歌詞が空です。': 'The lyrics are empty.',
+    '✓ 合った行 ${n.ok}・? 前後から推定 ${n.weak}・✗ 聞き取れなかった行 ${n.missing}': '✓ aligned ${n.ok} · ? estimated ${n.weak} · ✗ not heard ${n.missing}',
+    '✗ の行は、この録音では歌われていない可能性があります。': 'Lines marked ✗ may not be sung in this recording.',
+    '歌詞に無い聞き取り（${SY.res.unmatched.length}）— 繰り返しやアドリブかもしれません': 'Heard but not in the lyrics (${SY.res.unmatched.length}) — perhaps repeats or ad-libs',
+    '各行の開始を合わせました（LRC の時刻は外しました）': 'Line starts aligned (LRC timestamps removed)',
+    '各行の開始を合わせました': 'Line starts aligned',
+    '歌われていない行を無効にしました': 'Unsung lines commented out',
 }
 
 EXPORT = {

@@ -97,6 +97,15 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .field input, .field select { width: 100%; }
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
+.syncbox { border: 1px solid var(--cyan); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(22,244,212,0.04); }
+.syncbox .row { flex-wrap: wrap; }
+.sync-result { font-size: 12px; display: grid; gap: 6px; }
+.sync-result ol { margin: 0; padding: 0; list-style: none; max-height: 220px; overflow: auto; border: 1px solid var(--line2); border-radius: var(--r); }
+.sync-result li { display: grid; grid-template-columns: 1.4em 4.6em 1fr; gap: 6px; padding: 2px 6px; white-space: nowrap; }
+.sync-result li span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.sync-result li.weak { color: var(--amber); }
+.sync-result li.missing { color: var(--muted); text-decoration: line-through; }
+.sync-result details li { grid-template-columns: 4.6em 1fr; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
 
 /* line list */

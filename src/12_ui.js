@@ -627,6 +627,114 @@ function tapNow() {
 function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); }
 function updateTap() { const ln = S.plan.lines[S.tap.i]; $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.text}` : '—'; }
 
+/* ---------------- auto sync (local Whisper, src/10b_align.js, docs/LYRICS_SYNC.md) ----------------
+   Whisper runs on the user's computer; its words only supply times, the lyrics stay as typed.
+   The result goes into timing.lineTimes, the same place tap sync writes. */
+const SY = { whisper: null, res: null, key: '', undo: null, ac: null, timer: 0 };
+const LRC_STAMP = /^(\s*\[\d+:\d+(?:[.:]\d+)?\])+\s*/;
+// LRC stamps outrank manual times in the planner, so sync works on the lyrics without them
+function syncSource() {
+  const rawLines = (S.project.lyrics || '').replace(/\r/g, '').split('\n');
+  const stripped = rawLines.map(l => l.replace(LRC_STAMP, ''));
+  const lines = J.parseLyrics(stripped.join('\n')).lines;
+  const rawOf = [];                                   // parsed line index -> raw line index
+  stripped.forEach((l, r) => { if (J.parseLyrics(l).lines.length) rawOf.push(r); });
+  return { lyrics: stripped.join('\n'), hadLRC: stripped.some((l, r) => l !== rawLines[r]), lines, stripped, rawOf };
+}
+function syncProgress(p, m) {
+  const box = document.querySelector('.sync-prog');
+  if (p == null) { box.hidden = true; return; }
+  box.hidden = false; box.querySelector('.sync-bar').style.width = (p * 100).toFixed(1) + '%'; box.querySelector('.sync-text').textContent = m;
+}
+function syncBusy(on) {
+  $('syncRun').disabled = on; $('fileWhisper').disabled = on;
+  ['syncApply', 'syncMute', 'syncLRC'].forEach(id => { $(id).disabled = on || !SY.res; });
+  $('syncUndo').disabled = on || !SY.undo;
+  $('syncCancel').hidden = !on;
+}
+function syncNote(html) { const el = $('syncResult'); el.hidden = false; el.innerHTML = html; }
+async function syncFromServer() {
+  if (!S.audio || !S.audio.buffer) { syncNote('<div>先に「曲を読み込む」で曲を選んでください。</div>'); return; }
+  const url = ($('syncUrl').value || '').trim() || 'http://127.0.0.1:8080';
+  try { localStorage.setItem('jizura.syncUrl', url); } catch (e) {}
+  pause();
+  const ac = new AbortController(); SY.ac = ac; syncBusy(true);
+  const t0 = performance.now(), dur = S.audio.duration;
+  try {
+    syncProgress(0.03, '16kHz に変換中…');
+    const wav = await J.align.toWav16k(S.audio.buffer);
+    SY.timer = setInterval(() => { const s = (performance.now() - t0) / 1000; syncProgress(Math.min(0.95, 0.08 + s / Math.max(30, dur * 0.8)), `Whisper で聞き取り中…（${s.toFixed(0)}秒）`); }, 500);
+    const lang = J.resolveLang ? { ja: 'ja', 'zh-Hant': 'zh', 'zh-Hans': 'zh', ko: 'ko' }[J.resolveLang(S.project)] : null;   // the editor's lyric language
+    const json = await J.align.transcribeServer(url, wav, { language: lang || J.align.guessLang(S.project.lyrics), signal: ac.signal });
+    useWhisper(json);
+    syncProgress(1, `聞き取り完了（${((performance.now() - t0) / 1000).toFixed(0)}秒）`);
+  } catch (e) {
+    if (e && e.name === 'AbortError') syncProgress(0, '中止しました');
+    else if (e && e.server) { syncProgress(null); syncNote(`<div>Whisper サーバーがエラーを返しました（${escapeHtml(e.message)}）。</div>`); }
+    else {
+      syncProgress(null);
+      syncNote(`<div>Whisper サーバーに接続できませんでした（${escapeHtml(e && e.message ? e.message : e)}）。</div>
+        <div class="hint">この PC でサーバーを起動してから、もう一度押してください。<code>python3 tools/jizura_whisper_server.py</code> または <code>whisper-server -m ggml-large-v3-turbo-q5_0.bin -l ja -dtw large.v3.turbo -nfa --port 8080</code>。Safari では、サーバーが開く <code>http://127.0.0.1:8080/</code> からこのページを使ってください。Whisper の JSON を「JSON を読み込む」から入れることもできます。</div>`);
+    }
+  } finally { clearInterval(SY.timer); SY.ac = null; syncBusy(false); }
+}
+function useWhisper(json) {
+  try { SY.whisper = J.align.readWhisperJSON(json); }
+  catch (e) { syncNote('<div>Whisper の JSON として読めませんでした。</div>'); return; }
+  syncAlign();
+}
+function syncAlign() {
+  const src = syncSource();
+  if (!src.lines.length) { syncNote('<div>歌詞が空です。</div>'); return; }
+  const lead = parseFloat($('syncLead').value);
+  SY.res = J.align.alignLyrics(src.lines.map(l => l.text), SY.whisper, { lead: isFinite(lead) ? J.clamp(lead, 0, 2) : 0.15 });
+  SY.key = src.lyrics;
+  const n = { ok: 0, weak: 0, missing: 0 };
+  SY.res.lines.forEach(l => { n[l.conf]++; });
+  const mark = { ok: '✓', weak: '?', missing: '✗' };
+  const rows = SY.res.lines.map((l, i) => `<li class="${l.conf}"><span>${mark[l.conf]}</span><span class="mono">${J.fmtTime(l.t)}</span><span>${escapeHtml(src.lines[i].text)}</span></li>`).join('');
+  const extra = SY.res.unmatched.map(u => `<li><span class="mono">${J.fmtTime(u.start)}</span><span>${escapeHtml(u.text)}</span></li>`).join('');
+  syncNote(`<div>✓ 合った行 ${n.ok}・? 前後から推定 ${n.weak}・✗ 聞き取れなかった行 ${n.missing}</div>
+    ${n.missing ? '<div class="hint">✗ の行は、この録音では歌われていない可能性があります。</div>' : ''}
+    <ol>${rows}</ol>
+    ${extra ? `<details><summary>歌詞に無い聞き取り（${SY.res.unmatched.length}）— 繰り返しやアドリブかもしれません</summary><ol>${extra}</ol></details>` : ''}`);
+  $('syncMute').hidden = !n.missing;
+  syncBusy(false);
+}
+function syncTimes() { S.project.timing.lineTimes = Object.fromEntries(SY.res.times.map((t, i) => [i, t])); }
+function syncApply() {
+  if (!SY.res) return;
+  if (syncSource().lyrics !== SY.key) syncAlign();          // lyrics edited since: align again (the heard words are kept)
+  const src = syncSource();
+  SY.undo = { lyrics: S.project.lyrics, lineTimes: Object.assign({}, S.project.timing.lineTimes || {}) };
+  if (src.hadLRC) S.project.lyrics = src.lyrics;
+  syncTimes(); syncUI(); replan(); syncBusy(false);
+  toast(src.hadLRC ? '各行の開始を合わせました（LRC の時刻は外しました）' : '各行の開始を合わせました');
+}
+function syncUndo() {
+  if (!SY.undo) return;
+  S.project.lyrics = SY.undo.lyrics; S.project.timing.lineTimes = SY.undo.lineTimes; SY.undo = null;
+  syncUI(); replan();
+  if (SY.whisper) syncAlign(); else syncBusy(false);
+}
+// comment out the lines the recording does not sing, then align and apply again
+function syncMute() {
+  if (!SY.res) return;
+  const src = syncSource();
+  SY.undo = { lyrics: S.project.lyrics, lineTimes: Object.assign({}, S.project.timing.lineTimes || {}) };
+  const rows = src.stripped.slice();
+  SY.res.lines.forEach((l, i) => { if (l.conf === 'missing') rows[src.rawOf[i]] = '# ' + rows[src.rawOf[i]]; });
+  S.project.lyrics = rows.join('\n');
+  syncAlign(); syncTimes(); syncUI(); replan(); syncBusy(false);
+  toast('歌われていない行を無効にしました');
+}
+function syncSaveLRC() {
+  if (!SY.res) return;
+  const src = syncSource();
+  const head = S.project.title ? `[ti:${S.project.title}]\n` : '';
+  J.saveFile(baseName() + '.lrc', new Blob([head + J.align.toLRC(src.rawOf.map(r => src.stripped[r].trim()), SY.res.times)], { type: 'text/plain' }));
+}
+
 /* ---------------- sync all inputs from project ---------------- */
 function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
@@ -663,6 +771,20 @@ function bind() {
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
+  $('btnAutoSync').addEventListener('click', e => { const p = $('syncPanel'); p.hidden = !p.hidden; e.target.setAttribute('aria-expanded', String(!p.hidden)); });
+  try { const u = localStorage.getItem('jizura.syncUrl'); if (u) $('syncUrl').value = u; } catch (e) {}
+  $('syncRun').addEventListener('click', syncFromServer);
+  $('syncCancel').addEventListener('click', () => { if (SY.ac) SY.ac.abort(); });
+  $('fileWhisper').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try { useWhisper(JSON.parse(await f.text())); } catch (err) { syncNote('<div>Whisper の JSON として読めませんでした。</div>'); }
+  });
+  $('syncLead').addEventListener('change', () => { if (SY.whisper) syncAlign(); });
+  $('syncApply').addEventListener('click', syncApply);
+  $('syncUndo').addEventListener('click', syncUndo);
+  $('syncMute').addEventListener('click', syncMute);
+  $('syncLRC').addEventListener('click', syncSaveLRC);
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
   $('btnLoop').addEventListener('click', e => { S.loop = !S.loop; e.target.setAttribute('aria-pressed', String(S.loop)); });
   $('btnShuffle').addEventListener('click', () => { remember(); S.project.seed = (Math.random() * 1e9) | 0; $('seed').value = S.project.seed; replan(); commit(); });

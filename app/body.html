@@ -43,6 +43,7 @@
         <div class="row">
           <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
           <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
+          <button id="btnAutoSync" title="この PC で動かす Whisper（音声認識）が聞き取った時刻に、各行の開始を合わせる" aria-expanded="false">自動で同期</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
@@ -58,6 +59,28 @@
           <div class="next">次: <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
           <button id="tapStop" class="ghost">終了する</button>
+        </div>
+        <div id="syncPanel" class="syncbox" hidden>
+          <div class="hint">歌詞はそのまま。Whisper（音声認識）が聞き取った「時刻」だけを使って、各行の開始を合わせます。曲はこの PC で動く Whisper にだけ送られます。<a href="https://github.com/852wa/JIZURA/blob/main/docs/LYRICS_SYNC.md" target="_blank" rel="noopener">使い方</a></div>
+          <div class="fields">
+            <label class="field field-wide">Whisper サーバー<input id="syncUrl" type="text" inputmode="url" spellcheck="false" value="http://127.0.0.1:8080"></label>
+            <label class="field">先出し(秒)<input id="syncLead" type="number" min="0" max="1" step="0.05" value="0.15"></label>
+          </div>
+          <div class="row">
+            <button id="syncRun" class="primary">サーバーで聞き取る</button>
+            <label class="file" title="whisper.cpp / openai-whisper / mlx-whisper / faster-whisper の JSON">JSON を読み込む<input id="fileWhisper" type="file" accept=".json,application/json"></label>
+          </div>
+          <div class="sync-prog" hidden>
+            <div class="progress"><i class="sync-bar"></i></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="sync-text muted mono">—</span><button id="syncCancel" class="ghost small">中止</button></div>
+          </div>
+          <div id="syncResult" class="sync-result" hidden></div>
+          <div class="row">
+            <button id="syncApply" class="primary" disabled>各行に適用</button>
+            <button id="syncUndo" class="ghost" disabled>元に戻す</button>
+            <button id="syncMute" class="ghost small" hidden>歌われていない行を # で無効に</button>
+            <button id="syncLRC" class="ghost small" disabled>LRC を保存</button>
+          </div>
         </div>
       </div>
 
