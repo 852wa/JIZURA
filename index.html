@@ -192,6 +192,14 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
+
+.tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
+.tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
+.tcard:hover { border-color: var(--line2); }
+.tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
+.tcard .tcard-name { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 0 6px 6px; min-width: 0; }
+.tcard .tcard-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tcard.set-off { opacity: 0.5; }
 .group-h { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 6px; }
 .tgroup { border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; background: var(--raised); }
 .tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; cursor: pointer; list-style: none; font-size: 12px; }
@@ -573,6 +581,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>「和」印の手法とスタイル。オフにすると、おまかせやシャッフルでは選ばれません（追加分の判定のあとに適用。行ごとに手動で指定した場合は使えます）</small></span></label>
         </div>
         <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="手法を名前で絞り込み" style="flex:1" aria-label="手法を名前で絞り込み"><span id="techTotal" class="muted mono"></span></div>
+        <p class="note">画面に見えているプレビューは自動でループします。</p>
         <div id="techLists"></div>
       </div>
 
@@ -3989,6 +3998,90 @@ function pickFx(rng, st, en, fx, emph, fxHist, kind) {
     .map(k => { const D = J.FXE[k]; let w = wkey(st.bias && st.bias.fx, k, D.w ?? 1) * (last.includes(k) ? 0.2 : 1); if (D.glitchy) w *= 0.3 + g * 1.4; return [k, w]; });
   return cands.length ? rng.wpick(cands) : null;
 }
+
+/* one-cut (or two-cut, for transitions) plan used by the 手法 tab thumbnails */
+J.previewPlan = (project, group, key) => {
+  const enUI = typeof document !== 'undefined' && document.documentElement && document.documentElement.lang === 'en';
+  const st = J.resolveStyle(project);
+  const fx = Object.assign({}, J.defaultProject().fx, project.fx || {}, {
+    glitch: group === 'fx' ? 0.85 : 0,
+    chroma: group === 'fx' ? 0.9 : 0.22,
+    flash: false, hud: 'off', texture: 0.3, bgSwitch: 0, motion: 0.75,
+    decor: group === 'decor' ? 1 : 0,
+  });
+  const [W, H] = J.designSize(project.aspect || '16:9');
+  const rng = J.rng(J.h(J.sid(String(group) + ':' + String(key)), 11, 22));
+  let text = enUI ? 'Lyric' : '字面';
+  if (group === 'layout') {
+    const L0 = J.LAYOUTS[key];
+    const n2 = [...text.replace(/\s+/g, '')].length;
+    if (L0 && L0.fits && !L0.fits(n2)) text = enUI ? 'color of dawn' : '夜明けの色を';
+    if (L0 && L0.fits && !L0.fits([...text.replace(/\s+/g, '')].length)) text = enUI ? 'I remember the color of dawn' : '夜明けの色を覚えてる';
+  }
+  const nn = [...text.replace(/\s+/g, '')].length;
+  const dur = 2.4;
+  let layout = group === 'layout' ? key : 'center';
+  if (!J.LAYOUTS[layout] || J.LAYOUTS[layout].special) layout = 'center';
+  let enter = group === 'enter' ? key : 'cut';
+  let exit = group === 'exit' ? key : 'cut';
+  let hold = group === 'hold' ? key : 'still';
+  if (!J.ENTER[enter]) enter = 'cut';
+  if (!J.EXIT[exit]) exit = 'cut';
+  if (!J.HOLD[hold]) hold = 'still';
+  if (group === 'layout' || group === 'decor' || group === 'treat' || group === 'bg') {
+    if (enter === 'cut' && J.ENTER.pop) enter = 'pop';
+    if (hold === 'still' && J.HOLD.breathe) hold = 'breathe';
+    else if (hold === 'still' && J.HOLD.drift) hold = 'drift';
+  }
+  const LD = J.LAYOUTS[layout];
+  let params = {};
+  try { params = LD.plan(rng, { text, n: nn, W, H, dur }, st) || {}; } catch (e) { params = {}; }
+  let inDur = enter === 'cut' ? 0.12 : 0.5;
+  if (J.ENTER[enter] && J.ENTER[enter].inDur) try { inDur = J.ENTER[enter].inDur(dur, nn); } catch (e) {}
+  let outDur = exit === 'cut' ? 0 : 0.5;
+  if (J.EXIT[exit] && J.EXIT[exit].outDur) try { outDur = J.EXIT[exit].outDur(dur, nn); } catch (e) {}
+  if (inDur + outDur > dur * 0.85) { const f = dur * 0.85 / Math.max(0.2, inDur + outDur); inDur *= f; outDur *= f; }
+  const decor = (group === 'decor' && J.DECOR[key]) ? [decorParams(rng, key)] : [];
+  let treat = group === 'treat' ? key : 'none';
+  if (!J.TREAT[treat]) treat = 'none';
+  const treatP = (J.TREAT[treat] && J.TREAT[treat].plan) ? (J.TREAT[treat].plan(rng, st) || {}) : {};
+  let bg = group === 'bg' ? key : 'none';
+  if (!J.BG[bg]) bg = 'none';
+  const bgP = (J.BG[bg] && J.BG[bg].plan) ? (J.BG[bg].plan(rng, st) || {}) : {};
+  let cam = group === 'cam' ? key : 'push';
+  if (!J.CAMERA[cam]) cam = 'push';
+  const camP = (J.CAMERA[cam] && J.CAMERA[cam].plan) ? (J.CAMERA[cam].plan(rng, st) || {}) : {};
+  const events = [];
+  if (group === 'fx' && J.FXE[key]) {
+    const D2 = J.FXE[key];
+    events.push({ t: 0.04, type: key, amp: (D2.amp || 1.15) * 1.2, dur: ((D2.dur || 6) / 24) });
+  }
+  const cuts = [];
+  if (group === 'trans' && J.TRANS[key]) {
+    const TD = J.TRANS[key];
+    const transDur = J.clamp(TD.dur || 0.35, 0.18, 0.7);
+    const transP = TD.plan ? (TD.plan(rng, st) || {}) : {};
+    const tA = enUI ? 'BEFORE' : '前のカット';
+    const tB = enUI ? 'AFTER' : '字面';
+    let pA = {}, pB = {};
+    try { pA = J.LAYOUTS.center.plan(rng, { text: tA, n: [...tA].length, W, H, dur: 1.2 }, st) || {}; } catch (e) {}
+    try { pB = J.LAYOUTS.center.plan(rng, { text: tB, n: [...tB].length, W, H, dur: 1.2 }, st) || {}; } catch (e) {}
+    cuts.push(makeCut({ text: tA, lineText: tA, line: 0, start: 0, end: 1.2, layout: 'center', enter: 'cut', exit: 'cut', hold: 'still', inDur: 0.12, outDur: 0, params: pA, decor: [], scheme: 0, seed: 1, words: J.chunkText(tA) }));
+    cuts.push(makeCut({ text: tB, lineText: tB, line: 1, start: 1.2, end: 2.4, layout: 'center', enter: 'cut', exit: 'cut', hold: 'still', inDur: 0.12, outDur: 0, params: pB, decor: [], scheme: Math.min(1, st.schemes.length - 1), seed: 2, words: J.chunkText(tB), trans: key, transP, transDur }));
+  } else {
+    cuts.push(makeCut({
+      text, lineText: text, line: 0, start: 0, end: dur, layout, enter, exit, hold, inDur, outDur,
+      params, decor, scheme: 0, seed: J.h(J.sid(String(key)), 9), words: J.chunkText(text),
+      treat, treatP, bg, bgP, cam, camP, stagger: 0.04,
+    }));
+  }
+  cuts.forEach((c, i) => { c.index = i; });
+  return {
+    version: 1, generator: 'JIZURA-preview', title: '', artist: '', W, H, fps: 24,
+    duration: cuts[cuts.length - 1].end, styleKey: project.style, style: st, fx,
+    lines: [], cuts, events, beats: [], hud: false, keyBg: null,
+  };
+};
 
 J.designSize = (aspect) => {
   if (aspect === '9:16') return [1080, 1920];
@@ -30364,7 +30457,93 @@ function renderFx() {
 const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
+
+const previewR = new J.Renderer();
+const previewPlans = new Map();
+const previewLive = new Set();
+let previewObs = null, previewRaf = 0, previewLast = 0;
+function previewCacheKey(g, k) {
+  const p = S.project;
+  return [p.style, p.aspect, g, k, p.colors && p.colors.enabled ? JSON.stringify(p.colors) : '', JSON.stringify(p.fonts || {})].join('|');
+}
+function getPreviewPlan(g, k) {
+  const id = previewCacheKey(g, k);
+  let plan = previewPlans.get(id);
+  if (plan) return plan;
+  plan = J.previewPlan(S.project, g, k);
+  previewPlans.set(id, plan);
+  if (previewPlans.size > 500) previewPlans.delete(previewPlans.keys().next().value);
+  return plan;
+}
+function previewTime(plan, g, now) {
+  const c = plan.cuts[plan.cuts.length - 1];
+  const u = now / 1000;
+  if (g === 'enter') return c.start + ((u % 1.5) / 1.5) * Math.max(0.3, c.inDur);
+  if (g === 'exit') { const od = Math.max(0.3, c.outDur || 0.5); return c.end - od + ((u % 1.5) / 1.5) * od; }
+  if (g === 'trans') return c.start + ((u % 1.7) / 1.7) * (c.transDur || 0.35);
+  if (g === 'fx') return (u % 1.05);
+  const span = Math.max(1.6, c.dur * 0.96);
+  return c.start + ((u % span) / span) * (c.dur * 0.96);
+}
+function paintTechCanvas(cv, g, k, t) {
+  const plan = getPreviewPlan(g, k);
+  const ctx = cv.getContext('2d');
+  try {
+    previewR.frame(ctx, plan, t, { scale: cv.width / plan.W, fast: true, noHud: true, noGhost: g !== 'fx' });
+  } catch (e) {
+    ctx.fillStyle = '#131316'; ctx.fillRect(0, 0, cv.width, cv.height);
+  }
+  cv.dataset.ready = '1';
+}
+function techPaneOpen() {
+  const pane = $('techLists') && $('techLists').closest('.tabpane');
+  return pane && !pane.hidden;
+}
+function ensurePreviewObs() {
+  if (previewObs) return previewObs;
+  previewObs = new IntersectionObserver((ents) => {
+    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    kickPreviewLoop();
+  }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
+  return previewObs;
+}
+function resetPreviewWatch() {
+  previewLive.clear();
+  if (previewObs) { previewObs.disconnect(); previewObs = null; }
+}
+function watchThumb(cv) { ensurePreviewObs().observe(cv); }
+function kickPreviewLoop() {
+  if (previewRaf) return;
+  const tick = (now) => {
+    previewRaf = 0;
+    if (document.hidden || S.exporting || !techPaneOpen() || !previewLive.size) return;
+    if (now - previewLast >= 70) {
+      previewLast = now;
+      for (const cv of previewLive) {
+        if (!cv.isConnected) { previewLive.delete(cv); continue; }
+        const g = cv.dataset.g, k = cv.dataset.k;
+        if (!g || !k) continue;
+        paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+      }
+    }
+    previewRaf = requestAnimationFrame(tick);
+  };
+  previewRaf = requestAnimationFrame(tick);
+}
+function queueThumbs(list) {
+  const now = performance.now();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
+    previewLive.add(cv);
+    watchThumb(cv);
+    const g = cv.dataset.g, k = cv.dataset.k;
+    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+  });
+  kickPreviewLoop();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
+
 function renderTech() {
+  resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
@@ -30376,21 +30555,26 @@ function renderTech() {
     if (q && !shown.length) return;
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
-    d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
+    const list = document.createElement('div'); list.className = 'checks tech-grid';
+    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
-    const list = document.createElement('div'); list.className = 'checks';
+    const [tw, th] = (() => {
+      const [W, H] = J.designSize(S.project.aspect || '16:9');
+      const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
+    })();
     shown.forEach(k => {
       const l = document.createElement('label');
+      l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
       if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
+      l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
+      const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
       shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      // keep a fallback so the planner always has something to use
       if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
       if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
       if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
@@ -30398,6 +30582,7 @@ function renderTech() {
     }));
     d.appendChild(list);
     box.appendChild(d);
+    if (d.open) queueThumbs(list);
   });
   $('techTotal').textContent = `${onAll}/${total}`;
 }

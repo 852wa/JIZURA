@@ -170,6 +170,14 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
+
+.tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
+.tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
+.tcard:hover { border-color: var(--line2); }
+.tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
+.tcard .tcard-name { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 0 6px 6px; min-width: 0; }
+.tcard .tcard-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tcard.set-off { opacity: 0.5; }
 .group-h { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 6px; }
 .tgroup { border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; background: var(--raised); }
 .tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; cursor: pointer; list-style: none; font-size: 12px; }

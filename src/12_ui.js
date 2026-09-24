@@ -747,7 +747,93 @@ function renderFx() {
 const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
+
+const previewR = new J.Renderer();
+const previewPlans = new Map();
+const previewLive = new Set();
+let previewObs = null, previewRaf = 0, previewLast = 0;
+function previewCacheKey(g, k) {
+  const p = S.project;
+  return [p.style, p.aspect, g, k, p.colors && p.colors.enabled ? JSON.stringify(p.colors) : '', JSON.stringify(p.fonts || {})].join('|');
+}
+function getPreviewPlan(g, k) {
+  const id = previewCacheKey(g, k);
+  let plan = previewPlans.get(id);
+  if (plan) return plan;
+  plan = J.previewPlan(S.project, g, k);
+  previewPlans.set(id, plan);
+  if (previewPlans.size > 500) previewPlans.delete(previewPlans.keys().next().value);
+  return plan;
+}
+function previewTime(plan, g, now) {
+  const c = plan.cuts[plan.cuts.length - 1];
+  const u = now / 1000;
+  if (g === 'enter') return c.start + ((u % 1.5) / 1.5) * Math.max(0.3, c.inDur);
+  if (g === 'exit') { const od = Math.max(0.3, c.outDur || 0.5); return c.end - od + ((u % 1.5) / 1.5) * od; }
+  if (g === 'trans') return c.start + ((u % 1.7) / 1.7) * (c.transDur || 0.35);
+  if (g === 'fx') return (u % 1.05);
+  const span = Math.max(1.6, c.dur * 0.96);
+  return c.start + ((u % span) / span) * (c.dur * 0.96);
+}
+function paintTechCanvas(cv, g, k, t) {
+  const plan = getPreviewPlan(g, k);
+  const ctx = cv.getContext('2d');
+  try {
+    previewR.frame(ctx, plan, t, { scale: cv.width / plan.W, fast: true, noHud: true, noGhost: g !== 'fx' });
+  } catch (e) {
+    ctx.fillStyle = '#131316'; ctx.fillRect(0, 0, cv.width, cv.height);
+  }
+  cv.dataset.ready = '1';
+}
+function techPaneOpen() {
+  const pane = $('techLists') && $('techLists').closest('.tabpane');
+  return pane && !pane.hidden;
+}
+function ensurePreviewObs() {
+  if (previewObs) return previewObs;
+  previewObs = new IntersectionObserver((ents) => {
+    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    kickPreviewLoop();
+  }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
+  return previewObs;
+}
+function resetPreviewWatch() {
+  previewLive.clear();
+  if (previewObs) { previewObs.disconnect(); previewObs = null; }
+}
+function watchThumb(cv) { ensurePreviewObs().observe(cv); }
+function kickPreviewLoop() {
+  if (previewRaf) return;
+  const tick = (now) => {
+    previewRaf = 0;
+    if (document.hidden || S.exporting || !techPaneOpen() || !previewLive.size) return;
+    if (now - previewLast >= 70) {
+      previewLast = now;
+      for (const cv of previewLive) {
+        if (!cv.isConnected) { previewLive.delete(cv); continue; }
+        const g = cv.dataset.g, k = cv.dataset.k;
+        if (!g || !k) continue;
+        paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+      }
+    }
+    previewRaf = requestAnimationFrame(tick);
+  };
+  previewRaf = requestAnimationFrame(tick);
+}
+function queueThumbs(list) {
+  const now = performance.now();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
+    previewLive.add(cv);
+    watchThumb(cv);
+    const g = cv.dataset.g, k = cv.dataset.k;
+    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+  });
+  kickPreviewLoop();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
+
 function renderTech() {
+  resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
@@ -759,21 +845,26 @@ function renderTech() {
     if (q && !shown.length) return;
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
-    d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
+    const list = document.createElement('div'); list.className = 'checks tech-grid';
+    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
-    const list = document.createElement('div'); list.className = 'checks';
+    const [tw, th] = (() => {
+      const [W, H] = J.designSize(S.project.aspect || '16:9');
+      const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
+    })();
     shown.forEach(k => {
       const l = document.createElement('label');
+      l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
       if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
+      l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
+      const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
       shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      // keep a fallback so the planner always has something to use
       if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
       if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
       if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
@@ -781,6 +872,7 @@ function renderTech() {
     }));
     d.appendChild(list);
     box.appendChild(d);
+    if (d.open) queueThumbs(list);
   });
   $('techTotal').textContent = `${onAll}/${total}`;
 }
