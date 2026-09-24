@@ -156,6 +156,9 @@ BODY = {
     'かんたん': 'Sederhana', '詳細': 'Lanjutan', '開く': 'Buka', '保存': 'Simpan',
     'AE用に書き出し': 'Ekspor untuk AE', '利用について': 'Tentang dan hak',
     '記法': 'Sintaks', 'プレビュー': 'Pratinjau', '再生': 'Putar', 'ループ': 'Loop',
+    '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
+    '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
+    'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
     '前の案': 'Sebelumnya', '次の案': 'Berikutnya', 'シャッフル': 'Acak susunan', 'おまかせで作る': 'Buat variasi',
     'おまかせ': 'Buat variasi', 'いまの案': 'Variasi saat ini', 'ここだけ変える': 'Ubah satu hal',
     'スタイル': 'Gaya', '配色': 'Palet', '雰囲気': 'Suasana', '構成': 'Susunan',
@@ -166,6 +169,10 @@ BODY = {
 }
 
 UI = {
+    'ループ': 'Loop',
+    '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
+    '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
+    'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
     "'スマホの画面では 1080p で書き出します'": "'Di tampilan ponsel, ekspor maksimal 1080p'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`Font yang dimuat (${[...new Set(lost)].join(', ')}) tidak ada di browser ini, jadi ekspor dihentikan. Muat ulang file yang sama di Font, atau pilih font lain`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`Font yang dimuat (${missing.join(', ')}) tidak ada di browser ini. Muat ulang file yang sama di Font (sampai itu, dipakai font yang mirip)`",

@@ -119,6 +119,9 @@ BODY = {
     'かんたん': 'Simple', '詳細': 'Advanced', '開く': 'Open', '保存': 'Save',
     'AE用に書き出し': 'Export for AE', '利用について': 'About / rights',
     '記法': 'Syntax', 'プレビュー': 'Preview', '再生': 'Play', 'ループ': 'Loop',
+    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
+    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
+    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
     '前の案': 'Previous', '次の案': 'Next', 'シャッフル': 'Shuffle', 'おまかせで作る': 'Create a variation',
     'おまかせ': 'Randomize', 'いまの案': 'Current variation', 'ここだけ変える': 'Change one thing',
     'スタイル': 'Style', '配色': 'Palette', '雰囲気': 'Mood', '構成': 'Arrangement',
@@ -129,6 +132,10 @@ BODY = {
 }
 
 UI = {
+    'ループ': 'Loop',
+    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
+    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
+    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
     "'スマホの画面では 1080p で書き出します'": "'In the Phone layout the export is 1080p at most'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`The uploaded font (${[...new Set(lost)].join(', ')}) is not in this browser, so the export was stopped. Load the same file again under Fonts, or pick another font`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`The uploaded font (${missing.join(', ')}) is not in this browser. Load the same file again under Fonts (a similar font is used until then)`",
