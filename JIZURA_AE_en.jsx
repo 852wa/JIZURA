@@ -796,22 +796,37 @@ function jzPickFx(rng, st, en, fx, emph, fxHist, kind) {
 }
 function jzPlanOf(g, k, rng, st, extra) { var D = JZ_REG[g][k]; if (!D || !D.plan) return {}; try { return (g === 'layout' ? D.plan(rng, extra || {}, st) : D.plan(rng, st)) || {}; } catch (e) { jzWarn(g + ' ' + k + ' plan: ' + e.toString()); return {}; } }
 
-// ---- lyric language (same rule as the browser, src/02b_lang.js): kana \u2192 ja, hangul \u2192 ko, Han only \u2192 Traditional / Simplified
+// ---- lyric language (same rule as the browser, src/02b_lang.js): Latin only \u2192 en, kana \u2192 ja, hangul \u2192 ko, Han only \u2192 Traditional / Simplified
 var JZ_TC = '\u5011\u500B\u8AAA\u9019\u6703\u5C0D\u6642\u4F86\u9084\u5F8C\u904E\u570B\u958B\u95DC\u8207\u70BA\u5F9E\u554F\u9593\u898B\u9577\u6771\u8ECA\u9580\u611B\u807D\u5B78\u8B93\u8A71\u865F\u767C\u9EDE\u7121\u73FE\u9AD4\u7D93\u96FB\u5BE6\u6A23\u8072\u8B8A\u96E2\u6C23\u5922\u7D66\u89BA\u7576\u6B61\u967D\u6200\u908A\u982D\u6DDA\u8AB0\u6B72\u9060\u55CE\u842C\u96E3\u5BEB\u61C9\u8B80\u61B6\u6A02\u9EBC\u9E97\u50B7\u5C07\u7E3D\u7D50\u7D42\u7D05\u7DA0\u7DDA\u984F\u98A8\u98DB\u9CE5\u8B1D\u8A9E\u8ACB\u8A8D\u8B58\u71B1\u71C8\u9858\u7368\u5920\u7D00\u5E36\u6EFF\u975C\u8F15\u5225\u8166\u81C9\u61F7\u8B0A\u932F\u9846\u9663\u5834\u8B9A\u6DFA\u6EAB\u8A18\u6191\u8B77\u58DE\u6B78\u5ABD\u96A8\u9280\u805E\u614B\u865B\u9059';
 var JZ_SC = '\u4EEC\u4E2A\u8BF4\u8FD9\u4F1A\u5BF9\u65F6\u6765\u8FD8\u540E\u8FC7\u56FD\u5F00\u5173\u4E0E\u4E3A\u4ECE\u95EE\u95F4\u89C1\u957F\u4E1C\u8F66\u95E8\u7231\u542C\u5B66\u8BA9\u8BDD\u53F7\u53D1\u70B9\u65E0\u73B0\u4F53\u7ECF\u7535\u5B9E\u6837\u58F0\u53D8\u79BB\u6C14\u68A6\u7ED9\u89C9\u5F53\u6B22\u9633\u604B\u8FB9\u5934\u6CEA\u8C01\u5C81\u8FDC\u5417\u4E07\u96BE\u5199\u5E94\u8BFB\u5FC6\u4E50\u4E48\u4E3D\u4F24\u5C06\u603B\u7ED3\u7EC8\u7EA2\u7EFF\u7EBF\u989C\u98CE\u98DE\u9E1F\u8C22\u8BED\u8BF7\u8BA4\u8BC6\u70ED\u706F\u613F\u72EC\u591F\u7EAA\u5E26\u6EE1\u9759\u8F7B\u522B\u8111\u8138\u6000\u8C0E\u9519\u9897\u9635\u573A\u8D5E\u6D45\u6E29\u8BB0\u51ED\u62A4\u574F\u5F52\u5988\u968F\u94F6\u95FB\u6001\u865A\u9065';
 function jzDetectLangText(text) {
-    var kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, i, u, c;
+    var kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0, i, u, c;
     text = String(text || '');
     for (i = 0; i < text.length; i++) {
         u = text.charCodeAt(i); c = text.charAt(i);
-        if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+        if ((u >= 0x41 && u <= 0x5a) || (u >= 0x61 && u <= 0x7a) || (u >= 0xc0 && u <= 0x24f && u !== 0xd7 && u !== 0xf7) || (u >= 0xff21 && u <= 0xff3a) || (u >= 0xff41 && u <= 0xff5a)) latin++;
+        else if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
         else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
         else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf)) { han++; if (JZ_TC.indexOf(c) >= 0) tc++; if (JZ_SC.indexOf(c) >= 0) sc++; }
     }
+    if (latin >= 6 && latin >= (latin + (kana + hangul + han) * 3) * 0.9) return 'en';   // almost only Latin letters (English / romaji)
     if (hangul >= 2 && hangul > kana) return 'ko';
     if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
     if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
     return 'ja';
+}
+// English lyrics: cut by short phrases (2\u20133 words), not word by word \u2014 same as the browser (J.phraseChunks)
+function jzPhraseChunks(words) {
+    var out = [], cur = [], letters = 0, i, w, m;
+    function flush() { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; }
+    for (i = 0; i < words.length; i++) {
+        w = words[i]; m = String(w).match(/[A-Za-z\u00c0-\u024f0-9]/g);
+        cur.push(w); letters += m ? m.length : 0;
+        if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+    }
+    flush();
+    if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
+    return out.length ? out : words;
 }
 // a plan without .lang (older JSON): detect from its lines
 function jzDetectLang(plan) {
@@ -866,7 +881,7 @@ function jzMakePlan(o) {
         var ln = lines[li], s0 = starts[li], e0 = ends[li], rng = new JzRng(jzHash(o.seed, li + 1));
         var nch = jzCount(ln.text), visEnd = Math.min(e0, s0 + Math.max(3.6, nch * 0.5 + 1.2)), D = visEnd - s0;
         plan.lines.push({ index: li, text: ln.text, start: s0, end: e0, visEnd: visEnd, note: ln.note, impact: ln.impact });
-        var chunks = ln.manual || jzChunk(ln.text), L = jzLerp(1.3, 0.5, fx.density), nC = Math.round(D / L);
+        var chunks = ln.manual || (plan.lang === 'en' ? jzPhraseChunks(jzChunk(ln.text)) : jzChunk(ln.text)), L = jzLerp(1.3, 0.5, fx.density), nC = Math.round(D / L);
         var maxC = chunks.length + (chunks.length >= 2 && D > 2 ? 1 : 0); nC = jzClamp(nC, 1, Math.max(1, maxC));
         var nG = Math.min(nC, chunks.length), groups = [];
         if (nG <= 1) groups = [ln.text];
@@ -30575,8 +30590,8 @@ function jzUI(thisObj) {
     var cWa = gSw.add('checkbox', undefined, 'Include Japanese motifs'); cWa.value = jzGet('wa', '1') === '1';
     cWa.helpTip = 'Include Japanese motifs such as lanterns, shoji, fans and cherry blossoms in automatic picks.';
     var gLang = gSw.add('group'); gLang.spacing = 4; gLang.add('statictext', undefined, 'Lyrics language');
-    var JZ_LANG_KEYS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko'];
-    var ddLang = gLang.add('dropdownlist', undefined, ['Auto-detect', '\u65E5\u672C\u8A9E', '\u7E41\u9AD4\u4E2D\u6587', '\u7B80\u4F53\u4E2D\u6587', '\uD55C\uAD6D\uC5B4']); ddLang.selection = parseInt(jzGet('lang', '0'), 10) || 0;
+    var JZ_LANG_KEYS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko', 'en'];
+    var ddLang = gLang.add('dropdownlist', undefined, ['Auto-detect', '\u65E5\u672C\u8A9E', '\u7E41\u9AD4\u4E2D\u6587', '\u7B80\u4F53\u4E2D\u6587', '\uD55C\uAD6D\uC5B4', 'English']); ddLang.selection = parseInt(jzGet('lang', '0'), 10) || 0;
     ddLang.helpTip = 'Chinese (Traditional / Simplified) and Korean lyrics are set in fonts that have those characters, close in feel to each style. Auto-detect looks at kana, Hangul and the characters that differ between Traditional and Simplified Chinese.';
     function switches() { return { extra: cExtra.value, wa: cWa.value, lang: JZ_LANG_KEYS[ddLang.selection ? ddLang.selection.index : 0] }; }
     var gS = t1.add('group'); gS.add('statictext', undefined, 'Style');
