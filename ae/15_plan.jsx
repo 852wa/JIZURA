@@ -181,7 +181,31 @@ function jzPickFx(rng, st, en, fx, emph, fxHist, kind) {
 }
 function jzPlanOf(g, k, rng, st, extra) { var D = JZ_REG[g][k]; if (!D || !D.plan) return {}; try { return (g === 'layout' ? D.plan(rng, extra || {}, st) : D.plan(rng, st)) || {}; } catch (e) { jzWarn(g + ' ' + k + ' plan: ' + e.toString()); return {}; } }
 
-// o: {lyrics, title, artist, style, seed, fx, width, height, fps, bpm, starts[], enabled{group:{key:false}}, offset, lineScale, duration, extra, wa}
+// ---- lyric language (same rule as the browser, src/02b_lang.js): kana → ja, hangul → ko, Han only → Traditional / Simplified
+var JZ_TC = '們個說這會對時來還後過國開關與為從問間見長東車門愛聽學讓話號發點無現體經電實樣聲變離氣夢給覺當歡陽戀邊頭淚誰歲遠嗎萬難寫應讀憶樂麼麗傷將總結終紅綠線顏風飛鳥謝語請認識熱燈願獨夠紀帶滿靜輕別腦臉懷謊錯顆陣場讚淺溫記憑護壞歸媽隨銀聞態虛遙';
+var JZ_SC = '们个说这会对时来还后过国开关与为从问间见长东车门爱听学让话号发点无现体经电实样声变离气梦给觉当欢阳恋边头泪谁岁远吗万难写应读忆乐么丽伤将总结终红绿线颜风飞鸟谢语请认识热灯愿独够纪带满静轻别脑脸怀谎错颗阵场赞浅温记凭护坏归妈随银闻态虚遥';
+function jzDetectLangText(text) {
+    var kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, i, u, c;
+    text = String(text || '');
+    for (i = 0; i < text.length; i++) {
+        u = text.charCodeAt(i); c = text.charAt(i);
+        if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+        else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
+        else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf)) { han++; if (JZ_TC.indexOf(c) >= 0) tc++; if (JZ_SC.indexOf(c) >= 0) sc++; }
+    }
+    if (hangul >= 2 && hangul > kana) return 'ko';
+    if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
+    if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+    return 'ja';
+}
+// a plan without .lang (older JSON): detect from its lines
+function jzDetectLang(plan) {
+    var t = [], i;
+    for (i = 0; plan && plan.lines && i < plan.lines.length; i++) t.push(plan.lines[i].text);
+    if (!t.length) for (i = 0; plan && plan.cuts && i < plan.cuts.length; i++) t.push(plan.cuts[i].text);
+    return jzDetectLangText(t.join(' '));
+}
+// o: {lyrics, title, artist, style, seed, fx, width, height, fps, bpm, starts[], enabled{group:{key:false}}, offset, lineScale, duration, extra, wa, lang}
 function jzMakePlan(o) {
     var st = JZ_DATA.styles[o.style] || JZ_DATA.styles.noir;
     var fx = o.fx, parsed = jzParseLyrics(o.lyrics), lines = parsed.lines;
@@ -213,7 +237,9 @@ function jzMakePlan(o) {
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
-    var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud };
+    var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
+        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title) };
+    jzSetLang(plan.lang);
     var hist = [], bgHist = [], fxHist = [], schemeIdx = 0, nS = st.schemes.length;
     function ev(t, type, amp, dur) { plan.events.push({ t: t, type: type, amp: amp, dur: dur }); }
     if (title && starts.length && starts[0] >= 1.1) {

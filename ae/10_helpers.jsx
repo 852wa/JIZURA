@@ -49,10 +49,80 @@ function jzRoleOf(key) {
 // resolve: explicit user role font > key candidates that exist > role default
 // JZ_FONT_MISSING collects the keys whose own typeface (the browser's Google Font) is not installed, for the build report
 var JZ_FONT_MISSING = {}, JZ_FONT_NOAPI = false;
+// ---- lyric language (plan.lang from the browser): Chinese / Korean lyrics are drawn with faces that have their glyphs.
+// Per language: key → PostScript candidates (the browser's Google Font first, then OS fonts that always cover the script).
+var JZ_LANG = 'ja';
+var JZ_LANG_SYS = {
+    'zh-Hant': { sansB: ['PingFangTC-Semibold', 'MicrosoftJhengHeiBold', 'NotoSansCJKtc-Bold', 'SourceHanSansTC-Bold'], sans: ['PingFangTC-Regular', 'MicrosoftJhengHeiRegular', 'NotoSansCJKtc-Regular', 'SourceHanSansTC-Regular'],
+                 serifB: ['STSongti-TC-Bold', 'NotoSerifCJKtc-Bold', 'SourceHanSerifTC-Bold', 'PMingLiU'], serif: ['STSongti-TC-Regular', 'NotoSerifCJKtc-Regular', 'SourceHanSerifTC-Regular', 'PMingLiU'] },
+    'zh-Hans': { sansB: ['PingFangSC-Semibold', 'MicrosoftYaHei-Bold', 'NotoSansCJKsc-Bold', 'SourceHanSansSC-Bold'], sans: ['PingFangSC-Regular', 'MicrosoftYaHei', 'NotoSansCJKsc-Regular', 'SourceHanSansSC-Regular'],
+                 serifB: ['STSongti-SC-Bold', 'NotoSerifCJKsc-Bold', 'SourceHanSerifSC-Bold', 'SimSun'], serif: ['STSongti-SC-Regular', 'NotoSerifCJKsc-Regular', 'SourceHanSerifSC-Regular', 'SimSun'] },
+    ko: { sansB: ['AppleSDGothicNeo-Bold', 'MalgunGothicBold', 'NotoSansCJKkr-Bold', 'SourceHanSansKR-Bold'], sans: ['AppleSDGothicNeo-Regular', 'MalgunGothic', 'NotoSansCJKkr-Regular', 'SourceHanSansKR-Regular'],
+          serifB: ['AppleMyungjo', 'NotoSerifCJKkr-Bold', 'SourceHanSerifKR-Bold', 'Batang'], serif: ['AppleMyungjo', 'NotoSerifCJKkr-Regular', 'SourceHanSerifKR-Regular', 'Batang'] }
+};
+// [family (for messages), own PostScript names…, system group]
+var JZ_LANG_FONTS = {
+    'zh-Hant': {
+        gothic_black: ['Noto Sans TC', 'NotoSansTC-Black', 'NotoSansTCThin-Black', 'sansB'], gothic_bold: ['Noto Sans TC', 'NotoSansTC-Bold', 'NotoSansTCThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'], gothic_light: ['Noto Sans TC', 'NotoSansTC-Light', 'NotoSansTCThin-Light', 'sans'],
+        zenkaku: ['Noto Sans TC', 'NotoSansTC-Black', 'NotoSansTCThin-Black', 'sansB'], sansui: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'],
+        dot: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif TC', 'NotoSerifTC-Black', 'NotoSerifTCExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif TC', 'NotoSerifTC-Bold', 'NotoSerifTCExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif TC', 'NotoSerifTC-Medium', 'NotoSerifTCExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif TC', 'NotoSerifTC-Light', 'NotoSerifTCExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif TC', 'NotoSerifTC-ExtraBold', 'NotoSerifTCExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif TC', 'NotoSerifTC-ExtraBold', 'NotoSerifTCExtraLight-ExtraBold', 'serifB'],
+        dela: ['WDXL Lubrifont TC', 'WDXLLubrifontTC-Regular', 'NotoSansTC-Black', 'sansB'], round: ['Chiron GoRound TC', 'ChironGoRoundTC-ExtraBold', 'ChironGoRoundTCExtraLight-ExtraBold', 'sansB'],
+        pop: ['Huninn', 'Huninn-Regular', 'sansB'], kiwi: ['Huninn', 'Huninn-Regular', 'sans'],
+        klee: ['LXGW WenKai TC', 'LXGWWenKaiTC-Bold', 'serifB'], brush: ['LXGW WenKai TC', 'LXGWWenKaiTC-Bold', 'serifB'],
+        reggae: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB'], rampart: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB'], potta: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB']
+    },
+    'zh-Hans': {
+        gothic_black: ['Noto Sans SC', 'NotoSansSC-Black', 'NotoSansSCThin-Black', 'sansB'], gothic_bold: ['Noto Sans SC', 'NotoSansSC-Bold', 'NotoSansSCThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'], gothic_light: ['Noto Sans SC', 'NotoSansSC-Light', 'NotoSansSCThin-Light', 'sans'],
+        zenkaku: ['Noto Sans SC', 'NotoSansSC-Black', 'NotoSansSCThin-Black', 'sansB'], sansui: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'],
+        dot: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif SC', 'NotoSerifSC-Black', 'NotoSerifSCExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif SC', 'NotoSerifSC-Bold', 'NotoSerifSCExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif SC', 'NotoSerifSC-Medium', 'NotoSerifSCExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif SC', 'NotoSerifSC-Light', 'NotoSerifSCExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif SC', 'NotoSerifSC-ExtraBold', 'NotoSerifSCExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif SC', 'NotoSerifSC-ExtraBold', 'NotoSerifSCExtraLight-ExtraBold', 'serifB'],
+        dela: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], round: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sansB'],
+        pop: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sansB'], kiwi: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sans'],
+        klee: ['ZCOOL XiaoWei', 'ZCOOLXiaoWei-Regular', 'serif'], brush: ['Ma Shan Zheng', 'MaShanZheng-Regular', 'serifB'],
+        reggae: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], rampart: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], potta: ['Ma Shan Zheng', 'MaShanZheng-Regular', 'sansB']
+    },
+    ko: {
+        gothic_black: ['Noto Sans KR', 'NotoSansKR-Black', 'NotoSansKRThin-Black', 'sansB'], gothic_bold: ['Noto Sans KR', 'NotoSansKR-Bold', 'NotoSansKRThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans KR', 'NotoSansKR-Medium', 'NotoSansKRThin-Medium', 'sans'], gothic_light: ['Noto Sans KR', 'NotoSansKR-Light', 'NotoSansKRThin-Light', 'sans'],
+        zenkaku: ['Noto Sans KR', 'NotoSansKR-Black', 'NotoSansKRThin-Black', 'sansB'], sansui: ['IBM Plex Sans KR', 'IBMPlexSansKR-Medium', 'NotoSansKR-Medium', 'sans'],
+        dot: ['Noto Sans KR', 'NotoSansKR-Medium', 'NotoSansKRThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif KR', 'NotoSerifKR-Black', 'NotoSerifKRExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif KR', 'NotoSerifKR-Bold', 'NotoSerifKRExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif KR', 'NotoSerifKR-Medium', 'NotoSerifKRExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif KR', 'NotoSerifKR-Light', 'NotoSerifKRExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif KR', 'NotoSerifKR-ExtraBold', 'NotoSerifKRExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif KR', 'NotoSerifKR-ExtraBold', 'NotoSerifKRExtraLight-ExtraBold', 'serifB'],
+        dela: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], round: ['Jua', 'Jua-Regular', 'sansB'],
+        pop: ['Do Hyeon', 'DoHyeon-Regular', 'sansB'], kiwi: ['Gowun Dodum', 'GowunDodum-Regular', 'sans'],
+        klee: ['Gowun Batang', 'GowunBatang-Bold', 'serifB'], brush: ['Nanum Brush Script', 'NanumBrush', 'NanumBrushScript-Regular', 'serifB'],
+        reggae: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], rampart: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], potta: ['Nanum Brush Script', 'NanumBrush', 'NanumBrushScript-Regular', 'sansB']
+    }
+};
+function jzSetLang(l) { JZ_LANG = (l && JZ_LANG_FONTS.hasOwnProperty(l)) ? l : 'ja'; }
+// the language's own candidates for a key (null = Japanese faces); JZ_FONT_MISSING gets the family name when its own face is missing
+function jzLangFont(key) {
+    var T = JZ_LANG_FONTS[JZ_LANG], e = T && T[key], i, ex, sys;
+    if (!e) return null;
+    for (i = 1; i < e.length; i++) {
+        if (JZ_LANG_SYS[JZ_LANG].hasOwnProperty(e[i])) break;
+        ex = jzFontExists(e[i]);
+        if (i === 1 && ex === false) JZ_FONT_MISSING[key] = e[0];
+        if (ex === null) { JZ_FONT_NOAPI = true; return e[1]; }     // no font API (before AE 2024): trust the first name
+        if (ex === true) return e[i];
+    }
+    sys = JZ_LANG_SYS[JZ_LANG][e[e.length - 1]] || [];
+    for (i = 0; i < sys.length; i++) if (jzFontExists(sys[i]) === true) return sys[i];
+    return null;
+}
 function jzFont(key, roles) {
     roles = roles || JZ_ROLE_DEFAULT;
     var role = JZ_ROLE_DEFAULT.hasOwnProperty(key) ? key : jzRoleOf(key);
     if (roles.__force && roles[role]) return roles[role];
+    if (JZ_LANG !== 'ja') { var lf = jzLangFont(key); if (lf) return lf; }
     var cands = JZ_FONT_CANDIDATES[key] || [];
     for (var i = 0; i < cands.length; i++) {
         var ex = jzFontExists(cands[i]);
@@ -66,7 +136,7 @@ function jzFont(key, roles) {
 function jzMissingFonts() {
     var out = [], seen = {}, k, fam;
     for (k in JZ_FONT_MISSING) if (JZ_FONT_MISSING.hasOwnProperty(k)) {
-        fam = (JZ_DATA.fonts && JZ_DATA.fonts[k] && JZ_DATA.fonts[k].family) || k;
+        fam = typeof JZ_FONT_MISSING[k] === 'string' ? JZ_FONT_MISSING[k] : (JZ_DATA.fonts && JZ_DATA.fonts[k] && JZ_DATA.fonts[k].family) || k;
         if (!seen[fam]) { seen[fam] = true; out.push(fam); }
     }
     return out;

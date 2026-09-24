@@ -137,6 +137,8 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .viewport { position: relative; width: 100%; background: #000; border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; }
 .viewport canvas { display: block; width: 100%; height: auto; max-height: 68vh; object-fit: contain; }
 .field-wide { grid-column: span 2; }
+.lang-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.lang-row select { width: auto; }
 .key-badge { position: absolute; right: 10px; top: 10px; background: rgba(12,12,14,0.78); border: 1px solid var(--line2); color: #fff; padding: 3px 8px; border-radius: var(--r); font-size: 11px; pointer-events: none; letter-spacing: .04em; }
 .key-badge i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.5); }
 .overlay-msg { position: absolute; left: 12px; bottom: 12px; background: rgba(12,12,14,0.85); border: 1px solid var(--line2); padding: 6px 10px; border-radius: var(--r); font-size: 12px; }
@@ -328,6 +330,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>1行が1フレーズ。空行は少し間を空けます</li>
@@ -773,7 +776,7 @@ J.loadFontFile = async (file) => {
 };
 
 J.fontCSS = (key, px) => {
-  const f = J.FONTS[key] || J.FONTS.gothic_bold;
+  const f = J.faceOf ? J.faceOf(key) : (J.FONTS[key] || J.FONTS.gothic_bold);   // per-language face (02b_lang.js)
   return `${f.weight} ${px.toFixed(2)}px ${f.family},${f.fb}`;
 };
 
@@ -808,11 +811,15 @@ J.ensureFonts = async (text, keys) => {
   if (!document.fonts || !document.fonts.load) return;
   const uniq = [...new Set([...text])].join('') || 'あ';
   const list = (keys || Object.keys(J.FONTS)).filter(k => J.FONTS[k]);
-  await Promise.all([...new Set(list.map(k => J.FONTS[k].gf).filter(Boolean))].map(attachFamily));
-  const jobs = [];
-  for (const k of list) {
-    const f = J.FONTS[k];
-    jobs.push(document.fonts.load(`${f.weight} 64px ${f.family}`, uniq).catch(() => null));
+  // faces in the current lyric language (+ its fallback sans / serif), each with the weight it is drawn at
+  const faces = list.map(k => (J.faceOf ? J.faceOf(k) : J.FONTS[k]));
+  if (J.langBaseFaces) for (const b of J.langBaseFaces(list)) faces.push({ family: '"' + b.family + '"', weight: b.weight, gf: b.gf });
+  await Promise.all([...new Set(faces.map(f => f.gf).filter(Boolean))].map(attachFamily));
+  const jobs = [], seen = new Set();
+  for (const f of faces) {
+    const spec = `${f.weight} 64px ${f.family}`;
+    if (seen.has(spec)) continue; seen.add(spec);
+    jobs.push(document.fonts.load(spec, uniq).catch(() => null));
   }
   await Promise.all(jobs);
   if (document.fonts.ready) await document.fonts.ready;
@@ -985,6 +992,137 @@ function clipHalf(poly, nx, ny, d0, sgn) {
   }
   return out;
 }
+})();
+
+/* ============================================================
+   JIZURA — lyric language: auto-detection + per-language faces
+   The styles are designed around Japanese fonts. For Chinese
+   (Traditional / Simplified) and Korean lyrics every font key is
+   drawn with a face that has the glyphs, chosen to keep the same
+   character (gothic → sans, mincho → serif, pop → rounded, …).
+   project.lang: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko'
+   ============================================================ */
+(() => {
+'use strict';
+
+J.LANGS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko'];
+J.LANG_LABEL = { auto: '自動判定', ja: '日本語', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文', ko: '한국어' };
+
+/* characters that differ between Traditional and Simplified Chinese (same order in both strings) */
+const TC = '們個說這會對時來還後過國開關與為從問間見長東車門愛聽學讓話號發點無現體經電實樣聲變離氣夢給覺當歡陽戀邊頭淚誰歲遠嗎萬難寫應讀憶樂麼麗傷將總結終紅綠線顏風飛鳥謝語請認識熱燈願獨夠紀帶滿靜輕別腦臉懷謊錯顆陣場讚淺溫記憑護壞歸媽隨銀聞態虛遙';
+const SC = '们个说这会对时来还后过国开关与为从问间见长东车门爱听学让话号发点无现体经电实样声变离气梦给觉当欢阳恋边头泪谁岁远吗万难写应读忆乐么丽伤将总结终红绿线颜风飞鸟谢语请认识热灯愿独够纪带满静轻别脑脸怀谎错颗阵场赞浅温记凭护坏归妈随银闻态虚遥';
+const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
+// a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
+
+/* which language are these lyrics in? (kana → ja, hangul → ko, Han only → Traditional / Simplified by the distinctive forms) */
+J.detectLang = (text) => {
+  let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0;
+  for (const c of String(text || '')) {
+    const u = c.codePointAt(0);
+    if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+    else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
+    else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf) || (u >= 0x20000 && u <= 0x2ffff)) {
+      han++;
+      if (TCSET.has(c)) tc++;
+      if (SCSET.has(c)) sc++;
+    }
+  }
+  if (hangul >= 2 && hangul > kana) return 'ko';
+  if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
+  if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+  return 'ja';
+};
+/* project → the language actually used */
+J.resolveLang = (project) => {
+  const l = project && project.lang;
+  if (l && l !== 'auto' && J.LANG_LABEL[l]) return l;
+  return J.detectLang(((project && project.lyrics) || '') + ' ' + ((project && project.title) || ''));
+};
+
+/* per-language faces: key → [family, weight, Google Fonts spec]; keys left out keep their Japanese face
+   (with the language's fallback in front of the Japanese one, so missing glyphs never land in a Japanese face) */
+const F = (family, weight, gf) => ({ family, weight, gf });
+const NSTC = 'Noto+Sans+TC:wght@300;500;700;900', NSRTC = 'Noto+Serif+TC:wght@300;500;700;800;900';
+const NSSC = 'Noto+Sans+SC:wght@300;500;700;900', NSRSC = 'Noto+Serif+SC:wght@300;500;700;800;900';
+const NSKR = 'Noto+Sans+KR:wght@300;500;700;900', NSRKR = 'Noto+Serif+KR:wght@300;500;700;800;900';
+J.LANG_FACES = {
+  'zh-Hant': {
+    sans: F('Noto Sans TC', 500, NSTC), serif: F('Noto Serif TC', 500, NSRTC),
+    fbSans: '"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei"', fbSerif: '"Noto Serif TC","Noto Serif CJK TC","PMingLiU"',
+    map: {
+      gothic_black: F('Noto Sans TC', 900, NSTC), gothic_bold: F('Noto Sans TC', 700, NSTC), gothic_med: F('Noto Sans TC', 500, NSTC),
+      gothic_light: F('Noto Sans TC', 300, NSTC), zenkaku: F('Noto Sans TC', 900, NSTC), sansui: F('Noto Sans TC', 500, NSTC),
+      mincho_black: F('Noto Serif TC', 900, NSRTC), mincho_bold: F('Noto Serif TC', 700, NSRTC), mincho: F('Noto Serif TC', 500, NSRTC),
+      mincho_light: F('Noto Serif TC', 300, NSRTC), tokumin: F('Noto Serif TC', 800, NSRTC), shippori: F('Noto Serif TC', 800, NSRTC),
+      dela: F('WDXL Lubrifont TC', 400, 'WDXL+Lubrifont+TC'), round: F('Chiron GoRound TC', 800, 'Chiron+GoRound+TC:wght@800'),
+      pop: F('Huninn', 400, 'Huninn'), kiwi: F('Huninn', 400, 'Huninn'),
+      klee: F('LXGW WenKai TC', 700, 'LXGW+WenKai+TC:wght@700'), brush: F('LXGW WenKai TC', 700, 'LXGW+WenKai+TC:wght@700'),
+      reggae: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'), rampart: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'), potta: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'),
+    },
+  },
+  'zh-Hans': {
+    sans: F('Noto Sans SC', 500, NSSC), serif: F('Noto Serif SC', 500, NSRSC),
+    fbSans: '"Noto Sans SC","Noto Sans CJK SC","PingFang SC","Microsoft YaHei"', fbSerif: '"Noto Serif SC","Noto Serif CJK SC","SimSun"',
+    map: {
+      gothic_black: F('Noto Sans SC', 900, NSSC), gothic_bold: F('Noto Sans SC', 700, NSSC), gothic_med: F('Noto Sans SC', 500, NSSC),
+      gothic_light: F('Noto Sans SC', 300, NSSC), zenkaku: F('Noto Sans SC', 900, NSSC), sansui: F('Noto Sans SC', 500, NSSC),
+      mincho_black: F('Noto Serif SC', 900, NSRSC), mincho_bold: F('Noto Serif SC', 700, NSRSC), mincho: F('Noto Serif SC', 500, NSRSC),
+      mincho_light: F('Noto Serif SC', 300, NSRSC), tokumin: F('Noto Serif SC', 800, NSRSC), shippori: F('Noto Serif SC', 800, NSRSC),
+      dela: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), round: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'),
+      pop: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'), kiwi: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'),
+      klee: F('ZCOOL XiaoWei', 400, 'ZCOOL+XiaoWei'), brush: F('Ma Shan Zheng', 400, 'Ma+Shan+Zheng'),
+      reggae: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), rampart: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), potta: F('Ma Shan Zheng', 400, 'Ma+Shan+Zheng'),
+    },
+  },
+  ko: {
+    sans: F('Noto Sans KR', 500, NSKR), serif: F('Noto Serif KR', 500, NSRKR),
+    fbSans: '"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic"', fbSerif: '"Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","Batang"',
+    map: {
+      gothic_black: F('Noto Sans KR', 900, NSKR), gothic_bold: F('Noto Sans KR', 700, NSKR), gothic_med: F('Noto Sans KR', 500, NSKR),
+      gothic_light: F('Noto Sans KR', 300, NSKR), zenkaku: F('Noto Sans KR', 900, NSKR), sansui: F('IBM Plex Sans KR', 500, 'IBM+Plex+Sans+KR:wght@500'),
+      mincho_black: F('Noto Serif KR', 900, NSRKR), mincho_bold: F('Noto Serif KR', 700, NSRKR), mincho: F('Noto Serif KR', 500, NSRKR),
+      mincho_light: F('Noto Serif KR', 300, NSRKR), tokumin: F('Noto Serif KR', 800, NSRKR), shippori: F('Noto Serif KR', 800, NSRKR),
+      dela: F('Black Han Sans', 400, 'Black+Han+Sans'), round: F('Jua', 400, 'Jua'),
+      pop: F('Do Hyeon', 400, 'Do+Hyeon'), kiwi: F('Gowun Dodum', 400, 'Gowun+Dodum'),
+      klee: F('Gowun Batang', 700, 'Gowun+Batang:wght@700'), brush: F('Nanum Brush Script', 400, 'Nanum+Brush+Script'),
+      reggae: F('Black Han Sans', 400, 'Black+Han+Sans'), rampart: F('Black Han Sans', 400, 'Black+Han+Sans'), potta: F('Nanum Brush Script', 400, 'Nanum+Brush+Script'),
+    },
+  },
+};
+
+/* the language fonts are drawn in right now (set by the planner / renderer from plan.lang) */
+J.lang = 'ja';
+J.setLang = (l) => {
+  l = J.LANG_FACES[l] ? l : 'ja';
+  if (l === J.lang) return;
+  J.lang = l;
+  if (J.glyphs) J.glyphs.clear();
+  if (J.metrics) J.metrics.clear();
+};
+const SERIF_KINDS = { mincho: 1, brush: 1, hand: 1 };
+const faceCache = new Map();
+/* the face a font key is drawn with in the current language: {family (quoted), weight, fb, gf, label, name (family, for captions)} */
+J.faceOf = (key) => {
+  const f = J.FONTS[key] || J.FONTS.gothic_bold;
+  const L = J.LANG_FACES[J.lang];
+  if (!L || f.user) return f;                               // Japanese: the catalogue face itself (fontCSS runs per draw — no allocation)
+  const ck = J.lang + '|' + key; let r = faceCache.get(ck);
+  if (r) return r;
+  const m = L.map[key], fb = (SERIF_KINDS[f.kind] ? L.fbSerif : L.fbSans) + ',' + f.fb;
+  r = !m ? { family: f.family, weight: f.weight, fb, gf: f.gf, label: f.label, name: f.label, kind: f.kind }
+    : { family: '"' + m.family + '"', weight: m.weight, fb, gf: m.gf, label: m.family + (m.weight !== 400 ? ' ' + m.weight : ''), name: m.family, kind: f.kind };
+  faceCache.set(ck, r);
+  return r;
+};
+/* extra faces to load for the current language (the fallback sans / serif that covers glyphs the mapped faces lack) */
+J.langBaseFaces = (keys) => {
+  const L = J.LANG_FACES[J.lang]; if (!L) return [];
+  const out = [L.sans];
+  if ((keys || []).some(k => J.FONTS[k] && SERIF_KINDS[J.FONTS[k].kind])) out.push(L.serif);
+  return out;
+};
+/* segmenter locale for chunking */
+J.segLocale = () => (J.lang === 'zh-Hant' ? 'zh-Hant' : J.lang === 'zh-Hans' ? 'zh-Hans' : J.lang === 'ko' ? 'ko' : 'ja');
 })();
 
 /* ============================================================
@@ -2909,6 +3047,7 @@ J.defaultProject = () => ({
   style: 'noir', mood: null,
   extra: false,                   // random picks may use the parts added after the first version (追加分)
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
+  lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -2965,7 +3104,13 @@ J.parseLyrics = (raw) => {
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
-const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+const segmenters = {};   // one per lyric language (J.segLocale: ja / zh-Hant / zh-Hans / ko)
+const segmenterOf = () => {
+  if (typeof Intl === 'undefined' || !Intl.Segmenter) return null;
+  const loc = J.segLocale ? J.segLocale() : 'ja';
+  if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
+  return segmenters[loc];
+};
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -2976,6 +3121,7 @@ const segType = s => {
   return 'O';
 };
 J.segments = (text) => {
+  const segmenter = segmenterOf();
   if (segmenter) return [...segmenter.segment(text)].map(x => x.segment);
   const out = []; let cur = '', ct = '';
   for (const c of text) {
@@ -3075,7 +3221,9 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
+    lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
+  if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
   const beats = plan.beats;
   const snap = (t) => {
     if (!beats.length || !(project.timing && project.timing.snap)) return t;
@@ -3544,6 +3692,7 @@ class Renderer {
     const mainCut = J.cutAt(plan, tq);
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
+    if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
@@ -4158,6 +4307,12 @@ J.planForAE = (plan, project) => {
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));
+  // lyric language: the face each key is drawn with in the browser for this plan (the panel maps keys → AE fonts per language)
+  clean.lang = plan.lang || 'ja';
+  if (J.setLang && J.faceOf && clean.lang !== 'ja') {
+    J.setLang(clean.lang);
+    for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
+  }
   return clean;
 };
 })();
@@ -19168,8 +19323,8 @@ J.register('layout', 'typeSpecimen', {
       if (e <= 0) return;
       // rule on top of each cell + caption
       env.line([[c.x, c.y], [c.x + c.w * E.outExpo(J.clamp((lt - d) / 0.5)), c.y]], c.main ? sc.accent : sc.sub, c.main ? lw * 3 : lw, (c.main ? 1 : 0.6) * out, false);
-      const F = J.FONTS[c.font] || {};
-      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
+      const F = (J.FONTS[c.font] && J.faceOf ? J.faceOf(c.font) : J.FONTS[c.font]) || {};   // the face actually drawn (lyric language)
+      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.name || F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
       env.draw({ text: label, font: mono, size: cap, align: 'left', track: 0.08, x: c.x, y: c.y + cap * 1.1, color: c.main ? sc.accent : sc.sub, alpha: e, ghost: false });
       const list = Pm.grid === 'list';
       const tw = list ? c.w * (c.main ? 1 : 0.8) : c.w * 0.9, th = c.h - cap * (list ? 1.8 : 2.8);
@@ -28766,8 +28921,16 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
+/* 自動判定のとき、判定結果を言語欄の横に出す */
+function langNote() {
+  const el = $('langNote'); if (!el) return;
+  el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
+  if (langNote.last !== undefined && langNote.last !== J.lang) { try { renderFontRoles(); } catch (e) {} }   // font menus show the language's faces
+  langNote.last = J.lang;
+}
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   S.need = true; autosave(); ensureFonts(); drawSwatch(); showNow();
@@ -29021,7 +29184,10 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
+  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
+    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+  }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -29328,12 +29494,19 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
 /* ---------------- wiring ---------------- */
 function bind() {
   $('lyrics').addEventListener('input', e => { S.project.lyrics = e.target.value; replanSoon(260); });
+  $('lyricLang').addEventListener('change', e => {
+    remember();
+    S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
+    const l = J.resolveLang(S.project);
+    toast((S.project.lang === 'auto' ? '歌詞の言語：自動判定 → ' : '歌詞の言語：') + J.LANG_LABEL[l]);
+  });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
   $('btnSyntax').addEventListener('click', e => { const s = $('syntax'); s.hidden = !s.hidden; e.target.setAttribute('aria-expanded', String(!s.hidden)); });

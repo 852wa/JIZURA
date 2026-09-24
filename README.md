@@ -140,6 +140,29 @@ AE パネルでは、パネルの「fps」（24 / 30 / 60）でコンポのフ�
 - フラッシュ・反転・ストロボなど画面全体にかかる演出は、そのまま白い光として残ります。不要なら「演出」タブでフラッシュをオフにしたりグリッチを弱めたりするか、「手法」タブの「画面効果」で個別にオフにしてください。
 - AE パネルでも、パネルの「背景」で同じ設定を選べます。「AE用に書き出し」の JSON にも背景の設定が入ります。
 
+### 歌詞の言語（中国語・韓国語の歌詞）
+
+各スタイルの書体は日本語フォントを前提にしているため、繁体字・簡体字・ハングルの歌詞では、字形のない文字だけ別の書体で表示されて1行の中で書体が混ざることがありました。歌詞欄の下の **歌詞の言語** で切り替えられます。
+
+- **自動判定**（既定）：かなを含めば日本語、ハングルなら韓国語、漢字だけなら繁体字／簡体字に特有の字（們／们・說／说 など）から判断します。判定結果は欄の横に表示されます。
+- **日本語 / 繁體中文 / 简体中文 / 한국어**：判定がずれるときは手動で選んでください。
+- 言語を切り替えると、各書体を雰囲気の近いその言語の書体に置き換えて組みます（Google Fonts から自動で読み込み）。
+
+| 日本語の書体 | 繁體中文 | 简体中文 | 한국어 |
+|---|---|---|---|
+| Noto Sans JP・Zen Kaku Gothic New・IBM Plex Sans JP | Noto Sans TC | Noto Sans SC | Noto Sans KR（IBM Plex Sans KR） |
+| Noto Serif JP・Zen Old Mincho・Kaisei Tokumin・Shippori Mincho B1 | Noto Serif TC | Noto Serif SC | Noto Serif KR |
+| Dela Gothic One | WDXL Lubrifont TC | ZCOOL QingKe HuangYou | Black Han Sans |
+| M PLUS Rounded 1c | Chiron GoRound TC | ZCOOL KuaiLe | Jua |
+| Mochiy Pop One・Kiwi Maru | Huninn | ZCOOL KuaiLe | Do Hyeon・Gowun Dodum |
+| Klee One・Yuji Syuku | LXGW WenKai TC | ZCOOL XiaoWei・Ma Shan Zheng | Gowun Batang・Nanum Brush Script |
+| Reggae One・Rampart One・Potta One | LXGW Marker Gothic | ZCOOL QingKe HuangYou・Ma Shan Zheng | Black Han Sans・Nanum Brush Script |
+
+- DotGothic16 と IBM Plex Mono（小さな英数字）はそのままで、足りない字だけ各言語のゴシックで表示します。
+- ローマ字の注釈（かなから作る小さな文字）は、中国語・韓国語の歌詞では出ません（行番号・注釈・文字コードなどに置き換わります）。
+- AE パネルにも同じ設定（「歌詞の言語」）があり、「AE用に書き出し」の JSON にも言語が入ります。AE では上の書体がインストールされていればそれを使い、なければ OS の標準書体（繁体字：蘋方-繁／微軟正黑體、簡体字：苹方-简／微软雅黑、韓国語：Apple SD Gothic Neo／Malgun Gothic など）で組みます。
+- フォント欄の選択肢には「Noto Sans JP Black → Noto Sans TC 900」のように、実際に使われる書体が表示されます。
+
 ### 表現の部品（組み合わせて自動構成）
 
 部品の総数は **707**（最初の公開版の356 ＋ 追加分351。追加分は「追加分の演出も使う」がオンのときにランダムの候補になります）。1カットごとに、各分類から1つずつ（装飾は0〜3個）が組み合わされます。

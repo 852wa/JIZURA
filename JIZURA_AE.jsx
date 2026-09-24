@@ -266,10 +266,80 @@ function jzRoleOf(key) {
 // resolve: explicit user role font > key candidates that exist > role default
 // JZ_FONT_MISSING collects the keys whose own typeface (the browser's Google Font) is not installed, for the build report
 var JZ_FONT_MISSING = {}, JZ_FONT_NOAPI = false;
+// ---- lyric language (plan.lang from the browser): Chinese / Korean lyrics are drawn with faces that have their glyphs.
+// Per language: key \u2192 PostScript candidates (the browser's Google Font first, then OS fonts that always cover the script).
+var JZ_LANG = 'ja';
+var JZ_LANG_SYS = {
+    'zh-Hant': { sansB: ['PingFangTC-Semibold', 'MicrosoftJhengHeiBold', 'NotoSansCJKtc-Bold', 'SourceHanSansTC-Bold'], sans: ['PingFangTC-Regular', 'MicrosoftJhengHeiRegular', 'NotoSansCJKtc-Regular', 'SourceHanSansTC-Regular'],
+                 serifB: ['STSongti-TC-Bold', 'NotoSerifCJKtc-Bold', 'SourceHanSerifTC-Bold', 'PMingLiU'], serif: ['STSongti-TC-Regular', 'NotoSerifCJKtc-Regular', 'SourceHanSerifTC-Regular', 'PMingLiU'] },
+    'zh-Hans': { sansB: ['PingFangSC-Semibold', 'MicrosoftYaHei-Bold', 'NotoSansCJKsc-Bold', 'SourceHanSansSC-Bold'], sans: ['PingFangSC-Regular', 'MicrosoftYaHei', 'NotoSansCJKsc-Regular', 'SourceHanSansSC-Regular'],
+                 serifB: ['STSongti-SC-Bold', 'NotoSerifCJKsc-Bold', 'SourceHanSerifSC-Bold', 'SimSun'], serif: ['STSongti-SC-Regular', 'NotoSerifCJKsc-Regular', 'SourceHanSerifSC-Regular', 'SimSun'] },
+    ko: { sansB: ['AppleSDGothicNeo-Bold', 'MalgunGothicBold', 'NotoSansCJKkr-Bold', 'SourceHanSansKR-Bold'], sans: ['AppleSDGothicNeo-Regular', 'MalgunGothic', 'NotoSansCJKkr-Regular', 'SourceHanSansKR-Regular'],
+          serifB: ['AppleMyungjo', 'NotoSerifCJKkr-Bold', 'SourceHanSerifKR-Bold', 'Batang'], serif: ['AppleMyungjo', 'NotoSerifCJKkr-Regular', 'SourceHanSerifKR-Regular', 'Batang'] }
+};
+// [family (for messages), own PostScript names\u2026, system group]
+var JZ_LANG_FONTS = {
+    'zh-Hant': {
+        gothic_black: ['Noto Sans TC', 'NotoSansTC-Black', 'NotoSansTCThin-Black', 'sansB'], gothic_bold: ['Noto Sans TC', 'NotoSansTC-Bold', 'NotoSansTCThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'], gothic_light: ['Noto Sans TC', 'NotoSansTC-Light', 'NotoSansTCThin-Light', 'sans'],
+        zenkaku: ['Noto Sans TC', 'NotoSansTC-Black', 'NotoSansTCThin-Black', 'sansB'], sansui: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'],
+        dot: ['Noto Sans TC', 'NotoSansTC-Medium', 'NotoSansTCThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif TC', 'NotoSerifTC-Black', 'NotoSerifTCExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif TC', 'NotoSerifTC-Bold', 'NotoSerifTCExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif TC', 'NotoSerifTC-Medium', 'NotoSerifTCExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif TC', 'NotoSerifTC-Light', 'NotoSerifTCExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif TC', 'NotoSerifTC-ExtraBold', 'NotoSerifTCExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif TC', 'NotoSerifTC-ExtraBold', 'NotoSerifTCExtraLight-ExtraBold', 'serifB'],
+        dela: ['WDXL Lubrifont TC', 'WDXLLubrifontTC-Regular', 'NotoSansTC-Black', 'sansB'], round: ['Chiron GoRound TC', 'ChironGoRoundTC-ExtraBold', 'ChironGoRoundTCExtraLight-ExtraBold', 'sansB'],
+        pop: ['Huninn', 'Huninn-Regular', 'sansB'], kiwi: ['Huninn', 'Huninn-Regular', 'sans'],
+        klee: ['LXGW WenKai TC', 'LXGWWenKaiTC-Bold', 'serifB'], brush: ['LXGW WenKai TC', 'LXGWWenKaiTC-Bold', 'serifB'],
+        reggae: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB'], rampart: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB'], potta: ['LXGW Marker Gothic', 'LXGWMarkerGothic-Regular', 'sansB']
+    },
+    'zh-Hans': {
+        gothic_black: ['Noto Sans SC', 'NotoSansSC-Black', 'NotoSansSCThin-Black', 'sansB'], gothic_bold: ['Noto Sans SC', 'NotoSansSC-Bold', 'NotoSansSCThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'], gothic_light: ['Noto Sans SC', 'NotoSansSC-Light', 'NotoSansSCThin-Light', 'sans'],
+        zenkaku: ['Noto Sans SC', 'NotoSansSC-Black', 'NotoSansSCThin-Black', 'sansB'], sansui: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'],
+        dot: ['Noto Sans SC', 'NotoSansSC-Medium', 'NotoSansSCThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif SC', 'NotoSerifSC-Black', 'NotoSerifSCExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif SC', 'NotoSerifSC-Bold', 'NotoSerifSCExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif SC', 'NotoSerifSC-Medium', 'NotoSerifSCExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif SC', 'NotoSerifSC-Light', 'NotoSerifSCExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif SC', 'NotoSerifSC-ExtraBold', 'NotoSerifSCExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif SC', 'NotoSerifSC-ExtraBold', 'NotoSerifSCExtraLight-ExtraBold', 'serifB'],
+        dela: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], round: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sansB'],
+        pop: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sansB'], kiwi: ['ZCOOL KuaiLe', 'ZCOOLKuaiLe-Regular', 'sans'],
+        klee: ['ZCOOL XiaoWei', 'ZCOOLXiaoWei-Regular', 'serif'], brush: ['Ma Shan Zheng', 'MaShanZheng-Regular', 'serifB'],
+        reggae: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], rampart: ['ZCOOL QingKe HuangYou', 'ZCOOLQingKeHuangYou-Regular', 'sansB'], potta: ['Ma Shan Zheng', 'MaShanZheng-Regular', 'sansB']
+    },
+    ko: {
+        gothic_black: ['Noto Sans KR', 'NotoSansKR-Black', 'NotoSansKRThin-Black', 'sansB'], gothic_bold: ['Noto Sans KR', 'NotoSansKR-Bold', 'NotoSansKRThin-Bold', 'sansB'],
+        gothic_med: ['Noto Sans KR', 'NotoSansKR-Medium', 'NotoSansKRThin-Medium', 'sans'], gothic_light: ['Noto Sans KR', 'NotoSansKR-Light', 'NotoSansKRThin-Light', 'sans'],
+        zenkaku: ['Noto Sans KR', 'NotoSansKR-Black', 'NotoSansKRThin-Black', 'sansB'], sansui: ['IBM Plex Sans KR', 'IBMPlexSansKR-Medium', 'NotoSansKR-Medium', 'sans'],
+        dot: ['Noto Sans KR', 'NotoSansKR-Medium', 'NotoSansKRThin-Medium', 'sans'],
+        mincho_black: ['Noto Serif KR', 'NotoSerifKR-Black', 'NotoSerifKRExtraLight-Black', 'serifB'], mincho_bold: ['Noto Serif KR', 'NotoSerifKR-Bold', 'NotoSerifKRExtraLight-Bold', 'serifB'],
+        mincho: ['Noto Serif KR', 'NotoSerifKR-Medium', 'NotoSerifKRExtraLight-Medium', 'serif'], mincho_light: ['Noto Serif KR', 'NotoSerifKR-Light', 'NotoSerifKRExtraLight-Light', 'serif'],
+        tokumin: ['Noto Serif KR', 'NotoSerifKR-ExtraBold', 'NotoSerifKRExtraLight-ExtraBold', 'serifB'], shippori: ['Noto Serif KR', 'NotoSerifKR-ExtraBold', 'NotoSerifKRExtraLight-ExtraBold', 'serifB'],
+        dela: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], round: ['Jua', 'Jua-Regular', 'sansB'],
+        pop: ['Do Hyeon', 'DoHyeon-Regular', 'sansB'], kiwi: ['Gowun Dodum', 'GowunDodum-Regular', 'sans'],
+        klee: ['Gowun Batang', 'GowunBatang-Bold', 'serifB'], brush: ['Nanum Brush Script', 'NanumBrush', 'NanumBrushScript-Regular', 'serifB'],
+        reggae: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], rampart: ['Black Han Sans', 'BlackHanSans-Regular', 'sansB'], potta: ['Nanum Brush Script', 'NanumBrush', 'NanumBrushScript-Regular', 'sansB']
+    }
+};
+function jzSetLang(l) { JZ_LANG = (l && JZ_LANG_FONTS.hasOwnProperty(l)) ? l : 'ja'; }
+// the language's own candidates for a key (null = Japanese faces); JZ_FONT_MISSING gets the family name when its own face is missing
+function jzLangFont(key) {
+    var T = JZ_LANG_FONTS[JZ_LANG], e = T && T[key], i, ex, sys;
+    if (!e) return null;
+    for (i = 1; i < e.length; i++) {
+        if (JZ_LANG_SYS[JZ_LANG].hasOwnProperty(e[i])) break;
+        ex = jzFontExists(e[i]);
+        if (i === 1 && ex === false) JZ_FONT_MISSING[key] = e[0];
+        if (ex === null) { JZ_FONT_NOAPI = true; return e[1]; }     // no font API (before AE 2024): trust the first name
+        if (ex === true) return e[i];
+    }
+    sys = JZ_LANG_SYS[JZ_LANG][e[e.length - 1]] || [];
+    for (i = 0; i < sys.length; i++) if (jzFontExists(sys[i]) === true) return sys[i];
+    return null;
+}
 function jzFont(key, roles) {
     roles = roles || JZ_ROLE_DEFAULT;
     var role = JZ_ROLE_DEFAULT.hasOwnProperty(key) ? key : jzRoleOf(key);
     if (roles.__force && roles[role]) return roles[role];
+    if (JZ_LANG !== 'ja') { var lf = jzLangFont(key); if (lf) return lf; }
     var cands = JZ_FONT_CANDIDATES[key] || [];
     for (var i = 0; i < cands.length; i++) {
         var ex = jzFontExists(cands[i]);
@@ -283,7 +353,7 @@ function jzFont(key, roles) {
 function jzMissingFonts() {
     var out = [], seen = {}, k, fam;
     for (k in JZ_FONT_MISSING) if (JZ_FONT_MISSING.hasOwnProperty(k)) {
-        fam = (JZ_DATA.fonts && JZ_DATA.fonts[k] && JZ_DATA.fonts[k].family) || k;
+        fam = typeof JZ_FONT_MISSING[k] === 'string' ? JZ_FONT_MISSING[k] : (JZ_DATA.fonts && JZ_DATA.fonts[k] && JZ_DATA.fonts[k].family) || k;
         if (!seen[fam]) { seen[fam] = true; out.push(fam); }
     }
     return out;
@@ -726,7 +796,31 @@ function jzPickFx(rng, st, en, fx, emph, fxHist, kind) {
 }
 function jzPlanOf(g, k, rng, st, extra) { var D = JZ_REG[g][k]; if (!D || !D.plan) return {}; try { return (g === 'layout' ? D.plan(rng, extra || {}, st) : D.plan(rng, st)) || {}; } catch (e) { jzWarn(g + ' ' + k + ' plan: ' + e.toString()); return {}; } }
 
-// o: {lyrics, title, artist, style, seed, fx, width, height, fps, bpm, starts[], enabled{group:{key:false}}, offset, lineScale, duration, extra, wa}
+// ---- lyric language (same rule as the browser, src/02b_lang.js): kana \u2192 ja, hangul \u2192 ko, Han only \u2192 Traditional / Simplified
+var JZ_TC = '\u5011\u500B\u8AAA\u9019\u6703\u5C0D\u6642\u4F86\u9084\u5F8C\u904E\u570B\u958B\u95DC\u8207\u70BA\u5F9E\u554F\u9593\u898B\u9577\u6771\u8ECA\u9580\u611B\u807D\u5B78\u8B93\u8A71\u865F\u767C\u9EDE\u7121\u73FE\u9AD4\u7D93\u96FB\u5BE6\u6A23\u8072\u8B8A\u96E2\u6C23\u5922\u7D66\u89BA\u7576\u6B61\u967D\u6200\u908A\u982D\u6DDA\u8AB0\u6B72\u9060\u55CE\u842C\u96E3\u5BEB\u61C9\u8B80\u61B6\u6A02\u9EBC\u9E97\u50B7\u5C07\u7E3D\u7D50\u7D42\u7D05\u7DA0\u7DDA\u984F\u98A8\u98DB\u9CE5\u8B1D\u8A9E\u8ACB\u8A8D\u8B58\u71B1\u71C8\u9858\u7368\u5920\u7D00\u5E36\u6EFF\u975C\u8F15\u5225\u8166\u81C9\u61F7\u8B0A\u932F\u9846\u9663\u5834\u8B9A\u6DFA\u6EAB\u8A18\u6191\u8B77\u58DE\u6B78\u5ABD\u96A8\u9280\u805E\u614B\u865B\u9059';
+var JZ_SC = '\u4EEC\u4E2A\u8BF4\u8FD9\u4F1A\u5BF9\u65F6\u6765\u8FD8\u540E\u8FC7\u56FD\u5F00\u5173\u4E0E\u4E3A\u4ECE\u95EE\u95F4\u89C1\u957F\u4E1C\u8F66\u95E8\u7231\u542C\u5B66\u8BA9\u8BDD\u53F7\u53D1\u70B9\u65E0\u73B0\u4F53\u7ECF\u7535\u5B9E\u6837\u58F0\u53D8\u79BB\u6C14\u68A6\u7ED9\u89C9\u5F53\u6B22\u9633\u604B\u8FB9\u5934\u6CEA\u8C01\u5C81\u8FDC\u5417\u4E07\u96BE\u5199\u5E94\u8BFB\u5FC6\u4E50\u4E48\u4E3D\u4F24\u5C06\u603B\u7ED3\u7EC8\u7EA2\u7EFF\u7EBF\u989C\u98CE\u98DE\u9E1F\u8C22\u8BED\u8BF7\u8BA4\u8BC6\u70ED\u706F\u613F\u72EC\u591F\u7EAA\u5E26\u6EE1\u9759\u8F7B\u522B\u8111\u8138\u6000\u8C0E\u9519\u9897\u9635\u573A\u8D5E\u6D45\u6E29\u8BB0\u51ED\u62A4\u574F\u5F52\u5988\u968F\u94F6\u95FB\u6001\u865A\u9065';
+function jzDetectLangText(text) {
+    var kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, i, u, c;
+    text = String(text || '');
+    for (i = 0; i < text.length; i++) {
+        u = text.charCodeAt(i); c = text.charAt(i);
+        if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+        else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
+        else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf)) { han++; if (JZ_TC.indexOf(c) >= 0) tc++; if (JZ_SC.indexOf(c) >= 0) sc++; }
+    }
+    if (hangul >= 2 && hangul > kana) return 'ko';
+    if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
+    if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+    return 'ja';
+}
+// a plan without .lang (older JSON): detect from its lines
+function jzDetectLang(plan) {
+    var t = [], i;
+    for (i = 0; plan && plan.lines && i < plan.lines.length; i++) t.push(plan.lines[i].text);
+    if (!t.length) for (i = 0; plan && plan.cuts && i < plan.cuts.length; i++) t.push(plan.cuts[i].text);
+    return jzDetectLangText(t.join(' '));
+}
+// o: {lyrics, title, artist, style, seed, fx, width, height, fps, bpm, starts[], enabled{group:{key:false}}, offset, lineScale, duration, extra, wa, lang}
 function jzMakePlan(o) {
     var st = JZ_DATA.styles[o.style] || JZ_DATA.styles.noir;
     var fx = o.fx, parsed = jzParseLyrics(o.lyrics), lines = parsed.lines;
@@ -758,7 +852,9 @@ function jzMakePlan(o) {
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
-    var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud };
+    var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
+        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title) };
+    jzSetLang(plan.lang);
     var hist = [], bgHist = [], fxHist = [], schemeIdx = 0, nS = st.schemes.length;
     function ev(t, type, amp, dur) { plan.events.push({ t: t, type: type, amp: amp, dur: dur }); }
     if (title && starts.length && starts[0] >= 1.1) {
@@ -30123,6 +30219,7 @@ function jzEventsArr(plan, type, t0, t1) {
 function jzBuild(plan, opt) {
     opt = opt || {};
     JZLOG = []; JZ_FALLBACKS = 0; JZ_FALLBACK_KEYS = []; JZ_FONT_MISSING = {}; JZ_FONT_NOAPI = false;
+    jzSetLang(plan.lang || (typeof jzDetectLang === 'function' ? jzDetectLang(plan) : 'ja'));   // \u6B4C\u8A5E\u306E\u8A00\u8A9E \u2192 faces
     var W = opt.width || plan.width || 1920, H = opt.height || plan.height || 1080, fps = plan.fps || 24, D = Math.max(1, plan.duration || 10);
     var st = plan.style, fx = plan.fx || {}, roles = opt.roles || JZ_ROLE_DEFAULT;
     var ghostAmt = (fx.chroma == null ? 0.7 : fx.chroma) * (st.ghost == null ? 1 : st.ghost);
@@ -30477,7 +30574,11 @@ function jzUI(thisObj) {
     cExtra.helpTip = '\u30AA\u30D5\u306E\u3068\u304D\u306F\u6700\u521D\u306E\u516C\u958B\u7248\u306E\u6F14\u51FA\uFF08356\u90E8\u54C1\u30FB\u30B9\u30BF\u30A4\u30EB12\u7A2E\uFF09\u3060\u3051\u3092\u4F7F\u3044\u307E\u3059\u3002\u30AA\u30F3\u306B\u3059\u308B\u3068\u3001\u3042\u3068\u304B\u3089\u8FFD\u52A0\u3057\u305F\u6F14\u51FA\u30FB\u30B9\u30BF\u30A4\u30EB\u30FB\u66F8\u4F53\u3082\u5019\u88DC\u306B\u306A\u308A\u307E\u3059';
     var cWa = gSw.add('checkbox', undefined, '\u548C\u98A8\u306E\u6F14\u51FA\u3082\u4F7F\u3046'); cWa.value = jzGet('wa', '1') === '1';
     cWa.helpTip = '\u63D0\u706F\u30FB\u306F\u304C\u304D\u30FB\u969C\u5B50\u30FB\u6247\u30FB\u5BB6\u7D0B\u30FB\u9752\u6D77\u6CE2\u30FB\u685C\u306E\u82B1\u3073\u3089\u306A\u3069\u306E\u548C\u98A8\u30B0\u30E9\u30D5\u30A3\u30C3\u30AF\u3068\u3001\u548C\u98A8\u306E\u30B9\u30BF\u30A4\u30EB\u3002\u30AA\u30D5\u306B\u3059\u308B\u3068\u81EA\u52D5\u3067\u306F\u9078\u3070\u308C\u307E\u305B\u3093\uFF08\u8FFD\u52A0\u5206\u306E\u5224\u5B9A\u306E\u3042\u3068\u306B\u9069\u7528\uFF09';
-    function switches() { return { extra: cExtra.value, wa: cWa.value }; }
+    var gLang = gSw.add('group'); gLang.spacing = 4; gLang.add('statictext', undefined, '\u6B4C\u8A5E\u306E\u8A00\u8A9E');
+    var JZ_LANG_KEYS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko'];
+    var ddLang = gLang.add('dropdownlist', undefined, ['\u81EA\u52D5\u5224\u5B9A', '\u65E5\u672C\u8A9E', '\u7E41\u9AD4\u4E2D\u6587', '\u7B80\u4F53\u4E2D\u6587', '\uD55C\uAD6D\uC5B4']); ddLang.selection = parseInt(jzGet('lang', '0'), 10) || 0;
+    ddLang.helpTip = '\u4E2D\u56FD\u8A9E\uFF08\u7E41\u4F53\u5B57\u30FB\u7C21\u4F53\u5B57\uFF09\u3084\u97D3\u56FD\u8A9E\u306E\u6B4C\u8A5E\u306F\u3001\u305D\u306E\u6587\u5B57\u3092\u6301\u3064\u66F8\u4F53\u3067\u7D44\u307F\u307E\u3059\uFF08\u5404\u30B9\u30BF\u30A4\u30EB\u306E\u66F8\u4F53\u306E\u96F0\u56F2\u6C17\u306B\u8FD1\u3044\u3082\u306E\u306B\u7F6E\u304D\u63DB\u3048\uFF09\u3002\u81EA\u52D5\u5224\u5B9A\u306F\u304B\u306A\u30FB\u30CF\u30F3\u30B0\u30EB\u30FB\u7E41\u4F53\u5B57\uFF0F\u7C21\u4F53\u5B57\u306B\u7279\u6709\u306E\u5B57\u304B\u3089\u5224\u65AD\u3057\u307E\u3059';
+    function switches() { return { extra: cExtra.value, wa: cWa.value, lang: JZ_LANG_KEYS[ddLang.selection ? ddLang.selection.index : 0] }; }
     var gS = t1.add('group'); gS.add('statictext', undefined, '\u30B9\u30BF\u30A4\u30EB');
     var styleNames = [], i;
     for (i = 0; i < JZ_DATA.styleOrder.length; i++) { var stI = JZ_DATA.styles[JZ_DATA.styleOrder[i]]; styleNames.push(stI.name + (stI.extra || stI.wa ? '  \u3014' + (stI.extra ? '\u8FFD\u52A0' : '') + (stI.extra && stI.wa ? '\u30FB' : '') + (stI.wa ? '\u548C' : '') + '\u3015' : '')); }
@@ -30622,7 +30723,7 @@ function jzUI(thisObj) {
         jzPut('size', ddSize.selection.index); jzPut('fps', ddFps.selection.index); jzPut('timing', rLayer.value ? 'layer' : rComp.value ? 'comp' : 'auto');
         jzPut('bpm', eBpm.text); jzPut('lineScale', eScale.text); jzPut('audio', cAudio.value ? '1' : '0'); jzPut('seed', eSeed.text);
         jzPut('twos', cTwos.value ? '1' : '0'); jzPut('flash', cFlash.value ? '1' : '0'); jzPut('hud', ddHud.selection.index);
-        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index);
+        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
         var sl = [sMotion, sGlitch, sChroma, sDecor, sDensity, sTexture, sBg]; for (var k = 0; k < sl.length; k++) jzPut(sl[k].key, sl[k].value);
         var active = app.project.activeItem, W = 1920, H = 1080, fps = [24, 30, 60][ddFps.selection.index], dur = null;
         var sz = ddSize.selection.index;
@@ -30645,7 +30746,7 @@ function jzUI(thisObj) {
             lyrics: lyr.text, title: eTitle.text, artist: eArtist.text, style: JZ_DATA.styleOrder[ddStyle.selection.index], seed: parseInt(eSeed.text, 10) || 1,
             fx: { motion: sMotion.value / 100, glitch: sGlitch.value / 100, chroma: sChroma.value / 100, decor: sDecor.value / 100, density: sDensity.value / 100, texture: sTexture.value / 100, bgSwitch: sBg.value / 100, onTwos: cTwos.value, flash: cFlash.value, hud: false },
             width: W, height: H, fps: fps, bpm: parseFloat(eBpm.text) || 0, starts: starts, enabled: en, offset: 0.4, lineScale: parseFloat(eScale.text) || 1, duration: dur,
-            extra: sw.extra, wa: sw.wa
+            extra: sw.extra, wa: sw.wa, lang: sw.lang
         };
         var st = JZ_DATA.styles[o.style];
         o.fx.hud = ddHud.selection.index === 1 ? true : ddHud.selection.index === 2 ? false : !!st.hud;
