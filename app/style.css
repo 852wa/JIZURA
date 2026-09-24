@@ -132,6 +132,20 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
+button.chip { cursor: pointer; font: inherit; }
+button.chip:hover { border-color: var(--amber); color: var(--text); }
+button.chip.is-forced { border-color: var(--amber); }
+button.chip[aria-pressed=true] { border-color: var(--cyan); color: var(--cyan); }
+.cut-pick { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 8px; max-height: min(42vh, 420px); overflow: auto; }
+.cut-pick-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: sticky; top: 0; background: var(--panel); z-index: 1; padding-bottom: 4px; }
+.cut-pick-h strong { font-size: 12px; }
+.cut-pick-h .muted { flex: 1; font-size: 11px; }
+.cut-pick .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; padding: 0; min-height: 96px; }
+.cut-pick .tcard { cursor: pointer; width: 100%; text-align: left; }
+.cut-pick .tcard.is-on { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.cut-pick .tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
+.chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
 .chip.l { border-color: rgba(245,165,12,0.6); }
 .chip.e { border-color: rgba(22,244,212,0.55); }
 .chip.x { border-color: rgba(255,111,156,0.6); }
@@ -154,7 +168,6 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
-
 .tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
 .tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
 .tcard:hover { border-color: var(--line2); }

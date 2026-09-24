@@ -30,6 +30,7 @@ BODY = {
     '拍にスナップ': 'Snap to beat', '手動タイミングを消す': 'Clear manual timing',
     '曲に合わせて、各行が始まる瞬間に': 'Press', 'かボタンを押してください。': 'or the button as each line starts.',
     '次:': 'Next:', '終了する': 'Finish', '行とカット': 'Lines and cuts',
+ 'このカットだけ差し替え': 'Replace on this cut only',
     '再生位置': 'Playback position', 'タイムライン（クリックで移動）': 'Timeline (click to seek)',
     '前の案に戻る': 'Previous variation', '次の案へ進む': 'Next variation',
     '設定はそのままで構成だけ再抽選（ロックした行は維持）': 'Shuffle the arrangement, keeping locked lines',

@@ -164,6 +164,12 @@ J.computeTiming = (project, parsed, audio) => {
 /* ---------------- planning ---------------- */
 const wkey = (obj, k, d = 1) => (obj && obj[k] != null ? obj[k] : d);
 
+function cutTechOf(ov, k) {
+  const t = (ov.cutTech && (ov.cutTech[k] || ov.cutTech[String(k)])) || {};
+  const fromLay = ov.cutLayouts && (ov.cutLayouts[k] || ov.cutLayouts[String(k)]);
+  return fromLay && !t.layout ? Object.assign({}, t, { layout: fromLay }) : t;
+}
+
 J.plan = (project, audio) => {
   const st = J.resolveStyle(project);
   const fx = Object.assign({}, J.defaultProject().fx, project.fx || {});
@@ -245,12 +251,16 @@ J.plan = (project, audio) => {
       const nn = [...txt.replace(/\s+/g, '')].length;
       const emph = ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
       const pickedLayout = pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
-      const cutLay = ov.cutLayouts && (ov.cutLayouts[k] ?? ov.cutLayouts[String(k)]);
-      const layout = (cutLay && J.LAYOUTS[cutLay] && !J.LAYOUTS[cutLay].special) ? cutLay
+      const tech = cutTechOf(ov, k);
+      const layout = (tech.layout && J.LAYOUTS[tech.layout] && !J.LAYOUTS[tech.layout].special) ? tech.layout
         : (ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickedLayout);
-      let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, pickedLayout, dur, history, emph, nn);
-      let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, pickedLayout, dur, k === units.length - 1, history);
-      const hold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
+      const pickedEnter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, pickedLayout, dur, history, emph, nn);
+      const pickedExit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, pickedLayout, dur, k === units.length - 1, history);
+      const pickedHold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
+      let enter = pickedEnter, exit = pickedExit, hold = pickedHold;
+      if (tech.enter && J.ENTER[tech.enter]) enter = tech.enter;
+      if (tech.exit && J.EXIT[tech.exit]) exit = tech.exit;
+      if (tech.hold && J.HOLD[tech.hold]) hold = tech.hold;
       let inDur = J.clamp(dur * 0.36, 0.12, 0.6);
       if (enter === 'type') inDur = J.clamp(nn * 0.055 + 0.1, 0.15, dur * 0.65);
       if (enter === 'assemble') inDur = J.clamp(dur * 0.45, 0.22, 0.75);
@@ -269,30 +279,60 @@ J.plan = (project, audio) => {
         try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W, H, dur }, st); } catch (e) {}
       }
       const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, pickedLayout, history);
-      const treat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
-      const treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
+      const pickedDecor = decor.map(d => d.id);
+      if (tech.decor !== undefined) {
+        if (!tech.decor || tech.decor === 'none' || !J.DECOR[tech.decor]) decor.length = 0;
+        else { decor.length = 0; decor.push(decorParams(J.rng(J.h(lineSeed, k, 92)), tech.decor)); }
+      }
+      const pickedTreat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
+      let treat = pickedTreat;
+      let treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
+      if (tech.treat && J.TREAT[tech.treat]) {
+        treat = tech.treat;
+        treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(J.rng(J.h(lineSeed, k, 93)), st) : {};
+      }
       if (!ov.bg && k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = pickBg(rng, st, en, fx, bgHistory); lineBgP = J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {}; }
-      const bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
-      const cam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
-      const camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
-      // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
+      let bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
+      let bgP = bg === lineBg ? lineBgP : {};
+      if (tech.bg && J.BG[tech.bg]) {
+        bg = tech.bg;
+        bgP = J.BG[bg].plan ? J.BG[bg].plan(J.rng(J.h(lineSeed, k, 94)), st) : {};
+      }
+      const pickedCam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
+      let cam = pickedCam;
+      let camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
+      if (tech.cam && J.CAMERA[tech.cam]) {
+        cam = tech.cam;
+        camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(J.rng(J.h(lineSeed, k, 95)), st) : {};
+      }
       const prevCut = plan.cuts[plan.cuts.length - 1];
       let trans = null, transP = {}, transDur = 0;
       const canTrans = prevCut && Math.abs(prevCut.end - cs) < 0.06 && prevCut.layout !== 'interlude' && dur > 0.5;
+      let pickedTrans = null;
       if (canTrans) {
-        trans = ov.trans && J.TRANS[ov.trans] ? ov.trans : pickTrans(rng, st, en, fx, emph, history);
-        if (trans) {
+        pickedTrans = ov.trans && J.TRANS[ov.trans] ? ov.trans : pickTrans(rng, st, en, fx, emph, history);
+        trans = pickedTrans;
+        if (trans && J.TRANS[trans]) {
           const TD = J.TRANS[trans];
           transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
           transP = TD.plan ? TD.plan(rng, st) : {};
-          enter = 'cut'; inDur = 0.12;
-          prevCut.exit = 'cut'; prevCut.outDur = 0;
         }
       }
+      if (tech.trans === '' || tech.trans === 'none') { trans = null; transP = {}; transDur = 0; }
+      else if (tech.trans && J.TRANS[tech.trans]) {
+        trans = tech.trans;
+        const TD = J.TRANS[trans];
+        transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
+        transP = TD.plan ? TD.plan(J.rng(J.h(lineSeed, k, 96)), st) : {};
+      }
+      if (trans && prevCut && prevCut.layout !== 'interlude') {
+        enter = 'cut'; inDur = 0.12;
+        prevCut.exit = 'cut'; prevCut.outDur = 0;
+      }
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: J.h(lineSeed, k, 17), emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
-        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur });
+        treat, treatP, bg, bgP, cam, camP, trans, transP, transDur });
       plan.cuts.push(cut);
-      history.push({ layout: pickedLayout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
+      history.push({ layout: pickedLayout, enter: pickedEnter, exit: pickedExit, hold: pickedHold, treat: pickedTreat, cam: pickedCam, trans: pickedTrans, decor: pickedDecor });
       // events at cut start
       // events at cut start — durations are on a 24fps timebase so every output rate looks the same
       const g = fx.glitch * (st.glitchBoost || 1);
