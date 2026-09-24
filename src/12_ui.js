@@ -65,8 +65,16 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
+/* 自動判定のとき、判定結果を言語欄の横に出す */
+function langNote() {
+  const el = $('langNote'); if (!el) return;
+  el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
+  if (langNote.last !== undefined && langNote.last !== J.lang) { try { renderFontRoles(); } catch (e) {} }   // font menus show the language's faces
+  langNote.last = J.lang;
+}
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   S.need = true; autosave(); ensureFonts(); drawSwatch(); showNow();
@@ -320,7 +328,10 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
+  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
+    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+  }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -627,12 +638,19 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
 /* ---------------- wiring ---------------- */
 function bind() {
   $('lyrics').addEventListener('input', e => { S.project.lyrics = e.target.value; replanSoon(260); });
+  $('lyricLang').addEventListener('change', e => {
+    remember();
+    S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
+    const l = J.resolveLang(S.project);
+    toast((S.project.lang === 'auto' ? '歌詞の言語：自動判定 → ' : '歌詞の言語：') + J.LANG_LABEL[l]);
+  });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
   $('btnSyntax').addEventListener('click', e => { const s = $('syntax'); s.hidden = !s.hidden; e.target.setAttribute('aria-expanded', String(!s.hidden)); });

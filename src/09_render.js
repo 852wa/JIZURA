@@ -66,6 +66,7 @@ class Renderer {
     const mainCut = J.cutAt(plan, tq);
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
+    if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';

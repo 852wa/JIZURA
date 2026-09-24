@@ -16,6 +16,7 @@ J.defaultProject = () => ({
   style: 'noir', mood: null,
   extra: false,                   // random picks may use the parts added after the first version (追加分)
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
+  lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -72,7 +73,13 @@ J.parseLyrics = (raw) => {
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
-const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+const segmenters = {};   // one per lyric language (J.segLocale: ja / zh-Hant / zh-Hans / ko)
+const segmenterOf = () => {
+  if (typeof Intl === 'undefined' || !Intl.Segmenter) return null;
+  const loc = J.segLocale ? J.segLocale() : 'ja';
+  if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
+  return segmenters[loc];
+};
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -83,6 +90,7 @@ const segType = s => {
   return 'O';
 };
 J.segments = (text) => {
+  const segmenter = segmenterOf();
   if (segmenter) return [...segmenter.segment(text)].map(x => x.segment);
   const out = []; let cur = '', ct = '';
   for (const c of text) {
@@ -182,7 +190,9 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
+    lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
+  if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
   const beats = plan.beats;
   const snap = (t) => {
     if (!beats.length || !(project.timing && project.timing.snap)) return t;

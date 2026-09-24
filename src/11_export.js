@@ -184,6 +184,12 @@ J.planForAE = (plan, project) => {
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));
+  // lyric language: the face each key is drawn with in the browser for this plan (the panel maps keys → AE fonts per language)
+  clean.lang = plan.lang || 'ja';
+  if (J.setLang && J.faceOf && clean.lang !== 'ja') {
+    J.setLang(clean.lang);
+    for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
+  }
   return clean;
 };
 })();

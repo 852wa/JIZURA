@@ -1,6 +1,7 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '歌詞の言語': 'Lyrics language', '<option value="auto">自動判定</option>': '<option value="auto">Auto-detect</option>',
     '<button id="btnAddFont">追加</button>': '<button id="btnAddFont">Add</button>',
     '曲名': 'Song title', '自動': 'Auto',
     '曲名（タイトルカード・HUDに表示）': 'Song title (shown on title cards and HUD)',
@@ -85,6 +86,7 @@ BODY = {
 }
 
 UI = {
+    '歌詞の言語：自動判定 → ': 'Lyrics language: auto-detect → ', '歌詞の言語：': 'Lyrics language: ',
     '${S.plan.cuts.length}カット': '${S.plan.cuts.length} cuts',
     '${i + 1}行目の開始秒': 'Line ${i + 1} start time (s)',
     'スタイル': 'Style', '雰囲気': 'Mood', '配色': 'Palette',
@@ -146,6 +148,8 @@ EXPORT = {
 }
 
 AE_UI = {
+    '歌詞の言語': 'Lyrics language', "['自動判定', '日本語',": "['Auto-detect', '日本語',",
+    '中国語（繁体字・簡体字）や韓国語の歌詞は、その文字を持つ書体で組みます（各スタイルの書体の雰囲気に近いものに置き換え）。自動判定はかな・ハングル・繁体字／簡体字に特有の字から判断します': 'Chinese (Traditional / Simplified) and Korean lyrics are set in fonts that have those characters, close in feel to each style. Auto-detect looks at kana, Hangul and the characters that differ between Traditional and Simplified Chinese.',
     "var JZ_SAMPLE = '夜明けの色を/覚えてる\\nほどけた声が遠くで鳴った\\nねえ、まだ間に合うかな\\n*透明*なままじゃ終われない!';": "var JZ_SAMPLE = 'I remember/the color of dawn\\nA voice faded into the distance\\nCan we still make it in time?\\n*Transparent* is not how this ends!';",
     'JIZURA 字面  lyric motion': 'JIZURA  lyric motion',
     '（': ' (', '）': ')', '部品': 'techniques',

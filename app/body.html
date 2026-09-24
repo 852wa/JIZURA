@@ -23,6 +23,7 @@
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>1行が1フレーズ。空行は少し間を空けます</li>
