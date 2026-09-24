@@ -129,6 +129,8 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .transport { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .transport .vol { display: inline-flex; align-items: center; gap: 4px; }
 .transport .vol input[type=range] { flex: 0 0 80px; width: 80px; }
+#btnLoop[data-mode="line"], #btnLoop[data-mode="cut"] { color: var(--amber); }
+#btnLoop[aria-pressed="false"] { opacity: 0.55; }
 .transport .tc { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; }
 .transport input[type=range] { flex: 1 1 160px; accent-color: var(--amber); }
 button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }

@@ -12,7 +12,57 @@ const ICON = {
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: true, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const LOOP_CYCLE = ['all', 'line', 'cut', false];
+const LOOP_COPY = {
+  all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
+  line: { ja: '行ループ', en: 'Line loop', titleJa: 'この行を繰り返し', titleEn: 'Loop this line' },
+  cut:  { ja: 'カットループ', en: 'Cut loop', titleJa: 'このカットを繰り返し', titleEn: 'Loop this cut' },
+  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返しなし', titleEn: 'No loop' },
+};
+const isEn = () => document.documentElement.lang === 'en';
+function cutAround(t) {
+  const c = J.cutAt(S.plan, t);
+  if (c) return c;
+  const cs = S.plan.cuts;
+  let ans = null;
+  for (let i = 0; i < cs.length; i++) { if (cs[i].start <= t) ans = cs[i]; else break; }
+  return ans;
+}
+function loopRange(t) {
+  const T = t != null ? t : S.t;
+  const endAll = S.plan.duration;
+  if (S.loop === 'cut') {
+    const cut = cutAround(T);
+    return cut ? { start: cut.start, end: cut.end } : { start: 0, end: endAll };
+  }
+  if (S.loop === 'line') {
+    const cut = cutAround(T);
+    if (!cut || cut.line < 0) return cut ? { start: cut.start, end: cut.end } : { start: 0, end: endAll };
+    const same = S.plan.cuts.filter(c => c.line === cut.line && c.layout !== 'interlude' && c.layout !== 'title');
+    if (!same.length) return { start: cut.start, end: cut.end };
+    return { start: same[0].start, end: same[same.length - 1].end };
+  }
+  return { start: 0, end: endAll };
+}
+function refreshLoopHold(t) {
+  S.loopHold = (S.loop === 'line' || S.loop === 'cut') ? loopRange(t != null ? t : S.t) : null;
+}
+function activeLoopRange() {
+  if ((S.loop === 'line' || S.loop === 'cut') && S.loopHold) return S.loopHold;
+  return loopRange(S.t);
+}
+function syncLoopBtn() {
+  const b = $('btnLoop'); if (!b) return;
+  const key = S.loop || 'off';
+  const copy = LOOP_COPY[key] || LOOP_COPY.off;
+  const en = isEn();
+  b.textContent = en ? copy.en : copy.ja;
+  b.title = en ? copy.titleEn : copy.titleJa;
+  b.setAttribute('aria-pressed', String(!!S.loop));
+  b.dataset.mode = key;
+  refreshLoopHold();
+}
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
@@ -92,6 +142,7 @@ function replan() {
   S.plan = J.plan(S.project, audioLike());
   langNote();
   if (S.t > S.plan.duration) S.t = 0;
+  refreshLoopHold();
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   lastCutIdx = -2;
   if (typeof cutPick !== 'undefined' && cutPick.g) fillCutPick();
@@ -169,9 +220,10 @@ function tick(now) {
   if (S.playing) {
     // rAF timestamps can precede the moment play()/seek() stamped t0 → clamp so t never goes negative
     let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000);
-    if (t >= S.plan.duration - 1e-3) {
-      if (S.loop && !S.tap) { seek(0); t = 0; }
-      else { pause(); t = S.plan.duration - 1e-3; if (S.tap) stopTap(); }
+    const range = activeLoopRange();
+    if (t >= range.end - 1e-3) {
+      if (S.loop && !S.tap) { seek(range.start); t = range.start; }
+      else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); }
     }
     S.t = t; S.need = true;
   }
@@ -183,6 +235,7 @@ function updateTimeUI() {
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
 function play() {
+  refreshLoopHold();
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
   S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '一時停止');
@@ -195,6 +248,7 @@ function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
   if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t); }
   else S.t0 = performance.now() - S.t * 1000;
+  refreshLoopHold();
   S.need = true;
 }
 
@@ -231,6 +285,11 @@ function drawTimeline() {
     const lx = X(ln.start);
     x.fillStyle = '#5d5a63'; x.fillRect(lx, 0, 1, top);
     x.fillStyle = '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, 12 * dpr);
+  }
+  if (S.loop === 'line' || S.loop === 'cut') {
+    const r = activeLoopRange();
+    x.fillStyle = 'rgba(245,165,12,0.16)';
+    x.fillRect(X(r.start), 0, Math.max(2 * dpr, X(r.end) - X(r.start)), h);
   }
   const px = X(S.t);
   x.fillStyle = '#f5a50c'; x.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
@@ -891,7 +950,11 @@ function bind() {
     setCutTech(cutPick.line, cutPick.k, cutPick.g, '');
     replan();
   });
-  $('btnLoop').addEventListener('click', e => { S.loop = !S.loop; e.target.setAttribute('aria-pressed', String(S.loop)); });
+  $('btnLoop').addEventListener('click', () => {
+    const i = LOOP_CYCLE.indexOf(S.loop);
+    S.loop = LOOP_CYCLE[(i < 0 ? 0 : i + 1) % LOOP_CYCLE.length];
+    syncLoopBtn(); S.need = true;
+  });
   $('btnShuffle').addEventListener('click', () => { remember(); S.project.seed = (Math.random() * 1e9) | 0; $('seed').value = S.project.seed; replan(); commit(); });
   const sc = $('scrub');
   sc.addEventListener('input', () => { S.scrubbing = true; seek(sc.value / 10000 * S.plan.duration); });
@@ -1017,7 +1080,7 @@ async function loadAudioFile(f) {
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
-  bind(); initVolume(); syncUI(); replan();
+  bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   // open on a representative frame (end of the first cut's entrance)
