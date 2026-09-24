@@ -60,6 +60,7 @@ BODY = {
     'スタイル次第': 'Auto (by style)', '常に表示': 'Always show', '表示しない': 'Hide',
     '同じシードなら同じ構成になります。行ごとの「再抽選」「ロック」は左の行リストから。': 'The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.',
     '手法を名前で絞り込み': 'Filter techniques by name',
+    '画面に見えているプレビューは自動でループします。': 'Previews on screen loop automatically.',
     'グリーンバック／ブラックバックにすると、白い文字と演出だけを単色の背景の上に描きます（背景の模様・紙の質感・粒子・周辺減光は入りません）。プレビューにもそのまま反映されます。グリーンバックは動画編集ソフトのクロマキーで、ブラックバックは「スクリーン」合成や輝度キーで抜いて、別の映像の上に重ねられます。': 'Green screen and black background render white text and effects over a solid color, without background patterns, paper texture, particles or vignette. The preview shows the export. Use a chroma key for green or Screen blending / a luma key for black to composite over footage.',
     '曲を動画に含める': 'Include audio in video', '連番PNG（ZIP）': 'PNG sequence (ZIP)',
     '透過PNG（ZIP・背景なし）': 'Transparent PNG (ZIP)',
