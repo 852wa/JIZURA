@@ -143,7 +143,9 @@ class ZipWriter {
     return new Blob([...this.parts, ...this.central, end.buffer], { type: 'application/zip' });
   }
 }
-J.exportPNGZip = async ({ plan, project, transparent, onProgress, signal, every = 1 }) => {
+/* layers: transparent PNGs in two folders — back/ (background graphic + decorations behind the lyrics) and front/
+   (lyrics, their decorations, ghosts, HUD). Screen effects are applied to both, so stacking front over back matches. */
+J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal, every = 1 }) => {
   const [w, h] = J.outputSize(project);
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
@@ -153,9 +155,12 @@ J.exportPNGZip = async ({ plan, project, transparent, onProgress, signal, every 
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
     if (signal && signal.aborted) throw new Error('キャンセルしました');
-    R.frame(ctx, plan, i / fps, { scale, transparent });
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    zip.add(`jizura_${String(i).padStart(5, '0')}.png`, new Uint8Array(await blob.arrayBuffer()));
+    const name = `jizura_${String(i).padStart(5, '0')}.png`;
+    for (const layer of layers ? ['back', 'front'] : [null]) {
+      R.frame(ctx, plan, i / fps, { scale, transparent: transparent || !!layers, layer });
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      zip.add((layer ? layer + '/' : '') + name, new Uint8Array(await blob.arrayBuffer()));
+    }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
   onProgress && onProgress(1, '完了');
@@ -184,6 +189,12 @@ J.planForAE = (plan, project) => {
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));
+  // lyric language: the face each key is drawn with in the browser for this plan (the panel maps keys → AE fonts per language)
+  clean.lang = plan.lang || 'ja';
+  if (J.setLang && J.faceOf && clean.lang !== 'ja') {
+    J.setLang(clean.lang);
+    for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
+  }
   return clean;
 };
 })();

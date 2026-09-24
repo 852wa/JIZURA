@@ -1547,8 +1547,8 @@ J.register('layout', 'typeSpecimen', {
       if (e <= 0) return;
       // rule on top of each cell + caption
       env.line([[c.x, c.y], [c.x + c.w * E.outExpo(J.clamp((lt - d) / 0.5)), c.y]], c.main ? sc.accent : sc.sub, c.main ? lw * 3 : lw, (c.main ? 1 : 0.6) * out, false);
-      const F = J.FONTS[c.font] || {};
-      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
+      const F = (J.FONTS[c.font] && J.faceOf ? J.faceOf(c.font) : J.FONTS[c.font]) || {};   // the face actually drawn (lyric language)
+      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.name || F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
       env.draw({ text: label, font: mono, size: cap, align: 'left', track: 0.08, x: c.x, y: c.y + cap * 1.1, color: c.main ? sc.accent : sc.sub, alpha: e, ghost: false });
       const list = Pm.grid === 'list';
       const tw = list ? c.w * (c.main ? 1 : 0.8) : c.w * 0.9, th = c.h - cap * (list ? 1.8 : 2.8);

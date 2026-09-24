@@ -139,10 +139,14 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .viewport { position: relative; width: 100%; background: #000; border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; }
 .viewport canvas { display: block; width: 100%; height: auto; max-height: 68vh; object-fit: contain; }
 .field-wide { grid-column: span 2; }
+.lang-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.lang-row select { width: auto; }
 .key-badge { position: absolute; right: 10px; top: 10px; background: rgba(12,12,14,0.78); border: 1px solid var(--line2); color: #fff; padding: 3px 8px; border-radius: var(--r); font-size: 11px; pointer-events: none; letter-spacing: .04em; }
 .key-badge i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255,255,255,.5); }
 .overlay-msg { position: absolute; left: 12px; bottom: 12px; background: rgba(12,12,14,0.85); border: 1px solid var(--line2); padding: 6px 10px; border-radius: var(--r); font-size: 12px; }
 .transport { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.transport .vol { display: inline-flex; align-items: center; gap: 4px; }
+.transport .vol input[type=range] { flex: 0 0 80px; width: 80px; }
 .transport .tc { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; }
 .transport input[type=range] { flex: 1 1 160px; accent-color: var(--amber); }
 button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
@@ -351,6 +355,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
       <div class="sec">
         <div class="sec-h"><h2>Lyrics</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
+        <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>One phrase per line. A blank line adds a short pause.</li>
@@ -402,6 +407,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
         <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position">
         <button id="btnLoop" class="ghost small" aria-pressed="true">Loop</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Click to mute / unmute (preview only — exports keep the original level)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Preview volume"></span>
         <span class="hist-btns">
           <button id="btnPrev" class="ghost small icon-txt" title="Previous variation" aria-label="Previous">◀</button>
           <button id="btnNext" class="ghost small icon-txt" title="Next variation" aria-label="Next">▶</button>
@@ -533,6 +539,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
           <button id="btnMP4" class="primary">Export MP4</button>
           <button id="btnPNG">PNG sequence (ZIP)</button>
           <button id="btnPNGA">Transparent PNG (ZIP)</button>
+          <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
@@ -806,7 +813,7 @@ J.loadFontFile = async (file) => {
 };
 
 J.fontCSS = (key, px) => {
-  const f = J.FONTS[key] || J.FONTS.gothic_bold;
+  const f = J.faceOf ? J.faceOf(key) : (J.FONTS[key] || J.FONTS.gothic_bold);   // per-language face (02b_lang.js)
   return `${f.weight} ${px.toFixed(2)}px ${f.family},${f.fb}`;
 };
 
@@ -841,11 +848,15 @@ J.ensureFonts = async (text, keys) => {
   if (!document.fonts || !document.fonts.load) return;
   const uniq = [...new Set([...text])].join('') || 'あ';
   const list = (keys || Object.keys(J.FONTS)).filter(k => J.FONTS[k]);
-  await Promise.all([...new Set(list.map(k => J.FONTS[k].gf).filter(Boolean))].map(attachFamily));
-  const jobs = [];
-  for (const k of list) {
-    const f = J.FONTS[k];
-    jobs.push(document.fonts.load(`${f.weight} 64px ${f.family}`, uniq).catch(() => null));
+  // faces in the current lyric language (+ its fallback sans / serif), each with the weight it is drawn at
+  const faces = list.map(k => (J.faceOf ? J.faceOf(k) : J.FONTS[k]));
+  if (J.langBaseFaces) for (const b of J.langBaseFaces(list)) faces.push({ family: '"' + b.family + '"', weight: b.weight, gf: b.gf });
+  await Promise.all([...new Set(faces.map(f => f.gf).filter(Boolean))].map(attachFamily));
+  const jobs = [], seen = new Set();
+  for (const f of faces) {
+    const spec = `${f.weight} 64px ${f.family}`;
+    if (seen.has(spec)) continue; seen.add(spec);
+    jobs.push(document.fonts.load(spec, uniq).catch(() => null));
   }
   await Promise.all(jobs);
   if (document.fonts.ready) await document.fonts.ready;
@@ -1018,6 +1029,142 @@ function clipHalf(poly, nx, ny, d0, sgn) {
   }
   return out;
 }
+})();
+
+/* ============================================================
+   JIZURA — lyric language: auto-detection + per-language faces
+   The styles are designed around Japanese fonts. For Chinese
+   (Traditional / Simplified) and Korean lyrics every font key is
+   drawn with a face that has the glyphs, chosen to keep the same
+   character (gothic → sans, mincho → serif, pop → rounded, …).
+   project.lang: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko'
+   ============================================================ */
+(() => {
+'use strict';
+
+J.LANGS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko', 'en'];
+J.LANG_LABEL = { auto: '自動判定', ja: '日本語', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文', ko: '한국어', en: 'English' };
+
+/* characters that differ between Traditional and Simplified Chinese (same order in both strings) */
+const TC = '們個說這會對時來還後過國開關與為從問間見長東車門愛聽學讓話號發點無現體經電實樣聲變離氣夢給覺當歡陽戀邊頭淚誰歲遠嗎萬難寫應讀憶樂麼麗傷將總結終紅綠線顏風飛鳥謝語請認識熱燈願獨夠紀帶滿靜輕別腦臉懷謊錯顆陣場讚淺溫記憑護壞歸媽隨銀聞態虛遙';
+const SC = '们个说这会对时来还后过国开关与为从问间见长东车门爱听学让话号发点无现体经电实样声变离气梦给觉当欢阳恋边头泪谁岁远吗万难写应读忆乐么丽伤将总结终红绿线颜风飞鸟谢语请认识热灯愿独够纪带满静轻别脑脸怀谎错颗阵场赞浅温记凭护坏归妈随银闻态虚遥';
+const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
+// a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
+
+/* which language are these lyrics in? (almost only Latin letters → en (English / romaji), kana → ja, hangul → ko,
+   Han only → Traditional / Simplified by the distinctive forms) */
+J.detectLang = (text) => {
+  let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0;
+  for (const c of String(text || '')) {
+    const u = c.codePointAt(0);
+    if ((u >= 0x41 && u <= 0x5a) || (u >= 0x61 && u <= 0x7a) || (u >= 0xc0 && u <= 0x24f && u !== 0xd7 && u !== 0xf7) || (u >= 0xff21 && u <= 0xff5a && (u <= 0xff3a || u >= 0xff41))) latin++;
+    else if ((u >= 0x3041 && u <= 0x30ff && u !== 0x30fb && u !== 0x30fc) || (u >= 0xff66 && u <= 0xff9d)) kana++;
+    else if ((u >= 0xac00 && u <= 0xd7a3) || (u >= 0x1100 && u <= 0x11ff) || (u >= 0x3130 && u <= 0x318f)) hangul++;
+    else if ((u >= 0x4e00 && u <= 0x9fff) || (u >= 0x3400 && u <= 0x4dbf) || (u >= 0x20000 && u <= 0x2ffff)) {
+      han++;
+      if (TCSET.has(c)) tc++;
+      if (SCSET.has(c)) sc++;
+    }
+  }
+  // a CJK character carries about as much as a short word — weigh it ×3 against single Latin letters
+  const cjk = kana + hangul + han;
+  if (latin >= 6 && latin >= (latin + cjk * 3) * 0.9) return 'en';
+  if (hangul >= 2 && hangul > kana) return 'ko';
+  if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
+  if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+  return 'ja';
+};
+/* project → the language actually used */
+J.resolveLang = (project) => {
+  const l = project && project.lang;
+  if (l && l !== 'auto' && J.LANG_LABEL[l]) return l;
+  return J.detectLang(((project && project.lyrics) || '') + ' ' + ((project && project.title) || ''));
+};
+
+/* per-language faces: key → [family, weight, Google Fonts spec]; keys left out keep their Japanese face
+   (with the language's fallback in front of the Japanese one, so missing glyphs never land in a Japanese face) */
+const F = (family, weight, gf) => ({ family, weight, gf });
+const NSTC = 'Noto+Sans+TC:wght@300;500;700;900', NSRTC = 'Noto+Serif+TC:wght@300;500;700;800;900';
+const NSSC = 'Noto+Sans+SC:wght@300;500;700;900', NSRSC = 'Noto+Serif+SC:wght@300;500;700;800;900';
+const NSKR = 'Noto+Sans+KR:wght@300;500;700;900', NSRKR = 'Noto+Serif+KR:wght@300;500;700;800;900';
+J.LANG_FACES = {
+  'zh-Hant': {
+    sans: F('Noto Sans TC', 500, NSTC), serif: F('Noto Serif TC', 500, NSRTC),
+    fbSans: '"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei"', fbSerif: '"Noto Serif TC","Noto Serif CJK TC","PMingLiU"',
+    map: {
+      gothic_black: F('Noto Sans TC', 900, NSTC), gothic_bold: F('Noto Sans TC', 700, NSTC), gothic_med: F('Noto Sans TC', 500, NSTC),
+      gothic_light: F('Noto Sans TC', 300, NSTC), zenkaku: F('Noto Sans TC', 900, NSTC), sansui: F('Noto Sans TC', 500, NSTC),
+      mincho_black: F('Noto Serif TC', 900, NSRTC), mincho_bold: F('Noto Serif TC', 700, NSRTC), mincho: F('Noto Serif TC', 500, NSRTC),
+      mincho_light: F('Noto Serif TC', 300, NSRTC), tokumin: F('Noto Serif TC', 800, NSRTC), shippori: F('Noto Serif TC', 800, NSRTC),
+      dela: F('WDXL Lubrifont TC', 400, 'WDXL+Lubrifont+TC'), round: F('Chiron GoRound TC', 800, 'Chiron+GoRound+TC:wght@800'),
+      pop: F('Huninn', 400, 'Huninn'), kiwi: F('Huninn', 400, 'Huninn'),
+      klee: F('LXGW WenKai TC', 700, 'LXGW+WenKai+TC:wght@700'), brush: F('LXGW WenKai TC', 700, 'LXGW+WenKai+TC:wght@700'),
+      reggae: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'), rampart: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'), potta: F('LXGW Marker Gothic', 400, 'LXGW+Marker+Gothic'),
+    },
+  },
+  'zh-Hans': {
+    sans: F('Noto Sans SC', 500, NSSC), serif: F('Noto Serif SC', 500, NSRSC),
+    fbSans: '"Noto Sans SC","Noto Sans CJK SC","PingFang SC","Microsoft YaHei"', fbSerif: '"Noto Serif SC","Noto Serif CJK SC","SimSun"',
+    map: {
+      gothic_black: F('Noto Sans SC', 900, NSSC), gothic_bold: F('Noto Sans SC', 700, NSSC), gothic_med: F('Noto Sans SC', 500, NSSC),
+      gothic_light: F('Noto Sans SC', 300, NSSC), zenkaku: F('Noto Sans SC', 900, NSSC), sansui: F('Noto Sans SC', 500, NSSC),
+      mincho_black: F('Noto Serif SC', 900, NSRSC), mincho_bold: F('Noto Serif SC', 700, NSRSC), mincho: F('Noto Serif SC', 500, NSRSC),
+      mincho_light: F('Noto Serif SC', 300, NSRSC), tokumin: F('Noto Serif SC', 800, NSRSC), shippori: F('Noto Serif SC', 800, NSRSC),
+      dela: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), round: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'),
+      pop: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'), kiwi: F('ZCOOL KuaiLe', 400, 'ZCOOL+KuaiLe'),
+      klee: F('ZCOOL XiaoWei', 400, 'ZCOOL+XiaoWei'), brush: F('Ma Shan Zheng', 400, 'Ma+Shan+Zheng'),
+      reggae: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), rampart: F('ZCOOL QingKe HuangYou', 400, 'ZCOOL+QingKe+HuangYou'), potta: F('Ma Shan Zheng', 400, 'Ma+Shan+Zheng'),
+    },
+  },
+  ko: {
+    sans: F('Noto Sans KR', 500, NSKR), serif: F('Noto Serif KR', 500, NSRKR),
+    fbSans: '"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic"', fbSerif: '"Noto Serif KR","Noto Serif CJK KR","AppleMyungjo","Batang"',
+    map: {
+      gothic_black: F('Noto Sans KR', 900, NSKR), gothic_bold: F('Noto Sans KR', 700, NSKR), gothic_med: F('Noto Sans KR', 500, NSKR),
+      gothic_light: F('Noto Sans KR', 300, NSKR), zenkaku: F('Noto Sans KR', 900, NSKR), sansui: F('IBM Plex Sans KR', 500, 'IBM+Plex+Sans+KR:wght@500'),
+      mincho_black: F('Noto Serif KR', 900, NSRKR), mincho_bold: F('Noto Serif KR', 700, NSRKR), mincho: F('Noto Serif KR', 500, NSRKR),
+      mincho_light: F('Noto Serif KR', 300, NSRKR), tokumin: F('Noto Serif KR', 800, NSRKR), shippori: F('Noto Serif KR', 800, NSRKR),
+      dela: F('Black Han Sans', 400, 'Black+Han+Sans'), round: F('Jua', 400, 'Jua'),
+      pop: F('Do Hyeon', 400, 'Do+Hyeon'), kiwi: F('Gowun Dodum', 400, 'Gowun+Dodum'),
+      klee: F('Gowun Batang', 700, 'Gowun+Batang:wght@700'), brush: F('Nanum Brush Script', 400, 'Nanum+Brush+Script'),
+      reggae: F('Black Han Sans', 400, 'Black+Han+Sans'), rampart: F('Black Han Sans', 400, 'Black+Han+Sans'), potta: F('Nanum Brush Script', 400, 'Nanum+Brush+Script'),
+    },
+  },
+};
+
+/* the language fonts are drawn in right now (set by the planner / renderer from plan.lang) */
+J.lang = 'ja';
+J.setLang = (l) => {
+  l = J.LANG_FACES[l] || l === 'en' ? l : 'ja';               // en: the styles' own faces (they all have Latin glyphs)
+  if (l === J.lang) return;
+  J.lang = l;
+  if (J.glyphs) J.glyphs.clear();
+  if (J.metrics) J.metrics.clear();
+};
+const SERIF_KINDS = { mincho: 1, brush: 1, hand: 1 };
+const faceCache = new Map();
+/* the face a font key is drawn with in the current language: {family (quoted), weight, fb, gf, label, name (family, for captions)} */
+J.faceOf = (key) => {
+  const f = J.FONTS[key] || J.FONTS.gothic_bold;
+  const L = J.LANG_FACES[J.lang];
+  if (!L || f.user) return f;                               // Japanese: the catalogue face itself (fontCSS runs per draw — no allocation)
+  const ck = J.lang + '|' + key; let r = faceCache.get(ck);
+  if (r) return r;
+  const m = L.map[key], fb = (SERIF_KINDS[f.kind] ? L.fbSerif : L.fbSans) + ',' + f.fb;
+  r = !m ? { family: f.family, weight: f.weight, fb, gf: f.gf, label: f.label, name: f.label, kind: f.kind }
+    : { family: '"' + m.family + '"', weight: m.weight, fb, gf: m.gf, label: m.family + (m.weight !== 400 ? ' ' + m.weight : ''), name: m.family, kind: f.kind };
+  faceCache.set(ck, r);
+  return r;
+};
+/* extra faces to load for the current language (the fallback sans / serif that covers glyphs the mapped faces lack) */
+J.langBaseFaces = (keys) => {
+  const L = J.LANG_FACES[J.lang]; if (!L) return [];
+  const out = [L.sans];
+  if ((keys || []).some(k => J.FONTS[k] && SERIF_KINDS[J.FONTS[k].kind])) out.push(L.serif);
+  return out;
+};
+/* segmenter locale for chunking */
+J.segLocale = () => (J.lang === 'zh-Hant' ? 'zh-Hant' : J.lang === 'zh-Hans' ? 'zh-Hans' : J.lang === 'ko' ? 'ko' : J.lang === 'en' ? 'en' : 'ja');
 })();
 
 /* ============================================================
@@ -2942,6 +3089,7 @@ J.defaultProject = () => ({
   style: 'noir', mood: null,
   extra: false,                   // random picks may use the parts added after the first version (追加分)
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
+  lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -2998,7 +3146,13 @@ J.parseLyrics = (raw) => {
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
-const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+const segmenters = {};   // one per lyric language (J.segLocale: ja / zh-Hant / zh-Hans / ko)
+const segmenterOf = () => {
+  if (typeof Intl === 'undefined' || !Intl.Segmenter) return null;
+  const loc = J.segLocale ? J.segLocale() : 'ja';
+  if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
+  return segmenters[loc];
+};
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -3009,6 +3163,7 @@ const segType = s => {
   return 'O';
 };
 J.segments = (text) => {
+  const segmenter = segmenterOf();
   if (segmenter) return [...segmenter.segment(text)].map(x => x.segment);
   const out = []; let cur = '', ct = '';
   for (const c of text) {
@@ -3050,6 +3205,21 @@ J.chunkText = (text) => {
     if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
+};
+
+/* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
+J.phraseChunks = (words) => {
+  const out = []; let cur = [], letters = 0;
+  const flush = () => { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; };
+  for (const w of words) {
+    const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
+    cur.push(w); letters += n;
+    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+  }
+  flush();
+  // a lone short word at the end joins the previous phrase
+  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] += ' ' + last; }
+  return out.length ? out : words;
 };
 
 /* ---------------- timing ---------------- */
@@ -3114,7 +3284,9 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
+    lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
+  if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
   const beats = plan.beats;
   const snap = (t) => {
     if (!beats.length || !(project.timing && project.timing.snap)) return t;
@@ -3145,7 +3317,7 @@ J.plan = (project, audio) => {
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
     plan.lines.push({ index: li, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
-    const chunks = ln.manual || J.chunkText(ln.text);
+    const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);
@@ -3708,6 +3880,7 @@ class Renderer {
     const mainCut = J.cutAt(plan, tq);
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
+    if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
@@ -3750,7 +3923,9 @@ class Renderer {
     const beatInfo = plan.beats && plan.beats.length ? beatAt(plan.beats, tq) : null;
     const energy = plan.energy ? plan.energy[Math.min(plan.energy.length - 1, Math.max(0, Math.floor(t * plan.energyRate)))] : null;
     // ---------- background graphic (per line) ----------
-    if (!opt.transparent && !key && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
+    // 透過PNG 前景／後景 (opt.layer): 'back' = background graphic + the decorations behind the lyrics, 'front' = the rest
+    const layer = opt.transparent ? opt.layer || null : null;
+    if ((!opt.transparent || layer === 'back') && !key && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: tq - mainCut.start, ltb: tq - mainCut.start, step, scale, allowFilter, energy, beat: beatInfo, bgOnly: true });
       ctx.save();
       try { J.BG[mainCut.bg].draw(env, mainCut.bgP || {}); } catch (e) { console.warn('bg', mainCut.bg, e); }
@@ -3791,7 +3966,7 @@ class Renderer {
       const X = LX || ctx;
       const env = this.makeEnv(X, plan, cut, csc, {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
-        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo,
+        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer,
       });
       X.save();
       // camera move for this cut (default: slow push-in)
@@ -3829,7 +4004,7 @@ class Renderer {
       }
     }
     // ---------- HUD ----------
-    if (plan.hud && !opt.noHud) {
+    if (plan.hud && !opt.noHud && layer !== 'back') {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
       J.drawHUD(env, plan);
     }
@@ -3935,11 +4110,55 @@ class Renderer {
   drawCut(env) {
     const cut = env.cut, L = J.LAYOUTS[cut.layout] || J.LAYOUTS.center;
     const decor = cut.decor || [];
-    for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
+    if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
+    if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
     try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
+  }
+
+  /* 透過PNG: screen effects are written for an opaque frame (they paint the background colour, wash the whole frame,
+     or redraw a shifted copy over it). In transparent mode each effect is fenced:
+       - a full-frame opaque fill (background colour, black/white frame…) clears instead — it hid everything anyway
+       - afterwards, alpha is limited to where content was (before the effect) plus where the effect drew the
+         content again (shifted / scaled / mirrored copies of the scratch copy), so washes, flashes and strobes
+         tint the lyrics and the graphics but never turn the empty background opaque                            */
+  alphaGuard(ctx, S, sc) {
+    const cw = ctx.canvas.width, ch = ctx.canvas.height, R = this;
+    const P = this.ensure(this.guardP || (this.guardP = mk(2, 2)), cw, ch), px = P.getContext('2d');
+    const M = this.ensure(this.guardM || (this.guardM = mk(2, 2)), cw, ch), mx = M.getContext('2d');
+    let cleared = false, bgN = null;
+    const content = img => img === S;                  // the scratch copy of the frame (temp canvases may carry an opaque background)
+    const own = ['fillRect', 'drawImage'];
+    return {
+      begin() {
+        cleared = false;
+        const fs0 = ctx.fillStyle; ctx.fillStyle = sc.bg; bgN = ctx.fillStyle; ctx.fillStyle = fs0;   // the background colour, normalised
+        px.setTransform(1, 0, 0, 1, 0, 0); px.globalAlpha = 1; px.globalCompositeOperation = 'copy'; px.filter = 'none'; px.drawImage(ctx.canvas, 0, 0);
+        mx.setTransform(1, 0, 0, 1, 0, 0); mx.globalAlpha = 1; mx.globalCompositeOperation = 'source-over'; mx.filter = 'none'; mx.clearRect(0, 0, cw, ch);
+        const proto = Object.getPrototypeOf(ctx);
+        ctx.fillRect = function (x, y, w, h) {
+          const T = this.getTransform(), full = this.globalCompositeOperation === 'source-over' && this.globalAlpha >= 0.999 && typeof this.fillStyle === 'string' &&
+            /^#[0-9a-f]{6}$/i.test(this.fillStyle) && T.b === 0 && T.c === 0 && T.e + x * T.a <= 1 && T.f + y * T.d <= 1 && T.e + (x + w) * T.a >= cw - 1 && T.f + (y + h) * T.d >= ch - 1;
+          if (full) { cleared = true; mx.clearRect(0, 0, cw, ch); return proto.clearRect.call(this, x, y, w, h); }
+          if (this.globalCompositeOperation === 'source-over' && typeof this.fillStyle === 'string' && /^#[0-9a-f]{6}$/i.test(this.fillStyle) && this.globalAlpha >= 0.999 && this.fillStyle === bgN) return proto.clearRect.call(this, x, y, w, h);
+          return proto.fillRect.call(this, x, y, w, h);
+        };
+        ctx.drawImage = function (img, ...a) {
+          if (content(img)) { mx.setTransform(this.getTransform()); mx.globalAlpha = this.globalAlpha; proto.drawImage.call(mx, img, ...a); }
+          return proto.drawImage.call(this, img, ...a);
+        };
+      },
+      end() {
+        for (const k of own) delete ctx[k];
+        mx.setTransform(1, 0, 0, 1, 0, 0); mx.globalAlpha = 1;
+        if (!cleared) { mx.globalCompositeOperation = 'source-over'; mx.drawImage(P, 0, 0); }
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none';
+        ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(M, 0, 0);
+        ctx.restore();
+      },
+    };
   }
 
   post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter) {
@@ -3951,16 +4170,20 @@ class Renderer {
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     const copy = () => { const sx = S.getContext('2d'); sx.globalCompositeOperation = 'copy'; sx.drawImage(ctx.canvas, 0, 0); sx.globalCompositeOperation = 'source-over'; };
     const clock24 = Math.floor(t * 24);           // glitch randomness changes at most 24 times a second at any output fps
+    const guard = opt.transparent ? this.alphaGuard(ctx, S, sc) : null;   // 透過: effects must not fill the empty background
     for (const ev of active) {
-      const k = (t - ev.t) / Math.max(ev.dur, 1e-3);
+      // progress clamped to 0..1 (an event shorter than one output frame is still shown for that frame — k would pass 1)
+      const k0 = (t - ev.t) / Math.max(ev.dur, 1e-3), k = Number.isFinite(k0) ? J.clamp(k0, 0, 1) : 0;
       const st2 = clock24;
       const D = J.FXE[ev.type];
+      if (guard) guard.begin();
       if (D && D.draw) {
         if (D.scratch) copy();
         try {
-          D.draw(ctx, ev, k, { cw, ch, S, sc, st: plan.style, step: st2, t, scale, renderer: this, allowFilter, opt, tmp: (w, h) => this.ensure(this.tiny, w, h), tmp2: (w, h) => this.ensure(this.small2 || (this.small2 = mk(2, 2)), w, h) });
+          D.draw(ctx, ev, k, { cw, ch, S, sc, st: plan.style, step: st2, t, scale, renderer: this, allowFilter, opt, transparent: !!opt.transparent, tmp: (w, h) => this.ensure(this.tiny, w, h), tmp2: (w, h) => this.ensure(this.small2 || (this.small2 = mk(2, 2)), w, h) });
         } catch (e) { console.warn('fx', ev.type, e); }
         ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none'; ctx.imageSmoothingEnabled = true;
+        if (guard) guard.end();
         continue;
       }
       if (ev.type === 'slice') {
@@ -4000,6 +4223,8 @@ class Renderer {
         tx.imageSmoothingEnabled = true; tx.drawImage(S, 0, 0, T.width, T.height);
         ctx.imageSmoothingEnabled = false; ctx.globalAlpha = 0.85 * (1 - k); ctx.drawImage(T, 0, 0, cw, ch); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = true;
       }
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      if (guard) guard.end();
     }
     // bloom
     const glow = (st.glow || 0.6) * 0.5 * (fx.texture ?? 0.6);
@@ -4281,7 +4506,9 @@ class ZipWriter {
     return new Blob([...this.parts, ...this.central, end.buffer], { type: 'application/zip' });
   }
 }
-J.exportPNGZip = async ({ plan, project, transparent, onProgress, signal, every = 1 }) => {
+/* layers: transparent PNGs in two folders — back/ (background graphic + decorations behind the lyrics) and front/
+   (lyrics, their decorations, ghosts, HUD). Screen effects are applied to both, so stacking front over back matches. */
+J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal, every = 1 }) => {
   const [w, h] = J.outputSize(project);
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
@@ -4291,9 +4518,12 @@ J.exportPNGZip = async ({ plan, project, transparent, onProgress, signal, every 
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
     if (signal && signal.aborted) throw new Error('Canceled');
-    R.frame(ctx, plan, i / fps, { scale, transparent });
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    zip.add(`jizura_${String(i).padStart(5, '0')}.png`, new Uint8Array(await blob.arrayBuffer()));
+    const name = `jizura_${String(i).padStart(5, '0')}.png`;
+    for (const layer of layers ? ['back', 'front'] : [null]) {
+      R.frame(ctx, plan, i / fps, { scale, transparent: transparent || !!layers, layer });
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      zip.add((layer ? layer + '/' : '') + name, new Uint8Array(await blob.arrayBuffer()));
+    }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
   onProgress && onProgress(1, 'Done');
@@ -4322,6 +4552,12 @@ J.planForAE = (plan, project) => {
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));
+  // lyric language: the face each key is drawn with in the browser for this plan (the panel maps keys → AE fonts per language)
+  clean.lang = plan.lang || 'ja';
+  if (J.setLang && J.faceOf && clean.lang !== 'ja') {
+    J.setLang(clean.lang);
+    for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
+  }
   return clean;
 };
 })();
@@ -19332,8 +19568,8 @@ J.register('layout', 'typeSpecimen', {
       if (e <= 0) return;
       // rule on top of each cell + caption
       env.line([[c.x, c.y], [c.x + c.w * E.outExpo(J.clamp((lt - d) / 0.5)), c.y]], c.main ? sc.accent : sc.sub, c.main ? lw * 3 : lw, (c.main ? 1 : 0.6) * out, false);
-      const F = J.FONTS[c.font] || {};
-      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
+      const F = (J.FONTS[c.font] && J.faceOf ? J.faceOf(c.font) : J.FONTS[c.font]) || {};   // the face actually drawn (lyric language)
+      const label = `${String(Pm.num + i).padStart(2, '0')}  ${(F.name || F.label || c.font).toUpperCase()}  ${F.weight || ''}`;
       env.draw({ text: label, font: mono, size: cap, align: 'left', track: 0.08, x: c.x, y: c.y + cap * 1.1, color: c.main ? sc.accent : sc.sub, alpha: e, ghost: false });
       const list = Pm.grid === 'list';
       const tw = list ? c.w * (c.main ? 1 : 0.8) : c.w * 0.9, th = c.h - cap * (list ? 1.8 : 2.8);
@@ -27238,7 +27474,9 @@ fxReg('posterize', { name: 'ポスタリゼ', tags: ['glitch', 'pop', 'graphic']
 fxReg('hueShift', { name: '色相シフト', tags: ['glitch', 'pop', 'emotional'], w: 0.7, dur: 3, amp: 1, mid: true, scratch: true,
   draw(ctx, ev, k, I) {
     const { cw, ch, S, sc } = I; if (!S) return;
-    const s = evS(ev), a = Math.pow(1 - k, 0.8) * Math.min(1, ampOf(ev)), deg = Math.round(90 + 180 * J.r(s, 3)), dk = isDark(sc.bg);
+    const kk = Number.isFinite(k) ? clamp(k, 0, 1) : 1;                 // progress past the end (short event at low fps) → NaN alpha before
+    const s = evS(ev), a = Math.pow(1 - kk, 0.8) * Math.min(1, ampOf(ev)), deg = Math.round(90 + 180 * J.r(s, 3)), dk = isDark(sc.bg);
+    if (!(a > 0.002)) return;
     if (I.allowFilter) { ctx.globalAlpha = a; ctx.filter = `hue-rotate(${deg}deg) saturate(1.6)`; ctx.drawImage(S, 0, 0); ctx.filter = 'none'; }
     ctx.globalAlpha = 0.5 * a; ctx.globalCompositeOperation = dk ? 'multiply' : 'screen';
     ctx.fillStyle = J.r(s, 4) < 0.5 ? sc.ghostA : sc.ghostB; ctx.fillRect(0, 0, cw, ch);
@@ -29114,18 +29352,34 @@ const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), 
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
-  ctx: null, src: null, startAt: 0,
+  ctx: null, src: null, startAt: 0, gain: null, vol: 0.8, muted: false,
   play(buffer, offset) {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.stop();
-    const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.ctx.destination);
+    if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
+    const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
     const off = Math.max(0, Math.min(offset, buffer.duration - 0.01));
     s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime - off;
   },
   stop() { if (this.src) { try { this.src.stop(); } catch (e) {} try { this.src.disconnect(); } catch (e) {} this.src = null; } },
   time() { return this.ctx ? this.ctx.currentTime - this.startAt : 0; },
+  /* preview volume only (exports keep the original level) */
+  setVol(v, muted) { if (v != null) this.vol = Math.max(0, Math.min(1, v)); if (muted != null) this.muted = !!muted; this.applyVol(); },
+  applyVol() { if (!this.gain) return; const v = this.muted ? 0 : this.vol * this.vol; try { this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.015); } catch (e) { this.gain.gain.value = v; } },
 };
+/* プレビュー音量: remembered per browser */
+function initVolume() {
+  const el = $('vol'), mb = $('btnMute'); if (!el || !mb) return;
+  let v = 0.8, m = false;
+  try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
+  if (!(v >= 0 && v <= 1)) v = 0.8;
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muted' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
+  AP.setVol(v, m); show();
+  el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
+  mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
+}
 
 /* ---------------- project persistence ---------------- */
 function mergeProject(p) {
@@ -29163,8 +29417,16 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
+/* Auto判定のとき、判定結果を言語欄の横に出す */
+function langNote() {
+  const el = $('langNote'); if (!el) return;
+  el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
+  if (langNote.last !== undefined && langNote.last !== J.lang) { try { renderFontRoles(); } catch (e) {} }   // font menus show the language's faces
+  langNote.last = J.lang;
+}
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   lastCutIdx = -2;
@@ -29529,7 +29791,10 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
+  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
+    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+  }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -29860,7 +30125,7 @@ async function codecNote() {
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'eMP4'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
@@ -29885,9 +30150,9 @@ async function runExport(kind) {
       const res = await J.saveFile(baseName() + '.mp4', r.blob);
       if (res === 'declined') txt.textContent += ' (save canceled)';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', onProgress, signal: ac.signal });
+      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal });
       txt.textContent = `Done: ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : '') + '_png.zip', blob);
+      await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
     txt.textContent = 'Error: ' + (e && e.message ? e.message : e);
@@ -29929,12 +30194,19 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
 /* ---------------- wiring ---------------- */
 function bind() {
   $('lyrics').addEventListener('input', e => { S.project.lyrics = e.target.value; replanSoon(260); });
+  $('lyricLang').addEventListener('change', e => {
+    remember();
+    S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
+    const l = J.resolveLang(S.project);
+    toast((S.project.lang === 'auto' ? 'Lyrics language: auto-detect → ' : 'Lyrics language: ') + J.LANG_LABEL[l]);
+  });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
   $('btnSyntax').addEventListener('click', e => { const s = $('syntax'); s.hidden = !s.hidden; e.target.setAttribute('aria-expanded', String(!s.hidden)); });
@@ -30023,6 +30295,7 @@ function bind() {
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
+  $('btnPNGL').addEventListener('click', () => runExport('pngl'));
   document.querySelectorAll('.exp-cancel').forEach(b => b.addEventListener('click', () => { if (S.exporting) S.exporting.abort(); }));
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
@@ -30080,7 +30353,7 @@ async function loadAudioFile(f) {
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
-  bind(); syncUI(); replan();
+  bind(); initVolume(); syncUI(); replan();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   // open on a representative frame (end of the first cut's entrance)

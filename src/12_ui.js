@@ -16,18 +16,34 @@ const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), 
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
-  ctx: null, src: null, startAt: 0,
+  ctx: null, src: null, startAt: 0, gain: null, vol: 0.8, muted: false,
   play(buffer, offset) {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.stop();
-    const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.ctx.destination);
+    if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
+    const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
     const off = Math.max(0, Math.min(offset, buffer.duration - 0.01));
     s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime - off;
   },
   stop() { if (this.src) { try { this.src.stop(); } catch (e) {} try { this.src.disconnect(); } catch (e) {} this.src = null; } },
   time() { return this.ctx ? this.ctx.currentTime - this.startAt : 0; },
+  /* preview volume only (exports keep the original level) */
+  setVol(v, muted) { if (v != null) this.vol = Math.max(0, Math.min(1, v)); if (muted != null) this.muted = !!muted; this.applyVol(); },
+  applyVol() { if (!this.gain) return; const v = this.muted ? 0 : this.vol * this.vol; try { this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.015); } catch (e) { this.gain.gain.value = v; } },
 };
+/* プレビュー音量: remembered per browser */
+function initVolume() {
+  const el = $('vol'), mb = $('btnMute'); if (!el || !mb) return;
+  let v = 0.8, m = false;
+  try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
+  if (!(v >= 0 && v <= 1)) v = 0.8;
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '消音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '音量 ' + Math.round(AP.vol * 100) + '%'; };
+  const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
+  AP.setVol(v, m); show();
+  el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
+  mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
+}
 
 /* ---------------- project persistence ---------------- */
 function mergeProject(p) {
@@ -65,8 +81,16 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
+/* 自動判定のとき、判定結果を言語欄の横に出す */
+function langNote() {
+  const el = $('langNote'); if (!el) return;
+  el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
+  if (langNote.last !== undefined && langNote.last !== J.lang) { try { renderFontRoles(); } catch (e) {} }   // font menus show the language's faces
+  langNote.last = J.lang;
+}
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   lastCutIdx = -2;
@@ -431,7 +455,10 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label)}</option>`).join('');
+  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
+    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+  }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -762,7 +789,7 @@ async function codecNote() {
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'eMP4'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
@@ -787,9 +814,9 @@ async function runExport(kind) {
       const res = await J.saveFile(baseName() + '.mp4', r.blob);
       if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', onProgress, signal: ac.signal });
+      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : '') + '_png.zip', blob);
+      await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
     txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
@@ -831,12 +858,19 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
 /* ---------------- wiring ---------------- */
 function bind() {
   $('lyrics').addEventListener('input', e => { S.project.lyrics = e.target.value; replanSoon(260); });
+  $('lyricLang').addEventListener('change', e => {
+    remember();
+    S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
+    const l = J.resolveLang(S.project);
+    toast((S.project.lang === 'auto' ? '歌詞の言語：自動判定 → ' : '歌詞の言語：') + J.LANG_LABEL[l]);
+  });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
   $('btnSyntax').addEventListener('click', e => { const s = $('syntax'); s.hidden = !s.hidden; e.target.setAttribute('aria-expanded', String(!s.hidden)); });
@@ -925,6 +959,7 @@ function bind() {
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
+  $('btnPNGL').addEventListener('click', () => runExport('pngl'));
   document.querySelectorAll('.exp-cancel').forEach(b => b.addEventListener('click', () => { if (S.exporting) S.exporting.abort(); }));
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
@@ -982,7 +1017,7 @@ async function loadAudioFile(f) {
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
-  bind(); syncUI(); replan();
+  bind(); initVolume(); syncUI(); replan();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   // open on a representative frame (end of the first cut's entrance)

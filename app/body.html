@@ -23,6 +23,7 @@
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>1行が1フレーズ。空行は少し間を空けます</li>
@@ -74,6 +75,7 @@
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
         <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置">
         <button id="btnLoop" class="ghost small" aria-pressed="true">ループ</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="クリックで消音／解除（プレビューだけ。書き出しの音量は変わりません）">音量</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="プレビューの音量"></span>
         <span class="hist-btns">
           <button id="btnPrev" class="ghost small icon-txt" title="前の案に戻る" aria-label="前の案">◀</button>
           <button id="btnNext" class="ghost small icon-txt" title="次の案へ進む" aria-label="次の案">▶</button>
@@ -205,6 +207,7 @@
           <button id="btnMP4" class="primary">MP4 を書き出す</button>
           <button id="btnPNG">連番PNG（ZIP）</button>
           <button id="btnPNGA">透過PNG（ZIP・背景なし）</button>
+          <button id="btnPNGL" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>

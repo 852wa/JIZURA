@@ -16,6 +16,7 @@ J.defaultProject = () => ({
   style: 'noir', mood: null,
   extra: false,                   // random picks may use the parts added after the first version (追加分)
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
+  lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -72,7 +73,13 @@ J.parseLyrics = (raw) => {
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
-const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+const segmenters = {};   // one per lyric language (J.segLocale: ja / zh-Hant / zh-Hans / ko)
+const segmenterOf = () => {
+  if (typeof Intl === 'undefined' || !Intl.Segmenter) return null;
+  const loc = J.segLocale ? J.segLocale() : 'ja';
+  if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
+  return segmenters[loc];
+};
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -83,6 +90,7 @@ const segType = s => {
   return 'O';
 };
 J.segments = (text) => {
+  const segmenter = segmenterOf();
   if (segmenter) return [...segmenter.segment(text)].map(x => x.segment);
   const out = []; let cur = '', ct = '';
   for (const c of text) {
@@ -124,6 +132,21 @@ J.chunkText = (text) => {
     if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
+};
+
+/* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
+J.phraseChunks = (words) => {
+  const out = []; let cur = [], letters = 0;
+  const flush = () => { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; };
+  for (const w of words) {
+    const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
+    cur.push(w); letters += n;
+    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+  }
+  flush();
+  // a lone short word at the end joins the previous phrase
+  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] += ' ' + last; }
+  return out.length ? out : words;
 };
 
 /* ---------------- timing ---------------- */
@@ -188,7 +211,9 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
+    lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
+  if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
   const beats = plan.beats;
   const snap = (t) => {
     if (!beats.length || !(project.timing && project.timing.snap)) return t;
@@ -219,7 +244,7 @@ J.plan = (project, audio) => {
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
     plan.lines.push({ index: li, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
-    const chunks = ln.manual || J.chunkText(ln.text);
+    const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);

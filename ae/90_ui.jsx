@@ -26,7 +26,11 @@ function jzUI(thisObj) {
     cExtra.helpTip = 'オフのときは最初の公開版の演出（356部品・スタイル12種）だけを使います。オンにすると、あとから追加した演出・スタイル・書体も候補になります';
     var cWa = gSw.add('checkbox', undefined, '和風の演出も使う'); cWa.value = jzGet('wa', '1') === '1';
     cWa.helpTip = '提灯・はがき・障子・扇・家紋・青海波・桜の花びらなどの和風グラフィックと、和風のスタイル。オフにすると自動では選ばれません（追加分の判定のあとに適用）';
-    function switches() { return { extra: cExtra.value, wa: cWa.value }; }
+    var gLang = gSw.add('group'); gLang.spacing = 4; gLang.add('statictext', undefined, '歌詞の言語');
+    var JZ_LANG_KEYS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko', 'en'];
+    var ddLang = gLang.add('dropdownlist', undefined, ['自動判定', '日本語', '繁體中文', '简体中文', '한국어', 'English']); ddLang.selection = parseInt(jzGet('lang', '0'), 10) || 0;
+    ddLang.helpTip = '中国語（繁体字・簡体字）や韓国語の歌詞は、その文字を持つ書体で組みます（各スタイルの書体の雰囲気に近いものに置き換え）。自動判定はかな・ハングル・繁体字／簡体字に特有の字から判断します';
+    function switches() { return { extra: cExtra.value, wa: cWa.value, lang: JZ_LANG_KEYS[ddLang.selection ? ddLang.selection.index : 0] }; }
     var gS = t1.add('group'); gS.add('statictext', undefined, 'スタイル');
     var styleNames = [], i;
     for (i = 0; i < JZ_DATA.styleOrder.length; i++) { var stI = JZ_DATA.styles[JZ_DATA.styleOrder[i]]; styleNames.push(stI.name + (stI.extra || stI.wa ? '  〔' + (stI.extra ? '追加' : '') + (stI.extra && stI.wa ? '・' : '') + (stI.wa ? '和' : '') + '〕' : '')); }
@@ -171,7 +175,7 @@ function jzUI(thisObj) {
         jzPut('size', ddSize.selection.index); jzPut('fps', ddFps.selection.index); jzPut('timing', rLayer.value ? 'layer' : rComp.value ? 'comp' : 'auto');
         jzPut('bpm', eBpm.text); jzPut('lineScale', eScale.text); jzPut('audio', cAudio.value ? '1' : '0'); jzPut('seed', eSeed.text);
         jzPut('twos', cTwos.value ? '1' : '0'); jzPut('flash', cFlash.value ? '1' : '0'); jzPut('hud', ddHud.selection.index);
-        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index);
+        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
         var sl = [sMotion, sGlitch, sChroma, sDecor, sDensity, sTexture, sBg]; for (var k = 0; k < sl.length; k++) jzPut(sl[k].key, sl[k].value);
         var active = app.project.activeItem, W = 1920, H = 1080, fps = [24, 30, 60][ddFps.selection.index], dur = null;
         var sz = ddSize.selection.index;
@@ -194,7 +198,7 @@ function jzUI(thisObj) {
             lyrics: lyr.text, title: eTitle.text, artist: eArtist.text, style: JZ_DATA.styleOrder[ddStyle.selection.index], seed: parseInt(eSeed.text, 10) || 1,
             fx: { motion: sMotion.value / 100, glitch: sGlitch.value / 100, chroma: sChroma.value / 100, decor: sDecor.value / 100, density: sDensity.value / 100, texture: sTexture.value / 100, bgSwitch: sBg.value / 100, onTwos: cTwos.value, flash: cFlash.value, hud: false },
             width: W, height: H, fps: fps, bpm: parseFloat(eBpm.text) || 0, starts: starts, enabled: en, offset: 0.4, lineScale: parseFloat(eScale.text) || 1, duration: dur,
-            extra: sw.extra, wa: sw.wa
+            extra: sw.extra, wa: sw.wa, lang: sw.lang
         };
         var st = JZ_DATA.styles[o.style];
         o.fx.hud = ddHud.selection.index === 1 ? true : ddHud.selection.index === 2 ? false : !!st.hud;

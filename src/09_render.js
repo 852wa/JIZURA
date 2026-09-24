@@ -66,6 +66,7 @@ class Renderer {
     const mainCut = J.cutAt(plan, tq);
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
+    if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
@@ -108,7 +109,9 @@ class Renderer {
     const beatInfo = plan.beats && plan.beats.length ? beatAt(plan.beats, tq) : null;
     const energy = plan.energy ? plan.energy[Math.min(plan.energy.length - 1, Math.max(0, Math.floor(t * plan.energyRate)))] : null;
     // ---------- background graphic (per line) ----------
-    if (!opt.transparent && !key && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
+    // 透過PNG 前景／後景 (opt.layer): 'back' = background graphic + the decorations behind the lyrics, 'front' = the rest
+    const layer = opt.transparent ? opt.layer || null : null;
+    if ((!opt.transparent || layer === 'back') && !key && mainCut && mainCut.bg && mainCut.bg !== 'none' && J.BG[mainCut.bg]) {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: tq - mainCut.start, ltb: tq - mainCut.start, step, scale, allowFilter, energy, beat: beatInfo, bgOnly: true });
       ctx.save();
       try { J.BG[mainCut.bg].draw(env, mainCut.bgP || {}); } catch (e) { console.warn('bg', mainCut.bg, e); }
@@ -149,7 +152,7 @@ class Renderer {
       const X = LX || ctx;
       const env = this.makeEnv(X, plan, cut, csc, {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
-        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo,
+        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer,
       });
       X.save();
       // camera move for this cut (default: slow push-in)
@@ -187,7 +190,7 @@ class Renderer {
       }
     }
     // ---------- HUD ----------
-    if (plan.hud && !opt.noHud) {
+    if (plan.hud && !opt.noHud && layer !== 'back') {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
       J.drawHUD(env, plan);
     }
@@ -293,11 +296,55 @@ class Renderer {
   drawCut(env) {
     const cut = env.cut, L = J.LAYOUTS[cut.layout] || J.LAYOUTS.center;
     const decor = cut.decor || [];
-    for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
+    if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
+    if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
     try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
+  }
+
+  /* 透過PNG: screen effects are written for an opaque frame (they paint the background colour, wash the whole frame,
+     or redraw a shifted copy over it). In transparent mode each effect is fenced:
+       - a full-frame opaque fill (background colour, black/white frame…) clears instead — it hid everything anyway
+       - afterwards, alpha is limited to where content was (before the effect) plus where the effect drew the
+         content again (shifted / scaled / mirrored copies of the scratch copy), so washes, flashes and strobes
+         tint the lyrics and the graphics but never turn the empty background opaque                            */
+  alphaGuard(ctx, S, sc) {
+    const cw = ctx.canvas.width, ch = ctx.canvas.height, R = this;
+    const P = this.ensure(this.guardP || (this.guardP = mk(2, 2)), cw, ch), px = P.getContext('2d');
+    const M = this.ensure(this.guardM || (this.guardM = mk(2, 2)), cw, ch), mx = M.getContext('2d');
+    let cleared = false, bgN = null;
+    const content = img => img === S;                  // the scratch copy of the frame (temp canvases may carry an opaque background)
+    const own = ['fillRect', 'drawImage'];
+    return {
+      begin() {
+        cleared = false;
+        const fs0 = ctx.fillStyle; ctx.fillStyle = sc.bg; bgN = ctx.fillStyle; ctx.fillStyle = fs0;   // the background colour, normalised
+        px.setTransform(1, 0, 0, 1, 0, 0); px.globalAlpha = 1; px.globalCompositeOperation = 'copy'; px.filter = 'none'; px.drawImage(ctx.canvas, 0, 0);
+        mx.setTransform(1, 0, 0, 1, 0, 0); mx.globalAlpha = 1; mx.globalCompositeOperation = 'source-over'; mx.filter = 'none'; mx.clearRect(0, 0, cw, ch);
+        const proto = Object.getPrototypeOf(ctx);
+        ctx.fillRect = function (x, y, w, h) {
+          const T = this.getTransform(), full = this.globalCompositeOperation === 'source-over' && this.globalAlpha >= 0.999 && typeof this.fillStyle === 'string' &&
+            /^#[0-9a-f]{6}$/i.test(this.fillStyle) && T.b === 0 && T.c === 0 && T.e + x * T.a <= 1 && T.f + y * T.d <= 1 && T.e + (x + w) * T.a >= cw - 1 && T.f + (y + h) * T.d >= ch - 1;
+          if (full) { cleared = true; mx.clearRect(0, 0, cw, ch); return proto.clearRect.call(this, x, y, w, h); }
+          if (this.globalCompositeOperation === 'source-over' && typeof this.fillStyle === 'string' && /^#[0-9a-f]{6}$/i.test(this.fillStyle) && this.globalAlpha >= 0.999 && this.fillStyle === bgN) return proto.clearRect.call(this, x, y, w, h);
+          return proto.fillRect.call(this, x, y, w, h);
+        };
+        ctx.drawImage = function (img, ...a) {
+          if (content(img)) { mx.setTransform(this.getTransform()); mx.globalAlpha = this.globalAlpha; proto.drawImage.call(mx, img, ...a); }
+          return proto.drawImage.call(this, img, ...a);
+        };
+      },
+      end() {
+        for (const k of own) delete ctx[k];
+        mx.setTransform(1, 0, 0, 1, 0, 0); mx.globalAlpha = 1;
+        if (!cleared) { mx.globalCompositeOperation = 'source-over'; mx.drawImage(P, 0, 0); }
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none';
+        ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(M, 0, 0);
+        ctx.restore();
+      },
+    };
   }
 
   post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter) {
@@ -309,16 +356,20 @@ class Renderer {
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     const copy = () => { const sx = S.getContext('2d'); sx.globalCompositeOperation = 'copy'; sx.drawImage(ctx.canvas, 0, 0); sx.globalCompositeOperation = 'source-over'; };
     const clock24 = Math.floor(t * 24);           // glitch randomness changes at most 24 times a second at any output fps
+    const guard = opt.transparent ? this.alphaGuard(ctx, S, sc) : null;   // 透過: effects must not fill the empty background
     for (const ev of active) {
-      const k = (t - ev.t) / Math.max(ev.dur, 1e-3);
+      // progress clamped to 0..1 (an event shorter than one output frame is still shown for that frame — k would pass 1)
+      const k0 = (t - ev.t) / Math.max(ev.dur, 1e-3), k = Number.isFinite(k0) ? J.clamp(k0, 0, 1) : 0;
       const st2 = clock24;
       const D = J.FXE[ev.type];
+      if (guard) guard.begin();
       if (D && D.draw) {
         if (D.scratch) copy();
         try {
-          D.draw(ctx, ev, k, { cw, ch, S, sc, st: plan.style, step: st2, t, scale, renderer: this, allowFilter, opt, tmp: (w, h) => this.ensure(this.tiny, w, h), tmp2: (w, h) => this.ensure(this.small2 || (this.small2 = mk(2, 2)), w, h) });
+          D.draw(ctx, ev, k, { cw, ch, S, sc, st: plan.style, step: st2, t, scale, renderer: this, allowFilter, opt, transparent: !!opt.transparent, tmp: (w, h) => this.ensure(this.tiny, w, h), tmp2: (w, h) => this.ensure(this.small2 || (this.small2 = mk(2, 2)), w, h) });
         } catch (e) { console.warn('fx', ev.type, e); }
         ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none'; ctx.imageSmoothingEnabled = true;
+        if (guard) guard.end();
         continue;
       }
       if (ev.type === 'slice') {
@@ -358,6 +409,8 @@ class Renderer {
         tx.imageSmoothingEnabled = true; tx.drawImage(S, 0, 0, T.width, T.height);
         ctx.imageSmoothingEnabled = false; ctx.globalAlpha = 0.85 * (1 - k); ctx.drawImage(T, 0, 0, cw, ch); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = true;
       }
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      if (guard) guard.end();
     }
     // bloom
     const glow = (st.glow || 0.6) * 0.5 * (fx.texture ?? 0.6);

@@ -17,6 +17,7 @@ function jzEventsArr(plan, type, t0, t1) {
 function jzBuild(plan, opt) {
     opt = opt || {};
     JZLOG = []; JZ_FALLBACKS = 0; JZ_FALLBACK_KEYS = []; JZ_FONT_MISSING = {}; JZ_FONT_NOAPI = false;
+    jzSetLang(plan.lang || (typeof jzDetectLang === 'function' ? jzDetectLang(plan) : 'ja'));   // 歌詞の言語 → faces
     var W = opt.width || plan.width || 1920, H = opt.height || plan.height || 1080, fps = plan.fps || 24, D = Math.max(1, plan.duration || 10);
     var st = plan.style, fx = plan.fx || {}, roles = opt.roles || JZ_ROLE_DEFAULT;
     var ghostAmt = (fx.chroma == null ? 0.7 : fx.chroma) * (st.ghost == null ? 1 : st.ghost);
