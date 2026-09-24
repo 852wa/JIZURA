@@ -139,11 +139,11 @@ J.chunkText = (text) => {
     close(); cur = { s: sg, k: t, hasH: t === 'H' };
   }
   close();
-  // split very long chunks, merge lonely single kana
+  // split very long chunks (but never inside one Latin word — "unforge ttable"), merge lonely single kana
   const out = [];
   for (const c of chunks) {
     const n = [...c].length;
-    if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
+    if (n > 10 && !/^[\x21-\x7e\u00c0-\u024f\u2019]+$/.test(c)) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
