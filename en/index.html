@@ -153,6 +153,10 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .transport input[type=range] { flex: 1 1 160px; accent-color: var(--amber); }
 button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 #timeline { width: 100%; height: 76px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; }
+.tl-row { display: block; position: relative; }
+.tl-row #timeline { width: 100%; display: block; }
+.tl-zoom { position: absolute; right: 6px; top: 6px; z-index: 2; display: flex; flex-direction: row; gap: 4px; }
+.tl-zoom button { width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1; background: rgba(19,19,22,0.88); border-color: var(--line2); }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
@@ -418,7 +422,13 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
         <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
         <button id="btnOmakase" class="primary" title="Randomize style, mood, effects and colors (R)">Randomize</button>
       </div>
-      <canvas id="timeline" aria-label="Timeline (click to seek)"></canvas>
+      <div class="tl-row">
+        <canvas id="timeline" aria-label="Timeline (click to seek)"></canvas>
+        <span class="tl-zoom">
+          <button type="button" id="btnTlPlus" class="ghost small" title="Zoom timeline in" aria-label="拡大">+</button>
+          <button type="button" id="btnTlMinus" class="ghost small" title="Zoom timeline out" aria-label="縮小">−</button>
+        </span>
+      </div>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick" hidden>
         <div class="cut-pick-h">
@@ -29351,7 +29361,7 @@ const ICON = {
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, tlZoom: 1, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -29593,22 +29603,53 @@ function seek(t) {
 
 /* ---------------- timeline ---------------- */
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
+const TL_ZOOM_MIN = 1, TL_ZOOM_MAX = 32;
+let tlViewHold = null;
+function tlView() {
+  if (tlViewHold) return tlViewHold;
+  const D = Math.max(0.001, S.plan.duration);
+  const z = S.tlZoom || 1;
+  const dur = D / z;
+  let start = z <= 1 ? 0 : S.t - dur * 0.4;
+  start = J.clamp(start, 0, Math.max(0, D - dur));
+  return { start, end: start + dur, dur, D };
+}
+function syncTlZoom() {
+  const minus = $('btnTlMinus'), plus = $('btnTlPlus');
+  if (minus) minus.disabled = (S.tlZoom || 1) <= TL_ZOOM_MIN;
+  if (plus) plus.disabled = (S.tlZoom || 1) >= TL_ZOOM_MAX;
+}
+function setTlZoom(next) {
+  S.tlZoom = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX);
+  tlViewHold = null;
+  syncTlZoom();
+  S.need = true;
+}
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.max(10, Math.round(c.clientWidth * dpr)), h = Math.max(10, Math.round(c.clientHeight * dpr));
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
-  const x = c.getContext('2d'), D = Math.max(0.001, S.plan.duration), X = t => t / D * w;
+  const x = c.getContext('2d'), view = tlView();
+  const X = t => (t - view.start) / view.dur * w;
   x.fillStyle = '#131316'; x.fillRect(0, 0, w, h);
   if (S.audio && S.audio.peaks) {
     const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
     x.fillStyle = '#2b2b33';
-    for (let i = 0; i < w; i += 2) { const t = i / w * D; if (t > sd) break; const v = pk[Math.min(n - 1, Math.floor(t / sd * n))]; const hh = v * h * 0.8; x.fillRect(i, h * 0.6 - hh / 2, 1.5, hh); }
+    for (let i = 0; i < w; i += 2) {
+      const t = view.start + i / w * view.dur; if (t > sd) break;
+      const v = pk[Math.min(n - 1, Math.floor(t / sd * n))]; const hh = v * h * 0.8;
+      x.fillRect(i, h * 0.6 - hh / 2, 1.5, hh);
+    }
   }
   const beats = S.plan.beats || [];
   x.fillStyle = '#3a3a44';
-  for (const b of beats) { if (b > D) break; x.fillRect(Math.round(X(b)), h - 6 * dpr, 1, 6 * dpr); }
+  for (const b of beats) {
+    if (b < view.start || b > view.end) continue;
+    x.fillRect(Math.round(X(b)), h - 6 * dpr, 1, 6 * dpr);
+  }
   const top = h * 0.3, bot = h - 8 * dpr;
   for (const cut of S.plan.cuts) {
+    if (cut.end < view.start || cut.start > view.end) continue;
     const x0 = X(cut.start), x1 = X(cut.end);
     const hue = layoutHue(cut.layout);
     x.fillStyle = `hsla(${hue},70%,58%,0.28)`; x.fillRect(x0, top, Math.max(1, x1 - x0 - 1), bot - top);
@@ -29621,6 +29662,7 @@ function drawTimeline() {
   }
   x.font = `${10 * dpr}px monospace`;
   for (const ln of S.plan.lines) {
+    if (ln.start < view.start - 0.05 || ln.start > view.end) continue;
     const lx = X(ln.start);
     x.fillStyle = '#5d5a63'; x.fillRect(lx, 0, 1, top);
     x.fillStyle = '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, 12 * dpr);
@@ -29635,7 +29677,8 @@ function drawTimeline() {
 }
 function timelineSeek(ev) {
   const r = $('timeline').getBoundingClientRect();
-  seek((ev.clientX - r.left) / r.width * S.plan.duration);
+  const view = tlViewHold || tlView();
+  seek(view.start + (ev.clientX - r.left) / r.width * view.dur);
 }
 
 /* ---------------- cut info ---------------- */
@@ -30321,9 +30364,13 @@ function bind() {
   sc.addEventListener('change', () => { S.scrubbing = false; });
   const tl = $('timeline');
   let drag = false;
-  tl.addEventListener('pointerdown', e => { drag = true; tl.setPointerCapture(e.pointerId); timelineSeek(e); });
+  tl.addEventListener('pointerdown', e => { drag = true; tlViewHold = tlView(); tl.setPointerCapture(e.pointerId); timelineSeek(e); });
   tl.addEventListener('pointermove', e => { if (drag) timelineSeek(e); });
-  tl.addEventListener('pointerup', () => { drag = false; });
+  tl.addEventListener('pointerup', () => { drag = false; tlViewHold = null; S.need = true; });
+  const btnTlPlus = $('btnTlPlus'), btnTlMinus = $('btnTlMinus');
+  if (btnTlPlus) btnTlPlus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) * 2));
+  if (btnTlMinus) btnTlMinus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) / 2));
+  syncTlZoom();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });

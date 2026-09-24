@@ -84,7 +84,13 @@
         <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
       </div>
-      <canvas id="timeline" aria-label="タイムライン（クリックで移動）"></canvas>
+      <div class="tl-row">
+        <canvas id="timeline" aria-label="タイムライン（クリックで移動）"></canvas>
+        <span class="tl-zoom">
+          <button type="button" id="btnTlPlus" class="ghost small" title="タイムラインを拡大" aria-label="拡大">+</button>
+          <button type="button" id="btnTlMinus" class="ghost small" title="タイムラインを縮小" aria-label="縮小">−</button>
+        </span>
+      </div>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick" hidden>
         <div class="cut-pick-h">

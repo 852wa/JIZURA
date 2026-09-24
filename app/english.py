@@ -39,6 +39,7 @@ BODY = {
     '次:': 'Next:', '終了する': 'Finish', '行とカット': 'Lines and cuts',
  'このカットだけ差し替え': 'Replace on this cut only',
     '再生位置': 'Playback position', 'タイムライン（クリックで移動）': 'Timeline (click to seek)',
+    'タイムラインを拡大': 'Zoom timeline in', 'タイムラインを縮小': 'Zoom timeline out',
     '前の案に戻る': 'Previous variation', '次の案へ進む': 'Next variation',
     '設定はそのままで構成だけ再抽選（ロックした行は維持）': 'Shuffle the arrangement, keeping locked lines',
     'スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）': 'Randomize style, mood, effects and colors (R)',
