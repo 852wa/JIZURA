@@ -54,21 +54,55 @@ var JZCEP = (function () {
         return null;
     }
 
-    function build(s, audioId) {
-        var C, plan, t0 = new Date().getTime();
+    // ---- building runs as a job in short steps (the panel calls step() again and again), so After Effects gets
+    //      control back between steps and never shows "not responding" on long songs
+    var job = null, jobT0 = 0, jobPlan = null, jobAudio = false;
+    function start(s, audioId) {
+        var C, plan;
+        job = null; jobT0 = new Date().getTime();
         try { C = core(); } catch (e0) { return fail('engine: ' + e0.toString()); }
         try { plan = C.parse(s); } catch (e1) { return fail('JSON: ' + e1.toString()); }
         if (!plan || !plan.cuts || !plan.style) return fail('JIZURA の構成データではありません');
-        var au = audioId ? findItem(audioId) : null, comp = null, err = null;
+        if (!C.start) return fail('engine: jizura_core.jsx is too old — reinstall the panel');
+        var au = audioId ? findItem(audioId) : null, err = null, off = +plan.audioOffset || 0;
         app.beginUndoGroup('JIZURA');
-        try { comp = C.build(plan, { roles: roles(C), audioItem: au, audioStart: 0 }); }
-        catch (e2) { err = e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : ''); }
+        try { job = C.start(plan, { roles: roles(C), audioItem: au, audioStart: -off }); }
+        catch (e2) { err = e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : ''); job = null; }
         finally { app.endUndoGroup(); }
-        if (comp) { lastComp = comp; lastPlan = plan; }
-        var log = C.log() || [], notes = [];
+        if (!job) return fail(err || 'build');
+        jobPlan = plan; jobAudio = !!au;
+        return str({ ok: true, name: job.comp.name, total: job.total, events: job.events });
+    }
+    function result(C, cancelled) {
+        var comp = job.comp, log = C.log() || [], notes = [];
         for (var i = 0; i < log.length && i < 20; i++) notes.push(String(log[i]));
-        return str({ ok: !!comp && !err, error: err, name: comp ? comp.name : null, cuts: plan.cuts.length, secs: (new Date().getTime() - t0) / 1000,
-            fallbacks: C.fallbacks(), notes: notes, notesTotal: log.length, audio: !!au, missingFonts: comp && C.missingFonts ? C.missingFonts() : [], fontCheck: !(C.fontCheckUnavailable && C.fontCheckUnavailable()) });
+        lastComp = comp; lastPlan = jobPlan;
+        return { ok: true, done: true, cancelled: cancelled, name: comp.name, cuts: job.done, total: job.total, secs: (new Date().getTime() - jobT0) / 1000,
+            fallbacks: C.fallbacks(), notes: notes, notesTotal: log.length, audio: jobAudio, missingFonts: C.missingFonts ? C.missingFonts() : [], fontCheck: !(C.fontCheckUnavailable && C.fontCheckUnavailable()) };
+    }
+    function step(ms) {
+        if (!job) return fail('生成中のコンポがありません');
+        var C = core(), err = null;
+        app.beginUndoGroup('JIZURA');
+        try { job.step(ms > 0 ? ms : 1200); }
+        catch (e) { err = e.toString() + (e.line ? ' (line ' + e.line + ')' : ''); }
+        finally { app.endUndoGroup(); }
+        if (err) { job = null; return fail(err); }
+        if (!job.finished) return str({ ok: true, done: false, phase: job.phase, cuts: job.done, total: job.total, eventsDone: job.eventsDone, events: job.events });
+        var r = result(C, !!job.cancelled); job = null;
+        return str(r);
+    }
+    function build(s, audioId) {           // all at once (older panels)
+        var r = start(s, audioId); if (!job) return r;
+        var out; do { out = step(1e9); } while (job);
+        return out;
+    }
+    function readTemp(path) {
+        var f = File(path);
+        if (!f.exists) return null;
+        f.encoding = 'UTF-8'; f.open('r'); var s = f.read(); f.close();
+        try { f.remove(); } catch (e) {}
+        return s;
     }
 
     return {
@@ -108,14 +142,12 @@ var JZCEP = (function () {
             for (i = 1; i <= mk.numKeys; i++) t.push(Math.max(0, mk.keyTime(i) - off));
             return str({ ok: true, source: src, times: t, offset: off });
         },
-        buildFromFile: function (path, audioId) {
-            var f = File(path);
-            if (!f.exists) return fail('構成データの一時ファイルが見つかりません');
-            f.encoding = 'UTF-8'; f.open('r'); var s = f.read(); f.close();
-            try { f.remove(); } catch (e) {}
-            return build(s, audioId);
-        },
+        buildFromFile: function (path, audioId) { var s = readTemp(path); return s == null ? fail('構成データの一時ファイルが見つかりません') : build(s, audioId); },
         buildFromString: function (enc, audioId) { return build(decodeURIComponent(enc), audioId); },
+        startFromFile: function (path, audioId) { var s = readTemp(path); return s == null ? fail('構成データの一時ファイルが見つかりません') : start(s, audioId); },
+        startFromString: function (enc, audioId) { return start(decodeURIComponent(enc), audioId); },
+        step: function (ms) { return step(ms); },
+        cancel: function () { if (job) job.cancelled = true; return str({ ok: true }); },
         // check the last built comp in this AE session: evaluates every expression and saves JIZURA_report.txt
         diagnose: function () {
             var C; try { C = core(); } catch (e0) { return fail(e0.toString()); }

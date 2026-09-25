@@ -191,7 +191,7 @@ J.AE_MAP = {
 };
 // The plan goes to the After Effects panel as-is (version 2): the panel builds every key it implements and
 // picks the closest counterpart itself (from the exported metadata / J.AE_MAP) for anything it lacks.
-J.planForAE = (plan, project) => {
+J.planForAE = (plan, project, range) => {
   const clean = JSON.parse(JSON.stringify(plan, (k, v) => (k === 'energy' || k === 'buffer' || k === 'peaks' ? undefined : v)));
   clean.version = 2;
   clean.width = J.outputSize(project)[0]; clean.height = J.outputSize(project)[1];
@@ -204,6 +204,16 @@ J.planForAE = (plan, project) => {
   if (J.setLang && J.faceOf && clean.lang !== 'ja') {
     J.setLang(clean.lang);
     for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
+  }
+  // 行の範囲だけ: keep the cuts / events inside [t0, t1] and move them to start at 0.
+  // audioOffset tells the AE panel to slide the song layer left by t0 so it stays in sync.
+  if (range) {
+    const sp = J.exportSpan(plan, range), t0 = sp.t0, t1 = t0 + sp.dur, eps = 1e-3;
+    const sh = o => { o.start -= t0; o.end -= t0; return o; };
+    clean.cuts = clean.cuts.filter(c => c.end > t0 + eps && c.start < t1 - eps).map(sh);
+    clean.events = (clean.events || []).filter(e => e.t >= t0 - 1 && e.t < t1).map(e => Object.assign(e, { t: e.t - t0 }));
+    for (const l of clean.lines || []) { sh(l); if (l.visEnd != null) l.visEnd -= t0; }   // all lines stay (cut.line indexes them)
+    clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
   }
   return clean;
 };

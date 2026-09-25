@@ -30254,7 +30254,11 @@ function jzEventsArr(plan, type, t0, t1) {
 //   wrapper    \u2500\u2500 scheme background + radial lift \u2500 paper \u2500 background graphic \u2500 ghost B \u2500 ghost A \u2500 content \u2500 "JZ Camera" null
 //   content    \u2500\u2500 the layout's text / shape layers + decor (built by the registry entries)
 // Cut-to-cut transitions work on neighbouring wrapper layers in the main comp.
-function jzBuild(plan, opt) {
+// jzBuildStart returns a job that builds the comp step by step: job.step(ms) works for about ms milliseconds and returns,
+// so the CEP panel / ScriptUI can hand control back to After Effects between steps (long songs: no "not responding").
+// job.phase: 'cuts' -> 'trans' -> 'events' -> 'done'; job.done / job.total = cuts built; job.cancelled = true skips the rest and finishes what exists.
+function jzBuild(plan, opt) { var job = jzBuildStart(plan, opt); while (!job.finished) job.step(null); return job.comp; }
+function jzBuildStart(plan, opt) {
     opt = opt || {};
     JZLOG = []; JZ_FALLBACKS = 0; JZ_FALLBACK_KEYS = []; JZ_FONT_MISSING = {}; JZ_FONT_NOAPI = false;
     jzSetLang(plan.lang || (typeof jzDetectLang === 'function' ? jzDetectLang(plan) : 'ja'));   // \u6B4C\u8A5E\u306E\u8A00\u8A9E \u2192 faces
@@ -30282,9 +30286,9 @@ function jzBuild(plan, opt) {
 
     // ---------- cuts
     var lagA = 0.8 / 24, lagB = 1.6 / 24, wraps = [];
-    for (var ci = 0; ci < cuts.length; ci++) {
+    function buildCut(ci) {
         var cut = cuts[ci];
-        if (!(cut.end > cut.start)) continue;
+        if (!(cut.end > cut.start)) return;
         cut.dur = cut.end - cut.start;
         var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
         var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
@@ -30353,72 +30357,88 @@ function jzBuild(plan, opt) {
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
         wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc });
     }
+    function finishTrans() {
+        // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
+        for (var wi = 1; wi < wraps.length; wi++) {
+            var B = wraps[wi], A = wraps[wi - 1], tk = B.cut.trans ? jzFallback('trans', B.cut.trans, null) : null;
+            if (!tk || Math.abs(A.cut.end - B.cut.start) > 0.06) continue;
+            var td = jzClamp(B.cut.transDur || jzMeta('trans', tk).dur || 0.35, 0.08, Math.max(0.1, B.cut.dur * 0.6));
+            A.layer.outPoint = B.cut.start + td;
+            var tctx = { comp: comp, W: W, H: H, u: u, A: A.layer, B: B.layer, t0: B.cut.start, dur: td, P: B.cut.transP || {}, sc: B.sc, scPrev: A.sc, st: st, fx: FXV, cut: B.cut, prev: A.cut, fps: fps };
+            try { JZ_REG.trans[tk].build(tctx); } catch (e5) { jzWarn('trans ' + tk + ': ' + e5.toString() + (e5.line ? ' (line ' + e5.line + ')' : '')); }
+        }
 
-    // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
-    for (var wi = 1; wi < wraps.length; wi++) {
-        var B = wraps[wi], A = wraps[wi - 1], tk = B.cut.trans ? jzFallback('trans', B.cut.trans, null) : null;
-        if (!tk || Math.abs(A.cut.end - B.cut.start) > 0.06) continue;
-        var td = jzClamp(B.cut.transDur || jzMeta('trans', tk).dur || 0.35, 0.08, Math.max(0.1, B.cut.dur * 0.6));
-        A.layer.outPoint = B.cut.start + td;
-        var tctx = { comp: comp, W: W, H: H, u: u, A: A.layer, B: B.layer, t0: B.cut.start, dur: td, P: B.cut.transP || {}, sc: B.sc, scPrev: A.sc, st: st, fx: FXV, cut: B.cut, prev: A.cut, fps: fps };
-        try { JZ_REG.trans[tk].build(tctx); } catch (e5) { jzWarn('trans ' + tk + ': ' + e5.toString() + (e5.line ? ' (line ' + e5.line + ')' : '')); }
+        // ---------- HUD
+        if (plan.hud && opt.hud !== false) jzHUD(comp, plan, schemes[0], roles);
+
+        // ---------- global FX (top adjustment layer)
+        var fxL = comp.layers.addSolid([1, 1, 1], 'JZ FX', W, H, 1, D); fxL.adjustmentLayer = true;
+        if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
+        var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
+        jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
+        var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
+        jzEP(ww, 1, 2); jzEP(ww, 4, 0); jzEP(ww, 5, 0); jzEP(ww, 6, 1);
+        jzEX(ww, 2, 'var ev=' + jzEventsArr(plan, 'slice') + ';var h=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])h=Math.max(h,ev[i][1]);}posterizeTime(24);seedRandom(Math.floor(time*24),true);h>0?h*thisComp.width*0.05*random(0.4,1):0');
+        jzEX(ww, 3, 'posterizeTime(24);seedRandom(Math.floor(time*24)+7,true);random(thisComp.height*0.02,thisComp.height*0.12)');
+        jzEX(ww, 7, 'posterizeTime(24);seedRandom(Math.floor(time*24)+11,true);random(0,360)');
+        var rb = jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
+        jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
+        var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
+        jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
+        var glowAmt = (st.glow || 0.6) * FXV.texture;
+        if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
+        var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
+        if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
+
     }
-
-    // ---------- HUD
-    if (plan.hud && opt.hud !== false) jzHUD(comp, plan, schemes[0], roles);
-
-    // ---------- global FX (top adjustment layer)
-    var fxL = comp.layers.addSolid([1, 1, 1], 'JZ FX', W, H, 1, D); fxL.adjustmentLayer = true;
-    if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
-    var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
-    jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
-    var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
-    jzEP(ww, 1, 2); jzEP(ww, 4, 0); jzEP(ww, 5, 0); jzEP(ww, 6, 1);
-    jzEX(ww, 2, 'var ev=' + jzEventsArr(plan, 'slice') + ';var h=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])h=Math.max(h,ev[i][1]);}posterizeTime(24);seedRandom(Math.floor(time*24),true);h>0?h*thisComp.width*0.05*random(0.4,1):0');
-    jzEX(ww, 3, 'posterizeTime(24);seedRandom(Math.floor(time*24)+7,true);random(thisComp.height*0.02,thisComp.height*0.12)');
-    jzEX(ww, 7, 'posterizeTime(24);seedRandom(Math.floor(time*24)+11,true);random(0,360)');
-    var rb = jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
-    jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
-    var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
-    jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
-    var glowAmt = (st.glow || 0.6) * FXV.texture;
-    if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
-    var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
-    if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
-
-    // ---------- effect events that have their own layers (above the koma / shake layer: they run at full frame rate, like the browser's post effects)
     var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps };
-    for (var ei = 0; ei < evs.length; ei++) {
+    function buildEvent(ei) {
         var ev = evs[ei], fk = jzFallback('fx', ev.type, null);
-        if (!fk || JZ_REG.fx[fk].builtin) continue;
+        if (!fk || JZ_REG.fx[fk].builtin) return;
         var e1 = { t: ev.t, type: fk, amp: ev.amp || 1, dur: Math.max(ev.dur || 0, 1 / 24), seed: jzHash(ev.t, ev.type) % 100000, sc: schemeOf(jzCutAtTime(cuts, ev.t) || cuts[0] || { scheme: 0 }) };
         try { JZ_REG.fx[fk].build(fctx, e1); } catch (e6) { jzWarn('fx ' + fk + ': ' + e6.toString() + (e6.line ? ' (line ' + e6.line + ')' : '')); }
     }
+    function finish() {
+        // ---------- flash + vignette
+        var fl = comp.layers.addSolid(jzHex(jzLum(schemes[0].bg) < 0.5 ? schemes[0].fg : '#ffffff'), 'JZ Flash', W, H, 1, D);
+        jzSetExpr(jzXf(fl, 'ADBE Opacity'), 'var ev=' + jzEventsArr(plan, 'flash') + ';var o=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])o=Math.max(o,Math.pow(1-dt/ev[i][2],1.5)*92);}o');
+        var vg = KEY ? null : comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
+        if (vg) try {
+            var m = vg.property('ADBE Mask Parade').addProperty('ADBE Mask Atom');
+            m.property('ADBE Mask Shape').setValue(jzCircleShape(W / 2, H / 2, Math.max(W, H) * 0.62));
+            m.inverted = true; m.property('ADBE Mask Feather').setValue([H * 0.5, H * 0.5]);
+            jzXf(vg, 'ADBE Scale').setValue([100, 100 * H / W * 1.6]);
+        } catch (e7) { jzWarn('vignette: ' + e7.toString()); }
+        if (vg) jzXf(vg, 'ADBE Opacity').setValue(32 * FXV.texture);
+        if (KEY) {
+            var km = comp.layers.addSolid([1, 1, 1], 'JZ Key Mono', W, H, 1, D); km.adjustmentLayer = true;
+            jzEffect(km, 'ADBE Tint', 'JZ Key Mono');
+            if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
+        }
 
-    // ---------- flash + vignette
-    var fl = comp.layers.addSolid(jzHex(jzLum(schemes[0].bg) < 0.5 ? schemes[0].fg : '#ffffff'), 'JZ Flash', W, H, 1, D);
-    jzSetExpr(jzXf(fl, 'ADBE Opacity'), 'var ev=' + jzEventsArr(plan, 'flash') + ';var o=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])o=Math.max(o,Math.pow(1-dt/ev[i][2],1.5)*92);}o');
-    var vg = KEY ? null : comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
-    if (vg) try {
-        var m = vg.property('ADBE Mask Parade').addProperty('ADBE Mask Atom');
-        m.property('ADBE Mask Shape').setValue(jzCircleShape(W / 2, H / 2, Math.max(W, H) * 0.62));
-        m.inverted = true; m.property('ADBE Mask Feather').setValue([H * 0.5, H * 0.5]);
-        jzXf(vg, 'ADBE Scale').setValue([100, 100 * H / W * 1.6]);
-    } catch (e7) { jzWarn('vignette: ' + e7.toString()); }
-    if (vg) jzXf(vg, 'ADBE Opacity').setValue(32 * FXV.texture);
-    if (KEY) {
-        var km = comp.layers.addSolid([1, 1, 1], 'JZ Key Mono', W, H, 1, D); km.adjustmentLayer = true;
-        jzEffect(km, 'ADBE Tint', 'JZ Key Mono');
-        if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
+        // no hidden leftovers anywhere in what was built (track mattes stay: After Effects keeps a matte's own video off)
+        try { jzTidyTree(comp); } catch (et) { jzWarn('tidy: ' + et.toString()); }
+
+        // audio layer (optional)
+        if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
+        comp.openInViewer();
     }
-
-    // no hidden leftovers anywhere in what was built (track mattes stay: After Effects keeps a matte's own video off)
-    try { jzTidyTree(comp); } catch (et) { jzWarn('tidy: ' + et.toString()); }
-
-    // audio layer (optional)
-    if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
-    comp.openInViewer();
-    return comp;
+    var job = { comp: comp, total: cuts.length, done: 0, events: evs.length, eventsDone: 0, phase: 'cuts', cancelled: false, finished: false };
+    job.step = function (ms) {
+        var t0 = new Date().getTime();
+        function more() { return ms == null || new Date().getTime() - t0 < ms; }
+        if (job.phase === 'cuts') {
+            while (job.done < cuts.length && !job.cancelled) { buildCut(job.done); job.done++; if (!more()) return job; }
+            job.phase = 'trans';
+        }
+        if (job.phase === 'trans') { finishTrans(); job.phase = 'events'; if (!more()) return job; }
+        if (job.phase === 'events') {
+            while (job.eventsDone < evs.length && !job.cancelled) { buildEvent(job.eventsDone); job.eventsDone++; if (!more()) return job; }
+            finish(); job.phase = 'done'; job.finished = true;
+        }
+        return job;
+    };
+    return job;
 }
 function jzCutAtTime(cuts, t) { for (var i = cuts.length - 1; i >= 0; i--) if (t >= cuts[i].start - 1e-6 && t < cuts[i].end) return cuts[i]; return null; }
 // scheme background: radial "lift" like the browser (Gradient Ramp on the solid)
@@ -30719,7 +30739,49 @@ function jzUI(thisObj) {
     t3.add('statictext', undefined, 'Noto Sans JP / Noto Serif JP / Dela Gothic One \u306A\u3069\u304C\u5165\u3063\u3066\u3044\u308C\u3070\u81EA\u52D5\u3067\u4F7F\u3044\u307E\u3059\uFF08AE 2024\u4EE5\u964D\uFF09\u3002', undefined, { multiline: true });
 
     var status = win.add('statictext', undefined, '\u6E96\u5099OK', { truncate: 'end' });
+    var gRun = win.add('group'); gRun.alignChildren = ['fill', 'center'];
+    var pbar = gRun.add('progressbar', undefined, 0, 100); pbar.alignment = ['fill', 'center']; pbar.preferredSize.height = 6;
+    var bStop = gRun.add('button', undefined, '\u4E2D\u6B62'); bStop.enabled = false; bStop.helpTip = '\u4F5C\u6210\u3092\u6B62\u3081\u307E\u3059\uFF08\u305D\u3053\u307E\u3067\u306E\u30AB\u30C3\u30C8\u3067\u30B3\u30F3\u30DD\u3092\u4ED5\u4E0A\u3052\u307E\u3059\uFF09';
     tp.selection = t1;
+
+    // ---- build in short steps: After Effects gets control back between steps (app.scheduleTask), so long songs
+    //      don't freeze it into "not responding"; the bar shows progress and \u4E2D\u6B62 finishes with the cuts built so far
+    var RUN = null;
+    function setRunning(on) { bBuild.enabled = bOmk.enabled = bJson.enabled = !on; bStop.enabled = on; if (!on) pbar.value = 0; }
+    function runBuild(plan, bo, undoName, done) {
+        if (RUN) { alert('JIZURA\uFF1A\u3044\u307E\u4F5C\u6210\u4E2D\u3067\u3059\u3002\u7D42\u308F\u308B\u307E\u3067\u5F85\u3064\u304B\u300C\u4E2D\u6B62\u300D\u3092\u62BC\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+        var job = null;
+        app.beginUndoGroup(undoName);
+        try { job = jzBuildStart(plan, bo); }
+        catch (e) { alert('\u751F\u6210\u4E2D\u306B\u30A8\u30E9\u30FC: ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
+        finally { app.endUndoGroup(); }
+        if (!job) { done(null); return; }
+        RUN = { job: job, done: done, name: undoName, t0: new Date().getTime() };
+        setRunning(true);
+        $.global.__JZ_TICK = tick;
+        if (!schedule()) { while (RUN) tick(true); }          // no scheduleTask: plain loop (the old behaviour)
+    }
+    function schedule() { try { app.scheduleTask('if ($.global.__JZ_TICK) $.global.__JZ_TICK();', 20, false); return true; } catch (e) { return false; } }
+    function tick(sync) {
+        var R = RUN; if (!R) return;
+        var err = null, job = R.job;
+        app.beginUndoGroup(R.name);
+        try { job.step(sync ? 1e9 : 900); }
+        catch (e) { err = e.toString() + (e.line ? ' (line ' + e.line + ')' : ''); }
+        finally { app.endUndoGroup(); }
+        if (err || job.finished) {
+            RUN = null; $.global.__JZ_TICK = null; setRunning(false);
+            if (err) alert('\u751F\u6210\u4E2D\u306B\u30A8\u30E9\u30FC: ' + err);
+            R.done(err ? null : job.comp, job);
+            return;
+        }
+        var k = job.phase === 'cuts' ? job.done / Math.max(1, job.total) * 0.9 : 0.9 + 0.1 * job.eventsDone / Math.max(1, job.events);
+        pbar.value = Math.round(k * 100);
+        status.text = '\u751F\u6210\u4E2D\u2026 ' + Math.round(k * 100) + '%\uFF08' + (job.phase === 'cuts' ? job.done + ' / ' + job.total + ' \u30AB\u30C3\u30C8' : '\u52B9\u679C\u3092\u8FFD\u52A0\u4E2D') + '\uFF09';
+        try { if (win.update) win.update(); } catch (eu) {}
+        if (!sync && !schedule()) { while (RUN) tick(true); }
+    }
+    bStop.onClick = function () { if (RUN) { RUN.job.cancelled = true; status.text = '\u4E2D\u6B62\u3057\u3066\u3044\u307E\u3059\u2026\uFF08\u4F5C\u6210\u6E08\u307F\u306E\u30AB\u30C3\u30C8\u3067\u4ED5\u4E0A\u3052\u307E\u3059\uFF09'; } };
 
     function roles() {
         jzPut('font_display', fDisplay.text); jzPut('font_serif', fSerif.text); jzPut('font_body', fBody.text); jzPut('font_mono', fMono.text); jzPut('forceFonts', cForce.value ? '1' : '0');
@@ -30800,14 +30862,12 @@ function jzUI(thisObj) {
         var keyI = ddKey.selection ? ddKey.selection.index : 0;
         if (keyI > 0) { plan.keyBg = keyI === 1 ? 'green' : 'black'; plan.style = jzKeyStyle(plan.style); }
         status.text = '\u751F\u6210\u4E2D\u2026 (' + plan.cuts.length + ' cuts)';
-        app.beginUndoGroup('JIZURA build');
-        var comp = null;
-        try { comp = jzBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }); }
-        catch (e2) { alert('\u751F\u6210\u4E2D\u306B\u30A8\u30E9\u30FC: ' + e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : '')); }
-        finally { app.endUndoGroup(); }
-        if (comp) { lastComp = comp; lastPlan = plan; }
-        report(comp, t0, label);
+        runBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }, 'JIZURA build', function (comp, job) {
+            if (comp) { lastComp = comp; lastPlan = plan; }
+            report(comp, t0, jobLabel(label, job));
+        });
     }
+    function jobLabel(label, job) { return job && job.cancelled ? '\u4E2D\u6B62\uFF08' + job.done + ' / ' + job.total + ' \u30AB\u30C3\u30C8\uFF09' + (label ? ' ' + label : '') : label; }
     bBuild.onClick = function () { doBuild(''); };
 
     // \u304A\u307E\u304B\u305B: roll every setting on the panel, show it, then build a fresh comp
@@ -30833,19 +30893,18 @@ function jzUI(thisObj) {
         if (plan.version !== 2 && !note) note = '';
         var au = audioSel(cAudio2.value);
         status.text = '\u751F\u6210\u4E2D\u2026 (' + plan.cuts.length + ' cuts)';
-        app.beginUndoGroup('JIZURA build from JSON');
-        var comp = null;
-        try { comp = jzBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }); }
-        catch (e2) { alert('\u751F\u6210\u4E2D\u306B\u30A8\u30E9\u30FC: ' + e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : '')); }
-        finally { app.endUndoGroup(); }
-        if (comp) { lastComp = comp; lastPlan = plan; }
-        if (JZ_FALLBACKS > 0) {
-            note = (note ? note + ' / ' : '') + '\u3053\u306E\u30D1\u30CD\u30EB\u306B\u7121\u3044\u8868\u73FE ' + JZ_FALLBACKS + ' \u7B87\u6240\u3092\u3001\u8FD1\u3044\u8868\u73FE\u3067\u4F5C\u308A\u307E\u3057\u305F';
-            alert('JIZURA\uFF1A\u3053\u306E JSON \u306B\u306F\u3001\u3053\u306E\u30D1\u30CD\u30EB\u304C\u4F5C\u308C\u306A\u3044\u8868\u73FE\u304C ' + JZ_FALLBACKS + ' \u7B87\u6240\u3042\u308A\u3001\u8FD1\u3044\u8868\u73FE\u306B\u7F6E\u304D\u63DB\u3048\u307E\u3057\u305F\u3002\n\n' + JZ_FALLBACK_KEYS.slice(0, 12).join(', ') +
-                '\n\n\u30D6\u30E9\u30A6\u30B6\u7248\u3088\u308A\u53E4\u3044\u30D1\u30CD\u30EB\u3092\u4F7F\u3063\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002\u6700\u65B0\u306E JIZURA_AE.jsx\uFF08v' + JZ_PANEL_VERSION + '\u30FB707 \u90E8\u54C1\uFF09\u306B\u5DEE\u3057\u66FF\u3048\u3066\u3001After Effects \u3092\u518D\u8D77\u52D5\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
-        }
-        report(comp, t0, note ? '\u7F6E\u63DB\u3042\u308A' : '');
-        if (note) status.helpTip = note;
+        // a line-range JSON starts part-way into the song: slide the song layer left by the same amount
+        var off = +plan.audioOffset || 0;
+        runBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start - off : 0 }, 'JIZURA build from JSON', function (comp, job) {
+            if (comp) { lastComp = comp; lastPlan = plan; }
+            if (JZ_FALLBACKS > 0) {
+                note = (note ? note + ' / ' : '') + '\u3053\u306E\u30D1\u30CD\u30EB\u306B\u7121\u3044\u8868\u73FE ' + JZ_FALLBACKS + ' \u7B87\u6240\u3092\u3001\u8FD1\u3044\u8868\u73FE\u3067\u4F5C\u308A\u307E\u3057\u305F';
+                alert('JIZURA\uFF1A\u3053\u306E JSON \u306B\u306F\u3001\u3053\u306E\u30D1\u30CD\u30EB\u304C\u4F5C\u308C\u306A\u3044\u8868\u73FE\u304C ' + JZ_FALLBACKS + ' \u7B87\u6240\u3042\u308A\u3001\u8FD1\u3044\u8868\u73FE\u306B\u7F6E\u304D\u63DB\u3048\u307E\u3057\u305F\u3002\n\n' + JZ_FALLBACK_KEYS.slice(0, 12).join(', ') +
+                    '\n\n\u30D6\u30E9\u30A6\u30B6\u7248\u3088\u308A\u53E4\u3044\u30D1\u30CD\u30EB\u3092\u4F7F\u3063\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002\u6700\u65B0\u306E JIZURA_AE.jsx\uFF08v' + JZ_PANEL_VERSION + '\u30FB707 \u90E8\u54C1\uFF09\u306B\u5DEE\u3057\u66FF\u3048\u3066\u3001After Effects \u3092\u518D\u8D77\u52D5\u3057\u3066\u304F\u3060\u3055\u3044\u3002');
+            }
+            report(comp, t0, jobLabel(note ? '\u7F6E\u63DB\u3042\u308A' : '', job));
+            if (note) status.helpTip = note;
+        });
     };
     bDiag.onClick = function () {
         if (!lastComp) { alert('\u5148\u306B\u30B3\u30F3\u30DD\u3092\u4F5C\u3063\u3066\u304F\u3060\u3055\u3044\uFF08\u3053\u306E\u30D1\u30CD\u30EB\u3067\u6700\u5F8C\u306B\u4F5C\u3063\u305F\u30B3\u30F3\u30DD\u3092\u8ABF\u3079\u307E\u3059\uFF09'); return; }
