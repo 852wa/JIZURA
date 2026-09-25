@@ -63,6 +63,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lang-switch a:hover { color: var(--text); background: var(--raised2); }
 .lang-switch [aria-current=page] { color: var(--ink); background: var(--amber); }
 html[lang=en] { --ui: system-ui, -apple-system, "Segoe UI", sans-serif; --brand: Georgia, "Times New Roman", serif; }
+html[lang=zh-Hant] { --ui: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+html[lang=ko] { --ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; --brand: "Noto Serif KR", "AppleMyungjo", "Batang", serif; }
 html[lang=en] .work { grid-template-columns: minmax(315px, 365px) minmax(0, 1fr) minmax(350px, 395px); }
 html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px; }
 html[lang=en] .now-row { grid-template-columns: 105px minmax(0, 1fr); }
@@ -1072,7 +1074,7 @@ const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
 // a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
 
 /* which language are these lyrics in? (almost only Latin letters → en (English / romaji), kana → ja, hangul → ko,
-   Han only → Traditional / Simplified by the distinctive forms) */
+   Han only → Traditional / Simplified by the distinctive forms, Traditional when there are none) */
 J.detectLang = (text) => {
   let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0;
   for (const c of String(text || '')) {
@@ -1091,7 +1093,8 @@ J.detectLang = (text) => {
   if (latin >= 6 && latin >= (latin + cjk * 3) * 0.9) return 'en';
   if (hangul >= 2 && hangul > kana) return 'ko';
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
-  if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+  // Han without kana is Chinese even when no distinctive form appears (the shared forms render fine in the TC faces)
+  if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   return 'ja';
 };
 /* project → the language actually used */
@@ -29467,7 +29470,7 @@ let thumbFonts = null;
 async function ensureFonts() {
   const txt = S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS;
   const keys = J.fontsOfPlan(S.plan);                       // only the faces this plan draws with
-  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
+  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
   showMsg('Loading fonts…');

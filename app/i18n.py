@@ -13,11 +13,35 @@ EDITIONS = [
     ('ko', 'ko', 'ko', '한국어'),
 ]
 MODULES = {'zh-Hant': 'app.i18n_zh_hant', 'zh-Hans': 'app.i18n_zh_hans', 'ko': 'app.i18n_ko'}
+# community translations (PR #6 by Zaious, PR #8 by andongmin94): their glossary wins over app/i18n_<code>.py, which
+# only fills strings added later; their label scripts name every part, style and mood (after app/english.js)
+COMMUNITY = {'zh-Hant': ('app.chinese', 'app/chinese.js'), 'ko': ('app.korean', 'app/korean.js')}
 BASE = 'https://852wa.github.io/JIZURA/'
 
 
+class _Merged:
+    def __init__(self, base, over):
+        for k in dir(base):
+            if not k.startswith('_'): setattr(self, k, getattr(base, k))
+        for sec in ('BODY', 'UI', 'EXPORT'):
+            merged = dict(getattr(base, sec)); merged.update(getattr(over, sec, {}))
+            setattr(self, sec, merged)
+
+
+_cache = {}
 def module(code):
-    return importlib.import_module(MODULES[code]) if code in MODULES else None
+    if code not in MODULES: return None
+    if code not in _cache:
+        base = importlib.import_module(MODULES[code])
+        _cache[code] = _Merged(base, importlib.import_module(COMMUNITY[code][0])) if code in COMMUNITY else base
+    return _cache[code]
+
+
+def labels_js(code):
+    """the label scripts injected before the editor starts: English part names, this edition's names, community labels"""
+    out = names_js(code)
+    if code in COMMUNITY: out += '\n' + open(COMMUNITY[code][1], encoding='utf-8').read()
+    return out
 
 
 def replace_copy(source, glossary):

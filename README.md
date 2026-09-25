@@ -1,6 +1,6 @@
 # JIZURA 字面 — 文字PV自動構成ツール
 
-**English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)　／　**繁體中文**：[開啟](https://852wa.github.io/JIZURA/zh-hant/)　**简体中文**：[打开](https://852wa.github.io/JIZURA/zh-hans/)　**한국어**：[열기](https://852wa.github.io/JIZURA/ko/)
+**English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)　／　**繁體中文**：[開啟](https://852wa.github.io/JIZURA/zh-hant/)　**简体中文**：[打开](https://852wa.github.io/JIZURA/zh-hans/)　**한국어**：[열기](https://852wa.github.io/JIZURA/ko/) · [한국어 가이드](README.ko.md)
 
 英語版 AE パネル：[ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) · [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip)
 
@@ -301,7 +301,7 @@ AE パネルは2種類あります。どちらも中の生成エンジンは同�
 ## 開発・ビルド
 
 ```
-python3 build.py              # src/ app/ vendor/ → index.html
+python3 build.py              # src/ app/ vendor/ → index.html / en/index.html / ko/index.html
 node tools/export_ae_data.js  # src/ を変えたとき：ae/data.json（AE パネルが使うスタイル・部品の情報）を更新
 python3 build_ae.py           # ae/（本体 + 移植済みパック ae/p_*.jsx）→ JIZURA_AE.jsx
 python3 build_cep.py          # index.html + ae/ + cep/ → build/com.852wa.jizura/ と build/JIZURA_CEP.zip（公開用は直下にコピー）
@@ -313,6 +313,11 @@ python3 build_cep.py          # index.html + ae/ + cep/ → build/com.852wa.jizu
 1. `index.html` がリポジトリ直下にある状態で push します。
 2. **Settings → Pages** で Source を **Deploy from a branch**、Branch を `main` / `/ (root)` にして保存します。
 3. 数分後に `https://<ユーザー名>.github.io/<リポジトリ名>/` で開けます。
+
+## 協力してくださった方
+
+- 繁體中文版の画面・部品名の翻訳、フォントや言語判定の修正：[Zaious](https://github.com/Zaious)（#5・#6・#7）
+- 한국어版の画面・部品名の翻訳：[andongmin94](https://github.com/andongmin94)（#8）
 
 ## ライセンス
 

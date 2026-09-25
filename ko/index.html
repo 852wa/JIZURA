@@ -63,6 +63,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lang-switch a:hover { color: var(--text); background: var(--raised2); }
 .lang-switch [aria-current=page] { color: var(--ink); background: var(--amber); }
 html[lang=en] { --ui: system-ui, -apple-system, "Segoe UI", sans-serif; --brand: Georgia, "Times New Roman", serif; }
+html[lang=zh-Hant] { --ui: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+html[lang=ko] { --ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; --brand: "Noto Serif KR", "AppleMyungjo", "Batang", serif; }
 html[lang=en] .work { grid-template-columns: minmax(315px, 365px) minmax(0, 1fr) minmax(350px, 395px); }
 html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px; }
 html[lang=en] .now-row { grid-template-columns: 105px minmax(0, 1fr); }
@@ -349,12 +351,12 @@ button.small.primary { padding: 4px 12px; }
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="곡 제목(타이틀 카드·HUD에 표시)" aria-label="곡 제목">
+      <input id="songTitle" type="text" placeholder="곡 제목 (타이틀 카드와 HUD에 표시)" aria-label="곡 제목">
       <input id="songArtist" type="text" placeholder="아티스트" aria-label="아티스트">
     </div>
-    <div class="modes" role="group" aria-label="표시 모드">
-      <button id="modeEasy" aria-pressed="false" title="자동 생성 버튼 중심의 간단한 화면">간단</button>
-      <button id="modePro" aria-pressed="true" title="모든 설정 표시">상세</button>
+    <div class="modes" role="group" aria-label="편집 모드">
+      <button id="modeEasy" aria-pressed="false" title="자동 생성 중심의 간단한 화면">간단</button>
+      <button id="modePro" aria-pressed="true" title="모든 설정 표시">고급</button>
       <button id="btnTour" class="ghost tour-btn" title="간단 모드 사용법을 안내합니다" aria-label="사용법 안내">？</button>
     </div>
     <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko" selected>한국어</option></select></label>
@@ -370,41 +372,41 @@ button.small.primary { padding: 4px 12px; }
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="가사와 타이밍">
       <div class="sec">
-        <div class="sec-h"><h2>가사</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">문법</button></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="가사(1행 = 1프레이즈)"></textarea>
+        <div class="sec-h"><h2>가사</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">표기법</button></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="가사 (한 줄 = 한 프레이즈)"></textarea>
         <label class="lang-row">가사 언어<select id="lyricLang"><option value="auto">자동 감지</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>1행이 1프레이즈. 빈 행은 잠깐 쉬어 갑니다</li>
-            <li><code>새벽의 색을/기억해</code> … <code>/</code>로 컷 경계를 지정</li>
-            <li><code>*투명*</code> … 강조(크게, 임팩트 있는 연출)</li>
-            <li>행 끝의 <code>!</code> … 플래시와 흔들림 추가</li>
+            <li>한 줄을 한 프레이즈로 처리합니다. 빈 줄은 짧은 간격을 만듭니다.</li>
+            <li><code>새벽의 색을/기억하고 있어</code> … <code>/</code>로 컷 경계를 지정</li>
+            <li><code>*투명*</code> … 강조 (더 크고 강한 연출)</li>
+            <li>줄 끝의 <code>!</code> … 플래시와 흔들림 추가</li>
             <li><code>가사|읽는 법 또는 메모</code> … 주석 레이아웃의 작은 글자</li>
             <li><code>[01:23.45]가사</code> … LRC 타임스탬프를 그대로 사용</li>
             <li><code>[간주 8]</code> … 8초 간주(가사 없이 배경과 장식만). 숫자를 생략하면 4초이며, 탭 동기화나 마커로 길이를 맞출 수 있습니다</li>
-            <li><code>#</code>로 시작하는 행 … 주석(무시)</li>
+            <li><code>#</code>로 시작하는 줄 … 주석(무시)</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>곡과 타이밍</h2></div>
-        <div id="audioName" class="muted audio-name">곡 없음(불러오면 비트를 감지해 컷을 맞춥니다)</div>
+        <div class="sec-h"><h2>음원과 타이밍</h2></div>
+        <div id="audioName" class="muted audio-name">음원 없음 (불러오면 박자를 감지해 컷을 맞춥니다)</div>
         <div class="row">
-          <label class="file" title="mp3 / wav / m4a 등">곡 불러오기<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="곡을 재생하면서 각 행이 시작될 때 탭">탭으로 싱크</button>
+          <label class="file" title="MP3 / WAV / M4A 등">음원 불러오기<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="음원을 재생하며 각 줄이 시작될 때 탭">탭으로 동기화</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="자동"></label>
           <label class="field">시작(초)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">행 길이<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">줄 길이<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 비트에 스냅</label>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 박자에 스냅</label>
           <button id="btnResetTimes" class="ghost small">수동 타이밍 지우기</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">곡에 맞춰 각 행이 시작되는 순간에 <span class="kbd">Space</span> 키나 버튼을 누르세요. 잘못 눌렀다면 <span class="kbd">Backspace</span> 또는 ‘한 번 되돌리기’. 중간 행부터 다시 하려면 행 목록의 ◎를 누르세요.</div>
+          <div class="hint">음원에 맞춰 각 줄이 시작되는 순간 <span class="kbd">Space</span> 또는 버튼을 누르세요. 잘못 눌렀다면 <span class="kbd">Backspace</span> 또는 ‘한 번 되돌리기’. 중간 줄부터 다시 하려면 줄 목록의 ◎를 누르세요.</div>
           <div class="next">다음: <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
           <button id="tapBack" class="ghost">한 번 되돌리기</button>
@@ -413,7 +415,7 @@ button.small.primary { padding: 4px 12px; }
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>행과 컷</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>줄과 컷</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
@@ -426,16 +428,16 @@ button.small.primary { padding: 4px 12px; }
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
         <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="재생 위치">
         <button id="btnLoop" class="ghost small" aria-pressed="true">반복</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="클릭하여 음소거/해제(미리보기 전용. 내보내기 음량은 바뀌지 않습니다)">음량</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="미리보기 음량"></span>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="클릭하여 음소거/해제 (미리보기 전용이며 내보내기 음량은 바뀌지 않습니다)">음량</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="미리보기 음량"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="이전 안으로 돌아가기" aria-label="이전 안">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="다음 안으로 넘어가기" aria-label="다음 안">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="이전 버전으로" aria-label="이전">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="다음 버전으로" aria-label="다음">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="설정은 그대로 두고 구성만 다시 뽑기(잠근 행은 유지)">셔플</button>
-        <button id="btnOmakase" class="primary" title="스타일·분위기·연출·배색을 통째로 랜덤하게(R 키)">자동 생성</button>
+        <button id="btnShuffle" class="accent" title="설정은 유지하고 구성만 다시 추첨 (잠근 줄은 유지)">셔플</button>
+        <button id="btnOmakase" class="primary" title="스타일·분위기·연출·배색을 모두 랜덤으로 변경 (R 키)">자동 생성</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">행 구분(위쪽 눈금)은 드래그로 옮길 수 있습니다. <span class="kbd">Shift</span>를 누르면 비트에 맞추지 않음</span>
+        <span class="tl-hint muted">줄 구분(위쪽 눈금)은 드래그로 옮길 수 있습니다. <span class="kbd">Shift</span>를 누르면 비트에 맞추지 않음</span>
         <span class="tl-btns">
           <button id="btnUndoEdit" class="ghost small" title="가사·타이밍 변경 되돌리기(Ctrl+Z)" disabled>되돌리기</button>
           <button id="tlOut" class="ghost small icon-txt" title="축소" aria-label="타임라인 축소">−</button>
@@ -443,7 +445,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="tlFit" class="ghost small" title="곡 전체 보기">전체</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="타임라인(클릭으로 이동, 행 구분은 드래그로 조정)"></canvas>
+      <canvas id="timeline" aria-label="타임라인(클릭으로 이동, 줄 구분은 드래그로 조정)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
     </section>
 
@@ -452,28 +454,28 @@ button.small.primary { padding: 4px 12px; }
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">자동으로 만들기</button>
-          <p class="hint">누를 때마다 스타일·분위기·움직임·배색·구성이 통째로 바뀝니다. 키보드의 <span class="kbd">R</span> 키로도 실행할 수 있습니다.</p>
+          <p class="hint">누를 때마다 스타일, 분위기, 움직임, 배색, 구성이 모두 바뀝니다. 키보드의 <span class="kbd">R</span> 로도 실행할 수 있습니다.</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ 이전 안</button>
+            <button id="btnPrev2" class="ghost">◀ 이전</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">다음 안 ▶</button>
+            <button id="btnNext2" class="ghost">다음 ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>추가된 연출도 사용<small>첫 공개판 이후에 추가한 약 350개의 연출, 배색 세트 12개, 서체 6개도 자동 생성과 셔플 후보에 넣습니다(끄면 첫 공개판의 연출만 사용)</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>일본풍 연출도 사용<small>제등·엽서·장지문·부채·가문 문장·물결무늬·벚꽃잎 등 일본풍 그래픽. 끄면 자동 생성과 셔플에서 선택되지 않습니다</small></span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>추가 연출도 사용<small>첫 공개 이후 추가된 약 350개 연출, 12개 스타일, 6개 글꼴도 자동 생성과 셔플 후보에 포함합니다. 끄면 초기 공개판의 연출만 사용합니다.</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>일본풍 연출도 사용<small>초롱, 엽서, 쇼지, 부채, 가문 문양, 세이가이하, 벚꽃잎 등의 일본풍 그래픽입니다. 끄면 자동 생성과 셔플에서 선택되지 않습니다.</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>현재 안</h3>
+          <h3>현재 버전</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>이것만 바꾸기</h3>
+          <h3>이 부분만 변경</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="스타일만 다른 것으로">스타일</button>
-            <button id="ePalette" title="포인트 색·어긋남 색 A/B를 랜덤하게">배색</button>
-            <button id="eMood" title="움직임·글리치·사용 기법의 분위기만">분위기</button>
-            <button id="eCut" title="레이아웃과 움직임의 조합만">구성</button>
+            <button id="eStyle" title="스타일만 변경">스타일</button>
+            <button id="ePalette" title="강조색·오프셋 색 A/B를 랜덤 변경">배색</button>
+            <button id="eMood" title="움직임·글리치·사용 기법의 분위기만 변경">분위기</button>
+            <button id="eCut" title="레이아웃과 움직임 조합만 변경">구성</button>
           </div>
         </div>
         <div class="easy-sec">
@@ -482,14 +484,14 @@ button.small.primary { padding: 4px 12px; }
             <label class="field">화면비<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 세로</option><option value="4:3">4:3</option><option value="3:4">3:4 세로</option><option value="1:1">1:1</option><option value="4:5">4:5 세로</option><option value="21:9">21:9</option></select></label>
             <label class="field">해상도<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">배경<select id="eKey"><option value="off">기본(스타일 배경)</option><option value="green">그린 스크린(합성용)</option><option value="black">블랙 배경(합성용)</option></select></label>
+            <label class="field field-wide">배경<select id="eKey"><option value="off">일반 (스타일 배경)</option><option value="green">그린 스크린 (합성용)</option><option value="black">블랙 배경 (합성용)</option></select></label>
           </div>
-          <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 행"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 행"></select><span class="rngInfo muted mono"></span></div>
+          <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 줄"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 줄"></select><span class="rngInfo muted mono"></span></div>
           <div class="outbtns"><button id="eMP4" class="primary">MP4 내보내기</button></div>
-          <button class="terms-open linkish">내보낸 영상의 권리에 대해</button>
+          <button class="terms-open linkish">내보낸 동영상의 권리</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">중지</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">취소</button></div>
           </div>
         </div>
       </div>
@@ -505,19 +507,19 @@ button.small.primary { padding: 4px 12px; }
         <h3>글꼴 역할</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="PC 글꼴 이름(예: 바탕)" style="flex:1">
+          <input id="localFont" type="text" placeholder="PC 글꼴 이름 (예: 맑은 고딕)" style="flex:1">
           <button id="btnAddFont">추가</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">글꼴 파일(.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>포인트 색·어긋남 색</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>내 색으로 덮어쓰기<small>모든 장면에 적용. 배경에 맞춰 밝기를 자동으로 조정합니다</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">글꼴 파일 (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>강조색·오프셋 색</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>사용자 색상으로 덮어쓰기<small>모든 장면에 적용합니다. 배경에 맞춰 밝기를 자동 조정합니다.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
           <button id="btnRandPalette" class="accent">랜덤 배색</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>배경·글자 색</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>메인 배경과 글자를 내 색으로</span></label>
+        <h3>배경·글자색</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>메인 배경과 글자를 사용자 색상으로 설정</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
@@ -525,22 +527,22 @@ button.small.primary { padding: 4px 12px; }
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 플래시</label>
-          <label class="row" style="gap:6px">프레임 간격 <select id="fxKoma" title="움직임을 초당 몇 장으로 그릴지(출력 fps와 별개)"><option value="0">풀(출력 fps 그대로)</option><option value="12">2프레임씩(초당 12장)</option><option value="8">3프레임씩(초당 8장)</option></select></label>
+          <label class="row" style="gap:6px">프레임 홀드 <select id="fxKoma" title="움직임을 초당 몇 장으로 그릴지 설정 (출력 fps와 별개)"><option value="0">전체 (출력 fps 그대로)</option><option value="12">2프레임 홀드 (초당 12장)</option><option value="8">3프레임 홀드 (초당 8장)</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">스타일에 따름</option><option value="on">항상 표시</option><option value="off">표시 안 함</option></select></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">스타일에 따라</option><option value="on">항상 표시</option><option value="off">표시 안 함</option></select></label>
           <label class="field">시드<input id="seed" type="number" step="1"></label>
           <label class="field">&nbsp;<button id="btnSeed" class="ghost">새 시드</button></label>
         </div>
-        <p class="note">같은 시드면 같은 구성이 됩니다. 행별 ‘다시 뽑기’와 ‘잠금’은 왼쪽 행 목록에서 합니다.</p>
+        <p class="note">같은 시드는 같은 구성을 만듭니다. 줄별 다시 추첨과 잠금은 왼쪽 줄 목록에서 설정합니다.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>추가된 연출도 사용<small>‘NEW’ 표시가 붙은 기법·스타일·서체. 끄면 자동 생성과 셔플에서 첫 공개판의 연출만 사용합니다</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>일본풍 연출도 사용<small>‘JP’ 표시가 붙은 기법과 스타일. 끄면 자동 생성과 셔플에서 선택되지 않습니다(추가분 판정 뒤에 적용. 행별로 직접 지정한 경우에는 사용할 수 있습니다)</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>추가 연출도 사용<small>「추가」 표시가 있는 기법·스타일·글꼴입니다. 끄면 자동 생성과 셔플에서 초기 공개판의 연출만 사용합니다.</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>일본풍 연출도 사용<small>「일」 표시가 있는 일본풍 기법과 스타일입니다. 끄면 자동 생성과 셔플에서는 선택되지 않지만 줄별 수동 지정은 가능합니다.</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="이름으로 기법 필터" style="flex:1" aria-label="이름으로 기법 필터"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="기법 이름으로 필터" style="flex:1" aria-label="기법 이름으로 필터"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
 
@@ -550,23 +552,23 @@ button.small.primary { padding: 4px 12px; }
           <label class="field">해상도<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
           <label class="field">화질<select id="outQuality"><option value="standard">표준</option><option value="high">높음</option><option value="max">최고</option></select></label>
-          <label class="field field-wide">배경<select id="outKey"><option value="off">기본(스타일 배경)</option><option value="green">그린 스크린(합성용)</option><option value="black">블랙 배경(합성용)</option></select></label>
+          <label class="field field-wide">배경<select id="outKey"><option value="off">일반 (스타일 배경)</option><option value="green">그린 스크린 (합성용)</option><option value="black">블랙 배경 (합성용)</option></select></label>
         </div>
-        <p class="note key-note">그린 스크린/블랙 배경을 고르면 흰 글자와 연출만 단색 배경 위에 그립니다(배경 무늬·종이 질감·입자·비네팅은 들어가지 않습니다). 미리보기에도 그대로 반영됩니다. 그린 스크린은 영상 편집 프로그램의 크로마 키로, 블랙 배경은 ‘스크린’ 합성이나 루마 키로 빼서 다른 영상 위에 겹칠 수 있습니다.</p>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 곡을 영상에 포함</label>
-        <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 행"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 행"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">그린 스크린/블랙 배경에서는 단색 배경 위에 흰 글자와 연출만 그립니다. 배경 무늬, 종이 질감, 입자, 비네트는 제외됩니다. 미리보기에도 그대로 반영되며 그린은 크로마키, 블랙은 스크린 합성이나 루마 키로 다른 영상 위에 합성할 수 있습니다.</p>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 동영상에 음원 포함</label>
+        <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 줄"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 줄"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
           <button id="btnMP4" class="primary">MP4 내보내기</button>
-          <button id="btnPNG">PNG 시퀀스(ZIP)</button>
-          <button id="btnPNGA">투명 PNG(ZIP, 배경 없음)</button>
-          <button id="btnPNGL" title="후경(배경 그래픽과 가사 뒤의 장식)과 전경(가사와 그 장식·고스트)을 서로 다른 폴더(back / front)에 투명 PNG로 내보냅니다. 화면 전체 효과는 양쪽에 모두 적용되므로, 전경을 후경 위에 겹치면 평소 모습이 됩니다">투명 PNG 전경/후경 (ZIP)</button>
+          <button id="btnPNG">PNG 시퀀스 (ZIP)</button>
+          <button id="btnPNGA">투명 PNG (ZIP·배경 없음)</button>
+          <button id="btnPNGL" title="후경(배경 그래픽과 가사 뒤 장식)과 전경(가사, 장식, 고스트)을 각각 back / front 폴더에 투명 PNG로 내보냅니다. 화면 전체 효과는 양쪽에 적용되므로 전경을 후경 위에 겹치면 일반 화면과 같은 모습이 됩니다.">투명 PNG 전경/후경 (ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">중지</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">취소</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">내보낸 영상·이미지의 권리와 라이선스에 대해</button>
-        <p class="note" id="codecNote">내보내기는 이 브라우저 안에서 이루어집니다(Chrome / Edge 권장).</p>
+        <button class="terms-open linkish" style="margin-top:10px">내보낸 동영상·이미지의 권리와 라이선스</button>
+        <p class="note" id="codecNote">내보내기는 이 브라우저 안에서 처리됩니다 (Chrome / Edge 권장).</p>
       </div>
     </section>
   </main>
@@ -576,13 +578,13 @@ button.small.primary { padding: 4px 12px; }
   <form method="dialog">
     <h2 id="termsTitle">이용 안내</h2>
     <div class="terms-main">
-      <p class="terms-big">이 도구로 만든 <strong>영상과 이미지(출력물)의 권리는 만든 사람</strong>에게 있습니다.</p>
-      <p class="terms-sub">※ 사용한 가사와 곡의 권리는 각 권리자에게 있습니다.</p>
+      <p class="terms-big">이 도구로 만든<strong>동영상과 이미지(출력물)의 권리는 제작자</strong>에게 있습니다.</p>
+      <p class="terms-sub">※ 사용한 가사와 음원의 권리는 각각의 권리자에게 있습니다.</p>
     </div>
-    <p>도구 본체는 <strong>MIT 라이선스</strong>로 공개되어 있습니다. 자세한 라이선스는 여기에서:</p>
+    <p>도구 자체는 <strong>MIT 라이선스</strong>로 공개되어 있습니다. 자세한 라이선스:</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">입력한 가사와 곡은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
-    <details class="terms-oss"><summary>사용 중인 오픈 소스</summary>
+    <p class="muted terms-note">입력한 가사와 음원은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
+    <details class="terms-oss"><summary>사용 중인 오픈소스</summary>
       <p>MP4 내보내기: mp4-muxer (MIT License)<br>글꼴: Google Fonts 배포 서체 (SIL Open Font License 1.1)</p>
     </details>
     <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>닫기</button></div>
@@ -1072,7 +1074,7 @@ const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
 // a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
 
 /* which language are these lyrics in? (almost only Latin letters → en (English / romaji), kana → ja, hangul → ko,
-   Han only → Traditional / Simplified by the distinctive forms) */
+   Han only → Traditional / Simplified by the distinctive forms, Traditional when there are none) */
 J.detectLang = (text) => {
   let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0;
   for (const c of String(text || '')) {
@@ -1091,7 +1093,8 @@ J.detectLang = (text) => {
   if (latin >= 6 && latin >= (latin + cjk * 3) * 0.9) return 'en';
   if (hangul >= 2 && hangul > kana) return 'ko';
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
-  if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+  // Han without kana is Chinese even when no distinctive form appears (the shared forms render fine in the TC faces)
+  if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   return 'ja';
 };
 /* project → the language actually used */
@@ -4425,7 +4428,7 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const px = w * h * fps;
   const bitrate = Math.round(px * (quality === 'max' ? 0.42 : quality === 'high' ? 0.28 : 0.16));
   const vc = await J.pickVideoCodec(w, h, fps, bitrate);
-  if (!vc) throw new Error('이 브라우저는 동영상 인코딩(WebCodecs)을 지원하지 않습니다. 최신 Chrome 또는 Edge에서 열어 주세요.');
+  if (!vc) throw new Error('이 브라우저는 동영상 인코딩(WebCodecs)을 지원하지 않습니다. 최신 Chrome 또는 Edge로 열어 주세요.');
   let ac = null;
   if (audio && audio.buffer && project.includeAudio !== false) ac = await J.pickAudioCodec(48000, Math.min(2, audio.buffer.numberOfChannels));
   const target = new Mp4Muxer.ArrayBufferTarget();
@@ -29344,6 +29347,267 @@ J.randomOk = (project, g, k) => {
   J.SAMPLE_LYRICS = "새벽의 색을/기억해\n멀어진 목소리가 아득히 울렸어\n아직 늦지 않았을까\n*투명*한 채로는 끝낼 수 없어!";
 })();
 
+/* Korean labels are applied after all expression packs register, before the editor starts.
+   Internal IDs and project JSON remain language independent. */
+(() => {
+  'use strict';
+  const titles = {
+    layout: {
+      vcols: '세로쓰기', marquee: '흐르는 배너', tile: '타일 텍스트',
+      huge: '초대형 텍스트', gloss: '주석', diag: '대각선 띠',
+      stack: '잔상 스택', lowerThird: '로어 서드', corners: '양쪽 모서리',
+      arcTop: '무지개 아치', gridCells: '그리드 셀', dropCap: '드롭 캡',
+      frameBox: '액자 프레임', subtitleBar: '자막 바',
+      sideways: '가로 회전 텍스트', edgeFrame: '테두리 프레임', hanko: '낙관',
+      genkou: '원고지', panels: '만화 패널', ruler: '치수선',
+      rain: '글자 비', bounceLine: '바운드 라인', crossBands: '교차 띠',
+      stickerBomb: '스티커 콜라주', credits: '엔드 크레딧',
+      columnsBig: '대비 컬럼', circleWords: '동심원 텍스트',
+      typeSpecimen: '타이포 견본', kanjiFocus: '한 글자 강조',
+      halfVertical: '혼합 세로쓰기', magazine: '매거진 스프레드',
+      headlineDeck: '헤드라인과 덱', proofread: '교정지',
+      ema: '에마 소원패', ransom: '오려붙인 글자', vinyl: '바이닐 레코드',
+      bookSpine: '책등', stampSheet: '우표 시트',
+      chochin: '종이 초롱', noren: '노렌 커튼',
+      tanzaku: '소원 띠', omikuji: '오미쿠지',
+      kakejiku: '족자', shoji: '쇼지 문',
+      clapper: '클래퍼보드', karuta: '카루타 카드',
+      flipCards: '플립 카드', pile: '글자 더미', balloons: '글자 풍선',
+      tiles: '글자 타일', bulbs: '전구 간판', ledScroll: 'LED 티커',
+      crowdBubbles: '말풍선 군중', wordSearch: '단어 찾기',
+      shadowPlay: '그림자극', kaleido: '만화경',
+      fisheye: '어안 렌즈', wall: '원근 벽면',
+      sliceStack: '슬라이스 레이어', maskReveal: '텍스트 창',
+      halftoneBig: '대형 하프톤 텍스트'
+    },
+    enter: {
+      assemble: '분해 후 조립', riseMask: '아래에서 나타나기',
+      dropMask: '위에서 나타나기', slideL: '왼쪽에서 슬라이드', slideR: '오른쪽에서 슬라이드',
+      slideWhole: '전체 슬라이드 인', flipX: '세로축 플립',
+      flipY: '가로축 플립', strokeDraw: '윤곽선 그린 뒤 채우기',
+      outlineFill: '윤곽선에서 채움', splitJoin: '위아래에서 합치기',
+      vSlice: '세로 슬라이스', diagWipe: '대각선 와이프',
+      randomOrder: '글자 랜덤 순서', bounceBig: '큰 바운스',
+      squashDrop: '찌그러지며 착지', echoIn: '잔상 수렴',
+      trackIn: '자간 좁히기', trackOut: '자간 넓히기',
+      blurStagger: '순차 블러', fadeStagger: '글자별 페이드',
+      spiralIn: '나선 조립', zoomOut: '초대형에서 정상 크기',
+      cursorSweep: '커서 스윕', rockSettle: '흔들리며 정착',
+      snapRail: '정렬선에 스냅', fanOpen: '부채 펼치기',
+      stickerPeel: '스티커 붙이기', crumple: '구겨짐 펴기',
+      noteUnfold: '편지 펼치기', tornJoin: '찢긴 조각 합치기',
+      splitFlap: '스플릿 플랩', crtOn: 'CRT 켜짐',
+      odometer: '숫자 드럼 회전', matrixRain: '데이터 비',
+      brushReveal: '붓으로 나타내기', quarters: '네 방향에서 수렴',
+      printRegister: '색판 정합', echoCount: '카운트 인',
+      liquidFill: '액체 차오르기', strokeOrder: '획순대로',
+      shadowFirst: '그림자 먼저', tokoroten: '압출 면발'
+    },
+    hold: {
+      still: '정지', breathe: '호흡', glitchtick: '글리치 틱',
+      colorRun: '색상 이동', trackBreathe: '자간 호흡',
+      beatHop: '비트에 점프', hWave: '가로 웨이브',
+      orbitSmall: '작은 공전', scanBand: '스캔 밴드',
+      noiseDrift: '노이즈 드리프트', zoomSlow: '천천히 줌 인',
+      stretchPulse: '비트에 늘어나기', glitchJump: '간헐적 글리치 점프',
+      echoTrail: '잔상 트레일', glowFlicker: '글로우 깜빡임',
+      windGust: '돌풍', eqBounce: '음압 바운스',
+      flashBox: '비트 반전', glintSweep: '광택 스윕',
+      flipSwap: '간헐적 뒤집기', shadowSway: '그림자 흔들림',
+      typeRattle: '타자기 떨림', focusRack: '포커스 이동',
+      pluckString: '현 진동'
+    },
+    exit: {
+      fall: '무너져 낙하', drift: '흩어져 사라짐', sinkMask: '아래로 잠기기',
+      riseOut: '위로 퇴장', slideOutL: '왼쪽으로 슬라이드', slideOutR: '오른쪽으로 슬라이드',
+      flipOutX: '문 닫힘', flipOutY: '아래로 플립',
+      trackOutWide: '자간 벌어짐', collapse: '안쪽으로 붕괴',
+      zoomThrough: '줌 통과', zoomFar: '멀리 후퇴',
+      spinOut: '회전하며 퇴장', blurOutStagger: '글자별 블러 퇴장',
+      undraw: '윤곽선으로 되돌리기', outlineOut: '채움이 윤곽선으로',
+      irisClose: '아이리스 닫힘', splitApart: '위아래로 분리',
+      vSliceDrop: '세로 조각 낙하', dissolve: '부서져 사라짐',
+      scrambleOut: '기호로 변환', glitchDissolve: '블록 글리치로 해체',
+      gravity: '중력 낙하', burn: '타서 사라짐',
+      sweepCover: '바로 덮기', shatterLite: '네 조각으로 파손',
+      peelOff: '스티커 떼기', crumpleOut: '구겨서 버리기',
+      tearOut: '찢어 버리기', scorchOut: '그을려 사라짐',
+      overexposeOut: '과노출로 소멸', scanOut: '스캔라인 삭제',
+      halftoneOut: '하프톤으로 분해', eraserOut: '칠판 지우기',
+      vacuumOut: '한 점으로 흡입', sandOut: '모래처럼 흩어짐',
+      hingeOut: '힌지 풀림', rocketOff: '로켓처럼 퇴장',
+      balloonOff: '풍선처럼 떠남', deflateOut: '바람 빠져 날아감',
+      glassBreak: '유리 파손', clapShut: '중앙으로 닫힘',
+      lampOff: '불 꺼짐', matrixOut: '디지털 비',
+      tornadoOut: '토네이도', snakeOut: '한 줄로 퇴장',
+      flutterOut: '팔랑이며 낙하', fanClose: '부채 닫기',
+      rgbSplitOut: 'RGB 분리', shockOut: '충격파',
+      floodOut: '물에 잠김', slashOut: '두 조각으로 베기',
+      scribbleOut: '낙서로 지우기', candleOut: '불어 끄기'
+    },
+    decor: {
+      brackets: '모서리 마크', rings: '좌표 링', dots: '점선 링',
+      leaders: '인출선', blobs: '잉크 얼룩', bars: '거친 띠',
+      counter: '큰 숫자', cropMarks: '재단선',
+      indexNum: '순번', dateStamp: '사진 날짜 스탬프',
+      qrBlock: 'QR풍 블록', guides: '가이드선',
+      checkerStrip: '체커 스트립', beatRing: '비트 링',
+      speedCorner: '속도선', risingParticles: '상승 입자',
+      brushStroke: '붓 터치', tapePieces: '마스킹 테이프',
+      scribbleUnder: '손그림 밑줄', crossOut: '교정 마크',
+      watermarkKanji: '대형 워터마크 문자',
+      verticalStrip: '세로 텍스트 띠', romajiLine: '로마자 라인',
+      bracketsJP: '일본식 괄호', seal: '붉은 낙관',
+      kamon: '가문 문양', seigaiha: '세이가이하 파도무늬',
+      asanoha: '아사노하 무늬', hanabi: '불꽃놀이',
+      chochin: '종이 초롱', shimenawa: '시메나와', sensu: '부채',
+      tsukiKumo: '달과 구름', momiji: '단풍잎',
+      namiGashira: '파도 마루', kasumi: '안개',
+      registration: '정합 마크', ruledLines: '노트 줄',
+      indexTabs: '인덱스 탭', moonPhases: '달의 위상',
+      dandelion: '민들레 씨앗', tally: '계수표',
+      windowChrome: '창 프레임', notifBell: '알림 벨',
+      likeCounter: '좋아요 카운터', mediaControls: '재생 컨트롤'
+    },
+    treat: {
+      none: '없음', outline: '속 빈 글자', outlineFill: '외곽선 글자',
+      doubleOutline: '이중 외곽선', extrude: '입체 글자',
+      marker: '마커 강조', strike: '취소선',
+      boxed: '박스 글자', gradientV: '세로 그라디언트',
+      splitColor: '2색 분할', halftone: '하프톤',
+      dotted: '점선 외곽선', alternate: '교대 색상',
+      wide: '넓은 글자', tall: '긴 글자',
+      echoOutline: '잔상 외곽선', emphasisDots: '강조점',
+      neonOutline: '네온 튜브', glitchSplit: '색판 어긋남',
+      stencilGap: '스텐실 틈', sizeWave: '글자 크기 리듬',
+      rotateAlt: '교대 회전', baselineShift: '기준선 엇갈림',
+      fauxBold: '초굵게', circled: '원형 글자',
+      bracketsQuote: '인용부호', reflection: '반사',
+      sticker: '스티커 외곽선', kerningWide: '넓은 자간',
+      monoGrid: '원고지 그리드', outlineOffset: '오프셋 외곽선',
+      toneShadow: '하프톤 그림자', fadeChars: '글자별 페이드',
+      cutShift: '절단 오프셋', focusPull: '포커스 전환',
+      spotChar: '한 글자 강조', ransom: '오려붙인 글자'
+    },
+    bg: {
+      none: '단색', seigaiha: '세이가이하 파도',
+      asanoha: '아사노하 무늬', topoLines: '등고선',
+      ridgePlot: '산 능선', nightMoon: '달밤',
+      filmStrip: '필름 스트립', vhsBand: 'VHS 노이즈 밴드',
+      godRays: '빛줄기', vignettePulse: '비네트 펄스',
+      paperCut: '종이 오리기', bigChar: '대형 글자',
+      splitV: '세로 색상 분할', splitH: '가로 색상 분할',
+      splitDiag: '대각선 색상 분할', tvBars: 'TV 컬러바',
+      speedLines: '속도선', bokehBg: '보케',
+      particlesBg: '부유 입자', eqBars: '이퀄라이저 바',
+      letterbox: '시네마 레터박스', noiseField: '움직이는 노이즈'
+    },
+    cam: {
+      push: '천천히 줌 인', rackFocus: '포커스 이동',
+      floatNoise: '부유 카메라', vertigo: '돌리 줌',
+      spiralIn: '나선 줌', jelly: '탄성 흔들림',
+      pullOut: '줌 아웃', panL: '왼쪽 팬', panR: '오른쪽 팬',
+      dutch: '더치 앵글', beatPunch: '비트 줌',
+      driftDiag: '대각선 드리프트', shakeHard: '강한 흔들림',
+      stepZoom: '계단식 줌'
+    },
+    fx: {
+      chroma: '색수차 점프', slice: '슬라이스 글리치', block: '블록 글리치',
+      zoom: '줌 블러', radialChroma: '방사형 색수차',
+      bulge: '어안 왜곡', macroBlock: '압축 블록',
+      ditherBit: '1비트 디더', rotateSnap: '각도 스냅',
+      echoFrames: '프레임 잔상', kaleido: '만화경',
+      bandInvert: '반전 밴드', anamorphic: '아나모픽 플레어',
+      tvStatic: 'TV 노이즈', dustScratches: '필름 스크래치',
+      filmAdvance: '필름 이동', perspectiveTilt: '원근 틸트',
+      focusLines: '집중선', starGlint: '별빛 반짝임',
+      negativeRing: '반전 링', shatter: '유리 파손',
+      defocus: '초점 흐림', rgbSplit: 'RGB 분리',
+      vhsRoll: 'VHS 롤', trackingNoise: '트래킹 노이즈',
+      posterize: '포스터라이즈', filmBurn: '필름 번',
+      crtOff: 'CRT 꺼짐'
+    },
+    trans: {
+      wipe: '에지 와이프', diagonalWipe: '대각선 띠 와이프',
+      irisOpen: '아이리스 열기', pushSlide: '푸시',
+      doorsOpen: '양문 열기', checker: '체커보드',
+      blockDissolve: '블록 디졸브', inkBlob: '잉크 번짐',
+      shatterTiles: '타일 파손', sliceShift: '슬라이스 이동',
+      cubeTurn: '큐브 회전', flashCross: '플래시 컷', pixelate: '픽셀 전환'
+    }
+  };
+
+  // For newer pack entries that do not have an explicit Korean title yet,
+  // build a readable label from the language-independent camelCase key.
+  const words = {
+    big:'대형', small:'소형', text:'텍스트', line:'라인', lines:'라인', grid:'그리드',
+    frame:'프레임', box:'박스', circle:'원형', ring:'링', dot:'점', dots:'점',
+    wave:'웨이브', split:'분할', wipe:'와이프', slide:'슬라이드', zoom:'줌',
+    blur:'블러', glow:'글로우', shadow:'그림자', color:'색상', rgb:'RGB',
+    noise:'노이즈', film:'필름', paper:'종이', ink:'잉크', light:'빛',
+    flash:'플래시', beat:'비트', pulse:'펄스', rotate:'회전', spin:'회전',
+    fall:'낙하', drop:'낙하', rise:'상승', float:'부유', drift:'드리프트',
+    mask:'마스크', reveal:'리빌', focus:'포커스', camera:'카메라',
+    vertical:'세로', horizontal:'가로', diagonal:'대각선', random:'랜덤',
+    letter:'글자', letters:'글자', word:'단어', words:'단어', type:'타이포',
+    stamp:'스탬프', sticker:'스티커', brush:'붓', neon:'네온', glass:'유리',
+    cut:'컷', tile:'타일', tiles:'타일', block:'블록', blocks:'블록',
+    screen:'화면', scan:'스캔', retro:'레트로', star:'별', moon:'달',
+    rain:'비', cloud:'구름', clouds:'구름', smoke:'연기', fire:'불',
+    bounce:'바운스', pop:'팝', stretch:'늘이기', squash:'찌그러짐',
+    fold:'접기', unfold:'펼치기', open:'열기', close:'닫기', out:'아웃',
+    in:'인', slow:'느리게', fast:'빠르게', hard:'강하게', soft:'부드럽게'
+  };
+  const acronym = { rgb: 'RGB', crt: 'CRT', vhs: 'VHS', qr: 'QR', tv: 'TV', led: 'LED', hud: 'HUD', jp: '일본풍' };
+  const label = key => key.replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Za-z])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([A-Za-z])/g, '$1 $2')
+    .replace(/_/g, ' ').split(' ').map(part => acronym[part.toLowerCase()] || words[part.toLowerCase()] || part).join(' ');
+
+  for (const group of J.GROUP_KEYS) {
+    for (const key of J.order(group)) {
+      const item = J.registry(group)[key];
+      if (item) item.name = (titles[group] || {})[key] || label(key);
+    }
+  }
+
+  const styles = {
+    noir: ['누아르 크로마', '흑백 화면에 시안과 앰버 색 어긋남'],
+    crimson: ['크림슨 시그널', '짙은 빨강, 모노크롬 타이포와 손상된 데이터'],
+    caution: ['코션', '노랑·빨강·파랑과 계기판 그래픽'],
+    magenta: ['팝 마젠타', '강한 핑크, 둥근 굵은 글자와 콜아웃 라인'],
+    paper: ['종이와 잉크', '종이 질감, 남색·마젠타와 명조 잔상'],
+    hud: ['다크 HUD', '차콜, 얇은 프레임, 주황 포인트와 이클립스'],
+    mint: ['민트 터미널', '검정, 틸, 라임과 스캔 효과'],
+    specimen: ['타이포 견본', '잉크색 배경과 명조 주석'],
+    transit: ['트랜짓', '올리브와 노랑, 사인 그래픽과 하프톤'],
+    blueprint: ['블루프린트', '파랑·흰색·검정 그래픽 콜라주'],
+    rouge: ['루주 그라디언트', '밝은 회색과 빨강 그라디언트, 캡슐'],
+    mono: ['모노 RGB', '회색 공간, 흰 명조와 강한 RGB 분리'],
+    sakura: ['사쿠라', '부드러운 벚꽃색과 자주색, 둥근 글자와 명조'],
+    ocean: ['심해', '남색, 빛나는 시안, 거품과 가는 고딕'],
+    sunset: ['선셋 그라디언트', '주황에서 보라, 굵은 명조와 역광'],
+    forest: ['숲 노트', '이끼색, 자연 종이와 연필 느낌 글자'],
+    vapor: ['베이퍼웨이브', '파스텔 핑크·블루와 VHS 블룸'],
+    newsprint: ['신문 인쇄', '회색 종이, 검정·빨강과 하프톤 정합'],
+    synth80: ['신스 80s', '검정 바탕의 네온 마젠타·시안과 스캔라인'],
+    kraft: ['크라프트지', '따뜻한 종이, 빨강·남색 스탬프와 와시 테이프'],
+    candy: ['캔디', '민트와 과일 파스텔, 튀는 글자'],
+    acid: ['애시드', '검정, 애시드 그린과 마젠타, 거친 타이포'],
+    sumi: ['먹과 주홍', '일본 종이, 붓글씨와 붉은 낙관'],
+    gold: ['골든 나이트', '깊은 검정, 금박, 아이보리 명조와 반짝임']
+  };
+  for (const [key, [name, desc]] of Object.entries(styles)) {
+    J.STYLES[key].name = name; J.STYLES[key].desc = desc;
+  }
+  for (const [key, name] of Object.entries({
+    glitch:'글리치', calm:'차분함', pop:'팝', graphic:'그래픽',
+    editorial:'에디토리얼', emotional:'감성', chaos:'전부 사용'
+  })) J.MOODS[key].name = name;
+
+  J.SAMPLE_LYRICS = '새벽의 색을/기억하고 있어\n멀리서 풀려 버린 목소리\n있잖아, 아직 늦지 않았을까\n*투명*한 채로 끝낼 수는 없어!';
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -29411,7 +29675,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="첫 공개판 이후에 추가">NEW</span>' : '') + (d && d.wa ? '<span class="set-badge" title="일본풍 연출">JP</span>' : '');
+  return (d && d.extra ? '<span class="set-badge ex" title="첫 공개 이후 추가">추가</span>' : '') + (d && d.wa ? '<span class="set-badge" title="일본풍 연출">일</span>' : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -29475,7 +29739,7 @@ let thumbFonts = null;
 async function ensureFonts() {
   const txt = S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS;
   const keys = J.fontsOfPlan(S.plan);                       // only the faces this plan draws with
-  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
+  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
   showMsg('글꼴 불러오는 중…');
@@ -29532,7 +29796,7 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '일시 정지');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '일시정지');
 }
 function pause() {
   S.playing = false; AP.stop();
@@ -29655,7 +29919,7 @@ function updateCutInfo() {
     `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
     chip('l', '레이아웃', n(J.LAYOUTS, cut.layout)), chip('e', '등장', n(J.ENTER, cut.enter)), chip('h', '유지', n(J.HOLD, cut.hold)), chip('x', '퇴장', n(J.EXIT, cut.exit)),
     cut.decor && cut.decor.length ? chip('', '장식', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
-    cut.treat && cut.treat !== 'none' ? chip('t', '가공', n(J.TREAT, cut.treat)) : '',
+    cut.treat && cut.treat !== 'none' ? chip('t', '글자 효과', n(J.TREAT, cut.treat)) : '',
     cut.bg && cut.bg !== 'none' ? chip('b', '배경', n(J.BG, cut.bg)) : '',
     cut.cam && cut.cam !== 'push' ? chip('c', '카메라', n(J.CAMERA, cut.cam)) : '',
     cut.trans ? chip('c', '전환', n(J.TRANS, cut.trans)) : '',
@@ -29674,17 +29938,17 @@ function renderLines() {
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
     const label = ln.interlude ? `[간주${ln.secs ? ' ' + ln.secs + '초' : ''}]` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="시작(초)${manual ? ' · 수동' : ' · 자동'}" aria-label="${i + 1}행 시작 시간(초)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="시작(초)${manual ? ' · 수동' : ' · 자동'}" aria-label="${i + 1}번째 줄 시작(초)" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="이 행의 가사 고치기" aria-label="${i + 1}행 가사 고치기">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="${i + 1}행의 컷 수">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="레이아웃 지정">${layoutOpts}</select>`}
-        <button class="icon ghost tapfrom" title="이 행부터 탭 싱크 다시 하기" aria-label="${i + 1}행부터 탭">${ICON.tap}</button>
-        <button class="icon ghost rng" title="내보낼 범위로 지정(Shift+클릭으로 범위 확장)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}행을 내보낼 범위로">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="이 행 다시 뽑기">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="이 행의 구성 잠그기" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="이 줄의 가사 고치기" aria-label="${i + 1}줄 가사 고치기">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="${i + 1}줄의 컷 수">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="레이아웃 선택">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="이 줄부터 탭으로 동기화 다시 하기" aria-label="${i + 1}줄부터 탭">${ICON.tap}</button>
+        <button class="icon ghost rng" title="내보낼 범위로 지정(Shift+클릭으로 범위 확장)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}줄을 내보낼 범위로">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="이 줄 다시 추첨">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="이 줄의 구성 잠금" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) q('.lay').value = o.layout || '';
@@ -29719,11 +29983,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length}행 / ${S.plan.cuts.length}컷`;
+  $('linesInfo').textContent = `${S.plan.lines.length}줄 / ${S.plan.cuts.length}컷`;
   syncRangeUI();
 }
 
-/* ---------------- 행から歌詞を直す ---------------- */
+/* ---------------- 줄 から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -29731,8 +29995,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `${ln.index + 1}행 가사`);
-  inp.title = '문법(/ 구분, *강조*, 행 끝의 !, | 메모, [간주 8])도 그대로 쓸 수 있습니다. Enter로 확정, Esc로 취소';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `${ln.index + 1}줄 가사`);
+  inp.title = '문법(/ 구분, *강조*, 줄 끝의 !, | 메모, [간주 8])도 그대로 쓸 수 있습니다. Enter로 확정, Esc로 취소';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -29742,7 +30006,7 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`${ln.index + 1}행 가사를 고쳤습니다`);
+      replan(); flushSave(); toast(`${ln.index + 1}줄 가사를 고쳤습니다`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -29761,11 +30025,11 @@ function edGo(d) {
   const o = JSON.parse(from.pop());
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? '되돌렸습니다' : '다시 실행했습니다');
+  toast(d < 0 ? '되돌렸습니다' : '다시 실줄했습니다');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだ행だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだ줄 だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -29787,7 +30051,7 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `내보낼 범위: ${R2.from + 1}${R2.to > R2.from ? '~' + (R2.to + 1) : ''}행` : '내보낼 범위: 전체');
+  toast(R2 ? `내보낼 범위: ${R2.from + 1}${R2.to > R2.from ? '~' + (R2.to + 1) : ''}줄` : '내보낼 범위: 전체');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
@@ -29833,7 +30097,7 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (추가분이 꺼져 있어 자동 생성에서 선택되지 않습니다)' : ' (일본풍 연출이 꺼져 있어 자동 생성에서 선택되지 않습니다)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (추가 연출이 꺼져 있어 자동 생성에서는 선택되지 않음)' : ' (일본풍 연출이 꺼져 있어 자동 생성에서는 선택되지 않음)') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
@@ -29853,7 +30117,7 @@ function fontSelectOptions(sel) {
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', '제목'], ['serif', '명조 틀'], ['body', '작은 글자']].forEach(([role, label]) => {
+  [['display', '제목'], ['serif', '명조 계열'], ['body', '작은 글자']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
     row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} 글꼴">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
@@ -29861,7 +30125,7 @@ function renderFontRoles() {
   });
 }
 const BASE_KEYS = [['bg', '배경'], ['fg', '글자'], ['sub', '보조']];
-const ACCENT_KEYS = [['accent', '포인트 색'], ['ghostA', '어긋남 색 A'], ['ghostB', '어긋남 색 B']];
+const ACCENT_KEYS = [['accent', '강조색'], ['ghostA', '오프셋 색 A'], ['ghostB', '오프셋 색 B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -29900,7 +30164,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('배색: 포인트 색·어긋남 색 A/B 변경', [p.accent, p.ghostA, p.ghostB]);
+  toast('배색: 강조색·오프셋 색 A/B 변경', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -29965,7 +30229,7 @@ function rerollPart(part) {
     msg = `분위기: ${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = '구성: 레이아웃과 움직임 다시 뽑기';
+    msg = '구성: 레이아웃과 움직임 다시 추첨';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -29974,7 +30238,7 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : '사용자 지정';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : '사용자 설정';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
@@ -29983,9 +30247,9 @@ function showNow() {
   el.innerHTML = row('스타일', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
     + row('분위기', escapeHtml(moodName))
     + row('배색', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">랜덤</span>' : ''}`)
-    + row('제목 서체', escapeHtml(fontName))
+    + row('제목 글꼴', escapeHtml(fontName))
     + row('구성', `컷 ${cuts.length}개 · 레이아웃 ${kinds}종`)
-    + row('연출', `가공 ${cuts.filter(c => c.treat && c.treat !== 'none').length} · 배경 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size}종 · 카메라 ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+    + row('연출', `글자 효과 ${cuts.filter(c => c.treat && c.treat !== 'none').length} · 배경 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size}종 · 카메라 ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -30010,7 +30274,7 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', '움직임 강도'], ['glitch', '글리치'], ['chroma', '색 어긋남'], ['decor', '장식 양'], ['density', '컷 밀도'], ['texture', '질감'], ['bgSwitch', '배경 전환']];
+const FX = [['motion', '움직임 강도'], ['glitch', '글리치'], ['chroma', '색 오프셋'], ['decor', '장식 양'], ['density', '컷 세분화'], ['texture', '질감'], ['bgSwitch', '배경 전환']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -30028,7 +30292,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', '레이아웃'], ['enter', '등장'], ['hold', '유지'], ['exit', '퇴장'], ['decor', '장식'], ['treat', '글자 가공'], ['bg', '배경'], ['cam', '카메라'], ['fx', '화면 효과'], ['trans', '컷 사이 전환']];
+const GROUPS = [['layout', '레이아웃'], ['enter', '등장'], ['hold', '유지'], ['exit', '퇴장'], ['decor', '장식'], ['treat', '글자 효과'], ['bg', '배경'], ['cam', '카메라'], ['fx', '화면 효과'], ['trans', '컷 전환']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 function renderTech() {
@@ -30049,7 +30313,7 @@ function renderTech() {
     shown.forEach(k => {
       const l = document.createElement('label');
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? ' (' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(', ') + ')' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (추가분이 꺼져 있어 자동으로 선택되지 않습니다)' : ' (일본풍 연출이 꺼져 있어 자동으로 선택되지 않습니다)'; }
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (추가 연출이 꺼져 있어 자동으로 선택되지 않음)' : ' (일본풍 연출이 꺼져 있어 자동으로 선택되지 않음)'; }
       l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
@@ -30083,9 +30347,9 @@ function syncOut() {
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `이 브라우저에서는 ${vc.label} 형식으로 내보냅니다(${w}×${h} / ${S.project.fps}fps). 내보내는 동안 탭을 열어 두세요.` : '이 브라우저는 동영상 인코딩(WebCodecs)을 지원하지 않습니다. 최신 Chrome / Edge에서 열거나 PNG 시퀀스를 사용하세요.';
+  $('codecNote').textContent = vc ? `이 브라우저에서는 ${vc.label} 로 내보냅니다 (${w}×${h} / ${S.project.fps}fps). 내보내는 동안 탭을 열어 두세요.` : '이 브라우저는 동영상 인코딩(WebCodecs)을 지원하지 않습니다. 최신 Chrome / Edge를 사용하거나 PNG 시퀀스로 내보내세요.';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = '이 브라우저는 MP4 내보내기를 지원하지 않습니다(Chrome / Edge 권장)';
+  if (!vc) $('eMP4').title = '이 브라우저에서는 MP4 내보내기를 사용할 수 없습니다 (Chrome / Edge 권장)';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {
@@ -30111,12 +30375,12 @@ async function runExport(kind) {
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
       txt.textContent = `완료 ${(r.blob.size / 1048576).toFixed(1)}MB · ${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}초`;
       const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += ' (저장이 취소되었습니다)';
+      if (res === 'declined') txt.textContent += ' (저장이 취소됨)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
         txt.textContent += r.audio ? '. 이 브라우저에서는 오디오가 Opus가 되어 iPhone·QuickTime 등에서 소리가 나지 않을 수 있으므로, 오디오를 WAV로도 저장했습니다' : '. 이 브라우저는 오디오를 내보낼 수 없어 오디오를 WAV로 따로 저장했습니다(영상 편집 프로그램에서 합쳐 주세요)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. 곡을 불러오지 않아 소리가 없습니다(‘곡 불러오기’로 다시 불러오세요)';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. 음원을 불러오지 않아 소리가 없습니다(‘음원 불러오기’로 다시 불러오세요)';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
       txt.textContent = `완료 ${(blob.size / 1048576).toFixed(1)}MB`;
@@ -30145,7 +30409,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`${from + 1}행부터 탭으로 싱크합니다(${J.fmtTime(t0)}부터 재생)`);
+  if (from > 0) toast(`${from + 1}줄부터 탭으로 동기화합니다(${J.fmtTime(t0)}부터 재생)`);
 }
 function tapNow() {
   if (!S.tap) return;
@@ -30257,8 +30521,8 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, '추가된 연출: 사용', '추가된 연출: 사용 안 함(첫 공개판의 연출만)');
-  setSwitch('wa-toggle', 'wa', true, '일본풍 연출: 사용', '일본풍 연출: 사용 안 함(자동 생성·셔플에서 선택 안 됨)');
+  setSwitch('extra-toggle', 'extra', true, '추가 연출: 사용', '추가 연출: 사용 안 함 (초기 공개판 연출만)');
+  setSwitch('wa-toggle', 'wa', true, '일본풍 연출: 사용', '일본풍 연출: 사용 안 함 (자동 생성·셔플에서 제외)');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -30323,7 +30587,7 @@ function bind() {
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('프로젝트를 불러오지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('프로젝트를 열지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -30350,7 +30614,7 @@ async function loadAudioFile(f, restored) {
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name} (${J.fmtTime(S.audio.duration)} · 약 ${S.audio.bpm}BPM)` + (restored ? ' · 지난번 곡' : '');
+    $('audioName').textContent = `${f.name} (${J.fmtTime(S.audio.duration)} · 약 ${S.audio.bpm}BPM)` + (restored ? ' · 지난번 음원' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
@@ -30361,12 +30625,12 @@ async function loadAudioFile(f, restored) {
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. 가사 입력', text: '1행이 1프레이즈가 됩니다. 빈 행은 잠깐 쉬어 가고, [간주 8]이라고 쓰면 8초 간주(배경과 장식만)가 됩니다.' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 곡 불러오기', text: 'mp3 등을 불러오면 비트를 감지해 컷 전환을 맞춥니다. 곡이 없어도 만들 수 있습니다. ‘탭으로 싱크’로 각 행의 시작을 맞출 수도 있습니다.' },
-  { t: () => $('btnOmakaseBig'), title: '3. 자동으로 만들기', text: '스타일·분위기·움직임·배색·구성을 한 번에 정합니다. 누를 때마다 다른 안이 나오고, ‘◀ 이전 안’으로 돌아갈 수 있습니다.' },
-  { t: () => $('btnPlay'), title: '4. 재생해서 확인하기', text: '재생해서 확인해 보세요. 아래 타임라인에서는 행 구분을 드래그해서 옮길 수 있습니다(＋−로 확대/축소).' },
-  { t: () => $('lineList'), title: '5. 마음에 걸리는 행만 고치기', text: '행마다 가사 고치기(✎), 컷 수 정하기, 이 행부터 탭 다시 하기(◎), 이 행만 다시 만들기(주사위)를 할 수 있습니다.' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 내보내기', text: '화면비(세로 9:16 등)와 해상도를 골라 MP4로 내보냅니다. ‘내보낼 범위’로 고른 행만 내보낼 수도 있습니다.' },
+  { t: () => $('lyrics'), title: '1. 가사 입력', text: '1줄이 1프레이즈가 됩니다. 빈 줄은 잠깐 쉬어 가고, [간주 8]이라고 쓰면 8초 간주(배경과 장식만)가 됩니다.' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 음원 불러오기', text: 'mp3 등을 불러오면 비트를 감지해 컷 전환을 맞춥니다. 음원이 없어도 만들 수 있습니다. ‘탭으로 싱크’로 각 줄의 시작을 맞출 수도 있습니다.' },
+  { t: () => $('btnOmakaseBig'), title: '3. 자동으로 만들기', text: '스타일·분위기·움직임·배색·구성을 한 번에 정합니다. 누를 때마다 다른 안이 나오고, ‘◀ 이전’으로 돌아갈 수 있습니다.' },
+  { t: () => $('btnPlay'), title: '4. 재생해서 확인하기', text: '재생해서 확인해 보세요. 아래 타임라인에서는 줄 구분을 드래그해서 옮길 수 있습니다(＋−로 확대/축소).' },
+  { t: () => $('lineList'), title: '5. 마음에 걸리는 줄만 고치기', text: '줄마다 가사 고치기(✎), 컷 수 정하기, 이 줄부터 탭 다시 하기(◎), 이 줄만 다시 만들기(주사위)를 할 수 있습니다.' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 내보내기', text: '화면비(세로 9:16 등)와 해상도를 골라 MP4로 내보냅니다. ‘내보낼 범위’로 고른 줄만 내보낼 수도 있습니다.' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {

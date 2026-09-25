@@ -28,7 +28,7 @@ def build(lang):
     if english or local:
         marker = '/* ============================================================\n   JIZURA — editor UI'
         if marker not in script: raise ValueError('Could not find browser UI entry point')
-        inject = read('app/english.js') + ('\n' + i18n.names_js(lang) if local else '')
+        inject = read('app/english.js') + ('\n' + i18n.labels_js(lang) if local else '')
         script = script.replace(marker, inject + '\n' + marker, 1)
     alternates = '\n'.join(f'<link rel="alternate" hreflang="{hl}" href="{i18n.BASE}{f + "/" if f else ""}">' for c, f, hl, _ in i18n.EDITIONS)
     html_lang = dict((c, hl) for c, _, hl, _ in i18n.EDITIONS)[lang]
