@@ -135,6 +135,9 @@ BODY = {
     '追加': 'New', '和': 'JP', '演出': 'Effects', '手法': 'Techniques',
     'コマ打ち': 'Frame stepping', 'フラッシュ': 'Flash', 'シード': 'Seed', '新しいシード': 'New seed',
     '標準': 'Standard', '最高': 'Maximum', '高': 'High', '中止': 'Cancel',
+    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
+    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
+    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
 }
 
 UI = {
@@ -251,6 +254,10 @@ UI = {
     '解析中…': 'Analyzing audio…', '読み込めませんでした: ': 'Could not load: ',
     '約': 'about ', '（PC）': ' (installed)',
     '字面': 'JIZURA', '追加': 'New', '和': 'JP',
+    'ループ': 'Loop',
+    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
+    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
+    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
 }
 
 EXPORT = {
