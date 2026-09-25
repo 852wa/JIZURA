@@ -128,7 +128,7 @@ function jzBuildStart(plan, opt) {
             var CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u, T = wc;
             if (Z) { T = app.project.items.addComp(label + (pi ? ' side' : ' stage'), CW, CH, 1, cdur, fps); T.parentFolder = folder; }
             var CL = buildContent(c, T, CW, CH, cu, sc, label + (pi ? ' side' : ''), cdur, ci);
-            if (Z) { var SL = wc.layers.add(T); SL.name = (pi ? 'side (' : 'stage (') + (Z.side || 'side') + ')'; SL.startTime = 0; jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
+            if (Z) { var SL = wc.layers.add(T); SL.name = (pi ? 'side (' : 'stage (') + (Z.side || 'side') + ')'; SL.startTime = Math.max(0, c.start - cut.start); jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
             if (!pi) { mainStage = Z ? T : null; mainContent = CL; }
         }
         // into the main comp
