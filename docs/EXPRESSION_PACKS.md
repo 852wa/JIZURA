@@ -23,7 +23,7 @@ J.register('layout', 'myKey', { name: '日本語名', tags: ['pop', 'graphic'], 
 ```
 `J.register(group, key, def, pack)` adds the entry to the registry and to the order array. Keys must be unique camelCase and
 must not collide with existing keys (check `J.order(group)`). `name` (Japanese, short, 2–7 chars) is shown in the UI.
-`tags` = moods it suits, any of: `glitch calm pop graphic editorial emotional`. `w` = base pick weight (1 normal; 0.4–0.7 for
+`tags` = moods it suits, any of: `glitch calm pop graphic editorial emotional horror` (`horror` only for the horror set). `w` = base pick weight (1 normal; 0.4–0.7 for
 gimmicky / very specific looks; 1.2–1.5 for strong general-purpose ones).
 
 ## Design space & environment
@@ -173,6 +173,12 @@ elegant heavy mincho). Faces are fetched lazily only when a plan uses them, so p
 are only picked at random when the project's 「追加分の演出も使う」 switch is on. Entries built around a traditional Japanese
 object, pattern or motif (提灯, 障子, 扇, 家紋, 青海波 …) must be listed in `J.WA` (or carry `wa: true`) so the 「和風の演出も使う」
 switch can leave them out. New styles are extra unless listed in `J.BASE_STYLES`; new fonts belong in `J.EXTRA_FONTS`.
+
+### Part sets with their own switch (文字PV系 / キネティック / ホラー)
+Packs named `typo`, `kinetic` or `horror` (or entries with `set: '<name>'`) belong to a set with its own switch
+(`project.typo` / `project.kinetic` default on, `project.horror` default off) instead of 追加分. Styles join a set with `set: '<name>'`.
+The ホラー mood (`J.MOODS.horror`) is offered by おまかせ only when the horror switch is on, and おまかせ uses horror entries only in that mood.
+Keys use a set prefix (`ty`, `kn`, `hr`); new sets need an entry in `J.SETS` (src/11q_sets.js) and a switch in the UI.
 
 ### Avoid near-duplicates
 Before designing, list what already exists in your group: `node -e` is not enough for visuals — run

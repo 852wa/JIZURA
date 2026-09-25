@@ -6,7 +6,7 @@ Turn lyrics into animated lyric videos in your browser. JIZURA combines layouts,
 
 The Japanese, English, Indonesian, Traditional Chinese, Simplified Chinese and Korean browser editions share the same project format and saved browser data. Use the language links at the top of the editor to switch editions without changing your lyrics or settings. English After Effects panels are available as [ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) and [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip) downloads. The AE JSON format is the same in both languages.
 
-**Version: v0.7.0** (see [CHANGELOG.md](CHANGELOG.md))
+**Version: v0.8.0** (see [CHANGELOG.md](CHANGELOG.md))
 
 <details>
 <summary><h2>Quick start</h2></summary>
@@ -76,6 +76,19 @@ MP4 export now streams the file as it encodes and retries with a software encode
 <summary><h3>Phone mode</h3></summary>
 
 On phones (narrow or touch screens) the mode switch shows **Phone / Simple / Advanced**, and Phone mode opens on the first visit. **Randomize** stays pinned in the header, the preview stays at the top while you scroll, and the line list shows one lyric per row — tap a row to open its dice, lock and cut settings. Tap a section heading to fold or unfold it; Save, Open and Reset are under **Menu**. For reliable exports, Phone mode starts at 720p and caps exports at 1080p (use Advanced mode for larger sizes), keeps the screen awake while exporting, and does not treat time spent in another app as a failure. When the browser supports it, **Share / save** hands the finished video to the share sheet (e.g. to save it to Photos).
+
+</details>
+
+<details>
+<summary><h3>Part sets: typographic, kinetic and horror</h3></summary>
+
+Three switches under **Randomize** (and at the top of the Techniques tab) add new part sets to random picks, independently of **Include new effects**:
+
+- **Use typographic parts** (on by default) — 50 parts derived from the original set that work with type, rules and numbers alone rather than pictures: key-glyph splits, cropped giant type, crossed lines, ruby, ruled lines, size steps, justified lines, split type, bracket reveals, running heads and more (marked T).
+- **Use kinetic parts** (on by default) — 51 motion-first parts where words move one by one: slam stacks, quarter turns, word swaps, dives into a letter, flow-then-snap, word-by-word jump cuts, gears, collisions, per-word entrances, beat holds and word-following cameras. Word changes lock to the beat when a song is loaded (marked K).
+- **Include horror effects** (off by default) — 52 eerie parts and 3 styles (Ruins, Midnight Recording, Cursed Letter): flashlight, door gap, wall scrawl, CCTV, spirit board, missing poster, the one wrong character, redacted file, static TV, spirit photo, wrong shadow, blink-creep and jump-scare entrances, pulled-down exits, twitch holds, watching eye, sigil, cracks, dark corridor, nervous handheld, subliminal frames, static cuts and more (marked H). When on, Randomize adds a **Horror** mood and picks it about half the time; Randomize uses horror parts only in that mood. No gore.
+
+The After Effects panels do not build these sets yet: an **Export for AE** plan maps each of them to the closest existing part.
 
 </details>
 
