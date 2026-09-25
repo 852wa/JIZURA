@@ -23,6 +23,7 @@
       <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
+      <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
       <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
     </div>
   </header>
@@ -31,7 +32,7 @@
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="歌詞とタイミング">
       <div class="sec">
-        <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></div>
+        <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
         <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -122,6 +123,8 @@
           <div class="pick-sets">
             <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>追加分の演出も使う<small>最初の公開版のあとに追加した約350の演出・配色セット12・書体6も、おまかせやシャッフルの候補にします（オフのときは最初の公開版の演出だけ）</small></span></label>
             <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>提灯・はがき・障子・扇・家紋・青海波・桜の花びらなどの和風グラフィック。オフにすると、おまかせやシャッフルで選ばれません</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>統一感<small>パートごとに演出をそろえ、くり返す歌詞は同じ見せ方で戻ってきます。動きの方向を交互にし、強い動きはここぞという行に。「!」の行（なければくり返すパートの頭の行）を大きく見せる「キメ」、文字が溶けて変わる・同じ字が移動する「モーフ」、細字から太字へ育つ「太さ」も使います</small></span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字整列<small>かなの字間を詰めて塊で読ませ、助詞を小さく・頭の字を大きく、英字は少し大きく日本語との間を少し空けます。文字は声より0.2秒先に出し、効果を重ねすぎないようにします</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -145,8 +148,9 @@
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
             <label class="field field-wide">背景<select id="eKey"><option value="off">通常（スタイルの背景）</option><option value="green">グリーンバック（合成用）</option><option value="black">ブラックバック（合成用）</option></select></label>
           </div>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span></label>
           <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button><button id="eMP4File" class="ghost mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button></div>
           <button class="terms-open linkish">書き出した動画の権利について</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
@@ -183,6 +187,10 @@
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
+        <div class="unify-box">
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>統一感<small>パートごとに演出をそろえ、くり返す歌詞は同じ見せ方で戻ってきます。動きの方向を交互にし、強い動きはここぞという行に。「!」の行（なければくり返すパートの頭の行）を大きく見せる「キメ」、文字が溶けて変わる・同じ字が移動する「モーフ」、細字から太字へ育つ「太さ」も使います</small></span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字整列<small>かなの字間を詰めて塊で読ませ、助詞を小さく・頭の字を大きく、英字は少し大きく日本語との間を少し空けます。文字は声より0.2秒先に出し、効果を重ねすぎないようにします</small></span></label>
+        </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> フラッシュ</label>
@@ -214,10 +222,12 @@
           <label class="field field-wide">背景<select id="outKey"><option value="off">通常（スタイルの背景）</option><option value="green">グリーンバック（合成用）</option><option value="black">ブラックバック（合成用）</option></select></label>
         </div>
         <p class="note key-note">グリーンバック／ブラックバックにすると、白い文字と演出だけを単色の背景の上に描きます（背景の模様・紙の質感・粒子・周辺減光は入りません）。プレビューにもそのまま反映されます。グリーンバックは動画編集ソフトのクロマキーで、ブラックバックは「スクリーン」合成や輝度キーで抜いて、別の映像の上に重ねられます。</p>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span></label>
         <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 曲を動画に含める</label>
         <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
           <button id="btnMP4" class="primary">MP4 を書き出す</button>
+          <button id="btnMP4File" class="mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">MP4（大きな動画用・ファイルに直接保存）</button>
           <button id="btnPNG">連番PNG（ZIP）</button>
           <button id="btnPNGA">透過PNG（ZIP・背景なし）</button>
           <button id="btnPNGL" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button>
@@ -233,6 +243,21 @@
   </main>
 </div>
 
+<dialog id="resetDlg" class="terms" aria-labelledby="resetTitle">
+  <form method="dialog">
+    <h2 id="resetTitle">初期化</h2>
+    <p>次のものをすべて消して、最初の状態に戻します。<strong>元に戻すことはできません。</strong></p>
+    <ul class="reset-list">
+      <li>歌詞・曲名・アーティスト</li>
+      <li>読み込んだ曲（このブラウザに残していた分も）</li>
+      <li>タイミング・行ごとの指定・書き出す範囲</li>
+      <li>スタイル・演出・配色・書体などの設定</li>
+      <li>案の履歴（◀ ▶）と、歌詞・タイミングの「元に戻す」の履歴</li>
+    </ul>
+    <p class="terms-sub">表示モード（かんたん／詳細）・プレビューの音量・画面の言語はそのままです。保存したプロジェクトファイル（.json）も消えません。</p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button value="reset" class="danger">初期化する</button></span></div>
+  </form>
+</dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
     <h2 id="termsTitle">利用について</h2>

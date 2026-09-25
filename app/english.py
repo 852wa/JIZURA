@@ -1,6 +1,22 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '<span>統一感<small>パートごとに演出をそろえ、くり返す歌詞は同じ見せ方で戻ってきます。動きの方向を交互にし、強い動きはここぞという行に。「!」の行（なければくり返すパートの頭の行）を大きく見せる「キメ」、文字が溶けて変わる・同じ字が移動する「モーフ」、細字から太字へ育つ「太さ」も使います</small></span>': '<span>Unified look<small>Each part of the song keeps one set of layouts and motions, and a line that comes back is shown the same way again. Directions alternate and strong moves are saved for the lines that matter. The line ending in “!” (or, if none, the first line of a repeated part) becomes a big “hit”; lyrics can melt into the next or glide letter by letter (“morph”), and grow from thin to bold (“weight”)</small></span>',
+    '<span>文字整列<small>かなの字間を詰めて塊で読ませ、助詞を小さく・頭の字を大きく、英字は少し大きく日本語との間を少し空けます。文字は声より0.2秒先に出し、効果を重ねすぎないようにします</small></span>': '<span>Typesetting<small>Kana are set a little tighter so words read as blocks, particles are smaller and the first character larger, Latin letters are slightly larger with a small gap to Japanese. Lyrics appear 0.2 s before the voice, and effects are not piled up</small></span>',
+    'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button>',
+    'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">MP4（大きな動画用・ファイルに直接保存）</button>': 'title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">MP4 (large videos, save straight to a file)</button>',
+    '<span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span>': '<span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span>',
+    'title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button>': 'title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button>',
+    'title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>': 'title="Clear lyrics, song, settings and history and start over">Reset</button>',
+    '<h2 id="resetTitle">初期化</h2>': '<h2 id="resetTitle">Reset</h2>',
+    '<p>次のものをすべて消して、最初の状態に戻します。<strong>元に戻すことはできません。</strong></p>': '<p>This clears everything below and starts over. <strong>It cannot be undone.</strong></p>',
+    '<li>歌詞・曲名・アーティスト</li>': '<li>Lyrics, song title and artist</li>',
+    '<li>読み込んだ曲（このブラウザに残していた分も）</li>': '<li>The loaded song (including the copy kept in this browser)</li>',
+    '<li>タイミング・行ごとの指定・書き出す範囲</li>': '<li>Timing, per-line settings and export range</li>',
+    '<li>スタイル・演出・配色・書体などの設定</li>': '<li>Style, motion, palette, fonts and other settings</li>',
+    '<li>案の履歴（◀ ▶）と、歌詞・タイミングの「元に戻す」の履歴</li>': '<li>Variation history (◀ ▶) and the lyrics / timing undo history</li>',
+    '<p class="terms-sub">表示モード（かんたん／詳細）・プレビューの音量・画面の言語はそのままです。保存したプロジェクトファイル（.json）も消えません。</p>': '<p class="terms-sub">Simple / Advanced mode, preview volume and the interface language stay as they are. Saved project files (.json) are not affected.</p>',
+    '<button value="cancel" class="ghost">やめる</button><button value="reset" class="danger">初期化する</button>': '<button value="cancel" class="ghost">Cancel</button><button value="reset" class="danger">Reset</button>',
     '<li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>': '<li><code>[interlude 8]</code> … an 8-second instrumental part (no lyrics, background and decorations only). Without a number it lasts 4 seconds; tap sync or markers set its length</li>',
     '<button class="tour-skip ghost small">スキップ</button>': '<button class="tour-skip ghost small">Skip</button>',
     '<button class="tour-prev ghost small">戻る</button>': '<button class="tour-prev ghost small">Back</button>',
@@ -107,6 +123,18 @@ BODY = {
 }
 
 UI = {
+    "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (the first method failed, so another encoder was used)'",
+    "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'Unified look: on (parts match; hits, morphs and weight too)'",
+    "'保存先を開けませんでした: '": "'Could not open the file: '",
+    '`・「${fileName}」に保存しました`': '` · saved to “${fileName}”`',
+    "'統一感：オフ'": "'Unified look: off'",
+    "'文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）'": "'Typesetting: on (spacing, particles, Latin, 0.2 s lead, fewer effects)'",
+    "'文字整列：オフ'": "'Typesetting: off'",
+    "`中央を空けました：文字と演出を${tall ? '上下' : '左右'}に置きます`": "`Centre kept free: lyrics and effects go ${tall ? 'top / bottom' : 'left / right'}`",
+    "'中央を空けるのをやめました'": "'Centre no longer kept free'",
+    "'歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）'": "'Lyrics cleared (Undo or Ctrl+Z brings them back)'",
+    "'初期化しました'": "'Reset done'",
+    "'歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。'": "'Clear lyrics, song, settings and history and start over? This cannot be undone.'",
     "(ln.interlude ? ' 間奏' : '')": "(ln.interlude ? ' inst.' : '')",
     "`〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕`": "`[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]`",
     '\'<option value="">カット 自動</option>\'': '\'<option value="">Cuts: auto</option>\'',
@@ -195,6 +223,17 @@ UI = {
 }
 
 EXPORT = {
+    "'エンコーダーが出力を返しません'": "'The encoder returned no output'",
+    "'（ソフトウェア）'": "' (software)'",
+    "'ファイルを仕上げ中'": "'Finishing the file'",
+    '`動画のフレームが足りません（${outFrames}/${total}）`': '`Frames are missing (${outFrames}/${total})`',
+    "'音声のエンコードに失敗しました: '": "'Audio encoding failed: '",
+    "'エンコーダーが応答しません'": "'The encoder stopped responding'",
+    "'「大きな動画用（ファイルに直接保存）」か、'": "'use “For large videos (save straight to a file)”, or '",
+    '`（${vc.label}・ソフトウェアで再試行 ${k}）`': '` (${vc.label}, retry in software ${k})`',
+    "'解像度・fps・画質を下げて試してください。詳細：'": "'try a lower resolution, fps or quality. Details: '",
+    "'MP4 を書き出せませんでした。'": "'Could not export the MP4: '",
+    "'エンコーダーが停止しました'": "'The encoder stopped'",
     "'音声のエンコードが途中で止まりました（' + aChunks + '）。もう一度書き出してください'": "'Audio encoding stopped partway (' + aChunks + '). Please export again'",
     'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome か Edge の最新版で開いてください。': 'Video encoding (WebCodecs) is unavailable. Open in the latest Chrome or Edge.',
     'キャンセルしました': 'Canceled', 'フレーム ': 'Frame ',
@@ -202,6 +241,8 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'中央を空ける（キャラクター用：横長は左右・縦長は上下に配置）'": "'Keep the centre free (for a character: left / right on wide, top / bottom on tall frames)'",
+    "'中央にキャラクターなどを重ねる前提で、文字と演出をカットごとの帯（横長の画面は左右、縦長は上下。行ごとに交互）に置きます。背景と画面効果は画面全体のままです'": "'For a character or other footage in the middle: each cut is laid out in a side band (left / right on wide frames, top / bottom on tall ones, alternating line by line). Backgrounds and screen effects still cover the whole frame.'",
     "'中止'": "'Stop'",
     "'作成を止めます（そこまでのカットでコンポを仕上げます）'": "'Stop building (the composition is finished with the cuts built so far)'",
     "'JIZURA：いま作成中です。終わるまで待つか「中止」を押してください'": "'JIZURA: a build is running. Wait for it to finish or press Stop.'",

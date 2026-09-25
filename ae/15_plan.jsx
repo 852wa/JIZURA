@@ -136,6 +136,13 @@ function jzPickTreat(rng, st, en, fx, layout, emph, hist) {
     }
     return c.length ? rng.wpick(c) : 'none';
 }
+// side bands (same as the browser's J.sideZones): wide frames left / right, tall frames top / bottom
+function jzSideZones(W, H) {
+    if (H > W * 1.1) { var h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h: h, side: 'top' }, { x: 0, y: H - h, w: W, h: h, side: 'bottom' }]; }
+    var w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
+    return [{ x: 0, y: 0, w: w, h: H, side: 'left' }, { x: W - w, y: 0, w: w, h: H, side: 'right' }];
+}
+function jzZoneOf(zones, li) { var z = zones[Math.max(0, li || 0) % 2]; return { x: z.x, y: z.y, w: z.w, h: z.h, side: z.side }; }
 function jzPickBg(rng, st, en, fx, bgHist) {
     if (!rng.chance(0.2 + 0.35 * fx.decor + 0.2 * fx.bgSwitch)) return 'none';
     var c = [], order = jzOrder('bg'), last = bgHist.slice(Math.max(0, bgHist.length - 3));
@@ -252,8 +259,11 @@ function jzMakePlan(o) {
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
+    // 中央を空ける: cuts laid out in side bands (left / right, or top / bottom on tall frames), alternating per line
+    var zones = o.centerFree ? jzSideZones(W, H) : null;
+    if (zones && en.bg) en.bg.bigChar = false;
     var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
-        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title) };
+        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title), centerFree: !!zones, zones: zones };
     jzSetLang(plan.lang);
     var hist = [], bgHist = [], fxHist = [], schemeIdx = 0, nS = st.schemes.length;
     function ev(t, type, amp, dur) { plan.events.push({ t: t, type: type, amp: amp, dur: dur }); }
@@ -293,7 +303,8 @@ function jzMakePlan(o) {
             var u = units[k], cs = bounds[k], ce = bounds[k + 1], dur = ce - cs, nn = jzCount(u.text);
             var emph = (ln.impact && (k === 0 || u.recap));
             for (var q = 0; q < ln.emph.length; q++) if (u.text.indexOf(ln.emph[q]) >= 0) emph = true;
-            var layout = jzPickLayout(rng, st, en, nn, dur, hist, emph, u.recap, portrait);
+            var Z = zones ? jzZoneOf(zones, li) : null, LW = Z ? Z.w : W, LH = Z ? Z.h : H;
+            var layout = jzPickLayout(rng, st, en, nn, dur, hist, emph, u.recap, Z ? LH > LW : portrait);
             var enter = jzPickEnter(rng, st, en, layout, dur, hist, emph, nn);
             var exit = jzPickExit(rng, st, en, layout, dur, k === units.length - 1, hist);
             var hold = jzPickHold(rng, en, fx, hist);
@@ -307,7 +318,7 @@ function jzMakePlan(o) {
             var mOut = jzTab(jzMeta('exit', exit).outDur, dur, nn); if (mOut != null) outDur = mOut;
             if (inDur + outDur > dur * 0.92) { var f = dur * 0.92 / (inDur + outDur); inDur *= f; outDur *= f; }
             var sch = schemeIdx; if (nS > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nS;
-            var params = jzPlanOf('layout', layout, rng, st, { text: u.text, n: nn, W: W, H: H, dur: dur });
+            var params = jzPlanOf('layout', layout, rng, st, { text: u.text, n: nn, W: LW, H: LH, dur: dur });
             var decor = jzPickDecor(rng, st, en, fx, layout, hist);
             var treat = jzPickTreat(rng, st, en, fx, layout, emph, hist), treatP = treat !== 'none' ? jzPlanOf('treat', treat, rng, st) : {};
             if (k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = jzPickBg(rng, st, en, fx, bgHist); lineBgP = lineBg !== 'none' ? jzPlanOf('bg', lineBg, rng, st) : {}; }
@@ -349,7 +360,7 @@ function jzMakePlan(o) {
         }
     }
     plan.cuts.sort(function (a, b) { return a.start - b.start; });
-    for (i = 0; i < plan.cuts.length; i++) plan.cuts[i].index = i;
+    for (i = 0; i < plan.cuts.length; i++) { plan.cuts[i].index = i; if (zones) plan.cuts[i].zone = jzZoneOf(zones, plan.cuts[i].line); }
     plan.events.sort(function (a, b) { return a.t - b.t; });
     return plan;
 }

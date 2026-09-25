@@ -53,11 +53,14 @@ function jzBuildStart(plan, opt) {
         var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
         var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
         // content
-        var pc = app.project.items.addComp(label + ' text', W, H, 1, cdur, fps);
+        // 中央を空ける: the cut is laid out in its side band — content, ghosts and camera go into a band-sized "stage" comp
+        // placed over the full-frame background (the comp bounds clip it, like the browser's clip)
+        var Z = plan.centerFree && cut.zone ? cut.zone : null, CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u;
+        var pc = app.project.items.addComp(label + ' text', CW, CH, 1, cdur, fps);
         pc.parentFolder = folder;
-        var ctx = { comp: pc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
+        var ctx = { comp: pc, W: CW, H: CH, u: cu, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
         var bb = null, lk = jzFallback('layout', cut.layout, 'center');
-        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: W, H: H, dur: cut.dur }, st) : {}; }
+        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: CW, H: CH, dur: cut.dur }, st) : {}; }
         try { bb = JZ_REG.layout[lk].build(ctx); }
         catch (e) { jzWarn('cut ' + (ci + 1) + ' ' + lk + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
         try { jzDecorate(ctx, bb); } catch (e2) { jzWarn('decor: ' + e2.toString()); }
@@ -77,7 +80,9 @@ function jzBuildStart(plan, opt) {
             var bctx = { comp: wc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, plan: plan, P: cut.bgP || {} };
             try { JZ_REG.bg[bk].build(bctx, bctx.P); } catch (e3) { jzWarn('bg ' + bk + ': ' + e3.toString() + (e3.line ? ' (line ' + e3.line + ')' : '')); }
         }
-        var CL = wc.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
+        var stage = wc;
+        if (Z) { stage = app.project.items.addComp(label + ' stage', CW, CH, 1, cdur, fps); stage.parentFolder = folder; }
+        var CL = stage.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
         var content = [CL];
         if (ghostAmt > 0.02 && opt.ghosts !== false) {
             // layers marked with jzNoGhost() stay out of the ghosts: feed them from a copy of the content comp with those layers off
@@ -91,7 +96,7 @@ function jzBuildStart(plan, opt) {
             }
             var ghosts = [['B', lagB, [-3.4, -1.3], sc.ghostB], ['A', lagA, [3.2, 1.9], sc.ghostA]];
             for (var g = 0; g < ghosts.length; g++) {
-                var G = gsrc ? wc.layers.add(gsrc) : CL.duplicate();
+                var G = gsrc ? stage.layers.add(gsrc) : CL.duplicate();
                 G.name = 'ghost ' + ghosts[g][0];
                 G.startTime = ghosts[g][1]; G.inPoint = 0; G.outPoint = cdur;
                 G.moveAfter(CL);
@@ -105,13 +110,14 @@ function jzBuildStart(plan, opt) {
             }
         }
         // camera: a null at the comp centre (identity transform) that carries the content and its ghosts
-        var nul = wc.layers.addNull(cdur); nul.name = 'JZ Camera';
-        jzXf(nul, 'ADBE Anchor Point').setValue([W / 2, H / 2]); jzXf(nul, 'ADBE Position').setValue([W / 2, H / 2]);
+        var nul = stage.layers.addNull(cdur); nul.name = 'JZ Camera';
+        jzXf(nul, 'ADBE Anchor Point').setValue([CW / 2, CH / 2]); jzXf(nul, 'ADBE Position').setValue([CW / 2, CH / 2]);
         for (var q = 0; q < content.length; q++) content[q].parent = nul;
         var ck = jzFallback('cam', cut.cam || 'push', 'push');
-        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: wc, nul: nul, content: content, P: cut.camP || {}, W: W, H: H, u: u, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
+        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: stage, nul: nul, content: content, P: cut.camP || {}, W: CW, H: CH, u: cu, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
         catch (e4) { jzWarn('cam ' + ck + ': ' + e4.toString() + (e4.line ? ' (line ' + e4.line + ')' : '')); }
         // into the main comp
+        if (Z) { var SL = wc.layers.add(stage); SL.name = 'stage (' + (Z.side || 'side') + ')'; SL.startTime = 0; jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
         var WL = comp.layers.add(wc);
         WL.startTime = cut.start; WL.inPoint = cut.start; WL.outPoint = cut.end;
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
