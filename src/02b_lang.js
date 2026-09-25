@@ -19,7 +19,7 @@ const TCSET = new Set([...TC]), SCSET = new Set([...SC]);
 // a few of the "Simplified" forms are also Japanese shinjitai (会 対 来 …) — kana decides Japanese first, so that is harmless
 
 /* which language are these lyrics in? (almost only Latin letters → en (English / romaji), kana → ja, hangul → ko,
-   Han only → Traditional / Simplified by the distinctive forms) */
+   Han only → Traditional / Simplified by the distinctive forms, Traditional when there are none) */
 J.detectLang = (text) => {
   let kana = 0, hangul = 0, han = 0, tc = 0, sc = 0, latin = 0;
   for (const c of String(text || '')) {
@@ -38,7 +38,8 @@ J.detectLang = (text) => {
   if (latin >= 6 && latin >= (latin + cjk * 3) * 0.9) return 'en';
   if (hangul >= 2 && hangul > kana) return 'ko';
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
-  if (han >= 2 && (tc || sc)) return tc >= sc ? 'zh-Hant' : 'zh-Hans';
+  // Han without kana is Chinese even when no distinctive form appears (the shared forms render fine in the TC faces)
+  if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   return 'ja';
 };
 /* project → the language actually used */
