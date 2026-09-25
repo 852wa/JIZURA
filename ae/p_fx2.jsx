@@ -107,7 +107,9 @@ function fx2_isWrap(L) {
 // A matted wrapper takes a copy of its matte along (kept directly above the copy). fn(layer, isMatte) is applied to each.
 function fx2_copies(f, ev, tag, fn) {
     var C = f.comp, t0 = ev.t, t1 = fx2_t1(ev), src = [], out = [], i, L, D, M, M0;
-    for (i = C.numLayers; i >= 1; i--) { L = C.layer(i); if (fx2_isWrap(L) && L.inPoint < t1 - 0.0001 && L.outPoint > t0 + 0.0001) src.push(L); }
+    if (f.wraps) {                      // indexed by the builder (see fx1_wraps)
+        for (i = f.wraps.length - 1; i >= 0; i--) { var W0 = f.wraps[i]; if (W0.cut.start > t1 + 1 || W0.cut.end < t0 - 1) continue; L = W0.layer; if (L.inPoint < t1 - 0.0001 && L.outPoint > t0 + 0.0001) src.push(L); }
+    } else for (i = C.numLayers; i >= 1; i--) { L = C.layer(i); if (fx2_isWrap(L) && L.inPoint < t1 - 0.0001 && L.outPoint > t0 + 0.0001) src.push(L); }
     for (i = 0; i < src.length; i++) {
         L = src[i]; M0 = null;
         try { if (L.trackMatteType !== TrackMatteType.NO_TRACK_MATTE && L.index > 1) M0 = C.layer(L.index - 1); } catch (e0) {}
