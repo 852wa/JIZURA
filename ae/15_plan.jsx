@@ -137,7 +137,8 @@ function jzPickTreat(rng, st, en, fx, layout, emph, hist) {
     return c.length ? rng.wpick(c) : 'none';
 }
 // side bands (same as the browser's J.sideZones): wide frames left / right, tall frames top / bottom
-function jzSideZones(W, H) {
+function jzSideZones(W, H, dir) {
+    if (H > W * 1.1 && dir === 'lr') { var w0 = Math.round(W * 0.34); return [{ x: 0, y: 0, w: w0, h: H, side: 'left' }, { x: W - w0, y: 0, w: w0, h: H, side: 'right' }]; }
     if (H > W * 1.1) { var h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h: h, side: 'top' }, { x: 0, y: H - h, w: W, h: h, side: 'bottom' }]; }
     var w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
     return [{ x: 0, y: 0, w: w, h: H, side: 'left' }, { x: W - w, y: 0, w: w, h: H, side: 'right' }];
@@ -289,7 +290,7 @@ function jzMakePlan(o) {
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
     // 中央を空ける: cuts laid out in side bands (left / right, or top / bottom on tall frames), alternating per line
-    var zones = o.centerFree ? jzSideZones(W, H) : null;
+    var zones = o.centerFree ? jzSideZones(W, H, o.centerDir) : null;
     if (zones && en.bg) en.bg.bigChar = false;
     var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
         lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title), centerFree: !!zones, zones: zones };
