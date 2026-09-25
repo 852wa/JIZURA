@@ -123,6 +123,8 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; flex: 1 1 140px; }
 .ln .cuts span { font-size: 10px; padding: 1px 6px; border-radius: 2px; border: 1px solid var(--line2); color: var(--muted); cursor: pointer; }
 .ln .cuts span:hover { color: var(--text); border-color: var(--amber); }
+.ln .cuts select.cut-lay { font-size: 10px; padding: 1px 4px; max-width: 112px; border: 1px solid var(--line2); border-radius: 2px; background: var(--raised); color: var(--text); }
+.ln .cuts select.cut-lay.is-forced { border-color: var(--amber); color: var(--text); }
 
 /* ---------- stage ---------- */
 .col-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; min-width: 0; }
@@ -156,6 +158,21 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .ln .tools .icon[aria-pressed=true] { color: var(--amber); }
 #timeline { width: 100%; height: 76px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
+.cutinfo .cut-roll { margin-left: 2px; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
+.chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
+button.chip { cursor: pointer; font: inherit; }
+button.chip:hover { border-color: var(--amber); color: var(--text); }
+button.chip.is-forced { border-color: var(--amber); }
+button.chip[aria-pressed=true] { border-color: var(--cyan); color: var(--cyan); }
+.cut-pick { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 8px; max-height: min(42vh, 420px); overflow: auto; }
+.cut-pick-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: sticky; top: 0; background: var(--panel); z-index: 1; padding-bottom: 4px; }
+.cut-pick-h strong { font-size: 12px; }
+.cut-pick-h .muted { flex: 1; font-size: 11px; }
+.cut-pick .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; padding: 0; min-height: 96px; }
+.cut-pick .tcard { cursor: pointer; width: 100%; text-align: left; }
+.cut-pick .tcard.is-on { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.cut-pick .tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
 .chip.l { border-color: rgba(245,165,12,0.6); }
@@ -180,7 +197,6 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
-
 .tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
 .tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
 .tcard:hover { border-color: var(--line2); }

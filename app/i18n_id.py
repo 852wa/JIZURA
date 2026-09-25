@@ -178,6 +178,18 @@ BODY = {
     '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
     '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
     'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
+
+
+
+
+
+
+
+    'このカットだけ差し替え': 'Ganti cut ini saja',
+    'このカットだけ構成を再抽選': 'Undi ulang susunan cut ini saja',
+    'このカットだけ手法をランダムに': 'Acak teknik cut ini saja',
+    'このカットをシャッフル': 'Acak cut ini',
+    'このカットをおまかせ': 'Buat variasi cut ini',
 }
 
 UI = {
@@ -304,6 +316,21 @@ UI = {
     "'ロック中。クリックで解除'": "'Terkunci — klik untuk membuka'",
     "'ロック：'": "'Terkunci: '",
     "'ロック解除：'": "'Kunci dibuka: '",
+
+
+
+
+
+
+
+    'この位置のカットは抽選できません': 'Tidak ada cut di posisi ini untuk diundi ulang',
+    '`${i + 1}行目 カット${k + 1}のレイアウト`': '`Layout cut ${k + 1} di baris ${i + 1}`',
+    'このカットだけ構成を再抽選': 'Undi ulang susunan cut ini saja',
+    'このカットだけ手法をランダムに': 'Acak teknik cut ini saja',
+    'このカットをシャッフル': 'Acak cut ini',
+    'このカットをおまかせ': 'Buat variasi cut ini',
+    'おまかせ': 'Buat variasi',
+    'シャッフル': 'Acak susunan',
 }
 
 EXPORT = {

@@ -110,6 +110,15 @@
       </div>
       <canvas id="timeline" aria-label="タイムライン（クリックで移動・行の区切りはドラッグで調整）"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
+      <div id="cutPick" class="cut-pick pro-only" hidden>
+        <div class="cut-pick-h">
+          <strong id="cutPickTitle">手法</strong>
+          <span class="muted" id="cutPickHint">このカットだけ差し替え</span>
+          <button type="button" id="cutPickAuto" class="ghost small">自動</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="閉じる">✕</button>
+        </div>
+        <div id="cutPickGrid" class="tech-grid checks"></div>
+      </div>
     </section>
 
     <!-- ================= right: look & output ================= -->

@@ -82,6 +82,11 @@ BODY = {
     '拍にスナップ': 'Snap to beat', '手動タイミングを消す': 'Clear manual timing',
     '曲に合わせて、各行が始まる瞬間に': 'Press', 'かボタンを押してください。': 'or the button as each line starts.',
     '次:': 'Next:', '終了する': 'Finish', '行とカット': 'Lines and cuts',
+ 'このカットだけ差し替え': 'Replace on this cut only',
+ 'このカットだけ構成を再抽選': 'Reshuffle this cut only',
+ 'このカットだけ手法をランダムに': 'Randomize this cut only',
+ 'このカットをシャッフル': 'Shuffled this cut',
+ 'このカットをおまかせ': 'Randomized this cut',
     '再生位置': 'Playback position', 'タイムライン（クリックで移動）': 'Timeline (click to seek)',
     '前の案に戻る': 'Previous variation', '次の案へ進む': 'Next variation',
     '設定はそのままで構成だけ再抽選（ロックした行は維持）': 'Shuffle the arrangement, keeping locked lines',
@@ -138,6 +143,21 @@ BODY = {
     '行ループ': 'Line loop', 'カットループ': 'Cut loop',
     '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
     'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
+
+
+
+
+
+
+
+    'このカットだけ差し替え': 'Replace only this cut',
+    'このカットだけ構成を再抽選': 'Re-roll the composition of only this cut',
+    'このカットだけ手法をランダムに': 'Randomize the technique of only this cut',
+    'このカットをシャッフル': 'Shuffle this cut',
+    'このカットをおまかせ': 'Randomise this cut',
+    'このカットをおまかせ': 'Randomize this cut',
+
+
 }
 
 UI = {
@@ -264,6 +284,21 @@ UI = {
     "'ロック中。クリックで解除'": "'Locked — click to unlock'",
     "'ロック：'": "'Locked: '",
     "'ロック解除：'": "'Unlocked: '",
+
+
+
+
+
+
+
+    'この位置のカットは抽選できません': 'No cut at this position to re-roll',
+    '`${i + 1}行目 カット${k + 1}のレイアウト`': '`Layout of cut ${k + 1} on line ${i + 1}`',
+    'このカットだけ構成を再抽選': 'Re-roll the composition of only this cut',
+    'このカットだけ手法をランダムに': 'Randomize the technique of only this cut',
+    'このカットをシャッフル': 'Shuffle this cut',
+    'このカットをおまかせ': 'Randomize this cut',
+    'おまかせ': 'Randomize',
+    'シャッフル': 'Shuffle',
 }
 
 EXPORT = {
