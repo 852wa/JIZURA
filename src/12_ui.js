@@ -108,6 +108,10 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
+  o.locks = { tech: {}, params: {} };
+  // project files are untrusted: only plain keys may be locked, and only on (never a value we did not write)
+  for (const [g, on] of Object.entries((p && p.locks && p.locks.tech) || {})) if (on === true && /^[\w-]+$/.test(g)) o.locks.tech[g] = true;
+  for (const [k, on] of Object.entries((p && p.locks && p.locks.params) || {})) if (on === true && /^[\w-]+$/.test(k)) o.locks.params[k] = true;
   delete o.appVersion;
   // project files are untrusted: colours must be colours, font keys plain keys (they end up in the page's HTML / CSS)
   o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
@@ -702,7 +706,7 @@ function randomPalette() {
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
 // only the "look" is tracked — lyrics, timing and output settings are never rolled back
-const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides'];
+const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides', 'locks'];
 const H = { list: [], i: -1 };
 const lookSnap = () => JSON.stringify(Object.fromEntries(HKEYS.map(k => [k, S.project[k] ?? null])));
 function remember() {            // call before changing the look: makes sure the current look is on the stack
@@ -733,13 +737,91 @@ function updateHist() {
   $('histPos').textContent = H.list.length > 1 ? `${H.i + 1} / ${H.list.length}` : '';
 }
 
+/* ---------------- locks (what Randomize / Shuffle must not touch) ----------------
+   project.locks = { tech: { group: true }, params: { key: true } }
+   tech:   freezes that group's ON/OFF selection, i.e. the candidate count the panel shows (120/140, 28/28).
+           Randomize re-picks which techniques are candidates, so freezing the pool is what keeps the count —
+           this does not pin one technique in place.
+   params: freezes the current value of the effects sliders, on-twos and flash.
+   Neither goes into J.plan: they only bracket the places that rewrite the look (Randomize, mood reroll). */
+const LOCK_TITLE_ON = 'おまかせ／シャッフルで変えないようにロック';
+const TECH_LOCK_ON = 'おまかせでON／OFFを変えないようにロック';
+const LOCK_TITLE_OFF = 'ロック中。クリックで解除';
+function locksOf() {
+  const P = S.project;
+  if (!P.locks) P.locks = { tech: {}, params: {} };
+  if (!P.locks.tech) P.locks.tech = {};
+  if (!P.locks.params) P.locks.params = {};
+  return P.locks;
+}
+function lockOn(k) { return !!locksOf().params[k]; }
+function lockName(k) {
+  const f = FX.find(x => x[0] === k);
+  return f ? f[1] : k;
+}
+function groupLabel(g) { const m = GROUPS.find(x => x[0] === g); return m ? m[1] : g; }
+function toggleTechLock(g) {
+  const L = locksOf();
+  remember();
+  if (L.tech[g]) { delete L.tech[g]; toast('ロック解除：' + groupLabel(g)); }
+  else { L.tech[g] = true; toast('ロック：' + groupLabel(g)); }
+  commit(); autosave(); renderTech();
+}
+function toggleParamLock(k) {
+  const L = locksOf();
+  remember();
+  if (L.params[k]) { delete L.params[k]; toast('ロック解除：' + lockName(k)); }
+  else { L.params[k] = true; toast('ロック：' + lockName(k)); }
+  commit(); autosave(); renderFx();
+}
+function lockedEnabled() {                        // ON/OFF selection of every locked group, as it is now
+  const P = S.project, out = {};
+  for (const g of Object.keys(locksOf().tech)) if (P.enabled && P.enabled[g]) out[g] = Object.assign({}, P.enabled[g]);
+  return out;
+}
+function restoreEnabled(keep) {                   // put the locked groups back after Randomize
+  const P = S.project;
+  for (const g of Object.keys(keep || {})) { P.enabled = P.enabled || {}; P.enabled[g] = keep[g]; }
+}
+function lockedParams() {                         // current value of every locked effect / set switch
+  const out = {}, L = locksOf(), F = S.project.fx;
+  for (const k of Object.keys(L.params)) {
+    if (!L.params[k]) continue;
+    if (k === 'koma') out[k] = J.komaOf(F);                      // on-twos: freeze the effective value even when unset
+    else if (k === 'flash') out[k] = !!F.flash;
+    else if (F[k] != null) out[k] = F[k];
+  }
+  return out;
+}
+function restoreParams(keep) {
+  const P = S.project;
+  for (const k of Object.keys(keep || {})) P.fx[k] = keep[k];
+}
+function lockBtn(k, anchor) {                     // lock button for effects that are not sliders (on-twos, flash)
+  const p = anchor.parentElement;
+  let b = p.querySelector(':scope > .lk[data-lk="' + k + '"]');
+  if (!b) {
+    b = document.createElement('button');
+    b.type = 'button'; b.className = 'icon ghost lk pro-only'; b.dataset.lk = k;
+    b.innerHTML = ICON.lock;
+    b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleParamLock(k); });
+    anchor.insertAdjacentElement('afterend', b);
+  }
+  const on = !!locksOf().params[k];
+  b.setAttribute('aria-pressed', String(on));
+  b.title = on ? LOCK_TITLE_OFF : LOCK_TITLE_ON;
+  return b;
+}
+
 /* ---------------- おまかせ ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
+  const keepE = lockedEnabled(), keepP = lockedParams();
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
+  restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
   toast(`おまかせ：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
@@ -757,8 +839,10 @@ function rerollPart(part) {
     P.colors.enabled = false;
     msg = `スタイル：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
+    const keepE = lockedEnabled(), keepP = lockedParams();
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    restoreEnabled(keepE); restoreParams(keepP);
     msg = `雰囲気：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
@@ -829,11 +913,16 @@ function renderFx() {
   FX.forEach(([k, label]) => {
     const row = document.createElement('div'); row.className = 'slider';
     const v = S.project.fx[k] ?? 0.5;
-    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`;
+    const lk = lockOn(k);
+    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`
+      + `<button type="button" class="icon ghost lk pro-only" data-lk="${k}" aria-pressed="${lk}" title="${lk ? LOCK_TITLE_OFF : LOCK_TITLE_ON}">${ICON.lock}</button>`;
     const inp = row.querySelector('input'), out = row.querySelector('output');
+    row.querySelector('.lk').addEventListener('click', () => toggleParamLock(k));
     inp.addEventListener('input', () => { S.project.fx[k] = +inp.value; S.project.mood = null; out.textContent = Math.round(inp.value * 100); replanSoon(120); });
     box.appendChild(row);
   });
+  lockBtn('flash', $('fxFlash').closest('label'));
+  lockBtn('koma', $('fxKoma').closest('label'));
   $('fxFlash').checked = !!S.project.fx.flash;
   $('fxKoma').value = String(J.komaOf(S.project.fx));
   $('fxHud').value = S.project.fx.hud || 'auto';
@@ -944,7 +1033,9 @@ function renderTech() {
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
+    const lked = !!locksOf().tech[g];
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span>`
+      + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
@@ -959,6 +1050,7 @@ function renderTech() {
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
+    d.querySelector('summary .lk').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTechLock(g); });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
       shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });

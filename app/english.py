@@ -258,6 +258,12 @@ UI = {
     '行ループ': 'Line loop', 'カットループ': 'Cut loop',
     '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
     'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
+    # ロック（スライダー／手法の組／部品セット）
+    "'おまかせでON／OFFを変えないようにロック'": "'Lock so Randomize keeps this group’s ON/OFF selection'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Lock so Randomize / Shuffle leave this alone'",
+    "'ロック中。クリックで解除'": "'Locked — click to unlock'",
+    "'ロック：'": "'Locked: '",
+    "'ロック解除：'": "'Unlocked: '",
 }
 
 EXPORT = {

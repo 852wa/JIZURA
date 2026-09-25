@@ -298,6 +298,12 @@ UI = {
     '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
     '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
     'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
+    # ロック（スライダー／手法の組／部品セット）
+    "'おまかせでON／OFFを変えないようにロック'": "'Kunci agar Acak tidak mengubah pilihan ON/OFF grup ini'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Kunci agar Acak / Kocok tidak mengubahnya'",
+    "'ロック中。クリックで解除'": "'Terkunci — klik untuk membuka'",
+    "'ロック：'": "'Terkunci: '",
+    "'ロック解除：'": "'Kunci dibuka: '",
 }
 
 EXPORT = {
