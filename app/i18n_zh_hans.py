@@ -173,6 +173,14 @@ BODY = {
     '標準': '标准', '最高': '最高', '高': '高', '中止': '取消',
     # longer phrases so the short tokens above read naturally in Chinese
     '<div class="next">次: ': '<div class="next">下一行：', '<span class="muted">〜</span>': '<span class="muted">～</span>',
+    'ループ': '循环',
+    '行ループ': '行循环',
+    'カットループ': '镜头循环',
+    '全体を繰り返し': '循环播放整首',
+    'この行を繰り返し': '循环播放这一行',
+    'このカットを繰り返し': '循环播放这个镜头',
+    '繰り返しなし': '不循环',
+    'このカットだけ差し替え': '只更换这个镜头',
 }
 
 UI = {
