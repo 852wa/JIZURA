@@ -53,8 +53,7 @@ const data = {
   orders, meta, names,
   // v1 keys (kept for older panel code)
   layoutOrder: orders.layout, enterOrder: orders.enter, holdOrder: orders.hold, exitOrder: orders.exit, decorOrder: orders.decor,
-  // moods tied to a part set (ホラー) need that set's parts, which the panel does not build: leave them out
-  moods: JJ.MOODS, moodOrder: Object.keys(JJ.MOODS).filter(k => !JJ.MOODS[k].set), ghostPairs: JJ.GHOST_PAIRS,
+  moods: JJ.MOODS, moodOrder: Object.keys(JJ.MOODS), ghostPairs: JJ.GHOST_PAIRS,
   fonts: Object.fromEntries(Object.entries(JJ.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind, extra: !!f.extra }])),
 };
 fs.writeFileSync(path.join(ROOT, 'ae', 'data.json'), JSON.stringify(data));

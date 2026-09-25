@@ -95,6 +95,8 @@ function jzAllEnabled() {
 }
 // technique on/off map for a mood (same idea as the browser's おまかせ): everything tagged with the mood plus the
 // mood's hand-picked core items, a sprinkle of everything else, and a minimum count per group. Deterministic from the seed.
+// the mood a part set belongs to ('horror' → ホラー), or null
+function jzMoodOfSet(s) { var k; for (k in JZ_DATA.moods) if (JZ_DATA.moods.hasOwnProperty(k) && JZ_DATA.moods[k].set === s) return k; return null; }
 var JZ_MOOD_MIN = { layout: 6, enter: 5, exit: 5, hold: 3, decor: 6, treat: 4, bg: 4, cam: 3, fx: 4, trans: 3 };
 function jzMoodEnabled(moodKey, seed, o) {
     var M = moodKey ? JZ_DATA.moods[moodKey] : null;
@@ -102,7 +104,11 @@ function jzMoodEnabled(moodKey, seed, o) {
     var rng = new JzRng((jzHash(seed || 1, 4242) % 2147483646) + 1), en = {}, g, i, k;
     for (g = 0; g < JZ_GROUPS.length; g++) {
         var grp = JZ_GROUPS[g], ord = jzOrder(grp), items = [], on = {}, n = 0;
-        for (i = 0; i < ord.length; i++) if (!jzMeta(grp, ord[i]).special && (!o || jzRandomOk(o, grp, ord[i]))) items.push(ord[i]);
+        for (i = 0; i < ord.length; i++) {
+            // a set tied to a mood (ホラー) is only used in that mood
+            if (jzMeta(grp, ord[i]).set && jzMoodOfSet(jzMeta(grp, ord[i]).set) && jzMoodOfSet(jzMeta(grp, ord[i]).set) !== moodKey) { on[ord[i]] = false; continue; }
+            if (!jzMeta(grp, ord[i]).special && (!o || jzRandomOk(o, grp, ord[i]))) items.push(ord[i]);
+        }
         var hand = (grp === 'layout' || grp === 'enter' || grp === 'exit') && M[grp] instanceof Array ? M[grp] : [];
         for (i = 0; i < items.length; i++) {
             k = items[i];
@@ -125,10 +131,12 @@ function jzOmakase(curMood, curStyle, rnd, o) {
     rnd = rnd || Math.random;
     function pick(a) { return a[Math.floor(rnd() * a.length) % a.length]; }
     function range(r) { return r[0] + (r[1] - r[0]) * rnd(); }
-    function okStyle(k) { return JZ_DATA.styles[k] && jzRandomOk(o || {}, 'style', k); }
     var moods = [], i, k;
-    for (i = 0; i < JZ_DATA.moodOrder.length; i++) if (JZ_DATA.moodOrder[i] !== curMood) moods.push(JZ_DATA.moodOrder[i]);
-    var mood = pick(moods), M = JZ_DATA.moods[mood];
+    function moodOk(m) { var s = JZ_DATA.moods[m].set; return !s || jzSetOn(o || {}, s); }
+    for (i = 0; i < JZ_DATA.moodOrder.length; i++) if (JZ_DATA.moodOrder[i] !== curMood && moodOk(JZ_DATA.moodOrder[i])) moods.push(JZ_DATA.moodOrder[i]);
+    // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat)
+    var mood = JZ_DATA.moods.horror && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods), M = JZ_DATA.moods[mood];
+    function okStyle(k) { var S = JZ_DATA.styles[k]; return S && jzRandomOk(o || {}, 'style', k) && (!S.set || !jzMoodOfSet(S.set) || jzMoodOfSet(S.set) === mood); }
     var moodStyles = [], seen = {};
     for (i = 0; i < (M.styles || []).length; i++) if (okStyle(M.styles[i]) && !seen[M.styles[i]]) { moodStyles.push(M.styles[i]); seen[M.styles[i]] = 1; }
     for (i = 0; i < JZ_DATA.styleOrder.length; i++) { k = JZ_DATA.styleOrder[i]; if (!seen[k] && okStyle(k) && jzIndexOf(JZ_DATA.styles[k].moods || [], mood) >= 0) { moodStyles.push(k); seen[k] = 1; } }

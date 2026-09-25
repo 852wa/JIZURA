@@ -62,6 +62,24 @@ for (const style of D.styleOrder) {
     account(env, `${style}/${seed}${extra ? '+' : ''}${wa ? '' : '-wa'}`, JZ);
   }
 }
+// part sets: ホラー mood with the horror switch on, and the typo / kinetic sets through the panel's own planner
+const setUse = {};
+for (const [mood, seed, sw] of [['horror', 3, { horror: true }], ['horror', 11, { horror: true, extra: true }], ['pop', 5, { horror: true }], ['graphic', 9, {}], ['emotional', 13, { typo: false }]]) {
+  const { env, JZ } = load();
+  const style = mood === 'horror' ? 'hrRuin' : 'noir';
+  const o = Object.assign({ lyrics, title: 'テスト', artist: 'me', style, seed, fx: { motion: 0.8, glitch: 0.6, chroma: 0.6, decor: 0.8, density: 0.6, texture: 0.6, bgSwitch: 0.5, onTwos: true, flash: true, hud: false },
+    width: 1920, height: 1080, fps: 24, bpm: 0, starts: null, offset: 0.4, lineScale: 1, duration: null, wa: true }, sw);
+  o.enabled = JZ.jzMoodEnabled(mood, seed, o);
+  let plan;
+  try { plan = JZ.jzMakePlan(o); } catch (e) { total.warnings.push(`set ${mood}/${seed}: PLAN ${e.message}`); continue; }
+  for (const c of Array.from(plan.cuts)) for (const g of ['layout', 'enter', 'exit', 'hold', 'treat', 'bg', 'cam', 'trans']) {
+    const m = c[g] && D.meta[g] && D.meta[g][c[g]];
+    if (m && m.set) { const k = mood + ':' + m.set; setUse[k] = (setUse[k] || 0) + 1; if (m.set === 'horror' && mood !== 'horror') total.problems.push(`horror part ${c[g]} outside the horror mood`); if (m.set === 'typo' && sw.typo === false) total.problems.push(`typo part ${c[g]} with the switch off`); }
+  }
+  try { JZ.jzBuild(plan, {}); } catch (e) { total.warnings.push(`set ${mood}/${seed}: BUILD ${e.message}`); }
+  account(env, `set ${mood}/${seed}`, JZ);
+}
+console.log('part sets used', JSON.stringify(setUse));
 // JSON plans from the browser app
 const P = path;
 const jsons = process.argv.slice(2).flatMap(p => fs.existsSync(p) && fs.statSync(p).isDirectory() ? fs.readdirSync(p).filter(f => f.endsWith('.json')).map(f => P.join(p, f)) : [p]).filter(p => fs.existsSync(p));

@@ -6,7 +6,8 @@ Biến lời bài hát thành video lyric động ngay trong trình duyệt. JIZ
 
 Các bản dịch tiếng Nhật, tiếng Anh, tiếng Indonesia, tiếng Việt, tiếng Trung Phồn thể, tiếng Trung Giản thể và tiếng Hàn dùng chung định dạng dự án và dữ liệu lưu trên trình duyệt. Dùng các liên kết ngôn ngữ ở đầu trang chỉnh sửa để chuyển bản mà không làm thay đổi lời bài hát hay cài đặt. Panel After Effects bản tiếng Anh có sẵn dưới dạng tải về ScriptUI và CEP. Định dạng JSON của AE giống nhau giữa hai ngôn ngữ (Nhật và Anh).
 
-## Bắt đầu nhanh
+<details>
+<summary><h2>Bắt đầu nhanh</h2></summary>
 
 1. Dán lời bài hát vào bảng bên trái, mỗi dòng một cụm từ. Bản cài đặt mới sẽ hiển thị sẵn lời mẫu tiếng Anh.
 2. Có thể nhập audio nếu muốn. JIZURA sẽ phát hiện nhịp (beat) và có thể tự động căn điểm cắt theo nhịp. Dùng **Tap to sync** (Bắt nhịp) để đánh dấu điểm bắt đầu của mỗi dòng bằng cách nhấn phím Space trong khi phát nhạc.
@@ -31,12 +32,20 @@ Tính năng xuất MP4 giờ truyền file ngay trong lúc mã hóa (streaming) 
 
 Dùng **Save** và **Open** cho các dự án `.jizura.json`. **Export for AE** tạo dữ liệu bố cục để nhập vào panel After Effects. Video và hình ảnh được tạo ra thuộc về người tạo; bản quyền nhạc và lời bài hát vẫn thuộc về chủ sở hữu tương ứng. File dự án, lời bài hát và audio đều được xử lý ngay trong trình duyệt. Google Fonts được tải khi cần. Công cụ này phát hành theo giấy phép MIT; xem [LICENSE](LICENSE) và [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Build và xuất bản
+</details>
+
+<details>
+<summary><h2>Build và xuất bản</h2></summary>
 
 Chạy `python3 build.py` ở thư mục gốc của repo. Lệnh này tạo `index.html` cùng các bản `en/`, `zh-hant/`, `zh-hans/`, `ko/`, `id/` và `vi/` (bản dịch nằm trong `app/english.py` và các file `app/i18n_*.py`), tất cả đều là trang độc lập để đăng lên GitHub Pages. Chạy `python3 build_ae.py --lang en` để dựng lại `JIZURA_AE_en.jsx`, và `python3 build_cep.py --lang en --out dist` để dựng `dist/JIZURA_CEP_en.zip` (sao chép file ZIP này ra thư mục gốc của repo để có thể tải về từ Pages). Commit các trang đã build, các panel và mã nguồn bản dịch cùng nhau. Đăng từ thư mục gốc trên GitHub Pages; khi đó bản tiếng Anh được phục vụ tại `/JIZURA/en/` và bản tiếng Indonesia tại `/JIZURA/id/`. Có thể mở trực tiếp một trong các file HTML trên máy để dùng offline, khi đó font đã cài trên máy sẽ được dùng làm phương án dự phòng.
 
 Cài `JIZURA_AE_en.jsx` vào thư mục `Scripts/ScriptUI Panels` của After Effects, khởi động lại AE, rồi mở panel từ menu Window. Gói CEP bản tiếng Anh có extension ID riêng, nên có thể cài song song với panel CEP bản tiếng Nhật. Giải nén file ZIP và dùng trình cài đặt Windows hoặc macOS đi kèm. Chế độ **Lightweight** bỏ bớt các bản sao đổi màu, hiệu ứng vân giấy, bloom, grain và hiệu ứng nhân bản hình ảnh (giảm khoảng 40% số layer) để phát mượt hơn trong AE. Cả hai panel đều dựng các bài hát dài theo từng bước nhỏ để After Effects không bị treo: panel hiển thị tiến trình, và nút **Stop** sẽ hoàn tất composition với các đoạn đã dựng được đến thời điểm đó. Khi đã chọn **Export range**, panel CEP (và cả **Export for AE**) chỉ dựng những dòng đó, với layer bài hát được dịch chuyển tương ứng. Các panel này cần có After Effects để kiểm tra chuyển động và kết quả xuất; các bước kiểm tra tự động dùng môi trường AE giả lập.
 
-## Người đóng góp
+</details>
+
+<details>
+<summary><h2>Người đóng góp</h2></summary>
 
 Giao diện và tên kỹ thuật tiếng Trung Phồn thể, tên kỹ thuật tiếng Trung Giản thể, sửa lỗi nhận diện font và ngôn ngữ: [Zaious](https://github.com/Zaious) (#5, #6, #7, #11). Giao diện và tên kỹ thuật tiếng Hàn: [andongmin94](https://github.com/andongmin94) (#8). Giao diện tiếng Indonesia: [auliaramadhann](https://github.com/auliaramadhann) và [enka25](https://github.com/enka25) (#12).
+
+</details>

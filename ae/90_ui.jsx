@@ -26,14 +26,20 @@ function jzUI(thisObj) {
     cExtra.helpTip = 'オフのときは最初の公開版の演出（356部品・スタイル12種）だけを使います。オンにすると、あとから追加した演出・スタイル・書体も候補になります';
     var cWa = gSw.add('checkbox', undefined, '和風の演出も使う'); cWa.value = jzGet('wa', '1') === '1';
     cWa.helpTip = '提灯・はがき・障子・扇・家紋・青海波・桜の花びらなどの和風グラフィックと、和風のスタイル。オフにすると自動では選ばれません（追加分の判定のあとに適用）';
+    var cTypo = gSw.add('checkbox', undefined, '文字PV系の部品を使う'); cTypo.value = jzGet('typo', '1') === '1';
+    cTypo.helpTip = '線・数字・字組みだけで見せる、文字PVらしい部品（約50）';
+    var cKin = gSw.add('checkbox', undefined, 'キネティックの部品を使う'); cKin.value = jzGet('kinetic', '1') === '1';
+    cKin.helpTip = '語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）';
+    var cHor = gSw.add('checkbox', undefined, 'ホラーの演出も使う'); cHor.value = jzGet('horror', '0') === '1';
+    cHor.helpTip = '不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります（ホラーの部品は雰囲気が「ホラー」のときだけ使います）';
     var gLang = gSw.add('group'); gLang.spacing = 4; gLang.add('statictext', undefined, '歌詞の言語');
     var JZ_LANG_KEYS = ['auto', 'ja', 'zh-Hant', 'zh-Hans', 'ko', 'en'];
     var ddLang = gLang.add('dropdownlist', undefined, ['自動判定', '日本語', '繁體中文', '简体中文', '한국어', 'English']); ddLang.selection = parseInt(jzGet('lang', '0'), 10) || 0;
     ddLang.helpTip = '中国語（繁体字・簡体字）や韓国語の歌詞は、その文字を持つ書体で組みます（各スタイルの書体の雰囲気に近いものに置き換え）。自動判定はかな・ハングル・繁体字／簡体字に特有の字から判断します';
-    function switches() { return { extra: cExtra.value, wa: cWa.value, lang: JZ_LANG_KEYS[ddLang.selection ? ddLang.selection.index : 0] }; }
+    function switches() { return { extra: cExtra.value, wa: cWa.value, typo: cTypo.value, kinetic: cKin.value, horror: cHor.value, lang: JZ_LANG_KEYS[ddLang.selection ? ddLang.selection.index : 0] }; }
     var gS = t1.add('group'); gS.add('statictext', undefined, 'スタイル');
     var styleNames = [], i;
-    for (i = 0; i < JZ_DATA.styleOrder.length; i++) { var stI = JZ_DATA.styles[JZ_DATA.styleOrder[i]]; styleNames.push(stI.name + (stI.extra || stI.wa ? '  〔' + (stI.extra ? '追加' : '') + (stI.extra && stI.wa ? '・' : '') + (stI.wa ? '和' : '') + '〕' : '')); }
+    for (i = 0; i < JZ_DATA.styleOrder.length; i++) { var stI = JZ_DATA.styles[JZ_DATA.styleOrder[i]]; styleNames.push(stI.name + (stI.extra || stI.wa ? '  〔' + (stI.extra ? '追加' : '') + (stI.extra && stI.wa ? '・' : '') + (stI.wa ? '和' : '') + '〕' : '') + (stI.set === 'horror' ? '  〔ホ〕' : '')); }
     var ddStyle = gS.add('dropdownlist', undefined, styleNames); ddStyle.selection = parseInt(jzGet('style', '0'), 10) || 0;
     var gC = t1.add('group'); gC.add('statictext', undefined, 'サイズ');
     var sizes = ['アクティブなコンポと同じ', '1920×1080', '1080×1920', '1080×1080', '3840×2160', '1280×720', '1440×1080 (4:3)', '1080×1440 (3:4)'];
@@ -222,7 +228,7 @@ function jzUI(thisObj) {
         jzPut('size', ddSize.selection.index); jzPut('fps', ddFps.selection.index); jzPut('timing', rLayer.value ? 'layer' : rComp.value ? 'comp' : 'auto');
         jzPut('bpm', eBpm.text); jzPut('lineScale', eScale.text); jzPut('audio', cAudio.value ? '1' : '0'); jzPut('seed', eSeed.text);
         jzPut('twos', cTwos.value ? '1' : '0'); jzPut('flash', cFlash.value ? '1' : '0'); jzPut('hud', ddHud.selection.index);
-        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('center', cCenter.value ? '1' : '0'); jzPut('centerDir', ddCDir.selection ? ddCDir.selection.index : 0); jzPut('light', cLight.value ? '1' : '0'); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
+        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('typo', cTypo.value ? '1' : '0'); jzPut('kinetic', cKin.value ? '1' : '0'); jzPut('horror', cHor.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('center', cCenter.value ? '1' : '0'); jzPut('centerDir', ddCDir.selection ? ddCDir.selection.index : 0); jzPut('light', cLight.value ? '1' : '0'); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
         var sl = [sMotion, sGlitch, sChroma, sDecor, sDensity, sTexture, sBg]; for (var k = 0; k < sl.length; k++) jzPut(sl[k].key, sl[k].value);
         var active = app.project.activeItem, W = 1920, H = 1080, fps = [24, 30, 60][ddFps.selection.index], dur = null;
         var sz = ddSize.selection.index;
@@ -245,7 +251,7 @@ function jzUI(thisObj) {
             lyrics: lyr.text, title: eTitle.text, artist: eArtist.text, style: JZ_DATA.styleOrder[ddStyle.selection.index], seed: parseInt(eSeed.text, 10) || 1,
             fx: { motion: sMotion.value / 100, glitch: sGlitch.value / 100, chroma: sChroma.value / 100, decor: sDecor.value / 100, density: sDensity.value / 100, texture: sTexture.value / 100, bgSwitch: sBg.value / 100, onTwos: cTwos.value, flash: cFlash.value, hud: false },
             width: W, height: H, fps: fps, bpm: parseFloat(eBpm.text) || 0, starts: starts, enabled: en, offset: 0.4, lineScale: parseFloat(eScale.text) || 1, duration: dur,
-            extra: sw.extra, wa: sw.wa, lang: sw.lang, centerFree: cCenter.value, centerDir: ddCDir.selection && ddCDir.selection.index === 1 ? 'lr' : 'tb'
+            extra: sw.extra, wa: sw.wa, typo: sw.typo, kinetic: sw.kinetic, horror: sw.horror, lang: sw.lang, centerFree: cCenter.value, centerDir: ddCDir.selection && ddCDir.selection.index === 1 ? 'lr' : 'tb'
         };
         var st = JZ_DATA.styles[o.style];
         o.fx.hud = ddHud.selection.index === 1 ? true : ddHud.selection.index === 2 ? false : !!st.hud;
@@ -299,7 +305,7 @@ function jzUI(thisObj) {
             if (JZ_FALLBACKS > 0) {
                 note = (note ? note + ' / ' : '') + 'このパネルに無い表現 ' + JZ_FALLBACKS + ' 箇所を、近い表現で作りました';
                 alert('JIZURA：この JSON には、このパネルが作れない表現が ' + JZ_FALLBACKS + ' 箇所あり、近い表現に置き換えました。\n\n' + JZ_FALLBACK_KEYS.slice(0, 12).join(', ') +
-                    '\n\nブラウザ版より古いパネルを使っている可能性があります。最新の JIZURA_AE.jsx（v' + JZ_PANEL_VERSION + '・707 部品）に差し替えて、After Effects を再起動してください。');
+                    '\n\nブラウザ版より古いパネルを使っている可能性があります。最新の JIZURA_AE.jsx（v' + JZ_PANEL_VERSION + '・860 部品）に差し替えて、After Effects を再起動してください。');
             }
             report(comp, t0, jobLabel(note ? '置換あり' : '', job));
             if (note) status.helpTip = note;

@@ -6,7 +6,7 @@ Turn lyrics into animated lyric videos in your browser. JIZURA combines layouts,
 
 The Japanese, English, Indonesian, Vietnamese, Traditional Chinese, Simplified Chinese and Korean browser editions share the same project format and saved browser data. Use the language links at the top of the editor to switch editions without changing your lyrics or settings. English After Effects panels are available as [ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) and [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip) downloads. The AE JSON format is the same in both languages.
 
-**Version: v0.8.0** (see [CHANGELOG.md](CHANGELOG.md))
+**Version: v0.9.0** (see [CHANGELOG.md](CHANGELOG.md))
 
 <details>
 <summary><h2>Quick start</h2></summary>
@@ -34,6 +34,8 @@ A volume slider next to the play button sets the preview volume (click **Vol** t
 <summary><h3>Editing tools</h3></summary>
 
 Edit a line's lyrics in place (✎ or double-click), set the number of cuts per line (auto / 1–6), redo tap sync from any line (◎; Backspace undoes a tap), and drag line markers on the timeline (zoom with + / − or the wheel; hold Shift to ignore beats). Ctrl+Z undoes lyric and timing edits. **Export range** exports only the lines you pick (⇥ in the line list). The song you load is kept in this browser, so a reload does not drop it from exports; when the browser cannot encode AAC audio, a WAV of the soundtrack is saved next to the MP4. A short guided tour opens on the first visit in Simple mode (? to replay).
+
+**Per-cut picks** (Advanced mode): click a chip under the preview (layout, entrance, hold, exit, decoration, treatment, background, camera, transition) to replace that part for this cut only; **Auto** goes back. The line list also shows a layout menu per cut, and **Shuffle / Randomize this cut** re-rolls just that cut. Other cuts keep their picks. **Locks** (Advanced mode): the lock on a Techniques group keeps its ON/OFF selection, and the locks on the effect sliders, flash and frame stepping keep their values through Randomize; locks are saved with the project. **Loop** next to the play button cycles whole piece → line → cut → off; line and cut loops are shaded on the timeline.
 
 </details>
 
@@ -88,7 +90,7 @@ Three switches under **Randomize** (and at the top of the Techniques tab) add ne
 - **Use kinetic parts** (on by default) — 51 motion-first parts where words move one by one: slam stacks, quarter turns, word swaps, dives into a letter, flow-then-snap, word-by-word jump cuts, gears, collisions, per-word entrances, beat holds and word-following cameras. Word changes lock to the beat when a song is loaded (marked K).
 - **Include horror effects** (off by default) — 52 eerie parts and 3 styles (Ruins, Midnight Recording, Cursed Letter): flashlight, door gap, wall scrawl, CCTV, spirit board, missing poster, the one wrong character, redacted file, static TV, spirit photo, wrong shadow, blink-creep and jump-scare entrances, pulled-down exits, twitch holds, watching eye, sigil, cracks, dark corridor, nervous handheld, subliminal frames, static cuts and more (marked H). When on, Randomize adds a **Horror** mood and picks it about half the time; Randomize uses horror parts only in that mood. No gore.
 
-The After Effects panels do not build these sets yet: an **Export for AE** plan maps each of them to the closest existing part.
+The After Effects panels build all three sets too (with the same switches and the Horror mood); beat-locked timing is spread evenly over the cut in AE.
 
 </details>
 
@@ -117,6 +119,6 @@ Install `JIZURA_AE_en.jsx` in After Effects' `Scripts/ScriptUI Panels` folder, r
 <details>
 <summary><h2>Contributors</h2></summary>
 
-Traditional Chinese UI and technique names, Simplified Chinese technique names, font and language detection fixes: [Zaious](https://github.com/Zaious) (#5, #6, #7, #11). Korean UI and technique names: [andongmin94](https://github.com/andongmin94) (#8). Indonesian UI: [auliaramadhann](https://github.com/auliaramadhann) and [enka25](https://github.com/enka25) (#12). Looping technique previews and the pinned tap-sync box: [nocore-dtm](https://github.com/nocore-dtm) (#18, #19).
+Traditional Chinese UI and technique names, Simplified Chinese technique names, font and language detection fixes: [Zaious](https://github.com/Zaious) (#5, #6, #7, #11, #21). Korean UI and technique names: [andongmin94](https://github.com/andongmin94) (#8). Indonesian UI: [auliaramadhann](https://github.com/auliaramadhann) and [enka25](https://github.com/enka25) (#12). Looping technique previews, the pinned tap-sync box, line / cut loops, per-cut picks and Advanced-mode locks: [nocore-dtm](https://github.com/nocore-dtm) (#18, #19, #22, #23, #24). Vietnamese UI: [phamhuulocforwork](https://github.com/phamhuulocforwork) (#20).
 
 </details>

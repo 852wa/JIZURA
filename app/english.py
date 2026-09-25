@@ -320,6 +320,11 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'文字PV系の部品を使う'": "'Use typographic parts'", "'キネティックの部品を使う'": "'Use kinetic parts'", "'ホラーの演出も使う'": "'Include horror effects'",
+    "'線・数字・字組みだけで見せる、文字PVらしい部品（約50）'": "'About 50 parts that work with lines, numbers and type alone'",
+    "'語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）'": "'About 50 motion-first parts: words move, bounce and stack one by one'",
+    "'不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります（ホラーの部品は雰囲気が「ホラー」のときだけ使います）'": "'About 50 eerie parts and 3 styles. When on, Randomize adds a Horror mood (horror parts are used only in that mood)'",
+    "'  〔ホ〕'": "'  [H]'",
     "'\u3000縦長のとき'": "'  On tall frames'",
     "'上下に分ける'": "'Top / bottom'",
     "'左右に分ける'": "'Left / right'",
@@ -381,7 +386,7 @@ AE_UI = {
     ' 箇所あり、近い表現に置き換えました。': ' unsupported techniques; similar ones were substituted.',
     ' 箇所を、近い表現で作りました': ' instances were replaced by similar techniques',
     'ブラウザ版より古いパネルを使っている可能性があります。最新の JIZURA_AE.jsx（v': 'This panel may be older than the browser edition. Install the latest JIZURA_AE_en.jsx (v',
-    '・707 部品）に差し替えて、After Effects を再起動してください。': ', 707 techniques) and restart After Effects.',
+    '・860 部品）に差し替えて、After Effects を再起動してください。': ', 860 techniques) and restart After Effects.',
     '先にコンポを作ってください（このパネルで最後に作ったコンポを調べます）': 'Create a composition first; diagnostics inspect the last one created here.',
     '最後に作ったコンポが見つかりません（削除された可能性があります）': 'The last composition could not be found (it may have been deleted).',
     '診断中…（数十秒かかることがあります）': 'Diagnosing… (this can take a few seconds)',

@@ -146,6 +146,8 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; flex: 1 1 140px; }
 .ln .cuts span { font-size: 10px; padding: 1px 6px; border-radius: 2px; border: 1px solid var(--line2); color: var(--muted); cursor: pointer; }
 .ln .cuts span:hover { color: var(--text); border-color: var(--amber); }
+.ln .cuts select.cut-lay { font-size: 10px; padding: 1px 4px; max-width: 112px; border: 1px solid var(--line2); border-radius: 2px; background: var(--raised); color: var(--text); }
+.ln .cuts select.cut-lay.is-forced { border-color: var(--amber); color: var(--text); }
 
 /* ---------- stage ---------- */
 .col-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; min-width: 0; }
@@ -178,7 +180,22 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .ln .txt-edit { width: 100%; padding: 3px 6px; font-size: 13px; }
 .ln .tools .icon[aria-pressed=true] { color: var(--amber); }
 #timeline { width: 100%; height: 76px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; }
-.cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
+.cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; flex: none; }
+.cutinfo .cut-roll { margin-left: 2px; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
+.chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
+button.chip { cursor: pointer; font: inherit; }
+button.chip:hover { border-color: var(--amber); color: var(--text); }
+button.chip.is-forced { border-color: var(--amber); }
+button.chip[aria-pressed=true] { border-color: var(--cyan); color: var(--cyan); }
+.cut-pick { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); padding: 8px; max-height: min(42vh, 420px); overflow: auto; }
+.cut-pick-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: sticky; top: 0; background: var(--panel); z-index: 1; padding-bottom: 4px; }
+.cut-pick-h strong { font-size: 12px; }
+.cut-pick-h .muted { flex: 1; font-size: 11px; }
+.cut-pick .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; padding: 0; min-height: 96px; }
+.cut-pick .tcard { cursor: pointer; width: 100%; text-align: left; }
+.cut-pick .tcard.is-on { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.cut-pick .tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
 .chip b { font-weight: 500; color: var(--muted); margin-right: 5px; }
 .chip.l { border-color: rgba(245,165,12,0.6); }
@@ -203,7 +220,6 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
-
 .tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
 .tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
 .tcard:hover { border-color: var(--line2); }
@@ -443,7 +459,7 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.8.0</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.9.0</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="곡 제목 (타이틀 카드와 HUD에 표시)" aria-label="곡 제목">
       <input id="songArtist" type="text" placeholder="아티스트" aria-label="아티스트">
@@ -545,6 +561,15 @@ button.small.primary { padding: 4px 12px; }
       </div>
       <canvas id="timeline" aria-label="타임라인(클릭으로 이동, 줄 구분은 드래그로 조정)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
+      <div id="cutPick" class="cut-pick pro-only" hidden>
+        <div class="cut-pick-h">
+          <strong id="cutPickTitle">기법</strong>
+          <span class="muted" id="cutPickHint">이 컷만 교체</span>
+          <button type="button" id="cutPickAuto" class="ghost small">자동</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="닫기">✕</button>
+        </div>
+        <div id="cutPickGrid" class="tech-grid checks"></div>
+      </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
@@ -3547,6 +3572,12 @@ J.computeTiming = (project, parsed, audio) => {
 /* ---------------- planning ---------------- */
 const wkey = (obj, k, d = 1) => (obj && obj[k] != null ? obj[k] : d);
 
+function cutTechOf(ov, k) {
+  const t = (ov.cutTech && (ov.cutTech[k] || ov.cutTech[String(k)])) || {};
+  const fromLay = ov.cutLayouts && (ov.cutLayouts[k] || ov.cutLayouts[String(k)]);
+  return fromLay && !t.layout ? Object.assign({}, t, { layout: fromLay }) : t;
+}
+
 J.plan = (project, audio) => {
   const st = J.resolveStyle(project);
   const fx = Object.assign({}, J.defaultProject().fx, project.fx || {});
@@ -3572,7 +3603,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.8.0', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.9.0', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -3635,7 +3666,7 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -3677,6 +3708,7 @@ J.plan = (project, audio) => {
       const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => u.text.includes(w));
       const Z = zoneOf(li), LW = Z ? Z.w : W, LH = Z ? Z.h : H;       // the frame this cut is laid out in
       const UU = U && !ovAny ? U : null;                              // per-line settings always win over 統一感
+      const tech = cutTechOf(ov, k);                                  // このカットだけの指定
       let layout = ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickLayout(rng, st, en, nn, dur, history, emph, u.recap, LH > LW);
       if (UU) layout = UU.layout(li, layout, { nn, dur, emph, kime, rng, portrait: LH > LW, recap: u.recap });
       let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, layout, dur, history, emph, nn);
@@ -3735,9 +3767,42 @@ J.plan = (project, audio) => {
         bg = LS.bg && J.BG[LS.bg] ? LS.bg : 'none'; if (bg !== 'none') { lineBg = bg; lineBgP = LS.bgP || {}; }
         inDur = LS.inDur; outDur = LS.outDur;
       }
+      // このカットだけの指定: applied on top of the draw with its own random stream, so changing one cut never
+      // shifts the other cuts (history below keeps what was drawn, as if nothing had been changed here)
+      const drawn = { layout, enter, exit, hold, treat, cam, decor: decor.map(d => d.id) };
+      let techBgP = null;
+      if (tech.layout && J.LAYOUTS[tech.layout] && !J.LAYOUTS[tech.layout].special) {
+        layout = tech.layout; LD = J.LAYOUTS[layout];
+        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W: LW, H: LH, dur }, st); } catch (e) {}
+      }
+      if (tech.enter && J.ENTER[tech.enter]) enter = tech.enter;
+      if (tech.exit && J.EXIT[tech.exit]) exit = tech.exit;
+      if (tech.hold && J.HOLD[tech.hold]) hold = tech.hold;
+      if (tech.decor !== undefined) {
+        if (!tech.decor || tech.decor === 'none' || !J.DECOR[tech.decor]) decor = [];
+        else decor = [decorParams(J.rng(J.h(lineSeed, k, 92)), tech.decor)];
+      }
+      if (tech.treat && J.TREAT[tech.treat]) {
+        treat = tech.treat;
+        treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(J.rng(J.h(lineSeed, k, 93)), st) : {};
+      }
+      if (tech.bg && J.BG[tech.bg]) {
+        bg = tech.bg;
+        techBgP = J.BG[bg].plan ? J.BG[bg].plan(J.rng(J.h(lineSeed, k, 94)), st) : {};
+      }
+      if (tech.cam && J.CAMERA[tech.cam]) {
+        cam = tech.cam;
+        camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(J.rng(J.h(lineSeed, k, 95)), st) : {};
+      }
+      if (tech.enter || tech.exit) {               // keep the (locked) durations unless the motions changed
+        const [i2, o2] = durs(enter, exit);
+        if (tech.enter && J.ENTER[tech.enter]) inDur = i2;
+        if (tech.exit && J.EXIT[tech.exit]) outDur = o2;
+      }
       // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
       const prevCut = plan.cuts[plan.cuts.length - 1];
       let trans = null, transP = {}, transDur = 0, morph = null;
+      const joinSaved = { enter, inDur, prevExit: prevCut && prevCut.exit, prevOut: prevCut && prevCut.outDur };
       // a locked line keeps its own exit: the next (unlocked) line may not replace it with a transition / morph
       const prevLockedOther = prevCut && prevCut.line !== li && !LS && ((project.overrides || {})[prevCut.line] || {}).lock;
       const canTrans = prevCut && Math.abs(prevCut.end - cs) < 0.06 && prevCut.layout !== 'interlude' && dur > 0.5 && !prevLockedOther;
@@ -3764,8 +3829,23 @@ J.plan = (project, audio) => {
           prevCut.exit = 'cut'; prevCut.outDur = 0;
         }
       }
+      drawn.trans = trans;
+      if (tech.trans === 'none') {                  // このカットだけ「つなぎなし」: undo the join
+        if (trans || morph) { enter = joinSaved.enter; inDur = joinSaved.inDur; if (prevCut) { prevCut.exit = joinSaved.prevExit; prevCut.outDur = joinSaved.prevOut; } }
+        trans = null; transP = {}; transDur = 0; morph = null;
+      } else if (tech.trans && J.TRANS[tech.trans] && canTrans) {
+        morph = null;
+        trans = tech.trans;
+        const TD = J.TRANS[trans];
+        transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
+        transP = TD.plan ? TD.plan(J.rng(J.h(lineSeed, k, 96)), st) : {};
+      }
+      if (trans && canTrans) {
+        enter = 'cut'; inDur = 0.12;
+        prevCut.exit = 'cut'; prevCut.outDur = 0;
+      }
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
-        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur, zone: Z, utext: u.text });
+        treat, treatP, bg, bgP: techBgP || (bg === lineBg ? lineBgP : {}), cam, camP, trans, transP, transDur, zone: Z, utext: u.text });
       if (kime || (LS && LS.kime)) cut.kime = true;
       if (weightGrow) cut.weightGrow = true;
       if (morph) cut.morph = morph;
@@ -3775,7 +3855,10 @@ J.plan = (project, audio) => {
       if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
       const evMark = plan.events.length;
-      history.push({ layout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) });
+      // history = what the draw gave (with the usual join), so a per-cut pick never shifts the later cuts
+      const hist = { layout, enter, exit, hold, treat, cam, trans, decor: decor.map(d => d.id) };
+      for (const g of Object.keys(hist)) if (tech[g] !== undefined && drawn[g] !== undefined) hist[g] = g === 'enter' && drawn.trans ? 'cut' : drawn[g];
+      history.push(hist);
       // events at cut start
       // events at cut start — durations are on a 24fps timebase so every output rate looks the same
       const g = fx.glitch * (st.glitchBoost || 1);
@@ -5330,6 +5413,7 @@ J.planForAE = (plan, project, range) => {
   clean.version = 2;
   clean.width = J.outputSize(project)[0]; clean.height = J.outputSize(project)[1];
   clean.extra = project.extra === true; clean.wa = project.wa !== false;
+  if (J.setOn) for (const s of J.SET_ORDER) clean[s] = J.setOn(project, s);
   clean.fonts = {};
   for (const [role, keys] of Object.entries(plan.style.fonts)) clean.fonts[role] = keys.map(k => J.FONTS[k] ? J.FONTS[k].label : k);
   clean.fontTable = Object.fromEntries(Object.entries(J.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind }]));
@@ -36227,6 +36311,8 @@ function replan() {
   if (S.t > S.plan.duration) S.t = 0;
   refreshLoopHold();
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
+  lastCutIdx = -2;
+  if (typeof cutPick !== 'undefined' && cutPick.g) fillCutPick();
   S.need = true; autosave(); ensureFonts(); drawSwatch(); showNow();
   clearTimeout(warmTimer); warmTimer = setTimeout(warm, 450);
 }
@@ -36322,6 +36408,7 @@ function tick(now) {
       else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); }
     }
     S.t = t; S.need = true;
+    followTlPlayhead();
   }
   if (S.need) { S.need = false; draw(); }
 }
@@ -36362,6 +36449,12 @@ function tlZoom(f, tc) {
   const z = J.clamp(TL.z * f, 1, Math.max(1, D / 2));
   const c = tc == null ? S.t : tc, frac = (c - TL.off) / vd;
   TL.z = z; TL.off = c - frac * (D / z); tlView(); drawTimeline();
+}
+// while playing zoomed in: redraw (which scrolls the view) once the playhead leaves the visible part
+function followTlPlayhead() {
+  if (!(TL.z > 1) || TL.drag >= 0) return;
+  const { vd, off } = tlView();
+  if (S.t < off || S.t > off + vd * 0.92) drawTimeline();
 }
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -36465,7 +36558,105 @@ function bindFollow() {
 }
 
 /* ---------------- cut info ---------------- */
+const CHIP_GROUPS = [
+  ['layout', 'l', '레이아웃'], ['enter', 'e', '등장'], ['hold', 'h', '유지'], ['exit', 'x', '퇴장'],
+  ['decor', '', '장식'], ['treat', 't', '글자 효과'], ['bg', 'b', '배경'], ['cam', 'c', '카메라'], ['trans', 'c', '전환'],
+];
+const cutPick = { g: null, line: -1, k: -1 };
 let lastCutIdx = -2;
+
+function lyricCutK(cut) {
+  if (!cut || cut.line < 0) return -1;
+  let k = 0;
+  for (const c of S.plan.cuts) {
+    if (c.line !== cut.line) continue;
+    if (!J.LAYOUTS[c.layout] || J.LAYOUTS[c.layout].special) continue;
+    if (c.index === cut.index) return k;
+    k++;
+  }
+  return -1;
+}
+function cutQuietSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutQuiet && (o.cutQuiet[k] || o.cutQuiet[String(k)])) || {};
+}
+function markCutQuiet(i, k, groups, on) {
+  if (i == null || i < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  groups.forEach(g => { if (on) q[g] = true; else delete q[g]; });
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
+function cutTechSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
+  const lay = o.cutLayouts && (o.cutLayouts[k] || o.cutLayouts[String(k)]);
+  return lay && t.layout == null ? Object.assign({ layout: lay }, t) : t;
+}
+function cutGroupVal(cut, g) {
+  if (g === 'layout') return cut.layout || '';
+  if (g === 'enter') return cut.enter || '';
+  if (g === 'hold') return cut.hold || '';
+  if (g === 'exit') return cut.exit || '';
+  if (g === 'treat') return cut.treat || 'none';
+  if (g === 'bg') return cut.bg || 'none';
+  if (g === 'cam') return cut.cam || 'push';
+  if (g === 'trans') return cut.trans || '';
+  if (g === 'decor') return (cut.decor && cut.decor[0] && cut.decor[0].id) || '';
+  return '';
+}
+function groupName(g, k) {
+  if (!k) return '없음';
+  const tbl = J.registry(g);
+  return (tbl && tbl[k] && tbl[k].name) || k;
+}
+function pickEnabledTech(g, opts) {
+  opts = opts || {};
+  const tbl = J.registry(g) || {};
+  const en = (S.project.enabled || {})[g] || {};
+  let keys = J.order(g).filter(key => {
+    const def = tbl[key];
+    if (!def || def.special) return false;
+    if (en[key] === false) return false;
+    return !J.randomOk || J.randomOk(S.project, g, key);
+  });
+  if (!keys.length) keys = J.order(g).filter(key => tbl[key] && !tbl[key].special && en[key] !== false);
+  if (g === 'layout' && opts.n != null) {
+    const fit = keys.filter(key => !J.LAYOUTS[key].fits || J.LAYOUTS[key].fits(opts.n));
+    if (fit.length) keys = fit;
+  }
+  if (opts.allowNone && !keys.includes('none')) keys = ['none'].concat(keys);
+  if (opts.avoid && keys.length > 1) keys = keys.filter(key => key !== opts.avoid);
+  if (!keys.length) return '';
+  return keys[(Math.random() * keys.length) | 0];
+}
+function rerollCurrentCut(kind) {
+  if (S.exporting || S.tap) return;
+  const cut = J.cutAt(S.plan, S.t);
+  const k = lyricCutK(cut);
+  if (!cut || k < 0) { toast('이 위치에는 다시 추첨할 컷이 없습니다'); return; }
+  remember();
+  const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
+  const groups = kind === 'omakase'
+    ? CHIP_GROUPS.map(x => x[0])
+    : ['layout', 'enter', 'hold', 'exit', 'cam', 'trans'];
+  const t0 = S.t;
+  groups.forEach(g => {
+    const allowNone = g === 'decor' || g === 'trans';
+    const key = pickEnabledTech(g, { avoid: kind === 'omakase' ? cutGroupVal(cut, g) : null, allowNone, n });
+    if (key) setCutTech(cut.line, k, g, key);
+  });
+  markCutQuiet(cut.line, k, groups, true);
+  closeCutPick();
+  replan();
+  commit();
+  seek(t0);
+  toast(kind === 'omakase' ? '이 컷 자동 생성' : '이 컷 셔플');
+}
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
   const idx = cut ? cut.index : -1;
@@ -36474,18 +36665,100 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">이 위치에는 컷이 없습니다</span>'; return; }
-  const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
-  const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
-  el.innerHTML = [
-    `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-    chip('l', '레이아웃', n(J.LAYOUTS, cut.layout)), chip('e', '등장', n(J.ENTER, cut.enter)), chip('h', '유지', n(J.HOLD, cut.hold)), chip('x', '퇴장', n(J.EXIT, cut.exit)),
-    cut.decor && cut.decor.length ? chip('', '장식', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
-    cut.treat && cut.treat !== 'none' ? chip('t', '글자 효과', n(J.TREAT, cut.treat)) : '',
-    cut.bg && cut.bg !== 'none' ? chip('b', '배경', n(J.BG, cut.bg)) : '',
-    cut.cam && cut.cam !== 'push' ? chip('c', '카메라', n(J.CAMERA, cut.cam)) : '',
-    cut.trans ? chip('c', '전환', n(J.TRANS, cut.trans)) : '',
-  ].join('');
+  if (!cut) { el.innerHTML = '<span class="hint">이 위치에는 컷이 없습니다</span>'; closeCutPick(); return; }
+  if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
+    closeCutPick();
+    const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
+    const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
+    el.innerHTML = [
+      `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
+      chip('l', '레이아웃', n(J.LAYOUTS, cut.layout)), chip('e', '등장', n(J.ENTER, cut.enter)), chip('h', '유지', n(J.HOLD, cut.hold)), chip('x', '퇴장', n(J.EXIT, cut.exit)),
+      cut.decor && cut.decor.length ? chip('', '장식', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
+      cut.treat && cut.treat !== 'none' ? chip('t', '글자 효과', n(J.TREAT, cut.treat)) : '',
+      cut.bg && cut.bg !== 'none' ? chip('b', '배경', n(J.BG, cut.bg)) : '',
+      cut.cam && cut.cam !== 'push' ? chip('c', '카메라', n(J.CAMERA, cut.cam)) : '',
+      cut.trans ? chip('c', '전환', n(J.TRANS, cut.trans)) : '',
+    ].join('');
+    return;
+  }
+  const k = lyricCutK(cut);
+  const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
+  const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
+  const bits = [`<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`];
+  CHIP_GROUPS.forEach(([g, cls, label]) => {
+    const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
+    bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
+  });
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="이 컷만 구성을 다시 추첨">셔플</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="이 컷만 기법을 무작위로">자동 생성</button>`);
+  el.innerHTML = bits.join('');
+  if (k >= 0) {
+    el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
+    el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+  }
+  followCutPick(cut, k);
+}
+function followCutPick(cut, k) {
+  if (S.mode !== 'pro' || !cutPick.g) return;
+  const p = $('cutPick');
+  if (!cut || k < 0) {
+    cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
+    if (p) p.hidden = true;
+    return;
+  }
+  cutPick.line = cut.line;
+  cutPick.k = k;
+  if (p) p.hidden = false;
+  fillCutPick();
+}
+function closeCutPick() {
+  cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
+  const p = $('cutPick'); if (p) p.hidden = true;
+  lastCutIdx = -2;
+}
+function toggleCutPick(g, cut, k) {
+  if (S.mode !== 'pro') return;
+  if (cutPick.g === g && cutPick.line === cut.line && cutPick.k === k) { closeCutPick(); updateCutInfo(); return; }
+  cutPick.g = g; cutPick.line = cut.line; cutPick.k = k;
+  $('cutPick').hidden = false;
+  fillCutPick();
+  lastCutIdx = -2; updateCutInfo();
+}
+function fillCutPick() {
+  const g = cutPick.g, grid = $('cutPickGrid');
+  if (!g || !grid) return;
+  const meta = CHIP_GROUPS.find(x => x[0] === g);
+  const cut = J.cutAt(S.plan, S.t);
+  $('cutPickTitle').textContent = (meta ? meta[2] : g) + (cut ? ' · #' + String(cut.index + 1).padStart(2, '0') : '');
+  const cur = cut ? cutGroupVal(cut, g) : '';
+  const forced = cutTechSlot(cutPick.line, cutPick.k)[g];
+  const onKey = forced || cur;
+  grid.innerHTML = '';
+  if (g === 'decor' || g === 'trans') {
+    const none = document.createElement('button');
+    none.type = 'button';
+    none.className = 'tcard' + (forced === 'none' ? ' is-on' : '');
+    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>없음</span></span>';
+    none.addEventListener('click', () => { setCutTech(cutPick.line, cutPick.k, g, 'none'); replan(); });
+    grid.appendChild(none);
+  }
+  const [W, H] = J.designSize(S.project.aspect || '16:9');
+  const th = 80, tw = Math.max(72, Math.round(th * W / H));
+  const items = J.order(g).filter(key => J.registry(g)[key] && !J.registry(g)[key].special);
+  items.forEach(key => {
+    const def = J.registry(g)[key];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tcard' + (key === onKey ? ' is-on' : '');
+    b.title = key;
+    b.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${key}"></canvas><span class="tcard-name"><span>${escapeHtml(def.name)}</span>${setBadges(def)}</span>`;
+    b.addEventListener('click', () => {
+      setCutTech(cutPick.line, cutPick.k, g, key);
+      replan();
+    });
+    grid.appendChild(b);
+  });
+  queueThumbs(grid);
 }
 
 /* ---------------- line list ---------------- */
@@ -36537,11 +36810,18 @@ function renderLines() {
       replan();
     });
     const cutsEl = q('.cuts');
-    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach(c => {
-      const sp = document.createElement('span'); sp.textContent = J.LAYOUTS[c.layout].name; sp.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sp.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
-      sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
-      cutsEl.appendChild(sp);
+    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
+      const forced = o.cutLayouts && o.cutLayouts[k];
+      const sel = document.createElement('select');
+      sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
+      sel.innerHTML = layoutOpts;
+      sel.value = forced || c.layout;
+      sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
+      sel.setAttribute('aria-label', `${i + 1}행 ${k + 1}번째 컷의 레이아웃`);
+      sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
+      sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
+      sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
+      cutsEl.appendChild(sel);
     });
     // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
     if (S.openLine === i) li.classList.add('open');
@@ -36676,6 +36956,31 @@ function bindRangeUI() {
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
   for (const k of Object.keys(cur)) if (cur[k] === undefined || cur[k] === false || cur[k] === '') delete cur[k];
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
+function setCutLayout(i, k, layout) { setCutTech(i, k, 'layout', layout); }
+function setCutTech(i, k, group, key) {
+  if (i == null || i < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutTech = Object.assign({}, cur.cutTech || {});
+  const slot = Object.assign({}, cutTech[k] || cutTech[String(k)] || {});
+  delete cutTech[String(k)];
+  if (!key) delete slot[group];
+  else slot[group] = key;
+  if (Object.keys(slot).length) cutTech[k] = slot;
+  else delete cutTech[k];
+  if (Object.keys(cutTech).length) cur.cutTech = cutTech; else delete cur.cutTech;
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  delete q[group];
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
+  if (group === 'layout') {
+    const cutLayouts = Object.assign({}, cur.cutLayouts || {});
+    if (!key) delete cutLayouts[k]; else cutLayouts[k] = key;
+    if (Object.keys(cutLayouts).length) cur.cutLayouts = cutLayouts; else delete cur.cutLayouts;
+  }
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -36876,7 +37181,7 @@ function lockBtn(k, anchor) {                     // lock button for effects tha
   return b;
 }
 
-/* ---------------- おまかせ ---------------- */
+/* ---------------- 자동 생성 ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 function omakase() {
   if (S.exporting || S.tap) return;
@@ -36920,7 +37225,7 @@ function showNow() {
   const P = S.project, sc = S.plan.style.schemes[0];
   const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : '사용자 설정';
   const fk = S.plan.style.fonts.display[0];
-  const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
+  const fontName = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
@@ -36954,7 +37259,9 @@ function setMode(m) {
   $('modePro').setAttribute('aria-pressed', String(S.mode === 'pro'));
   try { localStorage.setItem('jizura.mode', S.mode); } catch (e) {}
   if (mobile) mobileInit();
-  if (easy) { showNow(); syncOut(); codecNoteSoon(); }
+    if (easy) { showNow(); syncOut(); codecNoteSoon(); }
+    if (easy) closeCutPick();
+    if (S.plan && S.lineEls && S.lineEls.length) { lastCutIdx = -2; updateCutInfo(); }
   sizeViewport(); drawTimeline(); loadThumbFonts();
 }
 
@@ -37036,7 +37343,8 @@ function paintTechCanvas(cv, g, k, t) {
 }
 function techPaneOpen() {
   const pane = $('techLists') && $('techLists').closest('.tabpane');
-  return pane && !pane.hidden;
+  const pick = $('cutPick');
+  return (pane && !pane.hidden) || (pick && !pick.hidden);
 }
 function ensurePreviewObs() {
   if (previewObs) return previewObs;
@@ -37317,6 +37625,13 @@ function bind() {
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
+  if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
+  if (cutPickAuto) cutPickAuto.addEventListener('click', () => {
+    if (!cutPick.g) return;
+    setCutTech(cutPick.line, cutPick.k, cutPick.g, '');
+    replan();
+  });
   $('btnLoop').addEventListener('click', () => {
     const i = LOOP_CYCLE.indexOf(S.loop);
     S.loop = LOOP_CYCLE[(i < 0 ? 0 : i + 1) % LOOP_CYCLE.length];
@@ -37358,6 +37673,7 @@ function bind() {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });
     if (b.dataset.tab === 'out') codecNote();
+    if (b.dataset.tab === 'tech') kickPreviewLoop();
     loadThumbFonts();
   }));
   $('fxFlash').addEventListener('change', e => { S.project.fx.flash = e.target.checked; replan(); });
@@ -37454,7 +37770,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.8.0' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
