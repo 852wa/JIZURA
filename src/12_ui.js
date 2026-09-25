@@ -1145,6 +1145,9 @@ function syncOut() {
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
   $('outCenter').checked = $('eCenter').checked = !!S.project.centerFree;
+  const tall = J.designSize(S.project.aspect)[1] > J.designSize(S.project.aspect)[0] * 1.1;
+  document.querySelectorAll('.center-dir').forEach(el => { el.hidden = !(S.project.centerFree && tall); });
+  document.querySelectorAll('.centerDirSel').forEach(el => { el.value = S.project.centerDir === 'lr' ? 'lr' : 'tb'; });
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
@@ -1396,9 +1399,13 @@ function bind() {
     toast(k ? `背景：${k === 'green' ? 'グリーンバック' : 'ブラックバック'}（白い文字と演出だけ）` : '背景：通常（スタイルの配色）');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
+  document.querySelectorAll('.centerDirSel').forEach(el => el.addEventListener('change', e => {
+    S.project.centerDir = e.target.value; syncOut(); replan(); flushSave();
+    toast(e.target.value === 'lr' ? '縦長の画面：左右に分けます' : '縦長の画面：上下に分けます');
+  }));
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
-    const tall = S.plan.H > S.plan.W * 1.1;
+    const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
     toast(e.target.checked ? `中央を空けました：文字と演出を${tall ? '上下' : '左右'}に置きます` : '中央を空けるのをやめました');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));

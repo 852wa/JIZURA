@@ -293,7 +293,7 @@ J.planForAE = (plan, project, range) => {
   if (range) {
     const sp = J.exportSpan(plan, range), t0 = sp.t0, t1 = t0 + sp.dur, eps = 1e-3;
     const sh = o => { o.start -= t0; o.end -= t0; return o; };
-    clean.cuts = clean.cuts.filter(c => c.end > t0 + eps && c.start < t1 - eps).map(sh);
+    clean.cuts = clean.cuts.filter(c => c.end > t0 + eps && c.start < t1 - eps).map(c => { if (c.companion) sh(c.companion); return sh(c); });
     clean.events = (clean.events || []).filter(e => e.t >= t0 - 1 && e.t < t1).map(e => Object.assign(e, { t: e.t - t0 }));
     for (const l of clean.lines || []) { sh(l); if (l.visEnd != null) l.visEnd -= t0; }   // all lines stay (cut.line indexes them)
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };

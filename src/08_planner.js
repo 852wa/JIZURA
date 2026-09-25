@@ -20,6 +20,7 @@ J.defaultProject = () => ({
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   unify: false,                   // 統一感: part palettes, repeats shown the same way, キメ, モーフ, 太さ
   typeset: false,                 // 文字整列: kana tracking, small particles / big first character, Latin sizing, 0.2 s lead, restraint
+  centerDir: 'tb',                // 中央を空ける on tall frames: 'tb' = top / bottom, 'lr' = left / right
   centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -226,8 +227,9 @@ J.plan = (project, audio) => {
   for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false && (!J.randomOk || J.randomOk(project, g, k)); }
   // 中央を空ける (キャラクター用): every cut is laid out in a side band — left / right on wide frames, top / bottom on tall
   // ones — alternating line by line; the centre keeps only the full-frame background and screen effects
-  const zones = project.centerFree ? J.sideZones(W, H) : null;
-  const zoneOf = li => (zones ? Object.assign({}, zones[Math.max(0, li) % 2]) : null);
+  const zones = project.centerFree ? J.sideZones(W, H, project.centerDir) : null;
+  // the lyric of every cut is split in two: the first half in band 0 (left / top), the second in band 1 (right / bottom)
+  const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
     version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
@@ -296,6 +298,7 @@ J.plan = (project, audio) => {
     const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
+    if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
     // カット数の指定 (per line): exactly that many cuts — chunks are split further when the line has fewer
     const fixedN = ov.cuts > 0 ? Math.min(12, ov.cuts | 0) : 0;
     let chunks2 = chunks;
@@ -321,9 +324,10 @@ J.plan = (project, audio) => {
     let lineBgP = J.BG[lineBg] && J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {};
     units.forEach((u, k) => {
       const cs = bounds[k], ce = bounds[k + 1], dur = ce - cs;
-      const txt = u.text;
-      const nn = [...txt.replace(/\s+/g, '')].length;
-      const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
+      const halves = zones ? splitHalf(u.text, plan.lang) : null;               // 中央を空ける: 「花が」｜「咲いた」
+      const txt = halves ? halves[0] : u.text;
+      const nn = Math.max(...(halves || [u.text]).map(t => [...t.replace(/\s+/g, '')].length));
+      const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => u.text.includes(w));
       const Z = zoneOf(li), LW = Z ? Z.w : W, LH = Z ? Z.h : H;       // the frame this cut is laid out in
       const UU = U && !ovAny ? U : null;                              // per-line settings always win over 統一感
       const tech = cutTechOf(ov, k);
@@ -444,6 +448,7 @@ J.plan = (project, audio) => {
       if (weightGrow) cut.weightGrow = true;
       if (morph) cut.morph = morph;
       if (UU) UU.remember(li, k, txt, cut);
+      if (zones) splitCut(cut, halves, zones, st, dur);
       // 文字整列: effects don't pile up — one decoration, no text treatment on top of it
       if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
@@ -487,7 +492,12 @@ J.plan = (project, audio) => {
     }
   });
   plan.cuts.sort((a, b) => a.start - b.start);
-  plan.cuts.forEach((c, i) => { c.index = i; if (zones && !c.zone) c.zone = zoneOf(c.line); });
+  plan.cuts.forEach((c, i) => {
+    c.index = i;
+    if (!zones || c.zone) return;
+    if (c.layout === 'interlude') { c.params = Object.assign({}, c.params, { showTitle: false }); return; }   // no lyric: the whole frame
+    c.zone = zoneOf(c.line);
+  });
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
@@ -596,9 +606,47 @@ function makeUnify(lines, C) {
   };
 }
 
+/* 中央を空ける: one scene, the lyric split in two — 「花が」 in the left (top) band, 「咲いた」 in the right (bottom) one.
+   Both halves use the same layout, motion, decorations and camera (the same random draws), so it reads as one picture
+   with the centre left for the character; the second half follows a beat later. */
+function splitHalf(text, lang) {
+  const t = String(text || '').trim();
+  const n = [...t.replace(/\s+/g, '')].length;
+  // between words, as near the middle as possible (「花が」｜「咲いた」, "Good night," | "see you tomorrow")
+  const words = (lang === 'en' ? J.phraseChunks(J.chunkText(t)) : J.chunkText(t)).map(w => String(w));
+  if (words.length >= 2) {
+    const L = w => [...w.replace(/\s+/g, '')].length, total = words.reduce((a2, w) => a2 + L(w), 0);
+    let acc = 0, best = 1, bd = 1e9;
+    for (let k = 1; k < words.length; k++) { acc += L(words[k - 1]); const d = Math.abs(acc - total / 2); if (d < bd) { bd = d; best = k; } }
+    const sep = /[A-Za-z]/.test(t) ? ' ' : '';
+    return [words.slice(0, best).join(sep).trim(), words.slice(best).join(sep).trim()];
+  }
+  // one word: short ones (and single English words) stand on both sides; longer ones split near the middle
+  if (n <= 3 || /^[A-Za-z0-9'’-]+$/.test(t)) return [t, t];
+  const two = splitToCount([t], 2);
+  if (two.length < 2) return [t, t];
+  let a = two[0].trim(), b = two.slice(1).join('').trim();
+  // a half never starts with a particle, punctuation or a small kana: 「夜明けの色を」｜「覚えてる」, not 「…色」｜「を…」
+  for (let g = 0; g < 3 && b.length > 1 && HEAD_BAD.test(b[0]); g++) { a += b[0]; b = b.slice(1); }
+  return [a, b];
+}
+const HEAD_BAD = /[、。，．,.!?！？…・ーっッゃゅょャュョぁぃぅぇぉァィゥェォをがはにでとのへもやよね」』）)]/;
+function splitCut(cut, halves, zones, st, dur) {
+  const LD = J.LAYOUTS[cut.layout], seed = J.h(cut.seed, 23);
+  const planFor = (text, z) => LD.plan(J.rng(seed), { text, n: [...text.replace(/\s+/g, '')].length, W: z.w, H: z.h, dur }, st);
+  cut.text = halves[0]; cut.lineText = halves[0]; cut.words = J.chunkText(halves[0]); cut.zone = Object.assign({}, zones[0]);
+  cut.params = planFor(halves[0], zones[0]);
+  const delay = Math.min(0.12, dur * 0.08);
+  const twin = Object.assign({}, cut, { text: halves[1], lineText: halves[1], words: J.chunkText(halves[1]), zone: Object.assign({}, zones[1]), params: planFor(halves[1], zones[1]),
+    start: cut.start + delay, bg: 'none', bgP: {}, companion: true, trans: null, transP: {}, transDur: 0, morph: cut.morph });
+  twin.dur = twin.end - twin.start;
+  delete twin.companion_; cut.companion = twin;
+}
+
 /* side bands for 中央を空ける: [a, b] in design pixels. Wide frames: left / right thirds (a little narrower on 21:9);
    tall frames: top / bottom; square-ish frames count as wide. */
-J.sideZones = (W, H) => {
+J.sideZones = (W, H, dir) => {
+  if (H > W * 1.1 && dir === 'lr') { const w = Math.round(W * 0.34); return [{ x: 0, y: 0, w, h: H, side: 'left' }, { x: W - w, y: 0, w, h: H, side: 'right' }]; }   // 縦長で左右に分ける
   if (H > W * 1.1) { const h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h, side: 'top' }, { x: 0, y: H - h, w: W, h, side: 'bottom' }]; }
   const w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
   return [{ x: 0, y: 0, w, h: H, side: 'left' }, { x: W - w, y: 0, w, h: H, side: 'right' }];

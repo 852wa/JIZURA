@@ -379,6 +379,8 @@ button.small.primary { padding: 4px 12px; }
 .lang-switch select { font: 500 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.center-dir { gap: 6px; margin: -2px 0 8px 26px; font-size: 12px; }
+.center-dir select { width: auto; }
 
 </style>
 </head>
@@ -518,8 +520,8 @@ button.small.primary { padding: 4px 12px; }
           <div class="pick-sets">
             <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>추가 연출도 사용<small>첫 공개 이후 추가된 약 350개 연출, 12개 스타일, 6개 글꼴도 자동 생성과 셔플 후보에 포함합니다. 끄면 초기 공개판의 연출만 사용합니다.</small></span></label>
             <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>일본풍 연출도 사용<small>초롱, 엽서, 쇼지, 부채, 가문 문양, 세이가이하, 벚꽃잎 등의 일본풍 그래픽입니다. 끄면 자동 생성과 셔플에서 선택되지 않습니다.</small></span></label>
-            <label class="check"><input class="unify-toggle" type="checkbox"><span>통일감<small>파트마다 연출을 맞추고, 반복되는 가사는 같은 방식으로 다시 등장합니다. 움직임의 방향을 번갈아 주고, 강한 움직임은 중요한 줄에만 씁니다. 「!」로 끝나는 줄(없으면 반복되는 파트의 첫 줄)을 크게 보여 주는 「킬링 파트」, 글자가 녹아서 바뀌거나 같은 글자가 이동하는 「모프」, 가는 글씨에서 굵은 글씨로 자라는 「굵기」도 사용합니다</small></span></label>
-            <label class="check"><input class="typeset-toggle" type="checkbox"><span>문자 정렬<small>가나의 자간을 좁혀 덩어리로 읽히게 하고, 조사는 작게·첫 글자는 크게, 영문은 조금 크게 하고 일본어와의 사이를 조금 띄웁니다. 글자는 목소리보다 0.2초 먼저 나오고, 효과가 너무 겹치지 않게 합니다</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>통일감</span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>문자 정렬</span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -544,6 +546,7 @@ button.small.primary { padding: 4px 12px; }
             <label class="field field-wide">배경<select id="eKey"><option value="off">일반 (스타일 배경)</option><option value="green">그린 스크린 (합성용)</option><option value="black">블랙 배경 (합성용)</option></select></label>
           </div>
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>가운데 비우기(캐릭터용)<small>가운데에 캐릭터 등을 겹칠 것을 전제로, 가로 화면에서는 좌우, 세로 화면에서는 위아래에 문자와 연출을 줄마다 번갈아 배치합니다. 배경과 화면 효과는 화면 전체 그대로입니다(미리보기에는 비우는 범위를 점선으로 표시)</small></span></label>
+          <label class="row center-dir" hidden>세로 화면일 때<select class="centerDirSel" aria-label="세로 화면에서 나누는 방법"><option value="tb">위아래로 나누기</option><option value="lr">좌우로 나누기</option></select></label>
           <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 줄"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 줄"></select><span class="rngInfo muted mono"></span></div>
           <div class="outbtns"><button id="eMP4" class="primary">MP4 내보내기</button><button id="eMP4File" class="ghost mp4file" hidden title="저장할 파일을 먼저 고르고 거기에 바로 기록합니다. 긴 곡이나 1080p 이상에서 브라우저 메모리가 부족해 실패할 때 사용하세요(Chrome / Edge)">큰 동영상용(파일에 바로 저장)</button></div>
           <button class="terms-open linkish">내보낸 동영상의 권리</button>
@@ -583,8 +586,8 @@ button.small.primary { padding: 4px 12px; }
 
       <div class="tabpane" data-pane="fx" hidden>
         <div class="unify-box">
-          <label class="check"><input class="unify-toggle" type="checkbox"><span>통일감<small>파트마다 연출을 맞추고, 반복되는 가사는 같은 방식으로 다시 등장합니다. 움직임의 방향을 번갈아 주고, 강한 움직임은 중요한 줄에만 씁니다. 「!」로 끝나는 줄(없으면 반복되는 파트의 첫 줄)을 크게 보여 주는 「킬링 파트」, 글자가 녹아서 바뀌거나 같은 글자가 이동하는 「모프」, 가는 글씨에서 굵은 글씨로 자라는 「굵기」도 사용합니다</small></span></label>
-          <label class="check"><input class="typeset-toggle" type="checkbox"><span>문자 정렬<small>가나의 자간을 좁혀 덩어리로 읽히게 하고, 조사는 작게·첫 글자는 크게, 영문은 조금 크게 하고 일본어와의 사이를 조금 띄웁니다. 글자는 목소리보다 0.2초 먼저 나오고, 효과가 너무 겹치지 않게 합니다</small></span></label>
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>통일감</span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>문자 정렬</span></label>
         </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
@@ -618,6 +621,7 @@ button.small.primary { padding: 4px 12px; }
         </div>
         <p class="note key-note">그린 스크린/블랙 배경에서는 단색 배경 위에 흰 글자와 연출만 그립니다. 배경 무늬, 종이 질감, 입자, 비네트는 제외됩니다. 미리보기에도 그대로 반영되며 그린은 크로마키, 블랙은 스크린 합성이나 루마 키로 다른 영상 위에 합성할 수 있습니다.</p>
         <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>가운데 비우기(캐릭터용)<small>가운데에 캐릭터 등을 겹칠 것을 전제로, 가로 화면에서는 좌우, 세로 화면에서는 위아래에 문자와 연출을 줄마다 번갈아 배치합니다. 배경과 화면 효과는 화면 전체 그대로입니다(미리보기에는 비우는 범위를 점선으로 표시)</small></span></label>
+          <label class="row center-dir" hidden>세로 화면일 때<select class="centerDirSel" aria-label="세로 화면에서 나누는 방법"><option value="tb">위아래로 나누기</option><option value="lr">좌우로 나누기</option></select></label>
         <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 동영상에 음원 포함</label>
         <div class="rng-row"><span class="rng-lab">내보낼 범위</span><select class="rngFrom" aria-label="내보낼 범위의 첫 줄"></select><span class="muted">〜</span><select class="rngTo" aria-label="내보낼 범위의 마지막 줄"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
@@ -3269,6 +3273,7 @@ J.defaultProject = () => ({
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   unify: false,                   // 統一感: part palettes, repeats shown the same way, キメ, モーフ, 太さ
   typeset: false,                 // 文字整列: kana tracking, small particles / big first character, Latin sizing, 0.2 s lead, restraint
+  centerDir: 'tb',                // 中央を空ける on tall frames: 'tb' = top / bottom, 'lr' = left / right
   centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
@@ -3475,8 +3480,9 @@ J.plan = (project, audio) => {
   for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false && (!J.randomOk || J.randomOk(project, g, k)); }
   // 中央を空ける (キャラクター用): every cut is laid out in a side band — left / right on wide frames, top / bottom on tall
   // ones — alternating line by line; the centre keeps only the full-frame background and screen effects
-  const zones = project.centerFree ? J.sideZones(W, H) : null;
-  const zoneOf = li => (zones ? Object.assign({}, zones[Math.max(0, li) % 2]) : null);
+  const zones = project.centerFree ? J.sideZones(W, H, project.centerDir) : null;
+  // the lyric of every cut is split in two: the first half in band 0 (left / top), the second in band 1 (right / bottom)
+  const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
     version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
@@ -3545,6 +3551,7 @@ J.plan = (project, audio) => {
     const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
+    if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
     // カット数の指定 (per line): exactly that many cuts — chunks are split further when the line has fewer
     const fixedN = ov.cuts > 0 ? Math.min(12, ov.cuts | 0) : 0;
     let chunks2 = chunks;
@@ -3570,9 +3577,10 @@ J.plan = (project, audio) => {
     let lineBgP = J.BG[lineBg] && J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {};
     units.forEach((u, k) => {
       const cs = bounds[k], ce = bounds[k + 1], dur = ce - cs;
-      const txt = u.text;
-      const nn = [...txt.replace(/\s+/g, '')].length;
-      const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
+      const halves = zones ? splitHalf(u.text, plan.lang) : null;               // 中央を空ける: 「花が」｜「咲いた」
+      const txt = halves ? halves[0] : u.text;
+      const nn = Math.max(...(halves || [u.text]).map(t => [...t.replace(/\s+/g, '')].length));
+      const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => u.text.includes(w));
       const Z = zoneOf(li), LW = Z ? Z.w : W, LH = Z ? Z.h : H;       // the frame this cut is laid out in
       const UU = U && !ovAny ? U : null;                              // per-line settings always win over 統一感
       const tech = cutTechOf(ov, k);
@@ -3693,6 +3701,7 @@ J.plan = (project, audio) => {
       if (weightGrow) cut.weightGrow = true;
       if (morph) cut.morph = morph;
       if (UU) UU.remember(li, k, txt, cut);
+      if (zones) splitCut(cut, halves, zones, st, dur);
       // 文字整列: effects don't pile up — one decoration, no text treatment on top of it
       if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
@@ -3736,7 +3745,12 @@ J.plan = (project, audio) => {
     }
   });
   plan.cuts.sort((a, b) => a.start - b.start);
-  plan.cuts.forEach((c, i) => { c.index = i; if (zones && !c.zone) c.zone = zoneOf(c.line); });
+  plan.cuts.forEach((c, i) => {
+    c.index = i;
+    if (!zones || c.zone) return;
+    if (c.layout === 'interlude') { c.params = Object.assign({}, c.params, { showTitle: false }); return; }   // no lyric: the whole frame
+    c.zone = zoneOf(c.line);
+  });
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
@@ -3845,9 +3859,47 @@ function makeUnify(lines, C) {
   };
 }
 
+/* 中央を空ける: one scene, the lyric split in two — 「花が」 in the left (top) band, 「咲いた」 in the right (bottom) one.
+   Both halves use the same layout, motion, decorations and camera (the same random draws), so it reads as one picture
+   with the centre left for the character; the second half follows a beat later. */
+function splitHalf(text, lang) {
+  const t = String(text || '').trim();
+  const n = [...t.replace(/\s+/g, '')].length;
+  // between words, as near the middle as possible (「花が」｜「咲いた」, "Good night," | "see you tomorrow")
+  const words = (lang === 'en' ? J.phraseChunks(J.chunkText(t)) : J.chunkText(t)).map(w => String(w));
+  if (words.length >= 2) {
+    const L = w => [...w.replace(/\s+/g, '')].length, total = words.reduce((a2, w) => a2 + L(w), 0);
+    let acc = 0, best = 1, bd = 1e9;
+    for (let k = 1; k < words.length; k++) { acc += L(words[k - 1]); const d = Math.abs(acc - total / 2); if (d < bd) { bd = d; best = k; } }
+    const sep = /[A-Za-z]/.test(t) ? ' ' : '';
+    return [words.slice(0, best).join(sep).trim(), words.slice(best).join(sep).trim()];
+  }
+  // one word: short ones (and single English words) stand on both sides; longer ones split near the middle
+  if (n <= 3 || /^[A-Za-z0-9'’-]+$/.test(t)) return [t, t];
+  const two = splitToCount([t], 2);
+  if (two.length < 2) return [t, t];
+  let a = two[0].trim(), b = two.slice(1).join('').trim();
+  // a half never starts with a particle, punctuation or a small kana: 「夜明けの色を」｜「覚えてる」, not 「…色」｜「を…」
+  for (let g = 0; g < 3 && b.length > 1 && HEAD_BAD.test(b[0]); g++) { a += b[0]; b = b.slice(1); }
+  return [a, b];
+}
+const HEAD_BAD = /[、。，．,.!?！？…・ーっッゃゅょャュョぁぃぅぇぉァィゥェォをがはにでとのへもやよね」』）)]/;
+function splitCut(cut, halves, zones, st, dur) {
+  const LD = J.LAYOUTS[cut.layout], seed = J.h(cut.seed, 23);
+  const planFor = (text, z) => LD.plan(J.rng(seed), { text, n: [...text.replace(/\s+/g, '')].length, W: z.w, H: z.h, dur }, st);
+  cut.text = halves[0]; cut.lineText = halves[0]; cut.words = J.chunkText(halves[0]); cut.zone = Object.assign({}, zones[0]);
+  cut.params = planFor(halves[0], zones[0]);
+  const delay = Math.min(0.12, dur * 0.08);
+  const twin = Object.assign({}, cut, { text: halves[1], lineText: halves[1], words: J.chunkText(halves[1]), zone: Object.assign({}, zones[1]), params: planFor(halves[1], zones[1]),
+    start: cut.start + delay, bg: 'none', bgP: {}, companion: true, trans: null, transP: {}, transDur: 0, morph: cut.morph });
+  twin.dur = twin.end - twin.start;
+  delete twin.companion_; cut.companion = twin;
+}
+
 /* side bands for 中央を空ける: [a, b] in design pixels. Wide frames: left / right thirds (a little narrower on 21:9);
    tall frames: top / bottom; square-ish frames count as wide. */
-J.sideZones = (W, H) => {
+J.sideZones = (W, H, dir) => {
+  if (H > W * 1.1 && dir === 'lr') { const w = Math.round(W * 0.34); return [{ x: 0, y: 0, w, h: H, side: 'left' }, { x: W - w, y: 0, w, h: H, side: 'right' }]; }   // 縦長で左右に分ける
   if (H > W * 1.1) { const h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h, side: 'top' }, { x: 0, y: H - h, w: W, h, side: 'bottom' }]; }
   const w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
   return [{ x: 0, y: 0, w, h: H, side: 'left' }, { x: W - w, y: 0, w, h: H, side: 'right' }];
@@ -4372,9 +4424,11 @@ class Renderer {
     for (const P of passes) {
       if (P.pass !== 'main' && !ghostOn) continue;
       const tp = Math.max(0, tq - P.lag);
-      const cut = P.lag ? J.cutAt(plan, tp) : mainCut;
-      if (!cut) continue;
-      if (morphOn && cut !== mainCut) continue;
+      const cut0 = P.lag ? J.cutAt(plan, tp) : mainCut;
+      if (!cut0) continue;
+      if (morphOn && cut0 !== mainCut) continue;
+      // 中央を空ける: the cut in its band, and its companion (echo / whole line / decorations) in the other band
+      for (const cut of plan.centerFree && cut0.companion ? [cut0, cut0.companion] : [cut0]) {
       const csc = st.schemes[cut.scheme % st.schemes.length] || st.schemes[0];
       const lt = tp - cut.start;
       const X = LX || ctx;
@@ -4401,7 +4455,8 @@ class Renderer {
       if (P.pass !== 'main') X.globalCompositeOperation = J.lum(csc.bg) > 0.55 ? 'multiply' : 'source-over';
       this.drawCut(env);
       X.restore();
-      if (P.pass === 'main') { mainEnv = env; }
+      if (P.pass === 'main' && cut === cut0) { mainEnv = env; }
+      }
     }
     if (LX) {
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
@@ -5181,7 +5236,7 @@ J.planForAE = (plan, project, range) => {
   if (range) {
     const sp = J.exportSpan(plan, range), t0 = sp.t0, t1 = t0 + sp.dur, eps = 1e-3;
     const sh = o => { o.start -= t0; o.end -= t0; return o; };
-    clean.cuts = clean.cuts.filter(c => c.end > t0 + eps && c.start < t1 - eps).map(sh);
+    clean.cuts = clean.cuts.filter(c => c.end > t0 + eps && c.start < t1 - eps).map(c => { if (c.companion) sh(c.companion); return sh(c); });
     clean.events = (clean.events || []).filter(e => e.t >= t0 - 1 && e.t < t1).map(e => Object.assign(e, { t: e.t - t0 }));
     for (const l of clean.lines || []) { sh(l); if (l.visEnd != null) l.visEnd -= t0; }   // all lines stay (cut.line indexes them)
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
@@ -31378,6 +31433,9 @@ function syncOut() {
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
   $('outCenter').checked = $('eCenter').checked = !!S.project.centerFree;
+  const tall = J.designSize(S.project.aspect)[1] > J.designSize(S.project.aspect)[0] * 1.1;
+  document.querySelectorAll('.center-dir').forEach(el => { el.hidden = !(S.project.centerFree && tall); });
+  document.querySelectorAll('.centerDirSel').forEach(el => { el.value = S.project.centerDir === 'lr' ? 'lr' : 'tb'; });
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? '그린 스크린' : '블랙 배경'}`;
@@ -31629,9 +31687,13 @@ function bind() {
     toast(k ? `배경: ${k === 'green' ? '그린 스크린' : '블랙 배경'} (흰 글자와 연출만)` : '배경: 기본(스타일 배색)');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
+  document.querySelectorAll('.centerDirSel').forEach(el => el.addEventListener('change', e => {
+    S.project.centerDir = e.target.value; syncOut(); replan(); flushSave();
+    toast(e.target.value === 'lr' ? '세로 화면: 좌우로 나눕니다' : '세로 화면: 위아래로 나눕니다');
+  }));
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
-    const tall = S.plan.H > S.plan.W * 1.1;
+    const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
     toast(e.target.checked ? `가운데를 비웠습니다: 문자와 연출을 ${tall ? '위아래' : '좌우'}에 배치합니다` : '가운데 비우기를 해제했습니다');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));

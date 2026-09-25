@@ -38,8 +38,9 @@ STYLES = {
 }
 
 BODY = {
-    '<span>統一感<small>パートごとに演出をそろえ、くり返す歌詞は同じ見せ方で戻ってきます。動きの方向を交互にし、強い動きはここぞという行に。「!」の行（なければくり返すパートの頭の行）を大きく見せる「キメ」、文字が溶けて変わる・同じ字が移動する「モーフ」、細字から太字へ育つ「太さ」も使います</small></span>': '<span>Tampilan seragam<small>Setiap bagian lagu memakai satu set tata letak dan gerakan, dan baris yang muncul lagi ditampilkan dengan cara yang sama. Arah gerakan bergantian, gerakan kuat disimpan untuk baris penting. Baris yang diakhiri “!” (atau, jika tidak ada, baris pertama bagian yang diulang) ditampilkan besar (“klimaks”); teks bisa meleleh menjadi baris berikutnya atau hurufnya bergeser ke posisi baru (“morf”), dan tumbuh dari tipis ke tebal (“ketebalan”)</small></span>',
-    '<span>文字整列<small>かなの字間を詰めて塊で読ませ、助詞を小さく・頭の字を大きく、英字は少し大きく日本語との間を少し空けます。文字は声より0.2秒先に出し、効果を重ねすぎないようにします</small></span>': '<span>Penataan teks<small>Kana dirapatkan agar terbaca sebagai satu blok, partikel dikecilkan dan huruf pertama dibesarkan, huruf Latin sedikit dibesarkan dengan jarak kecil ke teks Jepang. Teks muncul 0,2 detik sebelum suara, dan efek tidak ditumpuk berlebihan</small></span>',
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>',
+    '<span>統一感</span>': '<span>Tampilan seragam</span>',
+    '<span>文字整列</span>': '<span>Penataan teks</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">MP4（大きな動画用・ファイルに直接保存）</button>': 'title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">MP4 (video besar, simpan langsung ke file)</button>',
     '<span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span>': '<span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span>',
@@ -160,6 +161,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'Layar tegak: dibagi kiri / kanan'",
+    "'縦長の画面：上下に分けます'": "'Layar tegak: dibagi atas / bawah'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (cara pertama gagal, jadi dipakai encoder lain)'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'Tampilan seragam: aktif (bagian seragam; klimaks, morf, dan ketebalan juga dipakai)'",
     "'保存先を開けませんでした: '": "'Tidak bisa membuka file tujuan: '",

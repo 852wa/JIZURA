@@ -110,6 +110,17 @@ function fx1_strip(f, ev, name, S, P, op) {
 function fx1_layer(comp, name) { for (var i = 1; i <= comp.numLayers; i++) if (comp.layer(i).name === name) return comp.layer(i); return null; }
 function fx1_wraps(f, t0, t1) {
     var out = [], C = f.comp;
+    // the builder keeps an index of the cut wrappers (f.wraps): no scan of the whole main comp per event, which made
+    // long songs slower and slower (every event walked hundreds of layers, and the copies it added made it worse)
+    if (f.wraps) {
+        for (var w = 0; w < f.wraps.length; w++) {
+            var W0 = f.wraps[w];
+            if (W0.cut.start > t1 + 1 || W0.cut.end < t0 - 1 || !W0.content) continue;
+            if (W0.layer.inPoint > t1 || W0.layer.outPoint <= t0) continue;
+            out.push({ L: W0.layer, comp: W0.stage || W0.comp, content: W0.content });
+        }
+        return out;
+    }
     for (var i = 1; i <= C.numLayers; i++) {
         var L = C.layer(i), src = null;
         try { src = L.source; } catch (e) { src = null; }

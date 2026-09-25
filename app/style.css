@@ -357,3 +357,5 @@ button.small.primary { padding: 4px 12px; }
 .lang-switch select { font: 500 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.center-dir { gap: 6px; margin: -2px 0 8px 26px; font-size: 12px; }
+.center-dir select { width: auto; }

@@ -35,6 +35,9 @@ function jzBuildStart(plan, opt) {
     var FXV = { motion: fx.motion == null ? 0.7 : fx.motion, glitch: fx.glitch == null ? 0.5 : fx.glitch, decor: fx.decor == null ? 0.5 : fx.decor, texture: fx.texture == null ? 0.6 : fx.texture, chroma: fx.chroma == null ? 0.7 : fx.chroma };
     function schemeOf(c) { return schemes[(c.scheme || 0) % schemes.length] || schemes[0]; }
     var paperAmt = (st.texture && st.texture.paper) || 0;
+    // 軽量 (opt.light): no colour-shift ghosts, no paper noise, no bloom / grain / slice warp / zoom blur, and no screen
+    // effects that duplicate the picture — plays back several times faster in After Effects
+    var LIGHT = !!opt.light;
     // 合成用の背景: the plan's style is already white-on-black; no lift / paper / background graphic / vignette,
     // the finished comp is made monochrome (Tint) and — for green — screened onto #00FF00
     var KEY = (plan.keyBg === 'green' || plan.keyBg === 'black') ? plan.keyBg : null;
@@ -46,45 +49,20 @@ function jzBuildStart(plan, opt) {
 
     // ---------- cuts
     var lagA = 0.8 / 24, lagB = 1.6 / 24, wraps = [];
-    function buildCut(ci) {
-        var cut = cuts[ci];
-        if (!(cut.end > cut.start)) return;
-        cut.dur = cut.end - cut.start;
-        var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
-        var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
-        // content
-        // 中央を空ける: the cut is laid out in its side band — content, ghosts and camera go into a band-sized "stage" comp
-        // placed over the full-frame background (the comp bounds clip it, like the browser's clip)
-        var Z = plan.centerFree && cut.zone ? cut.zone : null, CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u;
+    // the lyric (or its companion) of one cut: content comp + ghosts + camera null, in comp T (the wrapper, or a
+    // band-sized "stage" comp for 中央を空ける — its bounds clip it, like the browser's clip)
+    function buildContent(c, T, CW, CH, cu, sc, label, cdur, ci) {
         var pc = app.project.items.addComp(label + ' text', CW, CH, 1, cdur, fps);
         pc.parentFolder = folder;
-        var ctx = { comp: pc, W: CW, H: CH, u: cu, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
-        var bb = null, lk = jzFallback('layout', cut.layout, 'center');
-        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: CW, H: CH, dur: cut.dur }, st) : {}; }
+        var ctx = { comp: pc, W: CW, H: CH, u: cu, sc: sc, st: st, fx: FXV, cut: c, P: c.params || {}, roles: roles, plan: plan };
+        var bb = null, lk = jzFallback('layout', c.layout, 'center');
+        if (lk !== c.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(c.seed, 31)), { text: c.text, n: jzCount(c.text), W: CW, H: CH, dur: c.dur }, st) : {}; }
         try { bb = JZ_REG.layout[lk].build(ctx); }
         catch (e) { jzWarn('cut ' + (ci + 1) + ' ' + lk + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
         try { jzDecorate(ctx, bb); } catch (e2) { jzWarn('decor: ' + e2.toString()); }
-        // wrapper
-        var wc = app.project.items.addComp(label, W, H, 1, cdur, fps);
-        wc.parentFolder = folder;
-        var bgL = wc.layers.addSolid(jzHex(sc.bg), 'JZ BG', W, H, 1, cdur);
-        if (!KEY) jzBgLift(bgL, sc, W, H);
-        if (paperAmt > 0.05 && FXV.texture > 0.05) {
-            var pp = wc.layers.addSolid([0.5, 0.5, 0.5], 'JZ Paper', W, H, 1, cdur);
-            var pn = jzEffect(pp, 'ADBE Fractal Noise', 'JZ Paper Noise'); jzEP(pn, 4, 60);
-            // the browser's paper is a faint fibre texture: keep the overlay light, fainter still on dark schemes
-            pp.blendingMode = BlendingMode.OVERLAY; jzXf(pp, 'ADBE Opacity').setValue((jzLum(sc.bg) < 0.4 ? 6 : 12) * paperAmt);
-        }
-        var bk = !KEY && cut.bg && cut.bg !== 'none' ? jzFallback('bg', cut.bg, null) : null;
-        if (bk) {
-            var bctx = { comp: wc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, plan: plan, P: cut.bgP || {} };
-            try { JZ_REG.bg[bk].build(bctx, bctx.P); } catch (e3) { jzWarn('bg ' + bk + ': ' + e3.toString() + (e3.line ? ' (line ' + e3.line + ')' : '')); }
-        }
-        var stage = wc;
-        if (Z) { stage = app.project.items.addComp(label + ' stage', CW, CH, 1, cdur, fps); stage.parentFolder = folder; }
-        var CL = stage.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
+        var CL = T.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
         var content = [CL];
-        if (ghostAmt > 0.02 && opt.ghosts !== false) {
+        if (ghostAmt > 0.02 && opt.ghosts !== false && !LIGHT) {
             // layers marked with jzNoGhost() stay out of the ghosts: feed them from a copy of the content comp with those layers off
             var gsrc = null, li;
             for (li = 1; li <= pc.numLayers; li++) if (jzIsNoGhost(pc.layer(li))) { gsrc = pc; break; }
@@ -96,7 +74,7 @@ function jzBuildStart(plan, opt) {
             }
             var ghosts = [['B', lagB, [-3.4, -1.3], sc.ghostB], ['A', lagA, [3.2, 1.9], sc.ghostA]];
             for (var g = 0; g < ghosts.length; g++) {
-                var G = gsrc ? stage.layers.add(gsrc) : CL.duplicate();
+                var G = gsrc ? T.layers.add(gsrc) : CL.duplicate();
                 G.name = 'ghost ' + ghosts[g][0];
                 G.startTime = ghosts[g][1]; G.inPoint = 0; G.outPoint = cdur;
                 G.moveAfter(CL);
@@ -104,24 +82,60 @@ function jzBuildStart(plan, opt) {
                 jzEP(tint, 1, jzHex(ghosts[g][3])); jzEP(tint, 2, jzHex(ghosts[g][3])); jzEP(tint, 3, 100);
                 if (jzLum(sc.bg) > 0.55) G.blendingMode = BlendingMode.MULTIPLY;
                 var off = ghosts[g][2];
-                jzSetExpr(jzXf(G, 'ADBE Position'), 'var T0=' + jzN(cut.start) + ',ev=' + jzEventsArr(plan, 'chroma', cut.start, cut.end) + ';var s=1;for(var i=0;i<ev.length;i++){var dt=(time+T0-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.55,dt);}' +
+                jzSetExpr(jzXf(G, 'ADBE Position'), 'var T0=' + jzN(c.start) + ',ev=' + jzEventsArr(plan, 'chroma', c.start, c.end) + ';var s=1;for(var i=0;i<ev.length;i++){var dt=(time+T0-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.55,dt);}' +
                     'var k=' + jzN(ghostAmt * u) + '*s;[value[0]+' + off[0] + '*k,value[1]+' + off[1] + '*k]');
                 content.push(G);
             }
         }
         // camera: a null at the comp centre (identity transform) that carries the content and its ghosts
-        var nul = stage.layers.addNull(cdur); nul.name = 'JZ Camera';
+        var nul = T.layers.addNull(cdur); nul.name = 'JZ Camera';
         jzXf(nul, 'ADBE Anchor Point').setValue([CW / 2, CH / 2]); jzXf(nul, 'ADBE Position').setValue([CW / 2, CH / 2]);
         for (var q = 0; q < content.length; q++) content[q].parent = nul;
-        var ck = jzFallback('cam', cut.cam || 'push', 'push');
-        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: stage, nul: nul, content: content, P: cut.camP || {}, W: CW, H: CH, u: cu, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
+        var ck = jzFallback('cam', c.cam || 'push', 'push');
+        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: T, nul: nul, content: content, P: c.camP || {}, W: CW, H: CH, u: cu, cut: c, fx: FXV, sc: sc }, c.camP || {}); }
         catch (e4) { jzWarn('cam ' + ck + ': ' + e4.toString() + (e4.line ? ' (line ' + e4.line + ')' : '')); }
+        return CL;
+    }
+    function buildCut(ci) {
+        var cut = cuts[ci];
+        if (!(cut.end > cut.start)) return;
+        cut.dur = cut.end - cut.start;
+        var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
+        var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
+        // wrapper: the full-frame background of the cut
+        var wc = app.project.items.addComp(label, W, H, 1, cdur, fps);
+        wc.parentFolder = folder;
+        var bgL = wc.layers.addSolid(jzHex(sc.bg), 'JZ BG', W, H, 1, cdur);
+        if (!KEY) jzBgLift(bgL, sc, W, H);
+        if (paperAmt > 0.05 && FXV.texture > 0.05 && !LIGHT) {
+            var pp = wc.layers.addSolid([0.5, 0.5, 0.5], 'JZ Paper', W, H, 1, cdur);
+            var pn = jzEffect(pp, 'ADBE Fractal Noise', 'JZ Paper Noise'); jzEP(pn, 4, 60);
+            // the browser's paper is a faint fibre texture: keep the overlay light, fainter still on dark schemes
+            pp.blendingMode = BlendingMode.OVERLAY; jzXf(pp, 'ADBE Opacity').setValue((jzLum(sc.bg) < 0.4 ? 6 : 12) * paperAmt);
+        }
+        var bk = !KEY && cut.bg && cut.bg !== 'none' ? jzFallback('bg', cut.bg, null) : null;
+        if (bk) {
+            var bctx = { comp: wc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, plan: plan, P: cut.bgP || {} };
+            try { JZ_REG.bg[bk].build(bctx, bctx.P); } catch (e3) { jzWarn('bg ' + bk + ': ' + e3.toString() + (e3.line ? ' (line ' + e3.line + ')' : '')); }
+        }
+        // 中央を空ける: the cut lives in its side band, its companion (the other side) in the other band
+        var parts = [[cut, plan.centerFree && cut.zone ? cut.zone : null]];
+        if (plan.centerFree && cut.companion && cut.companion.zone) parts.push([cut.companion, cut.companion.zone]);
+        var mainStage = null, mainContent = null;
+        for (var pi = 0; pi < parts.length; pi++) {
+            var c = parts[pi][0], Z = parts[pi][1];
+            c.dur = c.end - c.start;
+            var CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u, T = wc;
+            if (Z) { T = app.project.items.addComp(label + (pi ? ' side' : ' stage'), CW, CH, 1, cdur, fps); T.parentFolder = folder; }
+            var CL = buildContent(c, T, CW, CH, cu, sc, label + (pi ? ' side' : ''), cdur, ci);
+            if (Z) { var SL = wc.layers.add(T); SL.name = (pi ? 'side (' : 'stage (') + (Z.side || 'side') + ')'; SL.startTime = Math.max(0, c.start - cut.start); jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
+            if (!pi) { mainStage = Z ? T : null; mainContent = CL; }
+        }
         // into the main comp
-        if (Z) { var SL = wc.layers.add(stage); SL.name = 'stage (' + (Z.side || 'side') + ')'; SL.startTime = 0; jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
         var WL = comp.layers.add(wc);
         WL.startTime = cut.start; WL.inPoint = cut.start; WL.outPoint = cut.end;
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
-        wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc });
+        wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc, stage: mainStage, content: mainContent });
     }
     function finishTrans() {
         // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
@@ -142,25 +156,28 @@ function jzBuildStart(plan, opt) {
         if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
         var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
         jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
+        if (!LIGHT) {
         var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
         jzEP(ww, 1, 2); jzEP(ww, 4, 0); jzEP(ww, 5, 0); jzEP(ww, 6, 1);
         jzEX(ww, 2, 'var ev=' + jzEventsArr(plan, 'slice') + ';var h=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])h=Math.max(h,ev[i][1]);}posterizeTime(24);seedRandom(Math.floor(time*24),true);h>0?h*thisComp.width*0.05*random(0.4,1):0');
         jzEX(ww, 3, 'posterizeTime(24);seedRandom(Math.floor(time*24)+7,true);random(thisComp.height*0.02,thisComp.height*0.12)');
         jzEX(ww, 7, 'posterizeTime(24);seedRandom(Math.floor(time*24)+11,true);random(0,360)');
-        var rb = jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
+        }
+        var rb = LIGHT ? null : jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
         jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
         var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
         jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
         var glowAmt = (st.glow || 0.6) * FXV.texture;
-        if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
+        if (glowAmt > 0.05 && !LIGHT) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
         var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
-        if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
+        if (gr > 0.02 && !LIGHT) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
 
     }
-    var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps };
+    var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps, wraps: wraps };
+    var HEAVY_FX = { strobe: 1, rgbSplit: 1, radialChroma: 1, echoFrames: 1, kaleido: 1, perspectiveTilt: 1 };
     function buildEvent(ei) {
         var ev = evs[ei], fk = jzFallback('fx', ev.type, null);
-        if (!fk || JZ_REG.fx[fk].builtin) return;
+        if (!fk || JZ_REG.fx[fk].builtin || (LIGHT && HEAVY_FX[fk])) return;
         var e1 = { t: ev.t, type: fk, amp: ev.amp || 1, dur: Math.max(ev.dur || 0, 1 / 24), seed: jzHash(ev.t, ev.type) % 100000, sc: schemeOf(jzCutAtTime(cuts, ev.t) || cuts[0] || { scheme: 0 }) };
         try { JZ_REG.fx[fk].build(fctx, e1); } catch (e6) { jzWarn('fx ' + fk + ': ' + e6.toString() + (e6.line ? ' (line ' + e6.line + ')' : '')); }
     }
