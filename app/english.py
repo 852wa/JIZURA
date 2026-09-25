@@ -137,6 +137,11 @@ BODY = {
 }
 
 UI = {
+    "'おまかせでON／OFFを変えないようにロック'": "'Lock so Randomize keeps this group’s ON/OFF selection'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Lock so Randomize / Shuffle leave this alone'",
+    "'ロック中。クリックで解除'": "'Locked — click to unlock'",
+    "'ロック：'": "'Locked: '",
+    "'ロック解除：'": "'Unlocked: '",
     "'縦長の画面：左右に分けます'": "'Tall frames: split left / right'",
     "'縦長の画面：上下に分けます'": "'Tall frames: split top / bottom'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (the first method failed, so another encoder was used)'",

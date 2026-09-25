@@ -161,6 +161,11 @@ BODY = {
 }
 
 UI = {
+    "'おまかせでON／OFFを変えないようにロック'": "'Kunci agar Acak tidak mengubah pilihan ON/OFF grup ini'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Kunci agar Acak / Kocok tidak mengubahnya'",
+    "'ロック中。クリックで解除'": "'Terkunci — klik untuk membuka'",
+    "'ロック：'": "'Terkunci: '",
+    "'ロック解除：'": "'Kunci dibuka: '",
     "'縦長の画面：左右に分けます'": "'Layar tegak: dibagi kiri / kanan'",
     "'縦長の画面：上下に分けます'": "'Layar tegak: dibagi atas / bawah'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (cara pertama gagal, jadi dipakai encoder lain)'",

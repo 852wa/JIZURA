@@ -108,6 +108,7 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
+  o.locks = { tech: Object.assign({}, (p && p.locks && p.locks.tech) || {}), params: Object.assign({}, (p && p.locks && p.locks.params) || {}) };
   o.colors = Object.assign({ enabled: false }, (p && p.colors) || {});
   o.fonts = (p && p.fonts) || {};
   o.userFonts = (p && p.userFonts) || [];
@@ -444,6 +445,49 @@ function groupName(g, k) {
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
+
+/* ---------------- ロック: おまかせ／シャッフルでも変えない ---------------- */
+const LOCK_TITLE_ON = 'おまかせ／シャッフルで変えないようにロック';
+const TECH_LOCK_ON = 'おまかせでON／OFFを変えないようにロック';
+const LOCK_TITLE_OFF = 'ロック中。クリックで解除';
+function locksOf() {
+  const P = S.project;
+  if (!P.locks) P.locks = { tech: {}, params: {} };
+  if (!P.locks.tech) P.locks.tech = {};
+  if (!P.locks.params) P.locks.params = {};
+  return P.locks;
+}
+function techGroupLabel(g) { const m = GROUPS.find(x => x[0] === g); return m ? m[1] : g; }
+// 手法タブのロック = その組の ON/OFF（＝候補数 120/140 など）をそのまま固定する。
+// おまかせ／シャッフルが選び直すのは「どの手法を候補にするか」なので、ここを固定すれば数も中身も変わらない。
+function toggleTechLock(g) {
+  const L = locksOf();
+  remember();
+  if (L.tech[g]) { delete L.tech[g]; toast('ロック解除：' + techGroupLabel(g)); }
+  else { L.tech[g] = true; toast('ロック：' + techGroupLabel(g)); }
+  commit(); autosave(); renderTech();
+}
+function lockedEnabled() {                             // ロックした組の、いまの ON/OFF 表
+  const P = S.project, out = {};
+  for (const g of Object.keys(locksOf().tech)) if (P.enabled && P.enabled[g]) out[g] = Object.assign({}, P.enabled[g]);
+  return out;
+}
+function restoreEnabled(keep) {                        // おまかせのあとで、ロックした組だけ元に戻す
+  const P = S.project;
+  for (const g of Object.keys(keep || {})) { P.enabled = P.enabled || {}; P.enabled[g] = keep[g]; }
+}
+function lockedParams() {                              // ロックした演出スライダーの、いまの値
+  const out = {}, L = locksOf();
+  for (const k of Object.keys(L.params)) if (L.params[k] && S.project.fx[k] != null) out[k] = S.project.fx[k];
+  return out;
+}
+function restoreParams(keep) { const P = S.project; for (const k of Object.keys(keep || {})) P.fx[k] = keep[k]; }
+function toggleParamLock(k) {
+  const L = locksOf();
+  remember();
+  if (L.params[k]) delete L.params[k]; else L.params[k] = true;
+  commit(); autosave(); renderFx();
+}
 function pickEnabledTech(g, opts) {
   opts = opts || {};
   const tbl = J.registry(g) || {};
@@ -476,6 +520,7 @@ function rerollCurrentCut(kind) {
     : ['layout', 'enter', 'hold', 'exit', 'cam', 'trans'];
   const t0 = S.t;
   groups.forEach(g => {
+    if (locksOf().tech[g]) return;                 // ロックした組はシャッフル／おまかせでも動かさない
     const allowNone = g === 'decor' || g === 'trans';
     const key = pickEnabledTech(g, { avoid: kind === 'omakase' ? cutGroupVal(cut, g) : null, allowNone, n });
     if (key) setCutTech(cut.line, k, g, key);
@@ -881,7 +926,7 @@ function randomPalette() {
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
 // only the "look" is tracked — lyrics, timing and output settings are never rolled back
-const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides'];
+const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides', 'locks'];
 const H = { list: [], i: -1 };
 const lookSnap = () => JSON.stringify(Object.fromEntries(HKEYS.map(k => [k, S.project[k] ?? null])));
 function remember() {            // call before changing the look: makes sure the current look is on the stack
@@ -917,8 +962,10 @@ function restartPreview() { seek(0); if (!S.playing && S.mode === 'easy') play()
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
+  const keepP = lockedParams(), keepE = lockedEnabled();
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
+  restoreParams(keepP); restoreEnabled(keepE);
   fontKey = ''; syncUI(); replan(); commit();
   toast(`おまかせ：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
@@ -936,8 +983,10 @@ function rerollPart(part) {
     P.colors.enabled = false;
     msg = `スタイル：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
+    const keepP = lockedParams(), keepE = lockedEnabled();
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    restoreParams(keepP); restoreEnabled(keepE);
     msg = `雰囲気：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
@@ -989,12 +1038,15 @@ function setMode(m) {
 const FX = [['motion', '動きの強さ'], ['glitch', 'グリッチ'], ['chroma', '色ズレ'], ['decor', '装飾の量'], ['density', 'カットの細かさ'], ['texture', '質感'], ['bgSwitch', '背景の切替']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
+  const L = locksOf();
   FX.forEach(([k, label]) => {
     const row = document.createElement('div'); row.className = 'slider';
-    const v = S.project.fx[k] ?? 0.5;
-    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`;
+    const v = S.project.fx[k] ?? 0.5, on = !!L.params[k];
+    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`
+      + `<button type="button" class="icon ghost lk" aria-pressed="${on}" title="${on ? LOCK_TITLE_OFF : LOCK_TITLE_ON}">${ICON.lock}</button>`;
     const inp = row.querySelector('input'), out = row.querySelector('output');
     inp.addEventListener('input', () => { S.project.fx[k] = +inp.value; S.project.mood = null; out.textContent = Math.round(inp.value * 100); replanSoon(120); });
+    row.querySelector('.lk').addEventListener('click', () => toggleParamLock(k));
     box.appendChild(row);
   });
   $('fxFlash').checked = !!S.project.fx.flash;
@@ -1096,6 +1148,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) kick
 function renderTech() {
   resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
+  const L = locksOf();
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
   GROUPS.forEach(([g, label]) => {
@@ -1108,7 +1161,9 @@ function renderTech() {
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
+    const lked = !!L.tech[g];
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span><button type="button" class="icon ghost lk" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
+    d.querySelector('summary .lk').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTechLock(g); });
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];

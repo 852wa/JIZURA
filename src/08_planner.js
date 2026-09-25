@@ -28,6 +28,7 @@ J.defaultProject = () => ({
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
+  locks: { tech: {}, params: {} },   // ロック: おまかせで変えない組（ON/OFF の選択そのもの）と演出スライダーの値
   colors: { enabled: false },
   fonts: {},
 });

@@ -190,9 +190,12 @@ button.chip[aria-pressed=true] { border-color: var(--cyan); color: var(--cyan); 
 .stile canvas { width: 100%; aspect-ratio: 16 / 9; display: block; }
 .stile span { font-size: 11px; padding: 0 7px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stile[aria-pressed=true] { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); color: var(--text); }
-.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px 30px; gap: 8px; align-items: center; margin-bottom: 8px; }
 .slider input { width: 100%; accent-color: var(--amber); }
 .slider output { font: 500 11px var(--mono); color: var(--muted); text-align: right; }
+/* ロック: 「行とカット」のロックと同じ見た目（icon ghost + SVG、ロック中は文字色がアクセント色） */
+.lk[aria-pressed="true"] { color: var(--amber); }
+.tgroup summary .lk { flex: none; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }

@@ -212,9 +212,12 @@ button.chip[aria-pressed=true] { border-color: var(--cyan); color: var(--cyan); 
 .stile canvas { width: 100%; aspect-ratio: 16 / 9; display: block; }
 .stile span { font-size: 11px; padding: 0 7px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stile[aria-pressed=true] { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); color: var(--text); }
-.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px 30px; gap: 8px; align-items: center; margin-bottom: 8px; }
 .slider input { width: 100%; accent-color: var(--amber); }
 .slider output { font: 500 11px var(--mono); color: var(--muted); text-align: right; }
+/* ロック: 「行とカット」のロックと同じ見た目（icon ghost + SVG、ロック中は文字色がアクセント色） */
+.lk[aria-pressed="true"] { color: var(--amber); }
+.tgroup summary .lk { flex: none; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
@@ -3288,6 +3291,7 @@ J.defaultProject = () => ({
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
+  locks: { tech: {}, params: {} },   // ロック: おまかせで変えない組（ON/OFF の選択そのもの）と演出スライダーの値
   colors: { enabled: false },
   fonts: {},
 });
@@ -30142,6 +30146,7 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
+  o.locks = { tech: Object.assign({}, (p && p.locks && p.locks.tech) || {}), params: Object.assign({}, (p && p.locks && p.locks.params) || {}) };
   o.colors = Object.assign({ enabled: false }, (p && p.colors) || {});
   o.fonts = (p && p.fonts) || {};
   o.userFonts = (p && p.userFonts) || [];
@@ -30478,6 +30483,49 @@ function groupName(g, k) {
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
+
+/* ---------------- ロック: おまかせ／シャッフルでも変えない ---------------- */
+const LOCK_TITLE_ON = 'Kunci agar Acak / Kocok tidak mengubahnya';
+const TECH_LOCK_ON = 'Kunci agar Acak tidak mengubah pilihan ON/OFF grup ini';
+const LOCK_TITLE_OFF = 'Terkunci — klik untuk membuka';
+function locksOf() {
+  const P = S.project;
+  if (!P.locks) P.locks = { tech: {}, params: {} };
+  if (!P.locks.tech) P.locks.tech = {};
+  if (!P.locks.params) P.locks.params = {};
+  return P.locks;
+}
+function techGroupLabel(g) { const m = GROUPS.find(x => x[0] === g); return m ? m[1] : g; }
+// 手法タブのロック = その組の ON/OFF（＝候補数 120/140 など）をそのまま固定する。
+// おまかせ／シャッフルが選び直すのは「どの手法を候補にするか」なので、ここを固定すれば数も中身も変わらない。
+function toggleTechLock(g) {
+  const L = locksOf();
+  remember();
+  if (L.tech[g]) { delete L.tech[g]; toast('Kunci dibuka: ' + techGroupLabel(g)); }
+  else { L.tech[g] = true; toast('Terkunci: ' + techGroupLabel(g)); }
+  commit(); autosave(); renderTech();
+}
+function lockedEnabled() {                             // ロックした組の、いまの ON/OFF 表
+  const P = S.project, out = {};
+  for (const g of Object.keys(locksOf().tech)) if (P.enabled && P.enabled[g]) out[g] = Object.assign({}, P.enabled[g]);
+  return out;
+}
+function restoreEnabled(keep) {                        // おまかせのあとで、ロックした組だけ元に戻す
+  const P = S.project;
+  for (const g of Object.keys(keep || {})) { P.enabled = P.enabled || {}; P.enabled[g] = keep[g]; }
+}
+function lockedParams() {                              // ロックしたEfekスライダーの、いまの値
+  const out = {}, L = locksOf();
+  for (const k of Object.keys(L.params)) if (L.params[k] && S.project.fx[k] != null) out[k] = S.project.fx[k];
+  return out;
+}
+function restoreParams(keep) { const P = S.project; for (const k of Object.keys(keep || {})) P.fx[k] = keep[k]; }
+function toggleParamLock(k) {
+  const L = locksOf();
+  remember();
+  if (L.params[k]) delete L.params[k]; else L.params[k] = true;
+  commit(); autosave(); renderFx();
+}
 function pickEnabledTech(g, opts) {
   opts = opts || {};
   const tbl = J.registry(g) || {};
@@ -30510,6 +30558,7 @@ function rerollCurrentCut(kind) {
     : ['layout', 'enter', 'hold', 'exit', 'cam', 'trans'];
   const t0 = S.t;
   groups.forEach(g => {
+    if (locksOf().tech[g]) return;                 // ロックした組はシャッフル／おまかせでも動かさない
     const allowNone = g === 'decor' || g === 'trans';
     const key = pickEnabledTech(g, { avoid: kind === 'omakase' ? cutGroupVal(cut, g) : null, allowNone, n });
     if (key) setCutTech(cut.line, k, g, key);
@@ -30915,7 +30964,7 @@ function randomPalette() {
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
 // only the "look" is tracked — lyrics, timing and output settings are never rolled back
-const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides'];
+const HKEYS = ['style', 'mood', 'seed', 'fx', 'enabled', 'fonts', 'colors', 'overrides', 'locks'];
 const H = { list: [], i: -1 };
 const lookSnap = () => JSON.stringify(Object.fromEntries(HKEYS.map(k => [k, S.project[k] ?? null])));
 function remember() {            // call before changing the look: makes sure the current look is on the stack
@@ -30951,8 +31000,10 @@ function restartPreview() { seek(0); if (!S.playing && S.mode === 'easy') play()
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
+  const keepP = lockedParams(), keepE = lockedEnabled();
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
+  restoreParams(keepP); restoreEnabled(keepE);
   fontKey = ''; syncUI(); replan(); commit();
   toast(`Diacak: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
@@ -30970,8 +31021,10 @@ function rerollPart(part) {
     P.colors.enabled = false;
     msg = `Gaya：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
+    const keepP = lockedParams(), keepE = lockedEnabled();
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    restoreParams(keepP); restoreEnabled(keepE);
     msg = `Suasana：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
@@ -31023,12 +31076,15 @@ function setMode(m) {
 const FX = [['motion', 'Kekuatan gerakan'], ['glitch', 'Glitch'], ['chroma', 'Pergeseran warna'], ['decor', 'Jumlah dekorasi'], ['density', 'Kerapatan cut'], ['texture', 'Tekstur'], ['bgSwitch', 'Perubahan latar']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
+  const L = locksOf();
   FX.forEach(([k, label]) => {
     const row = document.createElement('div'); row.className = 'slider';
-    const v = S.project.fx[k] ?? 0.5;
-    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`;
+    const v = S.project.fx[k] ?? 0.5, on = !!L.params[k];
+    row.innerHTML = `<label for="fx_${k}">${label}</label><input id="fx_${k}" type="range" min="0" max="1" step="0.01" value="${v}"><output>${Math.round(v * 100)}</output>`
+      + `<button type="button" class="icon ghost lk" aria-pressed="${on}" title="${on ? LOCK_TITLE_OFF : LOCK_TITLE_ON}">${ICON.lock}</button>`;
     const inp = row.querySelector('input'), out = row.querySelector('output');
     inp.addEventListener('input', () => { S.project.fx[k] = +inp.value; S.project.mood = null; out.textContent = Math.round(inp.value * 100); replanSoon(120); });
+    row.querySelector('.lk').addEventListener('click', () => toggleParamLock(k));
     box.appendChild(row);
   });
   $('fxFlash').checked = !!S.project.fx.flash;
@@ -31130,6 +31186,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) kick
 function renderTech() {
   resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
+  const L = locksOf();
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
   GROUPS.forEach(([g, label]) => {
@@ -31142,7 +31199,9 @@ function renderTech() {
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">Semua aktif</button><button class="ghost small" data-a="off">Semua nonaktif</button><button class="ghost small" data-a="flip">Balikkan</button></div>`;
+    const lked = !!L.tech[g];
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span><button type="button" class="icon ghost lk" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">Semua aktif</button><button class="ghost small" data-a="off">Semua nonaktif</button><button class="ghost small" data-a="flip">Balikkan</button></div>`;
+    d.querySelector('summary .lk').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTechLock(g); });
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
