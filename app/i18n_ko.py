@@ -1,6 +1,7 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    '画面に見えているプレビューは自動でループします。': '화면에 보이는 미리보기는 자동으로 반복 재생됩니다.',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>세로 화면일 때<select class="centerDirSel" aria-label="세로 화면에서 나누는 방법"><option value="tb">위아래로 나누기</option><option value="lr">좌우로 나누기</option></select></label>',
     '<span>統一感</span>': '<span>통일감</span>',
     '<span>文字整列</span>': '<span>문자 정렬</span>',
@@ -128,6 +129,8 @@ BODY = {
 }
 
 UI = {
+    "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`불러온 글꼴(${[...new Set(lost)].join(', ')})이 이 브라우저에 없어 내보내기를 멈췄습니다. 「글꼴」에서 같은 파일을 다시 불러오거나 다른 글꼴을 고르세요`",
+    "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`불러온 글꼴(${missing.join(', ')})이 이 브라우저에 없습니다. 「글꼴」에서 같은 파일을 다시 불러오세요(그때까지는 비슷한 글꼴로 표시합니다)`",
     "'縦長の画面：左右に分けます'": "'세로 화면: 좌우로 나눕니다'",
     "'縦長の画面：上下に分けます'": "'세로 화면: 위아래로 나눕니다'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "'(처음 방법이 실패해서 다른 인코더로 내보냈습니다)'",

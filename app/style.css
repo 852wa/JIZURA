@@ -100,6 +100,13 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
+/* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
+.col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+.tapbox.compact .hint { display: none; }
+/* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
+@media (max-width: 1180px), (max-height: 619px) {
+  .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
+}
 
 /* line list */
 #lineList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -170,6 +177,14 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
+
+.tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
+.tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
+.tcard:hover { border-color: var(--line2); }
+.tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
+.tcard .tcard-name { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 0 6px 6px; min-width: 0; }
+.tcard .tcard-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tcard.set-off { opacity: 0.5; }
 .group-h { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 6px; }
 .tgroup { border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; background: var(--raised); }
 .tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; cursor: pointer; list-style: none; font-size: 12px; }

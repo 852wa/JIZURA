@@ -58,10 +58,18 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
-  o.colors = Object.assign({ enabled: false }, (p && p.colors) || {});
-  o.fonts = (p && p.fonts) || {};
-  o.userFonts = (p && p.userFonts) || [];
-  for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight || 400);
+  // project files are untrusted: colours must be colours, font keys plain keys (they end up in the page's HTML / CSS)
+  o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
+  for (const [k, v] of Object.entries((p && p.colors) || {})) {
+    if (k === 'enabled') continue;
+    if (typeof v === 'boolean') o.colors[k] = v;
+    else if (typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v)) o.colors[k] = v;
+  }
+  o.userFonts = (Array.isArray(p && p.userFonts) ? p.userFonts : []).filter(uf => uf && J.SAFE_FONT_KEY.test(uf.key))
+    .map(uf => ({ key: uf.key, label: String(uf.label || uf.key).slice(0, 80), family: J.safeFamily(uf.family || uf.key.slice(5)), weight: J.clamp(parseInt(uf.weight, 10) || 400, 100, 900) }));
+  for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight);
+  o.fonts = {};
+  for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
   return o;
 }
 function setBadges(d) {
@@ -93,6 +101,8 @@ function langNote() {
 }
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  // lines locked in older projects (seed only): take a snapshot now, so from here on they stay exactly as they are
+  for (const [i, o] of Object.entries(S.project.overrides || {})) if (o && o.lock && !Array.isArray(o.lockedCuts)) { const snap = J.lineSnapshot(S.plan, +i); if (snap) o.lockedCuts = snap; }
   langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
@@ -314,9 +324,10 @@ function followLine(li) {
   if (performance.now() - listTouched < 2500) return;                       // the user is scrolling the list
   const el = S.lineEls[li], col = el && el.closest('.col-left');
   if (!el || !col || col.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  const tp = $('tapPanel'), pad = tp && !tp.hidden ? tp.offsetHeight + 12 : 8;   // 固定表示中のタップboxの下に隠れないように
   const r = el.getBoundingClientRect(), c = col.getBoundingClientRect();
-  if (r.top >= c.top + 8 && r.bottom <= c.bottom - 8) return;
-  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - c.height * 0.3, behavior: 'smooth' });
+  if (r.top >= c.top + pad && r.bottom <= c.bottom - 8) return;
+  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - Math.max(c.height * 0.3, pad + 24), behavior: 'smooth' });
 }
 function bindFollow() {
   const col = document.querySelector('.col-left'); if (!col) return;
@@ -389,11 +400,11 @@ function renderLines() {
     if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
     q('.tapfrom').addEventListener('click', () => startTap(i));
     q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
-    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
+    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined }); replan(); seek(ln.start + 0.001); });
     if (q('.lock')) q('.lock').addEventListener('click', () => {
       const cur = ov[i] || {};
-      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined });
-      else setOv(i, { lock: true, lockedSeed: ln.seed });
+      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
       replan();
     });
     const cutsEl = q('.cuts');
@@ -564,7 +575,7 @@ function drawStyleGrid() {
 function fontSelectOptions(sel) {
   return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
-    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+    return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
@@ -602,7 +613,7 @@ function renderColors() {
   drawSwatch();
 }
 const toColorInput = v => { const h = String(v || '#000000'); return /^#[0-9a-f]{6}$/i.test(h) ? h.toLowerCase() : J.toHex(...J.hex(h)).toLowerCase(); };
-function swatchHTML(cols) { return cols.map(c => `<i style="background:${c}" title="${c}"></i>`).join(''); }
+function swatchHTML(cols) { return cols.filter(c => /^#[0-9a-f]{3,8}$/i.test(String(c))).map(c => `<i style="background:${c}" title="${c}"></i>`).join(''); }
 function drawSwatch() {
   const sc = S.plan ? S.plan.style.schemes[0] : null; if (!sc) return;
   $('paletteSwatch').innerHTML = swatchHTML([sc.accent, sc.ghostA, sc.ghostB]);
@@ -747,7 +758,93 @@ function renderFx() {
 const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
+
+const previewR = new J.Renderer();
+const previewPlans = new Map();
+const previewLive = new Set();
+let previewObs = null, previewRaf = 0, previewLast = 0;
+function previewCacheKey(g, k) {
+  const p = S.project;
+  return [p.style, p.aspect, g, k, p.colors && p.colors.enabled ? JSON.stringify(p.colors) : '', JSON.stringify(p.fonts || {})].join('|');
+}
+function getPreviewPlan(g, k) {
+  const id = previewCacheKey(g, k);
+  let plan = previewPlans.get(id);
+  if (plan) return plan;
+  plan = J.previewPlan(S.project, g, k);
+  previewPlans.set(id, plan);
+  if (previewPlans.size > 500) previewPlans.delete(previewPlans.keys().next().value);
+  return plan;
+}
+function previewTime(plan, g, now) {
+  const c = plan.cuts[plan.cuts.length - 1];
+  const u = now / 1000;
+  if (g === 'enter') return c.start + ((u % 1.5) / 1.5) * Math.max(0.3, c.inDur);
+  if (g === 'exit') { const od = Math.max(0.3, c.outDur || 0.5); return c.end - od + ((u % 1.5) / 1.5) * od; }
+  if (g === 'trans') return c.start + ((u % 1.7) / 1.7) * (c.transDur || 0.35);
+  if (g === 'fx') return (u % 1.05);
+  const span = Math.max(1.6, c.dur * 0.96);
+  return c.start + ((u % span) / span) * (c.dur * 0.96);
+}
+function paintTechCanvas(cv, g, k, t) {
+  const plan = getPreviewPlan(g, k);
+  const ctx = cv.getContext('2d');
+  try {
+    previewR.frame(ctx, plan, t, { scale: cv.width / plan.W, fast: true, noHud: true, noGhost: g !== 'fx' });
+  } catch (e) {
+    ctx.fillStyle = '#131316'; ctx.fillRect(0, 0, cv.width, cv.height);
+  }
+  cv.dataset.ready = '1';
+}
+function techPaneOpen() {
+  const pane = $('techLists') && $('techLists').closest('.tabpane');
+  return pane && !pane.hidden;
+}
+function ensurePreviewObs() {
+  if (previewObs) return previewObs;
+  previewObs = new IntersectionObserver((ents) => {
+    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    kickPreviewLoop();
+  }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
+  return previewObs;
+}
+function resetPreviewWatch() {
+  previewLive.clear();
+  if (previewObs) { previewObs.disconnect(); previewObs = null; }
+}
+function watchThumb(cv) { ensurePreviewObs().observe(cv); }
+function kickPreviewLoop() {
+  if (previewRaf) return;
+  const tick = (now) => {
+    previewRaf = 0;
+    if (document.hidden || S.exporting || !techPaneOpen() || !previewLive.size) return;
+    if (now - previewLast >= 70) {
+      previewLast = now;
+      for (const cv of previewLive) {
+        if (!cv.isConnected) { previewLive.delete(cv); continue; }
+        const g = cv.dataset.g, k = cv.dataset.k;
+        if (!g || !k) continue;
+        paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+      }
+    }
+    previewRaf = requestAnimationFrame(tick);
+  };
+  previewRaf = requestAnimationFrame(tick);
+}
+function queueThumbs(list) {
+  const now = performance.now();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
+    previewLive.add(cv);
+    watchThumb(cv);
+    const g = cv.dataset.g, k = cv.dataset.k;
+    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+  });
+  kickPreviewLoop();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
+
 function renderTech() {
+  resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
@@ -759,21 +856,26 @@ function renderTech() {
     if (q && !shown.length) return;
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
-    d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
+    const list = document.createElement('div'); list.className = 'checks tech-grid';
+    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
-    const list = document.createElement('div'); list.className = 'checks';
+    const [tw, th] = (() => {
+      const [W, H] = J.designSize(S.project.aspect || '16:9');
+      const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
+    })();
     shown.forEach(k => {
       const l = document.createElement('label');
+      l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
       if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
+      l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
+      const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
       shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      // keep a fallback so the planner always has something to use
       if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
       if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
       if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
@@ -781,6 +883,7 @@ function renderTech() {
     }));
     d.appendChild(list);
     box.appendChild(d);
+    if (d.open) queueThumbs(list);
   });
   $('techTotal').textContent = `${onAll}/${total}`;
 }
@@ -836,6 +939,8 @@ async function runExport(kind) {
   const t0 = performance.now();
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
+    const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
+    if (lost.length) throw new Error(`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
@@ -876,6 +981,7 @@ function startTap(from = 0) {
   S.tap = { i: from, from, done: [] };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
+  $('tapPanel').classList.remove('compact');
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
@@ -905,6 +1011,7 @@ function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
+  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -1022,7 +1129,11 @@ function bind() {
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
+    try {
+      const uf = await J.loadFontFile(f);
+      S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
+      S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
+    }
     catch (err) { showMsg('フォントを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
@@ -1079,7 +1190,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -1103,18 +1214,22 @@ function bind() {
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
+let audioSeq = 0;
 async function loadAudioFile(f, restored) {
+  const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
   $('audioName').textContent = '解析中…';
   try {
     pause();
-    S.audio = await J.analyzeAudio(f);
+    const a = await J.analyzeAudio(f);
+    if (my !== audioSeq) return false;
+    S.audio = a;
     $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）` + (restored ? '・前回の曲' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -1179,10 +1294,20 @@ function bindTour() {
   window.addEventListener('scroll', () => { if (TR.i >= 0) tourPlace(TOUR[TR.i].t()); }, true);
 }
 
+/* uploaded faces: bring them back from this browser; say so when a project uses one that is not here */
+async function restoreFonts() {
+  const list = S.project.userFonts || [];
+  if (!list.length) return;
+  const missing = await J.restoreUserFonts(list);
+  fontKey = ''; renderFontRoles(); replan();
+  if (missing.length) toast(`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`);
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); replan();
+  restoreFonts();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   bindTour();

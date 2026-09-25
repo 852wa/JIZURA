@@ -186,9 +186,6 @@ const beatIdx = (env, fb) => (env.beat ? env.beat.index : Math.floor(env.ltb / f
 const darkBg = env => J.lum(env.sc.bg) < 0.5;
 const primary = it => (it.alpha ?? 1) > 0.9 && it.fill !== false;      // decorations only once per cut, not on faded / outline copies
 
-const KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
-const RAIN = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
-const REEL = '夢光影空夜星雨涙心恋声花月風愛嘘罪色音海アイウエオカキクケコサシスセソ0123456789';
 
 /* ============================== EXITS ============================== */
 const X = {};
@@ -1143,7 +1140,7 @@ X.slotOut = {
   apply(env, it, p) {
     const seed = it.seed | 0, ord = orderOf(env, it), sy0 = it.sy || 1, acc = env.sc.accent;
     const M = i => 3 + (J.h(seed, i, 182) % 4);
-    const chOf = (i, m) => REEL[J.h(seed, i, m, 181) % REEL.length];
+    const chOf = (i, m) => J.pool('reel')[J.h(seed, i, m, 181) % J.pool('reel').length];
     const state = (i, n) => {
       const q = win(p, ord(i, n), 0.35);
       if (q <= 0) return null;
@@ -1218,7 +1215,7 @@ X.matrixOut = {
     const seed = it.seed | 0, step = env.step, sz = it.size, sy0 = it.sy || 1, acc = env.sc.accent, c0 = colOf(it);
     const bb = dBox(it, 0), D = env.H - bb.y0 + sz * 1.2, head = darkBg(env) ? mixC(c0, '#ffffff', 0.4) : c0;
     const Q = i => win(p, J.r(seed, i, 201) * 0.9, 0.5);
-    const rch = (i, k) => RAIN[J.h(seed, i, k, Math.floor(step / 2), 202) % RAIN.length];
+    const rch = (i, k) => J.pool('half')[J.h(seed, i, k, Math.floor(step / 2), 202) % J.pool('half').length];
     const fall = (i, g) => {
       const q = Q(i);
       if (q <= 0) return null;
@@ -1833,7 +1830,7 @@ H.flipSwap = {
     let gi;
     if (isSingle(env, it)) { if (Math.round(+it.mi || 0) !== pick) return; gi = vis[0].i; }
     else gi = vis[pick % vis.length].i;
-    const ch = KANA[J.h(cs, cyc, 632) % KANA.length], acc = env.sc.accent;
+    const ch = J.pool('kana')[J.h(cs, cyc, 632) % J.pool('kana').length], acc = env.sc.accent;
     let sx, alt;
     if (u < 0.18) { sx = Math.cos(u / 0.18 * Math.PI / 2); alt = false; }
     else if (u < 0.36) { sx = Math.sin((u - 0.18) / 0.18 * Math.PI / 2); alt = true; }

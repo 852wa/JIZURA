@@ -1,6 +1,7 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    '画面に見えているプレビューは自動でループします。': '畫面上看得到的預覽會自動循環播放。',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>直式畫面時<select class="centerDirSel" aria-label="直式畫面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>',
     '<span>統一感</span>': '<span>統一感</span>',
     '<span>文字整列</span>': '<span>文字排列</span>',
@@ -130,6 +131,8 @@ BODY = {
 }
 
 UI = {
+    "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`匯入的字型（${[...new Set(lost)].join('、')}）不在此瀏覽器中，已停止輸出。請在「字型」重新匯入同一個檔案，或選擇其他字型`",
+    "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`匯入的字型（${missing.join('、')}）不在此瀏覽器中。請在「字型」重新匯入同一個檔案（在那之前以相近的字型顯示）`",
     "'縦長の画面：左右に分けます'": "'直式畫面：分成左右'",
     "'縦長の画面：上下に分けます'": "'直式畫面：分成上下'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "'（第一種方式失敗，已改用其他編碼器輸出）'",

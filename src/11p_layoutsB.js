@@ -67,14 +67,13 @@ const mainLines = (text, W, H, perL = 11, perP = 5) => {
   if (n <= per) return t;
   return splitL(t, Math.ceil(n / Math.ceil(n / per)));
 };
-const KATA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
 const _pool = new Map();
 const poolOf = (cut) => {
-  const key = cut.lineText + '|' + cut.text;
+  const key = J.lang + '|' + cut.lineText + '|' + cut.text;
   let p = _pool.get(key);
   if (!p) {
     const own = [...clean((cut.lineText || '') + cut.text)].filter(c => !J.isLatin(c) && !J.isPunct(c) && c !== '・');
-    p = own.concat([...KATA].filter((c, i) => i % 2 === 0));
+    p = own.concat([...J.pool('kana')].filter((c, i) => i % 2 === 0));
     if (_pool.size > 100) _pool.clear();
     _pool.set(key, p);
   }

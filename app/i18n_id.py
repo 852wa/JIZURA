@@ -38,6 +38,7 @@ STYLES = {
 }
 
 BODY = {
+    '画面に見えているプレビューは自動でループします。': 'Pratinjau yang terlihat di layar diputar berulang secara otomatis.',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>',
     '<span>統一感</span>': '<span>Tampilan seragam</span>',
     '<span>文字整列</span>': '<span>Penataan teks</span>',
@@ -161,6 +162,8 @@ BODY = {
 }
 
 UI = {
+    "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`Font yang dimuat (${[...new Set(lost)].join(', ')}) tidak ada di browser ini, jadi ekspor dihentikan. Muat ulang file yang sama di Font, atau pilih font lain`",
+    "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`Font yang dimuat (${missing.join(', ')}) tidak ada di browser ini. Muat ulang file yang sama di Font (sampai itu, dipakai font yang mirip)`",
     "'縦長の画面：左右に分けます'": "'Layar tegak: dibagi kiri / kanan'",
     "'縦長の画面：上下に分けます'": "'Layar tegak: dibagi atas / bawah'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (cara pertama gagal, jadi dipakai encoder lain)'",

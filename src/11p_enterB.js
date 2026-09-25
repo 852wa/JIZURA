@@ -110,7 +110,6 @@ function lines(it, b) {
 const pt = (vert, u, v) => (vert ? [v, u] : [u, v]);
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const SIGNS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン＃＊＋＝／＜＞※◇◆□△○01';
 
 /* ================================================================ */
 const DEFS = {
@@ -671,7 +670,7 @@ const DEFS = {
         const q = stg(p, ordLR(i, n), 0.4), F = 3 + (i % 2);
         if (q <= 0 || q >= 1) return { q, F };
         const x = q * F, j = Math.min(F - 1, Math.floor(x)), f = x - j;
-        const chOf = k => (k <= 0 ? null : k >= F ? '' : SIGNS[J.h(seed, i, k, 97) % SIGNS.length]);
+        const chOf = k => (k <= 0 ? null : k >= F ? '' : J.pool('signs')[J.h(seed, i, k, 97) % J.pool('signs').length]);
         return { q, F, j, f, oldCh: chOf(j), newCh: chOf(j + 1) };
       };
       const ch = c => (c ? { ch: c } : {});
@@ -1023,7 +1022,7 @@ const DEFS = {
     inDur: dur => clamp(dur * 0.5, 0.25, 0.9),
     apply(env, it, p) {
       const seed = it.seed | 0, isy = it.sy || 1, digits = /^[0-9\s]+$/.test(String(it.text || ''));
-      const pool = digits ? '0123456789' : SIGNS;
+      const pool = digits ? '0123456789' : J.pool('signs');
       const reel = (i, n) => { const q = stg(p, ordLR(i, n), 0.45), R = 3 + (J.h(seed, i, 111) % 3); return { q, R, s: R * (1 - oBack(q, 1.15)) }; };
       const cell = (g, j, s, chs) => {                              // character j of the reel (0 = the real glyph), masked to the window
         const f = (s - j) * 1.02;
@@ -1061,7 +1060,7 @@ const DEFS = {
       // lower glyphs land first so no stream ever runs over a glyph that has already landed
       const key = g => 0.35 * J.r(seed, g.i, 121) + 0.65 * (vert ? (g.n > 1 ? 1 - g.ci / (g.n - 1) : 0) : (nL > 1 ? (nL - 1 - g.li) / (nL - 1) : 0));
       const st = g => { const q = stg(p, key(g), 0.45), D = size * (2.2 + J.r(seed, g.i, 122)); return { q, y: -D * (1 - oCubic(q / land)) }; };
-      const rnd = (i, k) => SIGNS[J.h(seed, i, k, step, 123) % SIGNS.length];
+      const rnd = (i, k) => J.pool('signs')[J.h(seed, i, k, step, 123) % J.pool('signs').length];
       const main = glyphs(it, (i, g) => {
         const S = st(g);
         if (S.q <= 0) return HIDE; if (S.q >= 1) return null;

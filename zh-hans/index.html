@@ -122,6 +122,13 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
+/* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
+.col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+.tapbox.compact .hint { display: none; }
+/* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
+@media (max-width: 1180px), (max-height: 619px) {
+  .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
+}
 
 /* line list */
 #lineList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -192,6 +199,14 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
 .checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
 .checks input { accent-color: var(--amber); }
+
+.tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
+.tcard { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); cursor: pointer; }
+.tcard:hover { border-color: var(--line2); }
+.tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #0c0c0e; }
+.tcard .tcard-name { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 0 6px 6px; min-width: 0; }
+.tcard .tcard-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tcard.set-off { opacity: 0.5; }
 .group-h { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 6px; }
 .tgroup { border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; background: var(--raised); }
 .tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; cursor: pointer; list-style: none; font-size: 12px; }
@@ -393,6 +408,13 @@ button.small.primary { padding: 4px 12px; }
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="歌词与时间">
+      <div id="tapPanel" class="tapbox" hidden>
+          <div class="hint">跟着音乐，在每行开始的瞬间按 <span class="kbd">Space</span> 键或下方按钮。按错了就按 <span class="kbd">Backspace</span> 或“撤销一次”。要从中间某行重来，请点行列表里的 ◎。</div>
+          <div class="next">下一行：<b id="tapLine">—</b></div>
+          <button id="tapBtn" class="tap">TAP</button>
+          <button id="tapBack" class="ghost">撤销一次</button>
+          <button id="tapStop" class="ghost">结束</button>
+      </div>
       <div class="sec">
         <div class="sec-h"><h2>歌词</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="清除歌词，以及各行的时间点、逐行设置与导出范围（可用“撤销”或 Ctrl+Z 找回）">清除歌词</button><button id="btnSyntax" class="ghost small" aria-expanded="false">语法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌词（1 行 = 1 句）"></textarea>
@@ -426,13 +448,6 @@ button.small.primary { padding: 4px 12px; }
         <div class="row pro-only">
           <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 吸附节拍</label>
           <button id="btnResetTimes" class="ghost small">清除手动时间</button>
-        </div>
-        <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">跟着音乐，在每行开始的瞬间按 <span class="kbd">Space</span> 键或下方按钮。按错了就按 <span class="kbd">Backspace</span> 或“撤销一次”。要从中间某行重来，请点行列表里的 ◎。</div>
-          <div class="next">下一行：<b id="tapLine">—</b></div>
-          <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">撤销一次</button>
-          <button id="tapStop" class="ghost">结束</button>
         </div>
       </div>
 
@@ -573,6 +588,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>使用和风特效<small>带“和”标记的手法和风格。关闭后，一键生成和随机编排不会选用（在新增内容的判断之后应用；逐行手动指定时仍可使用）</small></span></label>
         </div>
         <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="按名称筛选手法" style="flex:1" aria-label="按名称筛选手法"><span id="techTotal" class="muted mono"></span></div>
+        <p class="note">画面上可见的预览会自动循环播放。</p>
         <div id="techLists"></div>
       </div>
 
@@ -872,15 +888,38 @@ J.addUserFont = (key, label, family, weight = 400, kind = 'custom') => {
   J.FONTS[key] = { label, family: `"${family.replace(/"/g, '')}"`, weight, kind, fb: JP_SANS_FB, user: true };
   J.glyphs.clear();
 };
+/* only plain keys / family names ever reach the page (project files are untrusted input) */
+J.SAFE_FONT_KEY = /^user_[A-Za-z0-9_-]{1,80}$/;
+J.safeFamily = s => String(s || '').replace(/[^\w\- ]/g, '_').slice(0, 80);
 J.loadFontFile = async (file) => {
   const buf = await file.arrayBuffer();
-  const fam = 'UF_' + file.name.replace(/\.[^.]+$/, '').replace(/[^\w]/g, '_');
+  const fam = 'UF_' + file.name.replace(/\.[^.]+$/, '').replace(/[^\w]/g, '_').slice(0, 60);
   const ff = new FontFace(fam, buf);
   await ff.load(); document.fonts.add(ff);
-  const key = 'user_' + fam;
-  J.addUserFont(key, file.name.replace(/\.[^.]+$/, ''), fam, 400, 'custom');
-  return key;
+  const key = 'user_' + fam, label = file.name.replace(/\.[^.]+$/, '').slice(0, 80);
+  J.addUserFont(key, label, fam, 400, 'custom');
+  J.FONTS[key].loaded = true;
+  if (J.saveFontData) J.saveFontData(key, buf);        // kept in this browser, so a reload keeps the face
+  return { key, label, family: fam, weight: 400 };
 };
+/* uploaded faces of a project: register them from this browser's copy; returns the labels that are not available */
+J.restoreUserFonts = async (list) => {
+  const missing = [];
+  for (const uf of list || []) {
+    const f = J.FONTS[uf.key];
+    if (f && f.loaded) continue;
+    let ok = false;
+    try {
+      const buf = J.loadFontData ? await J.loadFontData(uf.key) : null;
+      if (buf) { const ff = new FontFace(J.safeFamily(uf.family), buf); await ff.load(); document.fonts.add(ff); ok = true; }
+    } catch (e) { ok = false; }
+    if (ok && J.FONTS[uf.key]) { J.FONTS[uf.key].loaded = true; J.glyphs.clear(); J.metrics.clear(); }
+    else missing.push(uf.label || uf.family || uf.key);
+  }
+  return missing;
+};
+/* uploaded faces the plan draws with but this page does not have */
+J.missingUserFonts = (keys) => (keys || []).filter(k => J.FONTS[k] && J.FONTS[k].user && !J.FONTS[k].loaded).map(k => J.FONTS[k].label);
 
 J.fontCSS = (key, px) => {
   const f = J.faceOf ? J.faceOf(key) : (J.FONTS[key] || J.FONTS.gothic_bold);   // per-language face (02b_lang.js)
@@ -1218,6 +1257,23 @@ J.setLang = (l) => {
   if (J.glyphs) J.glyphs.clear();
   if (J.metrics) J.metrics.clear();
 };
+/* random characters for scrambles, rain, slot reels, sign boards… — in the lyric's own writing system, so Chinese,
+   Korean or English lyrics don't get Japanese katakana around them (issue #16). Japanese keeps the original sets. */
+const ZH_T = '的一是不了人我在有他這中大來上國個到說們為子和你地出道也時年得就那要下以生會自著去之過家學對可她裡後小麼心多天而能好都然沒日於起還發成事只作當想看文無開手十用主行方又如前所本見經頭面公同三已老從動兩長知民樣現分將外但身些與高意進把法此實回二理美點月明其種聲全工己話兒者向情部正名定女問力機給等幾很最間新什打便位因重被走電四第門相次東海口使西再平真聽世氣信北少關愛夢光影空夜星雨淚戀花風';
+const ZH_S = '的一是不了人我在有他这中大来上国个到说们为子和你地出道也时年得就那要下以生会自着去之过家学对可她里后小么心多天而能好都然没日于起还发成事只作当想看文无开手十用主行方又如前所本见经头面公同三已老从动两长知民样现分将外但身些与高意进把法此实回二理美点月明其种声全工己话儿者向情部正名定女问力机给等几很最间新什打便位因重被走电四第门相次东海口使西再平真听世气信北少关爱梦光影空夜星雨泪恋花风';
+const KO = '가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐기니디리미비시이지치키티피히사랑별빛마음노래하늘바람꿈눈물너나우리';
+const EN_U = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', EN_L = 'abcdefghijklmnopqrstuvwxyz', DIG = '0123456789', SYM = '＃＊＋＝／＜＞※◇◆□△○';
+J.POOLS = {
+  ja: { kana: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン', hira: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん',
+    half: 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789', reel: '夢光影空夜星雨涙心恋声花月風愛嘘罪色音海アイウエオカキクケコサシスセソ0123456789',
+    scramble: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン愛哀夢嘘声光影空夜星雨涙心恋罪神嘘壊叫虚★◆▲●■※＃＄％＆01234567ABCDEFGHJKLMNPQRSTUVWXYZ',
+    signs: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン＃＊＋＝／＜＞※◇◆□△○01' },
+  'zh-Hant': { kana: ZH_T, hira: ZH_T, half: ZH_T.slice(0, 60) + DIG, reel: ZH_T.slice(-40) + DIG, scramble: ZH_T + '★◆▲●■※＃＄％＆' + DIG, signs: ZH_T.slice(0, 60) + SYM + '01' },
+  'zh-Hans': { kana: ZH_S, hira: ZH_S, half: ZH_S.slice(0, 60) + DIG, reel: ZH_S.slice(-40) + DIG, scramble: ZH_S + '★◆▲●■※＃＄％＆' + DIG, signs: ZH_S.slice(0, 60) + SYM + '01' },
+  ko: { kana: KO, hira: KO, half: KO.slice(0, 60) + DIG, reel: KO.slice(-30) + DIG, scramble: KO + '★◆▲●■※＃＄％＆' + DIG, signs: KO.slice(0, 60) + SYM + '01' },
+  en: { kana: EN_U, hira: EN_L, half: '0123456789ABCDEF', reel: EN_U + DIG, scramble: EN_U + EN_L + '★◆▲●■#$%&' + DIG, signs: EN_U + '#*+=/<>' + '01' },
+};
+J.pool = (kind) => { const P = J.POOLS[J.lang] || J.POOLS.ja; return P[kind] || J.POOLS.ja[kind]; };
 const SERIF_KINDS = { mincho: 1, brush: 1, hand: 1 };
 const faceCache = new Map();
 /* the face a font key is drawn with in the current language: {family (quoted), weight, fb, gf, label, name (family, for captions)} */
@@ -1816,7 +1872,6 @@ function pickDefined(o, keys) { const r = {}; for (const k of keys) if (o[k]) r[
 'use strict';
 const E = J.E;
 
-const SCRAMBLE_POOL = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン愛哀夢嘘声光影空夜星雨涙心恋罪神嘘壊叫虚★◆▲●■※＃＄％＆01234567ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 /* bands helper: horizontal slices covering the item's vertical extent */
 J.itemBands = (env, it, n, dxFn) => {
@@ -1980,7 +2035,7 @@ J.ENTER = {
         const settle = 0.25 + 0.75 * (n > 1 ? i / (n - 1) : 1);
         if (p >= settle) return null;
         if (p < settle * 0.25 && J.r(seed, i, step, 2) < 0.5) return { hide: true };
-        const ch = SCRAMBLE_POOL[Math.floor(J.r(seed, i, step) * SCRAMBLE_POOL.length)];
+        const ch = J.pool('scramble')[Math.floor(J.r(seed, i, step) * J.pool('scramble').length)];
         return { ch, a: 0.85 };
       });
     },
@@ -3521,9 +3576,16 @@ J.plan = (project, audio) => {
     if (nG <= 1) groups = [ln.text];
     else groups = partition(chunks2, nG).map(g => g.join(/[A-Za-z]/.test(g.join('')) ? ' ' : ''));
     const recap = !fixedN && nC > groups.length && groups.length >= 2;
-    const units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
+    let units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
     if (recap) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
+    // a locked line keeps its own cuts too (the cut count would otherwise follow the 細かさ slider or おまかせ)
+    if (ov.lock && Array.isArray(ov.lockedCuts) && ov.lockedCuts.length && ov.lockedCuts.every(c => c && typeof c.utext === 'string' && ln.text.includes(c.utext.trim())))
+      units = ov.lockedCuts.map(c => ({ text: c.utext, w: [...c.utext].length + 1.6, recap: !!c.recap }));
     const tot = units.reduce((a, u) => a + u.w, 0);
+    // ロック: a locked line keeps exactly what it showed when it was locked (layouts, motion, decorations, colours,
+    // accents) — rerolling other lines changes the shared "recently used" state, so the seed alone is not enough
+    const lockSpecs = ov.lock && Array.isArray(ov.lockedCuts) && ov.lockedCuts.length === units.length
+      && ov.lockedCuts.every((c, k2) => c && c.utext === units[k2].text && J.LAYOUTS[c.layout]) ? ov.lockedCuts : null;
     let acc = s; const bounds = [s];
     units.forEach((u, k) => { acc += D * u.w / tot; bounds.push(k === units.length - 1 ? visEnd : acc); });
     for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
@@ -3590,12 +3652,25 @@ J.plan = (project, audio) => {
         if (again.bg && again.bg !== 'none') { bg = again.bg; lineBgP = again.bgP; lineBg = bg; }
         [inDur, outDur] = durs(enter, exit);
       }
+      const LS = lockSpecs ? lockSpecs[k] : null;
+      if (LS) {
+        ({ layout, enter, exit, hold, params, decor, treat, treatP, cam, camP } = LS);
+        if (!J.ENTER[enter]) enter = 'blur'; if (!J.EXIT[exit]) exit = 'blur'; if (!J.HOLD[hold]) hold = 'still';
+        if (!J.TREAT[treat]) { treat = 'none'; treatP = {}; } if (!J.CAMERA[cam]) { cam = 'push'; camP = {}; }
+        decor = (decor || []).filter(d => J.DECOR[d.id]);
+        weightGrow = !!LS.weightGrow; sch = LS.scheme | 0; cutSeed = LS.seed; LD = J.LAYOUTS[layout];
+        bg = LS.bg && J.BG[LS.bg] ? LS.bg : 'none'; if (bg !== 'none') { lineBg = bg; lineBgP = LS.bgP || {}; }
+        inDur = LS.inDur; outDur = LS.outDur;
+      }
       // cut-to-cut transition (replaces the previous cut's exit and this cut's entrance)
       const prevCut = plan.cuts[plan.cuts.length - 1];
       let trans = null, transP = {}, transDur = 0, morph = null;
       const canTrans = prevCut && Math.abs(prevCut.end - cs) < 0.06 && prevCut.layout !== 'interlude' && dur > 0.5;
       // 統一感: モーフ — the next part of the same line grows out of this one (shared characters glide, the rest melts)
-      if (canTrans && UU && k > 0 && !kime && (again ? again.morph : rng.chance(u.recap ? 0.85 : 0.4))) {
+      if (LS) {                                       // locked: the same join as before, when the cuts still touch
+        if (canTrans && LS.morph) { morph = { dur: LS.morph.dur }; prevCut.exit = 'cut'; prevCut.outDur = 0; }
+        else if (canTrans && LS.trans && J.TRANS[LS.trans]) { trans = LS.trans; transP = LS.transP || {}; transDur = LS.transDur; prevCut.exit = 'cut'; prevCut.outDur = 0; }
+      } else if (canTrans && UU && k > 0 && !kime && (again ? again.morph : rng.chance(u.recap ? 0.85 : 0.4))) {
         morph = { dur: J.clamp(dur * 0.45, 0.28, 0.6) };
         enter = 'cut'; inDur = 0.12; prevCut.exit = 'cut'; prevCut.outDur = 0;
       } else if (canTrans) {
@@ -3610,12 +3685,12 @@ J.plan = (project, audio) => {
         }
       }
       const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
-        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur, zone: Z });
-      if (kime) cut.kime = true;
+        treat, treatP, bg, bgP: bg === lineBg ? lineBgP : {}, cam, camP, trans, transP, transDur, zone: Z, utext: u.text });
+      if (kime || (LS && LS.kime)) cut.kime = true;
       if (weightGrow) cut.weightGrow = true;
       if (morph) cut.morph = morph;
       if (UU) UU.remember(li, k, txt, cut);
-      if (zones) splitCut(cut, halves, zones, st, dur);
+      if (zones) splitCut(cut, halves, zones, st, dur, LS);
       // 文字整列: effects don't pile up — one decoration, no text treatment on top of it
       if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
@@ -3645,8 +3720,9 @@ J.plan = (project, audio) => {
         if (pick) { const D2 = J.FXE[pick]; const d = (D2.dur || 4) * F; addEvent(cs - (D2.pre ? D2.pre * F : 0), pick, (D2.amp || 1) * (0.7 + 0.5 * g + (emph ? 0.3 : 0)), d); fxHistory.push(pick); }
       }
       if (dur > 1.1) { const pick = pickFx(rng, st, en, fx, emph, fxHistory, 'mid'); if (pick) { const D2 = J.FXE[pick]; addEvent(cs + rng.range(0.4, 0.75) * dur, pick, (D2.amp || 1) * (0.5 + 0.4 * g), (D2.dur || 3) * F); } }
+      if (LS && Array.isArray(LS.events)) { plan.events.splice(evMark); for (const e of LS.events) plan.events.push({ t: cs + e.dt, type: e.type, amp: e.amp, dur: e.dur }); }
       // 文字整列: at most one screen effect per cut besides the colour split (the キメ line keeps its accents)
-      if (plan.typeset && !cut.kime) {
+      if (plan.typeset && !cut.kime && !LS) {
         const mine = plan.events.splice(evMark);
         let extra = 0;
         for (const e of mine) if (e.type === 'chroma' || e.type === 'shake' && emph || extra++ < 1) plan.events.push(e);
@@ -3799,17 +3875,34 @@ function splitHalf(text, lang) {
   return [a, b];
 }
 const HEAD_BAD = /[、。，．,.!?！？…・ーっッゃゅょャュョぁぃぅぇぉァィゥェォをがはにでとのへもやよね」』）)]/;
-function splitCut(cut, halves, zones, st, dur) {
+function splitCut(cut, halves, zones, st, dur, LS) {
   const LD = J.LAYOUTS[cut.layout], seed = J.h(cut.seed, 23);
   const planFor = (text, z) => LD.plan(J.rng(seed), { text, n: [...text.replace(/\s+/g, '')].length, W: z.w, H: z.h, dur }, st);
   cut.text = halves[0]; cut.lineText = halves[0]; cut.words = J.chunkText(halves[0]); cut.zone = Object.assign({}, zones[0]);
-  cut.params = planFor(halves[0], zones[0]);
+  cut.params = LS && LS.params && LS.twinParams ? LS.params : planFor(halves[0], zones[0]);   // a locked line keeps its own
   const delay = Math.min(0.12, dur * 0.08);
-  const twin = Object.assign({}, cut, { text: halves[1], lineText: halves[1], words: J.chunkText(halves[1]), zone: Object.assign({}, zones[1]), params: planFor(halves[1], zones[1]),
+  const twin = Object.assign({}, cut, { text: halves[1], lineText: halves[1], words: J.chunkText(halves[1]), zone: Object.assign({}, zones[1]), params: LS && LS.twinParams ? LS.twinParams : planFor(halves[1], zones[1]),
     start: cut.start + delay, bg: 'none', bgP: {}, companion: true, trans: null, transP: {}, transDur: 0, morph: cut.morph });
   twin.dur = twin.end - twin.start;
   delete twin.companion_; cut.companion = twin;
 }
+
+/* ロック: what a line shows, so it can be kept as it is (stored in project.overrides[line].lockedCuts) */
+J.lineSnapshot = (plan, li) => {
+  const cuts = plan.cuts.filter(c => c.line === li && c.utext != null);
+  if (!cuts.length) return null;
+  const S = JSON.parse(JSON.stringify(cuts.map(c => ({ utext: c.utext, layout: c.layout, enter: c.enter, exit: c.exit, hold: c.hold, inDur: c.inDur, outDur: c.outDur,
+    params: c.params, decor: c.decor, treat: c.treat, treatP: c.treatP, bg: c.bg, bgP: c.bgP, cam: c.cam, camP: c.camP, scheme: c.scheme, seed: c.seed,
+    trans: c.trans, transP: c.transP, transDur: c.transDur, morph: c.morph || null, weightGrow: !!c.weightGrow, kime: !!c.kime, recap: !!c.recap, twinParams: c.companion ? c.companion.params : null, events: [] }))));
+  // each accent belongs to the cut it plays in (the ones just before a cut start belong to that cut)
+  for (const e of plan.events) {
+    let k = -1;
+    // [start − 0.25, next start − 0.25): an accent just before the following cut belongs to that cut
+    for (let j = 0; j < cuts.length; j++) { const until = j < cuts.length - 1 ? cuts[j + 1].start - 0.25 : cuts[j].end - 0.3; if (e.t >= cuts[j].start - 0.25 && e.t < until) k = j; }
+    if (k >= 0) S[k].events.push({ dt: +(e.t - cuts[k].start).toFixed(4), type: e.type, amp: e.amp, dur: e.dur });
+  }
+  return S;
+};
 
 /* side bands for 中央を空ける: [a, b] in design pixels. Wide frames: left / right thirds (a little narrower on 21:9);
    tall frames: top / bottom; square-ish frames count as wide. */
@@ -3989,6 +4082,90 @@ function pickFx(rng, st, en, fx, emph, fxHist, kind) {
     .map(k => { const D = J.FXE[k]; let w = wkey(st.bias && st.bias.fx, k, D.w ?? 1) * (last.includes(k) ? 0.2 : 1); if (D.glitchy) w *= 0.3 + g * 1.4; return [k, w]; });
   return cands.length ? rng.wpick(cands) : null;
 }
+
+/* one-cut (or two-cut, for transitions) plan used by the 手法 tab thumbnails */
+J.previewPlan = (project, group, key) => {
+  const enUI = typeof document !== 'undefined' && document.documentElement && document.documentElement.lang === 'en';
+  const st = J.resolveStyle(project);
+  const fx = Object.assign({}, J.defaultProject().fx, project.fx || {}, {
+    glitch: group === 'fx' ? 0.85 : 0,
+    chroma: group === 'fx' ? 0.9 : 0.22,
+    flash: false, hud: 'off', texture: 0.3, bgSwitch: 0, motion: 0.75,
+    decor: group === 'decor' ? 1 : 0,
+  });
+  const [W, H] = J.designSize(project.aspect || '16:9');
+  const rng = J.rng(J.h(J.sid(String(group) + ':' + String(key)), 11, 22));
+  let text = enUI ? 'Lyric' : '字面';
+  if (group === 'layout') {
+    const L0 = J.LAYOUTS[key];
+    const n2 = [...text.replace(/\s+/g, '')].length;
+    if (L0 && L0.fits && !L0.fits(n2)) text = enUI ? 'color of dawn' : '夜明けの色を';
+    if (L0 && L0.fits && !L0.fits([...text.replace(/\s+/g, '')].length)) text = enUI ? 'I remember the color of dawn' : '夜明けの色を覚えてる';
+  }
+  const nn = [...text.replace(/\s+/g, '')].length;
+  const dur = 2.4;
+  let layout = group === 'layout' ? key : 'center';
+  if (!J.LAYOUTS[layout] || J.LAYOUTS[layout].special) layout = 'center';
+  let enter = group === 'enter' ? key : 'cut';
+  let exit = group === 'exit' ? key : 'cut';
+  let hold = group === 'hold' ? key : 'still';
+  if (!J.ENTER[enter]) enter = 'cut';
+  if (!J.EXIT[exit]) exit = 'cut';
+  if (!J.HOLD[hold]) hold = 'still';
+  if (group === 'layout' || group === 'decor' || group === 'treat' || group === 'bg') {
+    if (enter === 'cut' && J.ENTER.pop) enter = 'pop';
+    if (hold === 'still' && J.HOLD.breathe) hold = 'breathe';
+    else if (hold === 'still' && J.HOLD.drift) hold = 'drift';
+  }
+  const LD = J.LAYOUTS[layout];
+  let params = {};
+  try { params = LD.plan(rng, { text, n: nn, W, H, dur }, st) || {}; } catch (e) { params = {}; }
+  let inDur = enter === 'cut' ? 0.12 : 0.5;
+  if (J.ENTER[enter] && J.ENTER[enter].inDur) try { inDur = J.ENTER[enter].inDur(dur, nn); } catch (e) {}
+  let outDur = exit === 'cut' ? 0 : 0.5;
+  if (J.EXIT[exit] && J.EXIT[exit].outDur) try { outDur = J.EXIT[exit].outDur(dur, nn); } catch (e) {}
+  if (inDur + outDur > dur * 0.85) { const f = dur * 0.85 / Math.max(0.2, inDur + outDur); inDur *= f; outDur *= f; }
+  const decor = (group === 'decor' && J.DECOR[key]) ? [decorParams(rng, key)] : [];
+  let treat = group === 'treat' ? key : 'none';
+  if (!J.TREAT[treat]) treat = 'none';
+  const treatP = (J.TREAT[treat] && J.TREAT[treat].plan) ? (J.TREAT[treat].plan(rng, st) || {}) : {};
+  let bg = group === 'bg' ? key : 'none';
+  if (!J.BG[bg]) bg = 'none';
+  const bgP = (J.BG[bg] && J.BG[bg].plan) ? (J.BG[bg].plan(rng, st) || {}) : {};
+  let cam = group === 'cam' ? key : 'push';
+  if (!J.CAMERA[cam]) cam = 'push';
+  const camP = (J.CAMERA[cam] && J.CAMERA[cam].plan) ? (J.CAMERA[cam].plan(rng, st) || {}) : {};
+  const events = [];
+  if (group === 'fx' && J.FXE[key]) {
+    const D2 = J.FXE[key];
+    events.push({ t: 0.04, type: key, amp: (D2.amp || 1.15) * 1.2, dur: ((D2.dur || 6) / 24) });
+  }
+  const cuts = [];
+  if (group === 'trans' && J.TRANS[key]) {
+    const TD = J.TRANS[key];
+    const transDur = J.clamp(TD.dur || 0.35, 0.18, 0.7);
+    const transP = TD.plan ? (TD.plan(rng, st) || {}) : {};
+    const tA = enUI ? 'BEFORE' : '前のカット';
+    const tB = enUI ? 'AFTER' : '字面';
+    let pA = {}, pB = {};
+    try { pA = J.LAYOUTS.center.plan(rng, { text: tA, n: [...tA].length, W, H, dur: 1.2 }, st) || {}; } catch (e) {}
+    try { pB = J.LAYOUTS.center.plan(rng, { text: tB, n: [...tB].length, W, H, dur: 1.2 }, st) || {}; } catch (e) {}
+    cuts.push(makeCut({ text: tA, lineText: tA, line: 0, start: 0, end: 1.2, layout: 'center', enter: 'cut', exit: 'cut', hold: 'still', inDur: 0.12, outDur: 0, params: pA, decor: [], scheme: 0, seed: 1, words: J.chunkText(tA) }));
+    cuts.push(makeCut({ text: tB, lineText: tB, line: 1, start: 1.2, end: 2.4, layout: 'center', enter: 'cut', exit: 'cut', hold: 'still', inDur: 0.12, outDur: 0, params: pB, decor: [], scheme: Math.min(1, st.schemes.length - 1), seed: 2, words: J.chunkText(tB), trans: key, transP, transDur }));
+  } else {
+    cuts.push(makeCut({
+      text, lineText: text, line: 0, start: 0, end: dur, layout, enter, exit, hold, inDur, outDur,
+      params, decor, scheme: 0, seed: J.h(J.sid(String(key)), 9), words: J.chunkText(text),
+      treat, treatP, bg, bgP, cam, camP, stagger: 0.04,
+    }));
+  }
+  cuts.forEach((c, i) => { c.index = i; });
+  return {
+    version: 1, generator: 'JIZURA-preview', title: '', artist: '', W, H, fps: 24,
+    duration: cuts[cuts.length - 1].end, styleKey: project.style, style: st, fx,
+    lines: [], cuts, events, beats: [], hud: false, keyBg: null,
+  };
+};
 
 J.designSize = (aspect) => {
   if (aspect === '9:16') return [1080, 1920];
@@ -4758,6 +4935,12 @@ J.loadSong = async () => {
     if (!rec || !rec.data) return null;
     return new File([rec.data], rec.name || 'song', { type: rec.type || '' });
   } catch (e) { return null; }
+};
+J.saveFontData = async (key, data) => {
+  try { const db = await IDB.open(); await new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put({ data }, 'font:' + key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; }
+};
+J.loadFontData = async (key) => {
+  try { const db = await IDB.open(); const rec = await new Promise((res, rej) => { const tx = db.transaction('files', 'readonly'); const q = tx.objectStore('files').get('font:' + key); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); return rec && rec.data ? rec.data : null; } catch (e) { return null; }
 };
 J.forgetSong = async () => {
   try { const db = await IDB.open(); await new Promise(res => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete('song'); tx.oncomplete = res; tx.onerror = res; }); } catch (e) {}
@@ -10570,7 +10753,6 @@ function masked(g, fx, fy, isx, isy) {
 }
 const glyphPos = (g, isx, isy) => [(g.x + g.vx) * isx, (g.y + g.vy) * isy];
 
-const SIGNS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン＃＊＋＝／＜＞※◇◆□△○01';
 
 /* ================================================================ */
 const DEFS = {
@@ -11168,7 +11350,7 @@ const DEFS = {
       glyphs(it, (i) => {
         if (i < front) return f - i - 1 < 0.6 ? { color: hi } : null;
         if (i === front) return HIDE;
-        if (i <= front + 4) return { ch: SIGNS[J.h(seed, i, step, 51) % SIGNS.length], a: 0.5, color: dim };
+        if (i <= front + 4) return { ch: J.pool('signs')[J.h(seed, i, step, 51) % J.pool('signs').length], a: 0.5, color: dim };
         return HIDE;
       });
       if (front < N) {
@@ -11408,7 +11590,6 @@ function lines(it, b) {
 const pt = (vert, u, v) => (vert ? [v, u] : [u, v]);
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-const SIGNS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン＃＊＋＝／＜＞※◇◆□△○01';
 
 /* ================================================================ */
 const DEFS = {
@@ -11969,7 +12150,7 @@ const DEFS = {
         const q = stg(p, ordLR(i, n), 0.4), F = 3 + (i % 2);
         if (q <= 0 || q >= 1) return { q, F };
         const x = q * F, j = Math.min(F - 1, Math.floor(x)), f = x - j;
-        const chOf = k => (k <= 0 ? null : k >= F ? '' : SIGNS[J.h(seed, i, k, 97) % SIGNS.length]);
+        const chOf = k => (k <= 0 ? null : k >= F ? '' : J.pool('signs')[J.h(seed, i, k, 97) % J.pool('signs').length]);
         return { q, F, j, f, oldCh: chOf(j), newCh: chOf(j + 1) };
       };
       const ch = c => (c ? { ch: c } : {});
@@ -12321,7 +12502,7 @@ const DEFS = {
     inDur: dur => clamp(dur * 0.5, 0.25, 0.9),
     apply(env, it, p) {
       const seed = it.seed | 0, isy = it.sy || 1, digits = /^[0-9\s]+$/.test(String(it.text || ''));
-      const pool = digits ? '0123456789' : SIGNS;
+      const pool = digits ? '0123456789' : J.pool('signs');
       const reel = (i, n) => { const q = stg(p, ordLR(i, n), 0.45), R = 3 + (J.h(seed, i, 111) % 3); return { q, R, s: R * (1 - oBack(q, 1.15)) }; };
       const cell = (g, j, s, chs) => {                              // character j of the reel (0 = the real glyph), masked to the window
         const f = (s - j) * 1.02;
@@ -12359,7 +12540,7 @@ const DEFS = {
       // lower glyphs land first so no stream ever runs over a glyph that has already landed
       const key = g => 0.35 * J.r(seed, g.i, 121) + 0.65 * (vert ? (g.n > 1 ? 1 - g.ci / (g.n - 1) : 0) : (nL > 1 ? (nL - 1 - g.li) / (nL - 1) : 0));
       const st = g => { const q = stg(p, key(g), 0.45), D = size * (2.2 + J.r(seed, g.i, 122)); return { q, y: -D * (1 - oCubic(q / land)) }; };
-      const rnd = (i, k) => SIGNS[J.h(seed, i, k, step, 123) % SIGNS.length];
+      const rnd = (i, k) => J.pool('signs')[J.h(seed, i, k, step, 123) % J.pool('signs').length];
       const main = glyphs(it, (i, g) => {
         const S = st(g);
         if (S.q <= 0) return HIDE; if (S.q >= 1) return null;
@@ -14082,9 +14263,6 @@ const beatIdx = (env, fb) => (env.beat ? env.beat.index : Math.floor(env.ltb / f
 const darkBg = env => J.lum(env.sc.bg) < 0.5;
 const primary = it => (it.alpha ?? 1) > 0.9 && it.fill !== false;      // decorations only once per cut, not on faded / outline copies
 
-const KANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
-const RAIN = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
-const REEL = '夢光影空夜星雨涙心恋声花月風愛嘘罪色音海アイウエオカキクケコサシスセソ0123456789';
 
 /* ============================== EXITS ============================== */
 const X = {};
@@ -15039,7 +15217,7 @@ X.slotOut = {
   apply(env, it, p) {
     const seed = it.seed | 0, ord = orderOf(env, it), sy0 = it.sy || 1, acc = env.sc.accent;
     const M = i => 3 + (J.h(seed, i, 182) % 4);
-    const chOf = (i, m) => REEL[J.h(seed, i, m, 181) % REEL.length];
+    const chOf = (i, m) => J.pool('reel')[J.h(seed, i, m, 181) % J.pool('reel').length];
     const state = (i, n) => {
       const q = win(p, ord(i, n), 0.35);
       if (q <= 0) return null;
@@ -15114,7 +15292,7 @@ X.matrixOut = {
     const seed = it.seed | 0, step = env.step, sz = it.size, sy0 = it.sy || 1, acc = env.sc.accent, c0 = colOf(it);
     const bb = dBox(it, 0), D = env.H - bb.y0 + sz * 1.2, head = darkBg(env) ? mixC(c0, '#ffffff', 0.4) : c0;
     const Q = i => win(p, J.r(seed, i, 201) * 0.9, 0.5);
-    const rch = (i, k) => RAIN[J.h(seed, i, k, Math.floor(step / 2), 202) % RAIN.length];
+    const rch = (i, k) => J.pool('half')[J.h(seed, i, k, Math.floor(step / 2), 202) % J.pool('half').length];
     const fall = (i, g) => {
       const q = Q(i);
       if (q <= 0) return null;
@@ -15729,7 +15907,7 @@ H.flipSwap = {
     let gi;
     if (isSingle(env, it)) { if (Math.round(+it.mi || 0) !== pick) return; gi = vis[0].i; }
     else gi = vis[pick % vis.length].i;
-    const ch = KANA[J.h(cs, cyc, 632) % KANA.length], acc = env.sc.accent;
+    const ch = J.pool('kana')[J.h(cs, cyc, 632) % J.pool('kana').length], acc = env.sc.accent;
     let sx, alt;
     if (u < 0.18) { sx = Math.cos(u / 0.18 * Math.PI / 2); alt = false; }
     else if (u < 0.36) { sx = Math.sin((u - 0.18) / 0.18 * Math.PI / 2); alt = true; }
@@ -18602,14 +18780,13 @@ const mainLines = (text, W, H, perL = 11, perP = 5) => {
   if (n <= per) return t;
   return splitL(t, Math.ceil(n / Math.ceil(n / per)));
 };
-const KATA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
 const _pool = new Map();
 const poolOf = (cut) => {
-  const key = cut.lineText + '|' + cut.text;
+  const key = J.lang + '|' + cut.lineText + '|' + cut.text;
   let p = _pool.get(key);
   if (!p) {
     const own = [...clean((cut.lineText || '') + cut.text)].filter(c => !J.isLatin(c) && !J.isPunct(c) && c !== '・');
-    p = own.concat([...KATA].filter((c, i) => i % 2 === 0));
+    p = own.concat([...J.pool('kana')].filter((c, i) => i % 2 === 0));
     if (_pool.size > 100) _pool.clear();
     _pool.set(key, p);
   }
@@ -23969,14 +24146,13 @@ const rrPath = (ctx, x, y, w, h, r) => {
 /* outline of a polygon (main pass) */
 const outline = (env, pts, col, lw, a = 1) => { if (pts.length > 1) env.line(pts.concat([pts[0]]), col, lw, a, false); };
 /* pool of glyphs taken from the line (for decoys / fillers) */
-const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
 const _pool = new Map();
 const poolOf = cut => {
-  const key = (cut.lineText || '') + '|' + cut.text;
+  const key = J.lang + '|' + (cut.lineText || '') + '|' + cut.text;
   let p = _pool.get(key);
   if (!p) {
     const own = [...strip((cut.lineText || '') + cut.text)].filter(c => !J.isPunct(c) && !J.isSmallKana(c) && c !== 'ー' && !J.isLatin(c));
-    p = own.concat([...KANA].filter((c, i) => i % 3 === 0));
+    p = own.concat([...J.pool('hira')].filter((c, i) => i % 3 === 0));
     if (_pool.size > 100) _pool.clear();
     _pool.set(key, p);
   }
@@ -30094,10 +30270,18 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
-  o.colors = Object.assign({ enabled: false }, (p && p.colors) || {});
-  o.fonts = (p && p.fonts) || {};
-  o.userFonts = (p && p.userFonts) || [];
-  for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight || 400);
+  // project files are untrusted: colours must be colours, font keys plain keys (they end up in the page's HTML / CSS)
+  o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
+  for (const [k, v] of Object.entries((p && p.colors) || {})) {
+    if (k === 'enabled') continue;
+    if (typeof v === 'boolean') o.colors[k] = v;
+    else if (typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v)) o.colors[k] = v;
+  }
+  o.userFonts = (Array.isArray(p && p.userFonts) ? p.userFonts : []).filter(uf => uf && J.SAFE_FONT_KEY.test(uf.key))
+    .map(uf => ({ key: uf.key, label: String(uf.label || uf.key).slice(0, 80), family: J.safeFamily(uf.family || uf.key.slice(5)), weight: J.clamp(parseInt(uf.weight, 10) || 400, 100, 900) }));
+  for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight);
+  o.fonts = {};
+  for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
   return o;
 }
 function setBadges(d) {
@@ -30129,6 +30313,8 @@ function langNote() {
 }
 function replan() {
   S.plan = J.plan(S.project, audioLike());
+  // lines locked in older projects (seed only): take a snapshot now, so from here on they stay exactly as they are
+  for (const [i, o] of Object.entries(S.project.overrides || {})) if (o && o.lock && !Array.isArray(o.lockedCuts)) { const snap = J.lineSnapshot(S.plan, +i); if (snap) o.lockedCuts = snap; }
   langNote();
   if (S.t > S.plan.duration) S.t = 0;
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
@@ -30350,9 +30536,10 @@ function followLine(li) {
   if (performance.now() - listTouched < 2500) return;                       // the user is scrolling the list
   const el = S.lineEls[li], col = el && el.closest('.col-left');
   if (!el || !col || col.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  const tp = $('tapPanel'), pad = tp && !tp.hidden ? tp.offsetHeight + 12 : 8;   // 固定表示中のタップboxの下に隠れないように
   const r = el.getBoundingClientRect(), c = col.getBoundingClientRect();
-  if (r.top >= c.top + 8 && r.bottom <= c.bottom - 8) return;
-  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - c.height * 0.3, behavior: 'smooth' });
+  if (r.top >= c.top + pad && r.bottom <= c.bottom - 8) return;
+  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - Math.max(c.height * 0.3, pad + 24), behavior: 'smooth' });
 }
 function bindFollow() {
   const col = document.querySelector('.col-left'); if (!col) return;
@@ -30425,11 +30612,11 @@ function renderLines() {
     if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
     q('.tapfrom').addEventListener('click', () => startTap(i));
     q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
-    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
+    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined }); replan(); seek(ln.start + 0.001); });
     if (q('.lock')) q('.lock').addEventListener('click', () => {
       const cur = ov[i] || {};
-      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined });
-      else setOv(i, { lock: true, lockedSeed: ln.seed });
+      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
       replan();
     });
     const cutsEl = q('.cuts');
@@ -30600,7 +30787,7 @@ function drawStyleGrid() {
 function fontSelectOptions(sel) {
   return '<option value="">风格默认</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
-    return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+    return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
@@ -30638,7 +30825,7 @@ function renderColors() {
   drawSwatch();
 }
 const toColorInput = v => { const h = String(v || '#000000'); return /^#[0-9a-f]{6}$/i.test(h) ? h.toLowerCase() : J.toHex(...J.hex(h)).toLowerCase(); };
-function swatchHTML(cols) { return cols.map(c => `<i style="background:${c}" title="${c}"></i>`).join(''); }
+function swatchHTML(cols) { return cols.filter(c => /^#[0-9a-f]{3,8}$/i.test(String(c))).map(c => `<i style="background:${c}" title="${c}"></i>`).join(''); }
 function drawSwatch() {
   const sc = S.plan ? S.plan.style.schemes[0] : null; if (!sc) return;
   $('paletteSwatch').innerHTML = swatchHTML([sc.accent, sc.ghostA, sc.ghostB]);
@@ -30783,7 +30970,93 @@ function renderFx() {
 const GROUPS = [['layout', '布局'], ['enter', '入场'], ['hold', '保持'], ['exit', '退场'], ['decor', '装饰'], ['treat', '文字处理'], ['bg', '背景'], ['cam', '运镜'], ['fx', '画面效果'], ['trans', '镜头转场']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
+
+const previewR = new J.Renderer();
+const previewPlans = new Map();
+const previewLive = new Set();
+let previewObs = null, previewRaf = 0, previewLast = 0;
+function previewCacheKey(g, k) {
+  const p = S.project;
+  return [p.style, p.aspect, g, k, p.colors && p.colors.enabled ? JSON.stringify(p.colors) : '', JSON.stringify(p.fonts || {})].join('|');
+}
+function getPreviewPlan(g, k) {
+  const id = previewCacheKey(g, k);
+  let plan = previewPlans.get(id);
+  if (plan) return plan;
+  plan = J.previewPlan(S.project, g, k);
+  previewPlans.set(id, plan);
+  if (previewPlans.size > 500) previewPlans.delete(previewPlans.keys().next().value);
+  return plan;
+}
+function previewTime(plan, g, now) {
+  const c = plan.cuts[plan.cuts.length - 1];
+  const u = now / 1000;
+  if (g === 'enter') return c.start + ((u % 1.5) / 1.5) * Math.max(0.3, c.inDur);
+  if (g === 'exit') { const od = Math.max(0.3, c.outDur || 0.5); return c.end - od + ((u % 1.5) / 1.5) * od; }
+  if (g === 'trans') return c.start + ((u % 1.7) / 1.7) * (c.transDur || 0.35);
+  if (g === 'fx') return (u % 1.05);
+  const span = Math.max(1.6, c.dur * 0.96);
+  return c.start + ((u % span) / span) * (c.dur * 0.96);
+}
+function paintTechCanvas(cv, g, k, t) {
+  const plan = getPreviewPlan(g, k);
+  const ctx = cv.getContext('2d');
+  try {
+    previewR.frame(ctx, plan, t, { scale: cv.width / plan.W, fast: true, noHud: true, noGhost: g !== 'fx' });
+  } catch (e) {
+    ctx.fillStyle = '#131316'; ctx.fillRect(0, 0, cv.width, cv.height);
+  }
+  cv.dataset.ready = '1';
+}
+function techPaneOpen() {
+  const pane = $('techLists') && $('techLists').closest('.tabpane');
+  return pane && !pane.hidden;
+}
+function ensurePreviewObs() {
+  if (previewObs) return previewObs;
+  previewObs = new IntersectionObserver((ents) => {
+    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    kickPreviewLoop();
+  }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
+  return previewObs;
+}
+function resetPreviewWatch() {
+  previewLive.clear();
+  if (previewObs) { previewObs.disconnect(); previewObs = null; }
+}
+function watchThumb(cv) { ensurePreviewObs().observe(cv); }
+function kickPreviewLoop() {
+  if (previewRaf) return;
+  const tick = (now) => {
+    previewRaf = 0;
+    if (document.hidden || S.exporting || !techPaneOpen() || !previewLive.size) return;
+    if (now - previewLast >= 70) {
+      previewLast = now;
+      for (const cv of previewLive) {
+        if (!cv.isConnected) { previewLive.delete(cv); continue; }
+        const g = cv.dataset.g, k = cv.dataset.k;
+        if (!g || !k) continue;
+        paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+      }
+    }
+    previewRaf = requestAnimationFrame(tick);
+  };
+  previewRaf = requestAnimationFrame(tick);
+}
+function queueThumbs(list) {
+  const now = performance.now();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
+    previewLive.add(cv);
+    watchThumb(cv);
+    const g = cv.dataset.g, k = cv.dataset.k;
+    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
+  });
+  kickPreviewLoop();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
+
 function renderTech() {
+  resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
   const q = ($('techFilter').value || '').trim().toLowerCase();
   let total = 0, onAll = 0;
@@ -30795,21 +31068,26 @@ function renderTech() {
     if (q && !shown.length) return;
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
-    d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
+    const list = document.createElement('div'); list.className = 'checks tech-grid';
+    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">全部开启</button><button class="ghost small" data-a="off">全部关闭</button><button class="ghost small" data-a="flip">反选</button></div>`;
-    const list = document.createElement('div'); list.className = 'checks';
+    const [tw, th] = (() => {
+      const [W, H] = J.designSize(S.project.aspect || '16:9');
+      const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
+    })();
     shown.forEach(k => {
       const l = document.createElement('label');
+      l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
       if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（新增内容已关闭，不会被自动选用）' : '（和风特效已关闭，不会被自动选用）'; }
-      l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
+      l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
+      const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
     });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
       shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      // keep a fallback so the planner always has something to use
       if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
       if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
       if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
@@ -30817,6 +31095,7 @@ function renderTech() {
     }));
     d.appendChild(list);
     box.appendChild(d);
+    if (d.open) queueThumbs(list);
   });
   $('techTotal').textContent = `${onAll}/${total}`;
 }
@@ -30872,6 +31151,8 @@ async function runExport(kind) {
   const t0 = performance.now();
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
+    const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
+    if (lost.length) throw new Error(`导入的字体（${[...new Set(lost)].join('、')}）不在此浏览器中，已停止导出。请在“字体”重新导入同一个文件，或选择其他字体`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
@@ -30912,6 +31193,7 @@ function startTap(from = 0) {
   S.tap = { i: from, from, done: [] };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
+  $('tapPanel').classList.remove('compact');
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
@@ -30941,6 +31223,7 @@ function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔间奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
+  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -31058,7 +31341,11 @@ function bind() {
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
+    try {
+      const uf = await J.loadFontFile(f);
+      S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
+      S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
+    }
     catch (err) { showMsg('无法载入字体'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
@@ -31115,7 +31402,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
     catch (err) { showMsg('无法打开项目'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -31139,18 +31426,22 @@ function bind() {
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
+let audioSeq = 0;
 async function loadAudioFile(f, restored) {
+  const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
   $('audioName').textContent = '正在分析音频…';
   try {
     pause();
-    S.audio = await J.analyzeAudio(f);
+    const a = await J.analyzeAudio(f);
+    if (my !== audioSeq) return false;
+    S.audio = a;
     $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · 约 ${S.audio.bpm}BPM）` + (restored ? ' · 上次的音乐' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = '无法载入：' + err.message; S.audio = null; return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '无法载入：' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -31215,10 +31506,20 @@ function bindTour() {
   window.addEventListener('scroll', () => { if (TR.i >= 0) tourPlace(TOUR[TR.i].t()); }, true);
 }
 
+/* uploaded faces: bring them back from this browser; say so when a project uses one that is not here */
+async function restoreFonts() {
+  const list = S.project.userFonts || [];
+  if (!list.length) return;
+  const missing = await J.restoreUserFonts(list);
+  fontKey = ''; renderFontRoles(); replan();
+  if (missing.length) toast(`导入的字体（${missing.join('、')}）不在此浏览器中。请在“字体”重新导入同一个文件（在此之前以相近的字体显示）`);
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); replan();
+  restoreFonts();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   bindTour();

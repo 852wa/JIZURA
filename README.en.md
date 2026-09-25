@@ -31,4 +31,4 @@ Install `JIZURA_AE_en.jsx` in After Effects' `Scripts/ScriptUI Panels` folder, r
 
 ## Contributors
 
-Traditional Chinese UI and technique names, Simplified Chinese technique names, font and language detection fixes: [Zaious](https://github.com/Zaious) (#5, #6, #7, #11). Korean UI and technique names: [andongmin94](https://github.com/andongmin94) (#8). Indonesian UI: [auliaramadhann](https://github.com/auliaramadhann) and [enka25](https://github.com/enka25) (#12).
+Traditional Chinese UI and technique names, Simplified Chinese technique names, font and language detection fixes: [Zaious](https://github.com/Zaious) (#5, #6, #7, #11). Korean UI and technique names: [andongmin94](https://github.com/andongmin94) (#8). Indonesian UI: [auliaramadhann](https://github.com/auliaramadhann) and [enka25](https://github.com/enka25) (#12). Looping technique previews and the pinned tap-sync box: [nocore-dtm](https://github.com/nocore-dtm) (#18, #19).

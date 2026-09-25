@@ -31,6 +31,13 @@
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="歌詞とタイミング">
+      <div id="tapPanel" class="tapbox" hidden>
+          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。</div>
+          <div class="next">次: <b id="tapLine">—</b></div>
+          <button id="tapBtn" class="tap">TAP</button>
+          <button id="tapBack" class="ghost">1つ戻る</button>
+          <button id="tapStop" class="ghost">終了する</button>
+      </div>
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
@@ -64,13 +71,6 @@
         <div class="row pro-only">
           <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
           <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
-        </div>
-        <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。</div>
-          <div class="next">次: <b id="tapLine">—</b></div>
-          <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">1つ戻る</button>
-          <button id="tapStop" class="ghost">終了する</button>
         </div>
       </div>
 
@@ -211,6 +211,7 @@
           <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>「和」印の手法とスタイル。オフにすると、おまかせやシャッフルでは選ばれません（追加分の判定のあとに適用。行ごとに手動で指定した場合は使えます）</small></span></label>
         </div>
         <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="手法を名前で絞り込み" style="flex:1" aria-label="手法を名前で絞り込み"><span id="techTotal" class="muted mono"></span></div>
+        <p class="note">画面に見えているプレビューは自動でループします。</p>
         <div id="techLists"></div>
       </div>
 

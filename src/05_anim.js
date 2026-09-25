@@ -7,7 +7,6 @@
 'use strict';
 const E = J.E;
 
-const SCRAMBLE_POOL = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン愛哀夢嘘声光影空夜星雨涙心恋罪神嘘壊叫虚★◆▲●■※＃＄％＆01234567ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 /* bands helper: horizontal slices covering the item's vertical extent */
 J.itemBands = (env, it, n, dxFn) => {
@@ -171,7 +170,7 @@ J.ENTER = {
         const settle = 0.25 + 0.75 * (n > 1 ? i / (n - 1) : 1);
         if (p >= settle) return null;
         if (p < settle * 0.25 && J.r(seed, i, step, 2) < 0.5) return { hide: true };
-        const ch = SCRAMBLE_POOL[Math.floor(J.r(seed, i, step) * SCRAMBLE_POOL.length)];
+        const ch = J.pool('scramble')[Math.floor(J.r(seed, i, step) * J.pool('scramble').length)];
         return { ch, a: 0.85 };
       });
     },

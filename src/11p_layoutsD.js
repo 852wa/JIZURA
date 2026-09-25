@@ -137,14 +137,13 @@ const rrPath = (ctx, x, y, w, h, r) => {
 /* outline of a polygon (main pass) */
 const outline = (env, pts, col, lw, a = 1) => { if (pts.length > 1) env.line(pts.concat([pts[0]]), col, lw, a, false); };
 /* pool of glyphs taken from the line (for decoys / fillers) */
-const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
 const _pool = new Map();
 const poolOf = cut => {
-  const key = (cut.lineText || '') + '|' + cut.text;
+  const key = J.lang + '|' + (cut.lineText || '') + '|' + cut.text;
   let p = _pool.get(key);
   if (!p) {
     const own = [...strip((cut.lineText || '') + cut.text)].filter(c => !J.isPunct(c) && !J.isSmallKana(c) && c !== 'ー' && !J.isLatin(c));
-    p = own.concat([...KANA].filter((c, i) => i % 3 === 0));
+    p = own.concat([...J.pool('hira')].filter((c, i) => i % 3 === 0));
     if (_pool.size > 100) _pool.clear();
     _pool.set(key, p);
   }
