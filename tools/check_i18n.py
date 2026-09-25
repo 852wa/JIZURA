@@ -1,5 +1,5 @@
 """Check a translation module: every English glossary key is translated and no Japanese is left on the page.
-usage: python3 tools/check_i18n.py zh-Hant|zh-Hans|ko"""
+usage: python3 tools/check_i18n.py zh-Hant|zh-Hans|ko|id"""
 import os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT); os.chdir(ROOT)
@@ -22,7 +22,7 @@ def left(text, name):
         l3 = l2
         for a in allowed: l3 = l3.replace(a, '')
         l3 = l3.replace('/bold|太|black', '')           # font weight guess regex
-        hit = kana.search(l3) or (code == 'ko' and han.search(l3))
+        hit = kana.search(l3) or (code not in ('zh-Hant', 'zh-Hans') and han.search(l3))
         if hit: bad += 1; print(name, i + 1, l2.strip()[:160])
 read = lambda p: open(p, encoding='utf-8').read()
 left(i18n.localize_body(code, read('app/body.html')), 'body')
