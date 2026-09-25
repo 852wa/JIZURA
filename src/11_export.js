@@ -46,10 +46,15 @@ const vcfg = (c, w, h, fps, bitrate, hw) => {
   return cfg;
 };
 async function supported(cfg) { try { const s = await VideoEncoder.isConfigSupported(cfg); return !!(s && s.supported); } catch (e) { return false; } }
-J.pickVideoCodec = async (w, h, fps, bitrate) => {
-  if (typeof VideoEncoder === 'undefined') return null;
-  for (const c of VIDEO_CANDS) { const cfg = vcfg(c, w, h, fps, bitrate); if (await supported(cfg)) return Object.assign({}, c, { cfg }); }
-  return null;
+const codecMemo = new Map();   // the answer never changes for a page load; asking the browser again costs ~100 ms
+J.pickVideoCodec = (w, h, fps, bitrate) => {
+  const key = [w, h, fps, bitrate].join('/');
+  if (!codecMemo.has(key)) codecMemo.set(key, (async () => {
+    if (typeof VideoEncoder === 'undefined') return null;
+    for (const c of VIDEO_CANDS) { const cfg = vcfg(c, w, h, fps, bitrate); if (await supported(cfg)) return Object.assign({}, c, { cfg }); }
+    return null;
+  })());
+  return codecMemo.get(key).then(vc => vc && Object.assign({}, vc, { cfg: Object.assign({}, vc.cfg) }));
 };
 /* the encoders to try, best first: the browser's choice, then the same codec in software (GPU encoders are the usual
    reason an export fails every time on one PC), then a simpler profile / lower bitrate in software, then VP9 */

@@ -28,7 +28,7 @@ function tab(fn) {   // inDur / outDur (dur[, n]) -> table on a fixed grid (AE i
   return { n: NS, d: NS.map(n => DUR.map(d => r3(fn(d, n)))) };
 }
 const KEEP = ['w', 'tags', 'extra', 'wa', 'ae', 'portrait', 'emph', 'enterBias', 'busy', 'treat', 'cam', 'minDur', 'maxChars', 'safe', 'subtle', 'strong',
-  'layer', 'edge', 'mid', 'glitchy', 'dur', 'amp', 'pre', 'builtin', 'special', 'scratch', 'pack'];
+  'layer', 'edge', 'mid', 'glitchy', 'dur', 'amp', 'pre', 'builtin', 'special', 'scratch', 'pack', 'set'];
 const meta = {}, orders = {}, names = {};
 for (const g of JJ.GROUP_KEYS) {
   meta[g] = {}; names[g] = {}; orders[g] = JJ.order(g).slice();
@@ -53,7 +53,8 @@ const data = {
   orders, meta, names,
   // v1 keys (kept for older panel code)
   layoutOrder: orders.layout, enterOrder: orders.enter, holdOrder: orders.hold, exitOrder: orders.exit, decorOrder: orders.decor,
-  moods: JJ.MOODS, moodOrder: Object.keys(JJ.MOODS), ghostPairs: JJ.GHOST_PAIRS,
+  // moods tied to a part set (ホラー) need that set's parts, which the panel does not build: leave them out
+  moods: JJ.MOODS, moodOrder: Object.keys(JJ.MOODS).filter(k => !JJ.MOODS[k].set), ghostPairs: JJ.GHOST_PAIRS,
   fonts: Object.fromEntries(Object.entries(JJ.FONTS).map(([k, f]) => [k, { label: f.label, family: f.family.replace(/"/g, ''), weight: f.weight, kind: f.kind, extra: !!f.extra }])),
 };
 fs.writeFileSync(path.join(ROOT, 'ae', 'data.json'), JSON.stringify(data));
