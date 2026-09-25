@@ -36,7 +36,7 @@ function lb1_strArr(a) { var o = []; for (var i = 0; i < a.length; i++) o.push('
 function lb1_pool(c) {
     var own = jzChars(lb1_clean((c.lineText || '') + c.text)), out = [], i;
     for (i = 0; i < own.length; i++) if (!jzIsLatin(own[i]) && !jzIsPunct(own[i]) && own[i] !== '\u30FB' && !/["'\\]/.test(own[i])) out.push(own[i]);
-    var ka = jzChars(LB1_KATA);
+    var ka = jzChars(jzPool('kana'));
     for (i = 0; i < ka.length; i += 2) out.push(ka[i]);
     return out;
 }

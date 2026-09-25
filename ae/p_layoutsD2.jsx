@@ -38,7 +38,7 @@ function ld2_rgb(hex) { var c = jzHex(hex); return '[' + jzN(c[0]) + ',' + jzN(c
 function ld2_pool(c) {
     var own = jzChars(jzStrip((c.lineText || '') + c.text)), out = [], i;
     for (i = 0; i < own.length; i++) if (!jzIsPunct(own[i]) && !ld2_isSmall(own[i]) && own[i] !== 'ー' && !jzIsLatin(own[i]) && !/["'\\\s]/.test(own[i])) out.push(own[i]);
-    var ka = jzChars(LD2_KANA);
+    var ka = jzChars(jzPool('hira'));
     for (i = 0; i < ka.length; i += 3) out.push(ka[i]);
     return out;
 }

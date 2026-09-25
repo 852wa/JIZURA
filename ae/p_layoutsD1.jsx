@@ -946,7 +946,7 @@ ld1_reg('pile', {
         mound.push([W * 1.02, H * 1.9], [-W * 0.02, H * 1.9]);
         var MS = jzShapeLayer(ctx, 'mound', 0, 0), gm = jzGrp(MS, 'mound'); jzAddPath(gm, mound, true); jzAddFill(gm, jzMixHex(sc.bg, sc.sub, 0.14));
         jzSetExpr(jzXf(MS, 'ADBE Position'), TH + '[value[0],value[1]+rise]'); ld1_opx(ctx, MS, 'K');
-        var pool = [], own = jzChars(jzStrip((c.lineText || '') + c.text)), KA = jzChars('あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん');
+        var pool = [], own = jzChars(jzStrip((c.lineText || '') + c.text)), KA = jzChars(jzPool('hira'));
         for (i = 0; i < own.length; i++) if (!jzIsPunct(own[i]) && !jzIsLatin(own[i]) && 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー'.indexOf(own[i]) < 0) pool.push(own[i]);
         for (i = 0; i < KA.length; i += 3) pool.push(KA[i]);
         var colsN = Math.ceil(W / cell) + 2, depth = Math.max(3, Math.min(5, Math.floor(200 / colsN))), hp = [], hch = [], hr = [], ha = [], hc = [];
@@ -1754,7 +1754,7 @@ ld1_reg('crossword', {
             if ((!isW(r, cc - 1) && isW(r, cc + 1)) || (!isW(r - 1, cc) && isW(r + 1, cc))) { num[key(r, cc)] = kn++; numCount++; }
         }
         // pencilled crossing entries
-        var pool = [], own = jzChars(jzStrip((c.lineText || '') + c.text)), KA = jzChars('あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん');
+        var pool = [], own = jzChars(jzStrip((c.lineText || '') + c.text)), KA = jzChars(jzPool('hira'));
         for (i = 0; i < own.length; i++) if (!jzIsPunct(own[i]) && !jzIsLatin(own[i]) && 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー'.indexOf(own[i]) < 0) pool.push(own[i]);
         for (i = 0; i < KA.length; i += 3) pool.push(KA[i]);
         var pencil = {}, fills = 0;
