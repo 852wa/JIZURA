@@ -40,6 +40,7 @@ STYLES = {
 }
 
 BODY = {
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>竖屏时<select class="centerDirSel" aria-label="竖屏画面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>',
     '<span>統一感</span>': '<span>统一感</span>',
     '<span>文字整列</span>': '<span>文字排列</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="先选择要保存的文件，直接写入该文件。长歌曲或 1080p 以上因浏览器内存不足而失败时使用（Chrome / Edge）">大型视频用（直接保存为文件）</button>',
@@ -170,6 +171,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'竖屏画面：分成左右'",
+    "'縦長の画面：上下に分けます'": "'竖屏画面：分成上下'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "'（第一种方式失败，已改用其他编码器导出）'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'统一感：开启（段落一致，并使用亮点、变形、粗细）'",
     "'保存先を開けませんでした: '": "'无法打开保存位置：'",

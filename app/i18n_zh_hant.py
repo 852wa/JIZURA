@@ -1,6 +1,7 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>直式畫面時<select class="centerDirSel" aria-label="直式畫面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>',
     '<span>統一感</span>': '<span>統一感</span>',
     '<span>文字整列</span>': '<span>文字排列</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="先選擇要儲存的檔案，直接寫入該檔案。長歌曲或 1080p 以上因瀏覽器記憶體不足而失敗時使用（Chrome / Edge）">大型影片用（直接存成檔案）</button>',
@@ -129,6 +130,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'直式畫面：分成左右'",
+    "'縦長の画面：上下に分けます'": "'直式畫面：分成上下'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "'（第一種方式失敗，已改用其他編碼器輸出）'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'統一感：開啟（段落一致，並使用亮點、變形、粗細）'",
     "'保存先を開けませんでした: '": "'無法開啟儲存位置：'",

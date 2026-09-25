@@ -1,6 +1,7 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>On tall frames<select class="centerDirSel" aria-label="Split on tall frames"><option value="tb">Top / bottom</option><option value="lr">Left / right</option></select></label>',
     '<span>統一感</span>': '<span>Unified look</span>',
     '<span>文字整列</span>': '<span>Typesetting</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button>',
@@ -123,6 +124,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'Tall frames: split left / right'",
+    "'縦長の画面：上下に分けます'": "'Tall frames: split top / bottom'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (the first method failed, so another encoder was used)'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'Unified look: on (parts match; hits, morphs and weight too)'",
     "'保存先を開けませんでした: '": "'Could not open the file: '",
@@ -241,6 +244,9 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'\u3000縦長のとき'": "'  On tall frames'",
+    "'上下に分ける'": "'Top / bottom'",
+    "'左右に分ける'": "'Left / right'",
     "'軽量（AE での再生を軽く）'": "'Lightweight (faster playback in AE)'",
     "'色ズレの複製・紙の質感・グロー・粒子・一部の画面効果を省いて、After Effects での再生を軽くします（長い曲におすすめ）'": "'Leaves out the colour-shift copies, paper texture, bloom, grain and some screen effects so the composition plays back faster in After Effects (recommended for long songs)'",
     "'中央を空ける（キャラクター用：横長は左右・縦長は上下に配置）'": "'Keep the centre free (for a character: left / right on wide, top / bottom on tall frames)'",

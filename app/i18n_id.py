@@ -38,6 +38,7 @@ STYLES = {
 }
 
 BODY = {
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>',
     '<span>統一感</span>': '<span>Tampilan seragam</span>',
     '<span>文字整列</span>': '<span>Penataan teks</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button>',
@@ -160,6 +161,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'Layar tegak: dibagi kiri / kanan'",
+    "'縦長の画面：上下に分けます'": "'Layar tegak: dibagi atas / bawah'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "' (cara pertama gagal, jadi dipakai encoder lain)'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'Tampilan seragam: aktif (bagian seragam; klimaks, morf, dan ketebalan juga dipakai)'",
     "'保存先を開けませんでした: '": "'Tidak bisa membuka file tujuan: '",

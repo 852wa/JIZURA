@@ -761,7 +761,8 @@ function jzPickTreat(rng, st, en, fx, layout, emph, hist) {
     return c.length ? rng.wpick(c) : 'none';
 }
 // side bands (same as the browser's J.sideZones): wide frames left / right, tall frames top / bottom
-function jzSideZones(W, H) {
+function jzSideZones(W, H, dir) {
+    if (H > W * 1.1 && dir === 'lr') { var w0 = Math.round(W * 0.34); return [{ x: 0, y: 0, w: w0, h: H, side: 'left' }, { x: W - w0, y: 0, w: w0, h: H, side: 'right' }]; }
     if (H > W * 1.1) { var h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h: h, side: 'top' }, { x: 0, y: H - h, w: W, h: h, side: 'bottom' }]; }
     var w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
     return [{ x: 0, y: 0, w: w, h: H, side: 'left' }, { x: W - w, y: 0, w: w, h: H, side: 'right' }];
@@ -913,7 +914,7 @@ function jzMakePlan(o) {
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
     // \u4E2D\u592E\u3092\u7A7A\u3051\u308B: cuts laid out in side bands (left / right, or top / bottom on tall frames), alternating per line
-    var zones = o.centerFree ? jzSideZones(W, H) : null;
+    var zones = o.centerFree ? jzSideZones(W, H, o.centerDir) : null;
     if (zones && en.bg) en.bg.bigChar = false;
     var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
         lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title), centerFree: !!zones, zones: zones };
@@ -30733,6 +30734,7 @@ function jzUI(thisObj) {
     ddKey.helpTip = 'Solid green or black background behind white text and effects. Key out green or use Screen blending for black.';
     var cCenter = t1.add('checkbox', undefined, 'Keep the centre free (for a character: left / right on wide, top / bottom on tall frames)'); cCenter.value = jzGet('center', '0') === '1';
     cCenter.helpTip = 'For a character or other footage in the middle: each cut is laid out in a side band (left / right on wide frames, top / bottom on tall ones, alternating line by line). Backgrounds and screen effects still cover the whole frame.';
+    var gCD = t1.add('group'); gCD.add('statictext', undefined, '  On tall frames'); var ddCDir = gCD.add('dropdownlist', undefined, ['Top / bottom', 'Left / right']); ddCDir.selection = parseInt(jzGet('centerDir', '0'), 10) || 0;
     var cLight = t1.add('checkbox', undefined, 'Lightweight (faster playback in AE)'); cLight.value = jzGet('light', '0') === '1';
     cLight.helpTip = 'Leaves out the colour-shift copies, paper texture, bloom, grain and some screen effects so the composition plays back faster in After Effects (recommended for long songs)';
 
@@ -30910,7 +30912,7 @@ function jzUI(thisObj) {
         jzPut('size', ddSize.selection.index); jzPut('fps', ddFps.selection.index); jzPut('timing', rLayer.value ? 'layer' : rComp.value ? 'comp' : 'auto');
         jzPut('bpm', eBpm.text); jzPut('lineScale', eScale.text); jzPut('audio', cAudio.value ? '1' : '0'); jzPut('seed', eSeed.text);
         jzPut('twos', cTwos.value ? '1' : '0'); jzPut('flash', cFlash.value ? '1' : '0'); jzPut('hud', ddHud.selection.index);
-        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('center', cCenter.value ? '1' : '0'); jzPut('light', cLight.value ? '1' : '0'); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
+        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('center', cCenter.value ? '1' : '0'); jzPut('centerDir', ddCDir.selection ? ddCDir.selection.index : 0); jzPut('light', cLight.value ? '1' : '0'); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
         var sl = [sMotion, sGlitch, sChroma, sDecor, sDensity, sTexture, sBg]; for (var k = 0; k < sl.length; k++) jzPut(sl[k].key, sl[k].value);
         var active = app.project.activeItem, W = 1920, H = 1080, fps = [24, 30, 60][ddFps.selection.index], dur = null;
         var sz = ddSize.selection.index;
@@ -30933,7 +30935,7 @@ function jzUI(thisObj) {
             lyrics: lyr.text, title: eTitle.text, artist: eArtist.text, style: JZ_DATA.styleOrder[ddStyle.selection.index], seed: parseInt(eSeed.text, 10) || 1,
             fx: { motion: sMotion.value / 100, glitch: sGlitch.value / 100, chroma: sChroma.value / 100, decor: sDecor.value / 100, density: sDensity.value / 100, texture: sTexture.value / 100, bgSwitch: sBg.value / 100, onTwos: cTwos.value, flash: cFlash.value, hud: false },
             width: W, height: H, fps: fps, bpm: parseFloat(eBpm.text) || 0, starts: starts, enabled: en, offset: 0.4, lineScale: parseFloat(eScale.text) || 1, duration: dur,
-            extra: sw.extra, wa: sw.wa, lang: sw.lang, centerFree: cCenter.value
+            extra: sw.extra, wa: sw.wa, lang: sw.lang, centerFree: cCenter.value, centerDir: ddCDir.selection && ddCDir.selection.index === 1 ? 'lr' : 'tb'
         };
         var st = JZ_DATA.styles[o.style];
         o.fx.hud = ddHud.selection.index === 1 ? true : ddHud.selection.index === 2 ? false : !!st.hud;

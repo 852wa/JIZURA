@@ -1,6 +1,7 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>세로 화면일 때<select class="centerDirSel" aria-label="세로 화면에서 나누는 방법"><option value="tb">위아래로 나누기</option><option value="lr">좌우로 나누기</option></select></label>',
     '<span>統一感</span>': '<span>통일감</span>',
     '<span>文字整列</span>': '<span>문자 정렬</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="저장할 파일을 먼저 고르고 거기에 바로 기록합니다. 긴 곡이나 1080p 이상에서 브라우저 메모리가 부족해 실패할 때 사용하세요(Chrome / Edge)">큰 동영상용(파일에 바로 저장)</button>',
@@ -127,6 +128,8 @@ BODY = {
 }
 
 UI = {
+    "'縦長の画面：左右に分けます'": "'세로 화면: 좌우로 나눕니다'",
+    "'縦長の画面：上下に分けます'": "'세로 화면: 위아래로 나눕니다'",
     "'（最初の方法では失敗したため、別のエンコーダーで書き出しました）'": "'(처음 방법이 실패해서 다른 인코더로 내보냈습니다)'",
     "'統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）'": "'통일감: 켬(파트별로 맞추고 킬링 파트·모프·굵기도 사용)'",
     "'保存先を開けませんでした: '": "'저장 위치를 열 수 없습니다: '",
