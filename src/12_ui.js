@@ -714,7 +714,7 @@ function showNow() {
   const P = S.project, sc = S.plan.style.schemes[0];
   const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'カスタム';
   const fk = S.plan.style.fonts.display[0];
-  const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
+  const fontName = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
