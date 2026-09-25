@@ -100,6 +100,13 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
+/* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
+.col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
+.tapbox.compact .hint { display: none; }
+/* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
+@media (max-width: 1180px), (max-height: 619px) {
+  .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
+}
 
 /* line list */
 #lineList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
