@@ -277,6 +277,10 @@ button.omakase:disabled { box-shadow: none; }
 button.linkish { background: none; border: 0; padding: 4px 0; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; }
 button.linkish:hover { color: var(--text); background: none; }
 dialog.terms { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 22px 24px 18px; background: var(--panel); color: var(--text); border: 1px solid var(--line2); border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.55); }
+dialog.terms .reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 3px; font-size: 13px; }
+button.danger { background: #c9433a; border-color: #c9433a; color: #fff; font-weight: 700; }
+button.danger:hover { background: #dd5146; }
+.sec-btns { display: inline-flex; gap: 6px; }
 dialog.terms::backdrop { background: rgba(6,6,8,0.66); }
 dialog.terms h2 { font-size: 15px; letter-spacing: 0.08em; color: var(--text); margin: 0 0 14px; }
 dialog.terms p { margin: 0 0 10px; line-height: 1.75; font-size: 13px; }
@@ -290,6 +294,19 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .terms-oss summary { cursor: pointer; }
 .terms-oss p { font-size: 12px !important; margin-top: 6px; }
 .terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+
+/* ---------- fixed workspace (wide & tall enough windows) ----------
+   The page no longer scrolls as a whole: the header and the preview + timeline stay put, and the
+   lyrics / line list (left) and settings (right) scroll inside their own columns. */
+@media (min-width: 1181px) and (min-height: 620px) {
+  html.fixed-ok body { overflow: hidden; }
+  html.fixed-ok #app { height: 100vh; height: 100dvh; min-height: 0; }
+  html.fixed-ok .work { overflow: hidden; }
+  html.fixed-ok .col-left, html.fixed-ok .col-right { overscroll-behavior: contain; }
+  html.fixed-ok .col-stage { overflow: hidden auto; }
+  html.fixed-ok .viewport { flex: 1 1 0; min-height: 180px; }
+  html.fixed-ok .viewport canvas { max-height: none; }
+}
 
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {
@@ -339,3 +356,4 @@ button.small.primary { padding: 4px 12px; }
 
 .lang-switch select { font: 500 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }

@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="id-ID">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JIZURA — Lyric Motion Video Maker</title>
-<meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<link rel="canonical" href="https://852wa.github.io/JIZURA/en/">
+<title>JIZURA — Pembuat video lirik bergerak</title>
+<meta name="description" content="Buat video lirik bergerak dari lirik di browser, lalu ekspor ke MP4.">
+<link rel="canonical" href="https://852wa.github.io/JIZURA/id/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
@@ -13,9 +13,9 @@
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
 <link rel="alternate" hreflang="id-ID" href="https://852wa.github.io/JIZURA/id/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA — Lyric Motion Video Maker">
-<meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<meta property="og:url" content="https://852wa.github.io/JIZURA/en/">
+<meta property="og:title" content="JIZURA — Pembuat video lirik bergerak">
+<meta property="og:description" content="Buat video lirik bergerak dari lirik di browser, lalu ekspor ke MP4.">
+<meta property="og:url" content="https://852wa.github.io/JIZURA/id/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -389,250 +389,250 @@ button.small.primary { padding: 4px 12px; }
     <div class="tour-step mono muted"></div>
     <h3 id="tourTitle" class="tour-title"></h3>
     <p class="tour-text"></p>
-    <div class="tour-nav"><button class="tour-skip ghost small">Skip</button><span class="tour-sp"></span><button class="tour-prev ghost small">Back</button><button class="tour-next primary small">Next</button></div>
+    <div class="tour-nav"><button class="tour-skip ghost small">Lewati</button><span class="tour-sp"></span><button class="tour-prev ghost small">Kembali</button><button class="tour-next primary small">Berikutnya</button></div>
   </div>
 </div>
 <div id="app">
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="Song title (shown on title cards and HUD)" aria-label="Song title">
-      <input id="songArtist" type="text" placeholder="Artist" aria-label="Artist">
+      <input id="songTitle" type="text" placeholder="Judul lagu (ditampilkan di kartu judul dan HUD)" aria-label="Judul lagu">
+      <input id="songArtist" type="text" placeholder="Artis" aria-label="Artis">
     </div>
-    <div class="modes" role="group" aria-label="Editor mode">
-      <button id="modeEasy" aria-pressed="false" title="A simple workspace focused on automatic creation">Simple</button>
-      <button id="modePro" aria-pressed="true" title="Show all settings">Advanced</button>
-      <button id="btnTour" class="ghost tour-btn" title="A short tour of the Simple mode" aria-label="Tour">？</button>
+    <div class="modes" role="group" aria-label="Mode editor">
+      <button id="modeEasy" aria-pressed="false" title="Tampilan sederhana dengan fokus pada pembuatan otomatis">Sederhana</button>
+      <button id="modePro" aria-pressed="true" title="Tampilkan semua pengaturan">Lanjutan</button>
+      <button id="btnTour" class="ghost tour-btn" title="Panduan singkat mode Sederhana" aria-label="Panduan penggunaan">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en" selected>English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Bahasa</span><select aria-label="Bahasa" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID" selected>Bahasa Indonesia</option></select></label>
     <div class="acts">
-      <label class="file" title="Open a saved project (.json)">Open<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="Save project as .json">Save</button>
-      <button id="btnAE" title="Export project data for the After Effects panel">Export for AE</button>
-      <button id="btnReset" class="ghost" title="Clear lyrics, song, settings and history and start over">Reset</button>
-      <button id="btnTerms" class="ghost terms-open" title="Rights and licenses for your exports">About / rights</button>
+      <label class="file" title="Buka proyek tersimpan (.json)">Buka<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="Simpan proyek sebagai .json">Simpan</button>
+      <button id="btnAE" title="Ekspor data proyek untuk panel After Effects">Ekspor untuk AE</button>
+      <button id="btnReset" class="ghost" title="Hapus lirik, lagu, pengaturan, dan riwayat, lalu mulai dari awal">Atur ulang</button>
+      <button id="btnTerms" class="ghost terms-open" title="Hak dan lisensi hasil ekspor">Tentang dan hak</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="Lyrics and timing">
+    <section class="col col-left" aria-label="Lirik dan timing">
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
-        <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
+        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lirik (satu frasa per baris)"></textarea>
+        <label class="lang-row">Bahasa lirik<select id="lyricLang"><option value="auto">Deteksi otomatis</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>One phrase per line. A blank line adds a short pause.</li>
-            <li><code>I remember/the dawn</code> … <code>/</code> marks a cut boundary</li>
-            <li><code>*transparent*</code> … emphasis (larger, stronger effects)</li>
-            <li>A trailing <code>!</code> … adds a flash and shake</li>
-            <li><code>lyrics|reading or note</code> … smaller text in annotation layouts</li>
-            <li><code>[01:23.45]Lyrics</code> … uses an LRC timestamp</li>
-            <li><code>[interlude 8]</code> … an 8-second instrumental part (no lyrics, background and decorations only). Without a number it lasts 4 seconds; tap sync or markers set its length</li>
-            <li><code>#</code> starts a comment (ignored)</li>
+            <li>Satu frasa per baris. Baris kosong memberi jeda singkat.</li>
+            <li><code>Ku ingat/warna fajar</code> … <code>/</code> menandai batas cut</li>
+            <li><code>*transparan*</code> … penekanan (lebih besar, efek lebih kuat)</li>
+            <li>Di akhir baris: <code>!</code> … menambahkan flash dan goyangan</li>
+            <li><code>lirik|bacaan atau catatan</code> … teks kecil dalam layout anotasi</li>
+            <li><code>[01:23.45]Lirik</code> … memakai timestamp LRC apa adanya</li>
+            <li><code>[interlude 8]</code> … bagian instrumental 8 detik (tanpa lirik, hanya latar dan dekorasi). Kalau angkanya dihilangkan, durasinya 4 detik; ketuk atau marker bisa dipakai untuk mengatur durasinya</li>
+            <li><code>#</code> mengawali komentar (diabaikan)</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Audio and timing</h2></div>
-        <div id="audioName" class="muted audio-name">No audio. Import a song to detect beats and align cuts.</div>
+        <div class="sec-h"><h2>Audio dan timing</h2></div>
+        <div id="audioName" class="muted audio-name">Tidak ada audio. Impor lagu untuk mendeteksi ketukan dan menyesuaikan cut.</div>
         <div class="row">
-          <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
+          <label class="file" title="MP3, WAV, M4A, dan lainnya">Impor audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="Ketuk di awal setiap baris sambil lagu diputar">Sinkronkan ke ketukan</button>
         </div>
         <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
-          <label class="field">Start (s)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">Line duration<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Otomatis"></label>
+          <label class="field">Mulai (dtk)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">Durasi baris<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Snap to beat</label>
-          <button id="btnResetTimes" class="ghost small">Clear manual timing</button>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Ikuti ketukan</label>
+          <button id="btnResetTimes" class="ghost small">Hapus timing manual</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.</div>
-          <div class="next">Next: <b id="tapLine">—</b></div>
+          <div class="hint">Tekan <span class="kbd">Space</span> atau tombol saat tiap baris dimulai. Kepencet? Tekan <span class="kbd">Backspace</span> atau “Batalkan ketukan”. Untuk mengulang dari baris tertentu, tekan ◎ di daftar baris.</div>
+          <div class="next">Berikutnya: <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">Undo tap</button>
-          <button id="tapStop" class="ghost">Finish</button>
+          <button id="tapBack" class="ghost">Batalkan ketukan</button>
+          <button id="tapStop" class="ghost">Selesai</button>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Lines and cuts</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>Baris dan cut</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="Preview">
+    <section class="col col-stage" aria-label="Pratinjau">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Play">▶</button>
+        <button id="btnPlay" class="play" aria-label="Putar">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position">
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Posisi pemutaran">
         <button id="btnLoop" class="ghost small" aria-pressed="true">Loop</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Click to mute / unmute (preview only — exports keep the original level)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Preview volume"></span>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Klik untuk membisukan / menyalakan suara (hanya pratinjau — volume ekspor tetap asli)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume pratinjau"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="Previous variation" aria-label="Previous">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="Next variation" aria-label="Next">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="Kembali ke variasi sebelumnya" aria-label="Sebelumnya">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="Lanjut ke variasi berikutnya" aria-label="Berikutnya">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
-        <button id="btnOmakase" class="primary" title="Randomize style, mood, effects and colors (R)">Randomize</button>
+        <button id="btnShuffle" class="accent" title="Acak ulang susunan tanpa mengubah pengaturan (baris terkunci tetap)">Acak susunan</button>
+        <button id="btnOmakase" class="primary" title="Acak gaya, suasana, efek, dan warna sekaligus (tombol R)">Buat variasi</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">Drag the line markers (top) to move line starts. Hold <span class="kbd">Shift</span> to ignore beats</span>
+        <span class="tl-hint muted">Seret marker baris di bagian atas untuk memindahkan awal baris. Tahan <span class="kbd">Shift</span> agar tidak menempel ke ketukan</span>
         <span class="tl-btns">
-          <button id="btnUndoEdit" class="ghost small" title="Undo lyric and timing changes (Ctrl+Z)" disabled>Undo</button>
-          <button id="tlOut" class="ghost small icon-txt" title="Zoom out" aria-label="Zoom the timeline out">−</button>
-          <button id="tlIn" class="ghost small icon-txt" title="Zoom in (or scroll on the timeline)" aria-label="Zoom the timeline in">＋</button>
-          <button id="tlFit" class="ghost small" title="Show the whole song">Fit</button>
+          <button id="btnUndoEdit" class="ghost small" title="Urungkan perubahan lirik dan waktu (Ctrl+Z)" disabled>Urungkan</button>
+          <button id="tlOut" class="ghost small icon-txt" title="Perkecil" aria-label="Perkecil timeline">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="Perbesar (atau gulir di timeline)" aria-label="Perbesar timeline">＋</button>
+          <button id="tlFit" class="ghost small" title="Tampilkan seluruh lagu">Semua</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Timeline (click to seek, drag line markers to adjust)"></canvas>
+      <canvas id="timeline" aria-label="Timeline (klik untuk berpindah, drag marker baris untuk menyesuaikan)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick" hidden>
         <div class="cut-pick-h">
-          <strong id="cutPickTitle">Techniques</strong>
-          <span class="muted" id="cutPickHint">Replace on this cut only</span>
-          <button type="button" id="cutPickAuto" class="ghost small">Auto</button>
-          <button type="button" id="cutPickClose" class="ghost small" aria-label="Close">✕</button>
+          <strong id="cutPickTitle">Teknik</strong>
+          <span class="muted" id="cutPickHint">このカットだけ差し替え</span>
+          <button type="button" id="cutPickAuto" class="ghost small">Otomatis</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="Tutup">✕</button>
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="Style and export">
+    <section class="col col-right" aria-label="Gaya dan ekspor">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
-          <button id="btnOmakaseBig" class="omakase">Create a variation</button>
-          <p class="hint">Each click changes the style, mood, motion, colors and arrangement. Press <span class="kbd">R</span> to do the same.</p>
+          <button id="btnOmakaseBig" class="omakase">Buat variasi</button>
+          <p class="hint">Setiap klik mengubah gaya, suasana, gerakan, warna, dan susunan. Tekan <span class="kbd">R</span> di keyboard untuk melakukan hal yang sama.</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ Previous</button>
+            <button id="btnPrev2" class="ghost">◀ Sebelumnya</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">Next ▶</button>
+            <button id="btnNext2" class="ghost">Berikutnya ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include about 350 more effects, 12 styles and 6 fonts in random picks. Off uses the original set.</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include Japanese motifs such as lanterns, postcards, shoji, fans, family crests, waves and cherry blossoms in random picks.</small></span></label>
-            <label class="check"><input class="unify-toggle" type="checkbox"><span>Unified look<small>Each part of the song keeps one set of layouts and motions, and a line that comes back is shown the same way again. Directions alternate and strong moves are saved for the lines that matter. The line ending in “!” (or, if none, the first line of a repeated part) becomes a big “hit”; lyrics can melt into the next or glide letter by letter (“morph”), and grow from thin to bold (“weight”)</small></span></label>
-            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Typesetting<small>Kana are set a little tighter so words read as blocks, particles are smaller and the first character larger, Latin letters are slightly larger with a small gap to Japanese. Lyrics appear 0.2 s before the voice, and effects are not piled up</small></span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Sertakan efek baru<small>Sertakan sekitar 350 efek tambahan, 12 gaya warna, dan 6 font baru dalam pilihan acak. Jika dimatikan, hanya set awal yang dipakai.</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Sertakan motif Jepang<small>Sertakan grafik bernuansa Jepang seperti lentera, kartu pos, shoji, kipas, lambang keluarga, ombak, dan kelopak sakura dalam pilihan acak.</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>Tampilan seragam<small>Setiap bagian lagu memakai satu set tata letak dan gerakan, dan baris yang muncul lagi ditampilkan dengan cara yang sama. Arah gerakan bergantian, gerakan kuat disimpan untuk baris penting. Baris yang diakhiri “!” (atau, jika tidak ada, baris pertama bagian yang diulang) ditampilkan besar (“klimaks”); teks bisa meleleh menjadi baris berikutnya atau hurufnya bergeser ke posisi baru (“morf”), dan tumbuh dari tipis ke tebal (“ketebalan”)</small></span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Penataan teks<small>Kana dirapatkan agar terbaca sebagai satu blok, partikel dikecilkan dan huruf pertama dibesarkan, huruf Latin sedikit dibesarkan dengan jarak kecil ke teks Jepang. Teks muncul 0,2 detik sebelum suara, dan efek tidak ditumpuk berlebihan</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Current variation</h3>
+          <h3>Variasi saat ini</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>Change one thing</h3>
+          <h3>Ubah satu hal</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="Change the style only">Style</button>
-            <button id="ePalette" title="Randomize accent and offset colors">Palette</button>
-            <button id="eMood" title="Change motion, glitch and technique mood">Mood</button>
-            <button id="eCut" title="Change the arrangement and motion only">Arrangement</button>
+            <button id="eStyle" title="Ganti gaya saja">Gaya</button>
+            <button id="ePalette" title="Acak warna aksen dan offset">Palet</button>
+            <button id="eMood" title="Ubah gerakan, glitch, dan nuansa teknik saja">Suasana</button>
+            <button id="eCut" title="Ubah susunan dan gerakan saja">Susunan</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Export</h3>
+          <h3>Ekspor</h3>
           <div class="fields">
-            <label class="field">Aspect ratio<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-            <label class="field">Resolution<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">Rasio aspek<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 tegak</option><option value="4:3">4:3</option><option value="3:4">3:4 tegak</option><option value="1:1">1:1</option><option value="4:5">4:5 tegak</option><option value="21:9">21:9</option></select></label>
+            <label class="field">Resolusi<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">Background<select id="eKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+            <label class="field field-wide">Latar<select id="eKey"><option value="off">Latar gaya</option><option value="green">Green screen (komposit)</option><option value="black">Latar hitam (komposit)</option></select></label>
           </div>
-          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span></label>
-          <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button></div>
-          <button class="terms-open linkish">Rights to exported videos</button>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span></label>
+          <div class="rng-row"><span class="rng-lab">Rentang ekspor</span><select class="rngFrom" aria-label="Baris pertama rentang ekspor"></select><span class="muted">〜</span><select class="rngTo" aria-label="Baris terakhir rentang ekspor"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Ekspor MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button></div>
+          <button class="terms-open linkish">Hak atas video yang diekspor</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Batal</button></div>
           </div>
         </div>
       </div>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="style" aria-selected="true">Style</button>
-        <button role="tab" data-tab="fx" aria-selected="false">Effects</button>
-        <button role="tab" data-tab="tech" aria-selected="false">Techniques</button>
-        <button role="tab" data-tab="out" aria-selected="false">Export</button>
+        <button role="tab" data-tab="style" aria-selected="true">Gaya</button>
+        <button role="tab" data-tab="fx" aria-selected="false">Efek</button>
+        <button role="tab" data-tab="tech" aria-selected="false">Teknik</button>
+        <button role="tab" data-tab="out" aria-selected="false">Ekspor</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
         <div id="styleGrid" class="style-grid"></div>
-        <h3>Font roles</h3>
+        <h3>Peran font</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="Installed font name (e.g. Arial)" style="flex:1">
-          <button id="btnAddFont">Add</button>
+          <input id="localFont" type="text" placeholder="Nama font di komputer (contoh: Arial)" style="flex:1">
+          <button id="btnAddFont">Tambah</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">Font file (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Accent and offset colors</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>Use custom colors<small>Applies to every scene. Brightness adapts to the background.</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">File font (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>Warna aksen dan offset</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>Pakai warna kustom<small>Berlaku untuk semua adegan. Kecerahan menyesuaikan latar secara otomatis.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">Randomize palette</button>
+          <button id="btnRandPalette" class="accent">Acak palet</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>Background and text colors</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>Use custom background and text colors</span></label>
+        <h3>Warna latar dan teks</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>Pakai warna kustom untuk latar dan teks utama</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
         <div class="unify-box">
-          <label class="check"><input class="unify-toggle" type="checkbox"><span>Unified look<small>Each part of the song keeps one set of layouts and motions, and a line that comes back is shown the same way again. Directions alternate and strong moves are saved for the lines that matter. The line ending in “!” (or, if none, the first line of a repeated part) becomes a big “hit”; lyrics can melt into the next or glide letter by letter (“morph”), and grow from thin to bold (“weight”)</small></span></label>
-          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Typesetting<small>Kana are set a little tighter so words read as blocks, particles are smaller and the first character larger, Latin letters are slightly larger with a small gap to Japanese. Lyrics appear 0.2 s before the voice, and effects are not piled up</small></span></label>
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>Tampilan seragam<small>Setiap bagian lagu memakai satu set tata letak dan gerakan, dan baris yang muncul lagi ditampilkan dengan cara yang sama. Arah gerakan bergantian, gerakan kuat disimpan untuk baris penting. Baris yang diakhiri “!” (atau, jika tidak ada, baris pertama bagian yang diulang) ditampilkan besar (“klimaks”); teks bisa meleleh menjadi baris berikutnya atau hurufnya bergeser ke posisi baru (“morf”), dan tumbuh dari tipis ke tebal (“ketebalan”)</small></span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Penataan teks<small>Kana dirapatkan agar terbaca sebagai satu blok, partikel dikecilkan dan huruf pertama dibesarkan, huruf Latin sedikit dibesarkan dengan jarak kecil ke teks Jepang. Teks muncul 0,2 detik sebelum suara, dan efek tidak ditumpuk berlebihan</small></span></label>
         </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
-          <label class="row" style="gap:6px">Frame stepping <select id="fxKoma" title="Motion drawings per second (independent of export fps)"><option value="0">Full (export fps)</option><option value="12">On twos (12 drawings/s)</option><option value="8">On threes (8 drawings/s)</option></select></label>
+          <label class="row" style="gap:6px">Interval frame <select id="fxKoma" title="Jumlah gambar per detik untuk gerakan (terpisah dari fps ekspor)"><option value="0">Penuh (mengikuti fps ekspor)</option><option value="12">Setiap 2 frame (12 gambar/dtk)</option><option value="8">Setiap 3 frame (8 gambar/dtk)</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (by style)</option><option value="on">Always show</option><option value="off">Hide</option></select></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">Otomatis (sesuai gaya)</option><option value="on">Selalu tampilkan</option><option value="off">Sembunyikan</option></select></label>
           <label class="field">Seed<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">New seed</button></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Seed baru</button></label>
         </div>
-        <p class="note">The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.</p>
+        <p class="note">Seed yang sama akan menghasilkan susunan yang sama. Acak ulang atau kunci tiap baris dari daftar di sebelah kiri.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include techniques, styles and fonts marked New in automatic picks.</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include techniques and styles marked JP in automatic picks. Manual selections remain available.</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Sertakan efek baru<small>Sertakan teknik, gaya, dan font bertanda Baru dalam pilihan otomatis.</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Sertakan motif Jepang<small>Sertakan teknik dan gaya bertanda JP dalam pilihan otomatis. Pilihan manual per baris tetap bisa digunakan.</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter techniques by name" style="flex:1" aria-label="Filter techniques by name"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter teknik berdasarkan nama" style="flex:1" aria-label="Filter teknik berdasarkan nama"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">Aspect ratio<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-          <label class="field">Resolution<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">Rasio aspek<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 tegak</option><option value="4:3">4:3</option><option value="3:4">3:4 tegak</option><option value="1:1">1:1</option><option value="4:5">4:5 tegak</option><option value="21:9">21:9</option></select></label>
+          <label class="field">Resolusi<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">Quality<select id="outQuality"><option value="standard">Standard</option><option value="high">High</option><option value="max">Maximum</option></select></label>
-          <label class="field field-wide">Background<select id="outKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+          <label class="field">Kualitas<select id="outQuality"><option value="standard">Standar</option><option value="high">Tinggi</option><option value="max">Maksimum</option></select></label>
+          <label class="field field-wide">Latar<select id="outKey"><option value="off">Latar gaya</option><option value="green">Green screen (komposit)</option><option value="black">Latar hitam (komposit)</option></select></label>
         </div>
-        <p class="note key-note">Green screen and black background render white text and effects over a solid color, without background patterns, paper texture, particles or vignette. The preview shows the export. Use a chroma key for green or Screen blending / a luma key for black to composite over footage.</p>
-        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span></label>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Include audio in video</label>
-        <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">Green screen dan latar hitam hanya menampilkan teks putih dan efek di atas warna solid, tanpa pola latar, tekstur kertas, partikel, atau vignette. Pratinjau juga mengikuti pengaturan ini. Gunakan chroma key untuk green screen, atau mode campur Screen / luma key untuk latar hitam agar bisa ditumpuk di atas video lain.</p>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span></label>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Sertakan audio dalam video</label>
+        <div class="rng-row"><span class="rng-lab">Rentang ekspor</span><select class="rngFrom" aria-label="Baris pertama rentang ekspor"></select><span class="muted">〜</span><select class="rngTo" aria-label="Baris terakhir rentang ekspor"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">Export MP4</button>
-          <button id="btnMP4File" class="mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">MP4 (large videos, save straight to a file)</button>
-          <button id="btnPNG">PNG sequence (ZIP)</button>
-          <button id="btnPNGA">Transparent PNG (ZIP)</button>
-          <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
+          <button id="btnMP4" class="primary">Ekspor MP4</button>
+          <button id="btnMP4File" class="mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">MP4 (video besar, simpan langsung ke file)</button>
+          <button id="btnPNG">PNG berurutan (ZIP)</button>
+          <button id="btnPNGA">PNG transparan (ZIP, tanpa latar)</button>
+          <button id="btnPNGL" title="Ekspor PNG transparan ke dua folder: back/ (grafik latar dan dekorasi di belakang lirik) serta front/ (lirik, dekorasi, dan efek ghost). Efek layar diterapkan ke keduanya, jadi tumpuk front di atas back untuk mendapatkan tampilan normal.">Layer PNG transparan (ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Batal</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">Rights and licenses for exported videos and images</button>
-        <p class="note" id="codecNote">Export runs in your browser (Chrome or Edge recommended).</p>
+        <button class="terms-open linkish" style="margin-top:10px">Hak dan lisensi video serta gambar yang diekspor</button>
+        <p class="note" id="codecNote">Ekspor diproses di browser ini (disarankan Chrome atau Edge).</p>
       </div>
     </section>
   </main>
@@ -640,33 +640,33 @@ button.small.primary { padding: 4px 12px; }
 
 <dialog id="resetDlg" class="terms" aria-labelledby="resetTitle">
   <form method="dialog">
-    <h2 id="resetTitle">Reset</h2>
-    <p>This clears everything below and starts over. <strong>It cannot be undone.</strong></p>
+    <h2 id="resetTitle">Atur ulang</h2>
+    <p>Semua hal di bawah ini akan dihapus dan editor kembali ke keadaan awal. <strong>Tindakan ini tidak bisa diurungkan.</strong></p>
     <ul class="reset-list">
-      <li>Lyrics, song title and artist</li>
-      <li>The loaded song (including the copy kept in this browser)</li>
-      <li>Timing, per-line settings and export range</li>
-      <li>Style, motion, palette, fonts and other settings</li>
-      <li>Variation history (◀ ▶) and the lyrics / timing undo history</li>
+      <li>Lirik, judul lagu, dan artis</li>
+      <li>Lagu yang dimuat (termasuk salinan yang disimpan di browser ini)</li>
+      <li>Waktu, pengaturan per baris, dan rentang ekspor</li>
+      <li>Gaya, efek, palet, font, dan pengaturan lainnya</li>
+      <li>Riwayat variasi (◀ ▶) dan riwayat Urungkan untuk lirik / waktu</li>
     </ul>
-    <p class="terms-sub">Simple / Advanced mode, preview volume and the interface language stay as they are. Saved project files (.json) are not affected.</p>
-    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Cancel</button><button value="reset" class="danger">Reset</button></span></div>
+    <p class="terms-sub">Mode editor (Sederhana / Lanjutan), volume pratinjau, dan bahasa antarmuka tidak berubah. File proyek yang sudah disimpan (.json) juga tidak terhapus.</p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Batal</button><button value="reset" class="danger">Atur ulang</button></span></div>
   </form>
 </dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">About / rights</h2>
+    <h2 id="termsTitle">Tentang dan hak</h2>
     <div class="terms-main">
-      <p class="terms-big">You own the <strong>videos and images you create</strong>.</p>
-      <p class="terms-sub">Lyrics and music remain the property of their respective rights holders.</p>
+      <p class="terms-big">Hak atas<strong>video dan gambar yang kamu buat</strong>menjadi milik pembuatnya.</p>
+      <p class="terms-sub">Lirik dan musik yang dipakai tetap menjadi milik pemegang haknya masing-masing.</p>
     </div>
-    <p>The tool is released under the <strong>MIT license</strong>. See the license at:</p>
+    <p>Aplikasi ini dirilis di bawah <strong>MIT lisensi</strong>. Lihat lisensi lengkapnya di sini:</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">Your lyrics and audio are processed in this browser and are not sent to a server.</p>
-    <details class="terms-oss"><summary>Open source software</summary>
-      <p>MP4 export: mp4-muxer（MIT License）<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">Lirik dan audio yang kamu masukkan diproses hanya di browser ini dan tidak dikirim ke server.</p>
+    <details class="terms-oss"><summary>Perangkat lunak open source</summary>
+      <p>Ekspor MP4: mp4-muxer（MIT License）<br>Font: Google Fonts font yang didistribusikan（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Close</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Tutup</button></div>
   </form>
 </dialog>
 
@@ -5004,22 +5004,22 @@ J.exportMP4 = async (o) => {
   const [w, h] = J.outputSize(project);
   const fps = plan.fps, bitrate = J.videoBitrate(w, h, fps, quality);
   const attempts = await J.videoAttempts(w, h, fps, bitrate);
-  if (!attempts.length) throw new Error('Video encoding (WebCodecs) is unavailable. Open in the latest Chrome or Edge.');
+  if (!attempts.length) throw new Error('Encoding video (WebCodecs) tidak tersedia. Buka di Chrome atau Edge terbaru.');
   const tried = [];
   for (let k = 0; k < attempts.length; k++) {
     const vc = attempts[k];
     try {
       if (file && k > 0) { await file.seek(0); await file.truncate(0); }
-      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, retry in software ${k})` : '' }));
+      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, coba ulang dengan perangkat lunak ${k})` : '' }));
       r.tried = tried; return r;
     } catch (e) {
-      if (signal && signal.aborted) throw new Error('Canceled');
+      if (signal && signal.aborted) throw new Error('Dibatalkan');
       if (e && e.jzFatal) throw e;
       tried.push(`${vc.label}/${vc.hw}: ${e && e.message ? e.message : e}`);
       console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
     }
   }
-  const err = new Error('Could not export the MP4: ' + (file ? '' : 'use “For large videos (save straight to a file)”, or ') + 'try a lower resolution, fps or quality. Details: ' + tried.join(' ／ '));
+  const err = new Error('MP4 tidak bisa diekspor: ' + (file ? '' : 'gunakan “Untuk video besar (simpan langsung ke file)”, atau ') + 'coba resolusi, fps, atau kualitas yang lebih rendah. Detail: ' + tried.join(' ／ '));
   err.detail = tried; throw err;
 };
 async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
@@ -5045,16 +5045,16 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
   const closeEnc = () => { try { if (venc.state !== 'closed') venc.close(); } catch (e) {} };
   try {
     for (let i = 0; i < total; i++) {
-      if (signal && signal.aborted) { closeEnc(); throw new Error('Canceled'); }
+      if (signal && signal.aborted) { closeEnc(); throw new Error('Dibatalkan'); }
       if (err) throw err;
-      if (venc.state === 'closed') throw new Error('The encoder stopped');
+      if (venc.state === 'closed') throw new Error('Encoder berhenti');
       R.frame(ctx, plan, span.t0 + i / fps, { scale });
       const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
       let spins = 0;
-      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('The encoder stopped responding'); }
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('Encoder tidak merespons'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
-      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('The encoder returned no output'); }
+      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('Encoder tidak mengeluarkan hasil'); }
       if (i % 3 === 0) { onProgress && onProgress(i / total, `Frame ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
     }
     await venc.flush();
@@ -5062,9 +5062,9 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
   } catch (e) { closeEnc(); throw e; }
   finally { J.glyphs.maxRes = prevRes; }
   closeEnc();
-  if (outFrames < total * 0.98) throw new Error(`Frames are missing (${outFrames}/${total})`);
+  if (outFrames < total * 0.98) throw new Error(`Frame kurang (${outFrames}/${total})`);
   if (ac) {
-    onProgress && onProgress(0.99, 'Encoding audio');
+    onProgress && onProgress(0.99, 'Mengodekan audio');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0, aErr = null;
@@ -5082,16 +5082,16 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
     }
     await aenc.flush(); aenc.close();
     const fatal = m => { const e = new Error(m); e.jzFatal = true; return e; };    // audio problems: another video encoder won't help
-    if (aErr) throw fatal('Audio encoding failed: ' + (aErr.message || aErr));
+    if (aErr) throw fatal('Encoding audio gagal: ' + (aErr.message || aErr));
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Audio encoding stopped partway (' + aChunks + '). Please export again');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Encoding audio berhenti di tengah (' + aChunks + '). Silakan ekspor lagi');
   }
-  onProgress && onProgress(0.995, 'Finishing the file');
+  onProgress && onProgress(0.995, 'Menyelesaikan file');
   muxer.finalize();
   if (file) await file.close();
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, 'Selesai');
   const size = file ? null : store.end;
-  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (software)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (perangkat lunak)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
 }
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
@@ -5133,7 +5133,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('Canceled');
+    if (signal && signal.aborted) throw new Error('Dibatalkan');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -5142,7 +5142,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, 'Selesai');
   return zip.finish();
 };
 
@@ -29962,6 +29962,14 @@ J.randomOk = (project, g, k) => {
   J.SAMPLE_LYRICS = 'I remember/the color of dawn\nA voice faded into the distance\nCan we still make it in time?\n*Transparent* is not how this ends!';
 })();
 
+(() => {
+  const S = {"noir": ["Noir Kromatik", "Hitam-putih dengan pergeseran warna sian dan amber"], "crimson": ["Sinyal Crimson", "Merah tua, font monokrom, dan data yang rusak"], "caution": ["Peringatan", "Kuning, merah, biru, dan grafis panel instrumen"], "magenta": ["Pop Magenta", "Merah muda terang, font bulat tebal, dan garis penunjuk"], "paper": ["Kertas dan Tinta", "Tekstur kertas, nila, magenta, dan bayangan serif"], "hud": ["HUD Gelap", "Arang, bingkai tipis, aksen oranye, dan gerhana"], "mint": ["Terminal Mint", "Hitam, teal, limau, dan efek pemindaian"], "specimen": ["Spesimen Tipografi", "Latar warna tinta dengan anotasi serif"], "transit": ["Transit", "Zaitun dan kuning, rambu petunjuk, dan halftone"], "blueprint": ["Blueprint", "Kolase grafis biru, putih, dan hitam"], "rouge": ["Gradien Rouge", "Gradien abu-abu terang dan merah dengan bentuk kapsul"], "mono": ["Mono RGB", "Ruang abu-abu, serif putih, dan pemisahan RGB yang kuat"], "sakura": ["Sakura", "Merah muda sakura lembut dan ungu plum, dengan font bulat dan serif"], "ocean": ["Laut Dalam", "Navy, sian bercahaya, gelembung, dan sans-serif tipis"], "sunset": ["Gradien Senja", "Gradien oranye ke ungu, serif tebal, dan cahaya dari belakang"], "forest": ["Catatan Hutan", "Hijau lumut, kertas natural, dan tulisan pensil"], "vapor": ["Vaporwave", "Merah muda dan biru pastel dengan pendar VHS"], "newsprint": ["Kertas Koran", "Kertas abu-abu, hitam dan merah, halftone, dan salah cetak"], "synth80": ["Synth 80-an", "Latar hitam dengan magenta dan sian neon serta garis pindai"], "kraft": ["Kertas Kraft", "Kertas hangat, cap merah dan nila, serta selotip kertas"], "candy": ["Permen", "Warna mint dan pastel buah dengan huruf yang memantul"], "acid": ["Acid", "Hitam, hijau acid, dan magenta dengan font kasar"], "sumi": ["Tinta dan Shu", "Kertas Jepang, kaligrafi kuas, dan cap merah"], "gold": ["Malam Emas", "Hitam pekat, foil emas, serif gading, dan kilau"]};
+  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
+  const M = {"glitch": "Glitch", "calm": "Tenang", "pop": "Pop", "graphic": "Grafis", "editorial": "Editorial", "emotional": "Emosional", "chaos": "Bebas"};
+  for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
+  J.SAMPLE_LYRICS = "Aku masih ingat/warna fajar\nSuara yang terurai terdengar jauh\nHei, masih sempatkah?\nTak bisa berakhir dalam keadaan *transparan*!";
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -29983,9 +29991,9 @@ const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), 
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
-  line: { ja: 'line ループ', en: 'Line loop', titleJa: 'このline を繰り返し', titleEn: 'Loop this line' },
-  cut:  { ja: 'cutsループ', en: 'Cut loop', titleJa: 'このcutsを繰り返し', titleEn: 'Loop this cut' },
-  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返しNone', titleEn: 'No loop' },
+  line: { ja: 'baris ループ', en: 'Line loop', titleJa: 'このbaris を繰り返し', titleEn: 'Loop this line' },
+  cut:  { ja: 'cutループ', en: 'Cut loop', titleJa: 'このcutを繰り返し', titleEn: 'Loop this cut' },
+  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返しTidak ada', titleEn: 'No loop' },
 };
 const isEn = () => document.documentElement.lang === 'en';
 function cutAround(t) {
@@ -30055,7 +30063,7 @@ function initVolume() {
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muted' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Suara mati' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
@@ -30079,7 +30087,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="Added after the original release">New</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Japanese motifs">JP</span>' : '');
+  return (d && d.extra ? '<span class="set-badge ex" title="Ditambahkan setelah rilis awal">Baru</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Motif Jepang">JP</span>' : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -30098,7 +30106,7 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* Auto判定のとき、判定結果を言語欄の横に出す */
+/* Otomatis判定のとき、判定結果を言語欄の横に出す */
 function langNote() {
   const el = $('langNote'); if (!el) return;
   el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
@@ -30149,7 +30157,7 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('Loading fonts…');
+  showMsg('Memuat font…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
@@ -30219,12 +30227,12 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Pause');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Jeda');
   refreshLoopHold();
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Play'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Putar'); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -30352,8 +30360,8 @@ function bindFollow() {
 
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
-  ['layout', 'l', 'Layout'], ['enter', 'e', 'Entrance'], ['hold', 'h', 'Hold'], ['exit', 'x', 'Exit'],
-  ['decor', '', 'Decoration'], ['treat', 't', 'Treatment'], ['bg', 'b', 'Background'], ['cam', 'c', 'Camera'], ['trans', 'c', 'Transition'],
+  ['layout', 'l', 'Layout'], ['enter', 'e', 'Masuk'], ['hold', 'h', 'Tahan'], ['exit', 'x', 'Keluar'],
+  ['decor', '', 'Dekorasi'], ['treat', 't', 'Perlakuan'], ['bg', 'b', 'Latar'], ['cam', 'c', 'Kamera'], ['trans', 'c', 'Transisi'],
 ];
 const cutPick = { g: null, line: -1, k: -1 };
 let lastCutIdx = -2;
@@ -30403,7 +30411,7 @@ function cutGroupVal(cut, g) {
   return '';
 }
 function groupName(g, k) {
-  if (!k) return 'None';
+  if (!k) return 'Tidak ada';
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
@@ -30431,7 +30439,7 @@ function rerollCurrentCut(kind) {
   if (S.exporting || S.tap) return;
   const cut = J.cutAt(S.plan, S.t);
   const k = lyricCutK(cut);
-  if (!cut || k < 0) { toast('この位置のcutsは抽選できません'); return; }
+  if (!cut || k < 0) { toast('この位置のcutは抽選できません'); return; }
   remember();
   const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
   const groups = kind === 'omakase'
@@ -30448,7 +30456,7 @@ function rerollCurrentCut(kind) {
   replan();
   commit();
   seek(t0);
-  toast(kind === 'omakase' ? 'このcutsをおまかせ' : 'このcutsをシャッフル');
+  toast(kind === 'omakase' ? 'このcutをおまかせ' : 'このcutをシャッフル');
 }
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
@@ -30458,7 +30466,7 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">No cut at this position</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">Tidak ada cut di posisi ini</span>'; closeCutPick(); return; }
   const k = lyricCutK(cut);
   const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
   const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
@@ -30467,8 +30475,8 @@ function updateCutInfo() {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
-  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このcutsだけArrangementを再抽選">シャッフル</button>`);
-  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このcutsだけ手法をRandomに">おまかせ</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このcutだけSusunanを再抽選">シャッフル</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このcutだけ手法をAcakに">おまかせ</button>`);
   el.innerHTML = bits.join('');
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
@@ -30515,7 +30523,7 @@ function fillCutPick() {
     const none = document.createElement('button');
     none.type = 'button';
     none.className = 'tcard' + (forced === 'none' ? ' is-on' : '');
-    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>None</span></span>';
+    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>Tidak ada</span></span>';
     none.addEventListener('click', () => { setCutTech(cutPick.line, cutPick.k, g, 'none'); replan(); });
     grid.appendChild(none);
   }
@@ -30543,25 +30551,25 @@ function fillCutPick() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
-  const layoutOpts = '<option value="">Auto</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
-  const cutOpts = '<option value="">Cuts: auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cuts: ${n}</option>`).join('');
+  const layoutOpts = '<option value="">Otomatis</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const cutOpts = '<option value="">Cut: otomatis</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cut: ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
     const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Start (s)${manual ? ' · manual' : ' · automatic'}" aria-label="Line ${i + 1} start time (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Mulai (dtk)${manual ? ' · manual' : ' · otomatis'}" aria-label="Waktu mulai baris ${i + 1} (dtk)" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="Edit this line’s lyrics" aria-label="Edit the lyrics of line ${i + 1}">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="Number of cuts in line ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout">${layoutOpts}</select>`}
-        <button class="icon ghost tapfrom" title="Tap sync again from this line" aria-label="Tap sync from line ${i + 1}">${ICON.tap}</button>
-        <button class="icon ghost rng" title="Set as the export range (Shift+click extends it)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Export line ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Reroll this line">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Lock this line" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="Edit lirik di baris ini" aria-label="Edit lirik baris ke-${i + 1}">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="Jumlah cut di baris ${i + 1}">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Pilih layout">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="Sinkronkan ulang dengan ketukan mulai dari baris ini" aria-label="Sinkronkan dengan ketukan mulai baris ${i + 1}">${ICON.tap}</button>
+        <button class="icon ghost rng" title="Jadikan rentang ekspor (Shift+klik untuk memperluas rentang)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Ekspor baris ${i + 1}">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Acak ulang baris ini">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Kunci susunan baris ini" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) q('.lay').value = o.layout || '';
@@ -30595,7 +30603,7 @@ function renderLines() {
       sel.innerHTML = layoutOpts;
       sel.value = forced || c.layout;
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sel.setAttribute('aria-label', `${i + 1}line 目 cuts${k + 1}のLayout`);
+      sel.setAttribute('aria-label', `${i + 1}baris 目 cut${k + 1}のLayout`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
@@ -30603,11 +30611,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length} lines / ${S.plan.cuts.length} cuts`;
+  $('linesInfo').textContent = `${S.plan.lines.length} baris / ${S.plan.cuts.length} cut`;
   syncRangeUI();
 }
 
-/* ---------------- line から歌詞を直す ---------------- */
+/* ---------------- baris から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -30615,8 +30623,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lyrics of line ${ln.index + 1}`);
-  inp.title = 'Lyric syntax works here too (/ cut, *emphasis*, final !, | note, [interlude 8]). Enter to apply, Esc to cancel';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lirik baris ${ln.index + 1}`);
+  inp.title = 'Sintaks lirik juga bisa dipakai di sini (/ potong, *penekanan*, ! di akhir, | catatan, [interlude 8]). Enter untuk menerapkan, Esc untuk membatalkan';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -30626,7 +30634,7 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`Line ${ln.index + 1} updated`);
+      replan(); flushSave(); toast(`Baris ${ln.index + 1} diperbarui`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -30647,7 +30655,7 @@ function edGo(d) {
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? 'Undone' : 'Redone');
+  toast(d < 0 ? 'Dibatalkan' : 'Diulang kembali');
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
@@ -30659,7 +30667,7 @@ function clearLyrics() {
   pause();
   P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
-  toast('Lyrics cleared (Undo or Ctrl+Z brings them back)');
+  toast('Lirik dihapus (Urungkan atau Ctrl+Z untuk mengembalikan)');
 }
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
@@ -30675,11 +30683,11 @@ async function resetAll() {
   TL.z = 1; TL.off = 0;
   $('lyrics').value = ''; fontKey = '';
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
-  toast('Reset done');
+  toast('Editor sudah diatur ulang');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだline だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだbaris だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -30701,15 +30709,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `Export range: line ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Export range: whole song');
+  toast(R2 ? `Rentang ekspor: baris ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Rentang ekspor: seluruh lagu');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
   const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Whole song'); el.value = R ? String(R.from) : '-1'; });
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Seluruh lagu'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)}s)` : `Whole song (${S.plan.duration.toFixed(1)}s)`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)} dtk)` : `Seluruh lagu (${S.plan.duration.toFixed(1)} dtk)`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -30772,7 +30780,7 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (efek baru dinonaktifkan untuk pilihan otomatis)' : ' (motif Jepang dinonaktifkan untuk pilihan otomatis)') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
@@ -30785,22 +30793,22 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+  return '<option value="">Bawaan gaya</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', 'Display'], ['serif', 'Serif frame'], ['body', 'Small text']].forEach(([role, label]) => {
+  [['display', 'Tampilan'], ['serif', 'Bingkai serif'], ['body', 'Teks kecil']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
     row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} font">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', 'Background'], ['fg', 'Text'], ['sub', 'Secondary']];
-const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
+const BASE_KEYS = [['bg', 'Latar'], ['fg', 'Teks'], ['sub', 'Sekunder']];
+const ACCENT_KEYS = [['accent', 'Aksen'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -30839,7 +30847,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Palette: changed accent and offset colors', [p.accent, p.ghostA, p.ghostB]);
+  toast('Palet: warna aksen dan offset diubah', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -30865,7 +30873,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} variation`);
+  toast(`${j + 1} / ${H.list.length} variasi`);
   restartPreview();
 }
 function updateHist() {
@@ -30883,7 +30891,7 @@ function omakase() {
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`Randomized: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast(`Diacak: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -30897,14 +30905,14 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `Style：${J.STYLES[P.style].name}`;
+    msg = `Gaya：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
-    msg = `Mood：${J.MOODS[r.mood].name}`;
+    msg = `Suasana：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = 'Arrangement: rerolled layout and motion';
+    msg = 'Susunan: layout dan gerakan diacak ulang';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -30913,18 +30921,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Custom';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Kustom';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('Style', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('Mood', escapeHtml(moodName))
-    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Random</span>' : ''}`)
-    + row('Display font', escapeHtml(fontName))
-    + row('Arrangement', `${cuts.length} cuts · Layout ${kinds} types`)
-    + row('Effects', `Treatment ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Background ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Camera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row('Gaya', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
+    + row('Suasana', escapeHtml(moodName))
+    + row('Palet', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Acak</span>' : ''}`)
+    + row('Font tampilan', escapeHtml(fontName))
+    + row('Susunan', `${cuts.length} cut · Layout ${kinds} jenis`)
+    + row('Efek', `Perlakuan ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Latar ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} jenis · Kamera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -30949,7 +30957,7 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Motion strength'], ['glitch', 'Glitch'], ['chroma', 'Color offset'], ['decor', 'Decoration amount'], ['density', 'Cut density'], ['texture', 'Texture'], ['bgSwitch', 'Background changes']];
+const FX = [['motion', 'Kekuatan gerakan'], ['glitch', 'Glitch'], ['chroma', 'Pergeseran warna'], ['decor', 'Jumlah dekorasi'], ['density', 'Kerapatan cut'], ['texture', 'Tekstur'], ['bgSwitch', 'Perubahan latar']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -30967,7 +30975,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'Layout'], ['enter', 'Entrance'], ['hold', 'Hold'], ['exit', 'Exit'], ['decor', 'Decoration'], ['treat', 'Text treatments'], ['bg', 'Background'], ['cam', 'Camera'], ['fx', 'Screen effects'], ['trans', 'Transitions']];
+const GROUPS = [['layout', 'Layout'], ['enter', 'Masuk'], ['hold', 'Tahan'], ['exit', 'Keluar'], ['decor', 'Dekorasi'], ['treat', 'Efek teks'], ['bg', 'Latar'], ['cam', 'Kamera'], ['fx', 'Efek layar'], ['trans', 'Transisi']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 
@@ -31071,7 +31079,7 @@ function renderTech() {
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">All on</button><button class="ghost small" data-a="off">All off</button><button class="ghost small" data-a="flip">Invert</button></div>`;
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">Semua aktif</button><button class="ghost small" data-a="off">Semua nonaktif</button><button class="ghost small" data-a="flip">Balikkan</button></div>`;
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
@@ -31080,7 +31088,7 @@ function renderTech() {
       const l = document.createElement('label');
       l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)'; }
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (efek baru dinonaktifkan untuk pilihan otomatis)' : ' (motif Jepang dinonaktifkan untuk pilihan otomatis)'; }
       l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
       const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
@@ -31111,15 +31119,15 @@ function syncOut() {
   $('outCenter').checked = $('eCenter').checked = !!S.project.centerFree;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Black background'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Latar hitam'}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `This browser exports with ${vc.label} at (${w}×${h} / ${S.project.fps}fps). Keep this tab open during export.` : 'Video encoding (WebCodecs) is unavailable here. Try the latest Chrome or Edge, or export a PNG sequence.';
+  $('codecNote').textContent = vc ? `Browser ini mengekspor dengan ${vc.label} pada (${w}×${h} / ${S.project.fps}fps). Biarkan tab ini tetap terbuka selama ekspor.` : 'Browser ini tidak mendukung encoding video (WebCodecs). Coba Chrome atau Edge terbaru, atau ekspor sebagai urutan PNG.';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
-  if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
+  if (!vc) $('eMP4').title = 'Browser ini tidak mendukung ekspor MP4 (disarankan Chrome atau Edge)';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
 function baseName() {
@@ -31135,7 +31143,7 @@ async function runExport(kind) {
     try {
       const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('Could not open the file: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('Tidak bisa membuka file tujuan: ' + (e && e.message ? e.message : e)); return; }
   }
   pause();
   const ac = new AbortController(); S.exporting = ac;
@@ -31143,7 +31151,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('Preparing…');
+  setText('Menyiapkan…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -31153,20 +31161,20 @@ async function runExport(kind) {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
-      txt.textContent = `Done: ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
+      txt.textContent = `Selesai: ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}dtk`;
       if (r.blob) {
         const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-        if (res === 'declined') txt.textContent += ' (save canceled)';
-      } else txt.textContent += ` · saved to “${fileName}”`;
-      if (r.tried && r.tried.length) txt.textContent += ' (the first method failed, so another encoder was used)';
+        if (res === 'declined') txt.textContent += ' (penyimpanan dibatalkan)';
+      } else txt.textContent += ` · disimpan ke “${fileName}”`;
+      if (r.tried && r.tried.length) txt.textContent += ' (cara pertama gagal, jadi dipakai encoder lain)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '. This browser encodes audio as Opus, which iPhone, QuickTime and some players cannot play, so the audio was also saved as WAV' : '. This browser cannot encode audio, so the audio was saved separately as WAV (combine it in a video editor)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. No song is loaded, so the video has no audio (load the song again with “Load song”)';
+        txt.textContent += r.audio ? '. Browser ini menyimpan audio dalam format Opus, yang mungkin tidak diputar di iPhone, QuickTime, atau pemutar tertentu. Karena itu, audio juga disimpan sebagai WAV' : '. Browser ini tidak bisa mengodekan audio, jadi audio disimpan terpisah sebagai WAV (gabungkan di editor video)';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. Tidak ada lagu yang dimuat, jadi video tidak memiliki audio (muat lagi lewat “Impor audio”)';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `Done: ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `Selesai: ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
@@ -31193,7 +31201,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  if (from > 0) toast(`Sinkronkan mulai dari baris ${from + 1} (pemutaran dimulai dari ${J.fmtTime(t0)})`);
 }
 function tapNow() {
   if (!S.tap) return;
@@ -31225,7 +31233,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'None';
+  $('bpm').placeholder = S.audio ? `Otomatis ${S.audio.bpm}` : 'Tidak ada';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -31244,7 +31252,7 @@ function bind() {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? 'Lyrics language: auto-detect → ' : 'Lyrics language: ') + J.LANG_LABEL[l]);
+    toast((S.project.lang === 'auto' ? 'Bahasa lirik: deteksi otomatis → ' : 'Bahasa lirik: ') + J.LANG_LABEL[l]);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -31319,10 +31327,10 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, 'New effects: on', 'New effects: off (original set only)');
-  setSwitch('wa-toggle', 'wa', true, 'Japanese motifs: on', 'Japanese motifs: off for random picks');
-  setSwitch('unify-toggle', 'unify', true, 'Unified look: on (parts match; hits, morphs and weight too)', 'Unified look: off');
-  setSwitch('typeset-toggle', 'typeset', true, 'Typesetting: on (spacing, particles, Latin, 0.2 s lead, fewer effects)', 'Typesetting: off');
+  setSwitch('extra-toggle', 'extra', true, 'Efek baru: aktif', 'Efek baru: nonaktif (hanya set awal)');
+  setSwitch('wa-toggle', 'wa', true, 'Motif Jepang: aktif', 'Motif Jepang: nonaktif untuk pilihan acak');
+  setSwitch('unify-toggle', 'unify', true, 'Tampilan seragam: aktif (bagian seragam; klimaks, morf, dan ketebalan juga dipakai)', 'Tampilan seragam: nonaktif');
+  setSwitch('typeset-toggle', 'typeset', true, 'Penataan teks: aktif (jarak, partikel, Latin, 0,2 detik lebih awal, efek secukupnya)', 'Penataan teks: nonaktif');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -31340,15 +31348,15 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (installed)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installed)', family: name, weight }]);
+    J.addUserFont(key, name + ' (terpasang)', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (terpasang)', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
-    catch (err) { showMsg('Could not load the font'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Font tidak dapat dimuat'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -31357,13 +31365,13 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `Background：${k === 'green' ? 'Green screen' : 'Black background'}（white text and effects only）` : 'Background：Style colors');
+    toast(k ? `Latar：${k === 'green' ? 'Green screen' : 'Latar hitam'}（hanya teks putih dan efek）` : 'Latar：Warna gaya');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
     const tall = S.plan.H > S.plan.W * 1.1;
-    toast(e.target.checked ? `Centre kept free: lyrics and effects go ${tall ? 'top / bottom' : 'left / right'}` : 'Centre no longer kept free');
+    toast(e.target.checked ? `Bagian tengah dikosongkan: teks dan efek ditempatkan di ${tall ? 'atas / bawah' : 'kiri / kanan'}` : 'Bagian tengah tidak lagi dikosongkan');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
@@ -31394,14 +31402,14 @@ function bind() {
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Clear lyrics, song, settings and history and start over? This cannot be undone.')) resetAll(); return; }
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Hapus lirik, lagu, pengaturan, dan riwayat, lalu mulai dari awal? Tindakan ini tidak bisa diurungkan.')) resetAll(); return; }
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('Could not open the project'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Proyek gagal dibuka'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -31425,27 +31433,27 @@ function bind() {
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 async function loadAudioFile(f, restored) {
-  $('audioName').textContent = 'Analyzing audio…';
+  $('audioName').textContent = 'Menganalisis audio…';
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · about ${S.audio.bpm}BPM）` + (restored ? ' · last song' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · sekitar ${S.audio.bpm}BPM）` + (restored ? ' · lagu terakhir' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = 'Could not load: ' + err.message; S.audio = null; return false; }
+  } catch (err) { $('audioName').textContent = 'Tidak dapat memuat: ' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. Enter lyrics', text: 'One line is one phrase. A blank line adds a short pause; [interlude 8] makes an 8-second instrumental part (background and decorations only).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Load the song', text: 'Load an mp3 or similar file: JIZURA finds the beats and times the cuts to them. It also works without a song. “Tap to sync” lets you mark where each line starts.' },
-  { t: () => $('btnOmakaseBig'), title: '3. Create a variation', text: 'Style, mood, motion, palette and arrangement are chosen for you. Each press makes a new variation; “◀ Previous” goes back.' },
-  { t: () => $('btnPlay'), title: '4. Play it', text: 'Play it back. On the timeline below you can drag the line markers (+ and − zoom).' },
-  { t: () => $('lineList'), title: '5. Fix single lines', text: 'For each line you can edit the lyrics (✎), set the number of cuts, redo tap sync from that line (◎) or reroll just that line (dice).' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Export', text: 'Choose the aspect ratio (such as vertical 9:16) and resolution, then export MP4. “Export range” exports only the lines you pick.' },
+  { t: () => $('lyrics'), title: '1. Masukkan lirik', text: 'Satu baris menjadi satu frasa. Baris kosong memberi jeda singkat; [interlude 8] membuat bagian instrumental 8 detik (hanya latar dan dekorasi).' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Impor lagu', text: 'Impor mp3 atau file sejenis: JIZURA mencari ketukan dan menyesuaikan pergantian cut. Kamu juga bisa bekerja tanpa lagu. “Sinkronkan ke ketukan” bisa dipakai untuk menandai awal tiap baris.' },
+  { t: () => $('btnOmakaseBig'), title: '3. Buat variasi', text: 'Gaya, suasana, gerakan, palet, dan susunan dipilih otomatis. Setiap klik membuat variasi baru; “◀ Sebelumnya” untuk kembali.' },
+  { t: () => $('btnPlay'), title: '4. Putar untuk mengecek', text: 'Coba putar hasilnya. Di timeline bawah, marker baris bisa digeser dengan drag (＋− untuk zoom).' },
+  { t: () => $('lineList'), title: '5. Perbaiki baris tertentu', text: 'Untuk tiap baris, kamu bisa mengedit lirik (✎), mengatur jumlah cut, mengulang sinkronisasi dari baris ini (◎), atau mengacak ulang baris ini saja (dadu).' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Ekspor', text: 'Pilih rasio aspek (misalnya tegak 9:16) dan resolusi, lalu ekspor MP4. “Rentang ekspor” juga bisa dipakai untuk mengekspor baris yang dipilih saja.' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -31458,7 +31466,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Start' : 'Next';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Mulai' : 'Berikutnya';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();

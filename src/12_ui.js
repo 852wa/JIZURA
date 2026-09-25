@@ -197,11 +197,16 @@ function loadThumbFonts() {
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
 /* ---------------- viewport & drawing ---------------- */
+// 固定表示: on wide & tall windows the page itself doesn't scroll (see style.css html.fixed-ok)
+const FIXED_MQ = window.matchMedia ? window.matchMedia('(min-width: 1181px) and (min-height: 620px)') : null;
+document.documentElement.classList.add('fixed-ok');
+function fixedLayout() { return !!(FIXED_MQ && FIXED_MQ.matches) && document.documentElement.classList.contains('fixed-ok'); }
 function sizeViewport() {
   const vp = $('viewport'), c = $('view');
   const ar = S.plan.W / S.plan.H;
   let cssW = vp.clientWidth || 800, cssH = cssW / ar;
-  const maxH = Math.max(220, window.innerHeight * 0.68);
+  // fixed workspace: the viewport gets whatever height is left under the header / above the transport and timeline
+  const maxH = fixedLayout() ? Math.max(160, vp.clientHeight - 2) : Math.max(220, window.innerHeight * 0.68);
   if (cssH > maxH) { cssH = maxH; cssW = cssH * ar; }
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
@@ -209,10 +214,20 @@ function sizeViewport() {
   c.style.width = cssW + 'px'; c.style.height = cssH + 'px';
   S.need = true;
 }
+// preview only: dotted outline of the centre that 中央を空ける keeps free (never in exports)
+function drawCenterGuide(ctx, k) {
+  const P = S.plan, z = P.zones; if (!z) return;
+  const r = z[0].side === 'left' ? [z[0].w, 0, P.W - z[0].w - z[1].w, P.H] : [0, z[0].h, P.W, P.H - z[0].h - z[1].h];
+  ctx.save(); ctx.setTransform(k, 0, 0, k, 0, 0);
+  ctx.setLineDash([14, 10]); ctx.lineWidth = 2 / k * 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.strokeRect(r[0] + 4, r[1] + 4, r[2] - 8, r[3] - 8);
+  ctx.setLineDash([]); ctx.restore();
+}
 function draw() {
   const c = $('view'), ctx = c.getContext('2d');
   const t0 = performance.now();
   S.renderer.frame(ctx, S.plan, S.t, { scale: c.width / S.plan.W, fast: S.playing && S.slow });
+  if (S.plan.centerFree) drawCenterGuide(ctx, c.width / S.plan.W);
   const dt = performance.now() - t0;
   S.slow = S.playing ? (dt > 30 ? true : dt < 14 ? false : S.slow) : false;
   updateTimeUI(); drawTimeline(); updateCutInfo();
@@ -354,6 +369,23 @@ function tlDragTo(i, ev) {
   replan(); seek(t + 0.001);
 }
 
+/* ---------------- keep the playing line in view (the list scrolls inside its column) ---------------- */
+let listTouched = 0;
+function followLine(li) {
+  if (!S.playing || li < 0 || !fixedLayout()) return;
+  if (performance.now() - listTouched < 2500) return;                       // the user is scrolling the list
+  const el = S.lineEls[li], col = el && el.closest('.col-left');
+  if (!el || !col || col.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  const r = el.getBoundingClientRect(), c = col.getBoundingClientRect();
+  if (r.top >= c.top + 8 && r.bottom <= c.bottom - 8) return;
+  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - c.height * 0.3, behavior: 'smooth' });
+}
+function bindFollow() {
+  const col = document.querySelector('.col-left'); if (!col) return;
+  const touch = () => { listTouched = performance.now(); };
+  col.addEventListener('wheel', touch, { passive: true }); col.addEventListener('touchmove', touch, { passive: true }); col.addEventListener('pointerdown', touch);
+}
+
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
   ['layout', 'l', 'レイアウト'], ['enter', 'e', '登場'], ['hold', 'h', '保持'], ['exit', 'x', '退場'],
@@ -458,7 +490,7 @@ function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
   const idx = cut ? cut.index : -1;
   const li = cut ? cut.line : -1;
-  if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; }
+  if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; followLine(li); }
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
@@ -645,11 +677,41 @@ function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s)
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
   if (!from.length) return;
-  to.push(edSnap());
-  const o = JSON.parse(from.pop());
+  const o = JSON.parse(from.pop()), cur = JSON.parse(edSnap());
+  if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
+  to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
+}
+// 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
+function clearLyrics() {
+  if (S.tap || S.exporting) return;
+  const P = S.project;
+  if (!P.lyrics.trim() && !Object.keys(P.timing.lineTimes || {}).length) { $('lyrics').focus(); return; }
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
+}
+// 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
+let audioNameDefault = '';
+async function resetAll() {
+  if (S.exporting) return;
+  if (S.tap) stopTap();
+  pause();
+  S.project = mergeProject(null); S.project.lyrics = '';
+  S.audio = null; if ($('audioFile')) $('audioFile').value = '';
+  if (J.forgetSong) await J.forgetSong();
+  $('audioName').textContent = audioNameDefault;
+  ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+  TL.z = 1; TL.off = 0;
+  $('lyrics').value = ''; fontKey = '';
+  syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
+  toast('初期化しました');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
@@ -1082,6 +1144,7 @@ function syncOut() {
   $('outQuality').value = S.project.quality || 'high'; $('outAudio').checked = S.project.includeAudio !== false;
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
+  $('outCenter').checked = $('eCenter').checked = !!S.project.centerFree;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
@@ -1091,15 +1154,25 @@ async function codecNote() {
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
   $('codecNote').textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
+  ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
   if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
 }
+const canPickFile = () => typeof window.showSaveFilePicker === 'function' && !document.documentElement.classList.contains('cep') && typeof VideoEncoder !== 'undefined';
 async function runExport(kind) {
   if (S.exporting) return;
+  // 大きな動画用: the save dialog must open straight from the click (before anything is awaited)
+  let file = null, fileName = '';
+  if (kind === 'mp4file') {
+    try {
+      const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
+      file = await hnd.createWritable(); fileName = hnd.name;
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('保存先を開けませんでした: ' + (e && e.message ? e.message : e)); return; }
+  }
   pause();
   const ac = new AbortController(); S.exporting = ac;
   const boxes = [...document.querySelectorAll('.exp-box')];
@@ -1112,12 +1185,16 @@ async function runExport(kind) {
   const t0 = performance.now();
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
-    if (kind === 'mp4') {
+    if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
-      txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB・${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
-      const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      file = null;
+      txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB・' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
+      if (r.blob) {
+        const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
+        if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+      } else txt.textContent += `・「${fileName}」に保存しました`;
+      if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
@@ -1131,6 +1208,7 @@ async function runExport(kind) {
   } catch (e) {
     txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
     console.error(e);
+    if (file) { try { await file.abort(); } catch (e2) {} }
   } finally {
     S.exporting = null; S.need = true;
     EXP_BTNS.forEach(id => { $(id).disabled = false; });
@@ -1189,6 +1267,8 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
@@ -1277,6 +1357,8 @@ function bind() {
   }));
   setSwitch('extra-toggle', 'extra', true, '追加分の演出：使う', '追加分の演出：使わない（最初の公開版の演出だけ）');
   setSwitch('wa-toggle', 'wa', true, '和風の演出：使う', '和風の演出：使わない（おまかせ・シャッフルで選ばれません）');
+  setSwitch('unify-toggle', 'unify', true, '統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）', '統一感：オフ');
+  setSwitch('typeset-toggle', 'typeset', true, '文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）', '文字整列：オフ');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -1314,7 +1396,13 @@ function bind() {
     toast(k ? `背景：${k === 'green' ? 'グリーンバック' : 'ブラックバック'}（白い文字と演出だけ）` : '背景：通常（スタイルの配色）');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
+  ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
+    S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
+    const tall = S.plan.H > S.plan.W * 1.1;
+    toast(e.target.checked ? `中央を空けました：文字と演出を${tall ? '上下' : '左右'}に置きます` : '中央を空けるのをやめました');
+  }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
+  ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
   $('btnPNGL').addEventListener('click', () => runExport('pngl'));
@@ -1338,6 +1426,14 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(S.project, null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  audioNameDefault = $('audioName').textContent;
+  $('btnClearLyrics').addEventListener('click', clearLyrics);
+  $('btnReset').addEventListener('click', () => {
+    const dlg = $('resetDlg');
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) resetAll(); return; }
+    dlg.returnValue = ''; dlg.showModal();
+  });
+  $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
@@ -1352,7 +1448,7 @@ function bind() {
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
-    if (typing || $('termsDlg').open) return;
+    if (typing || $('termsDlg').open || $('resetDlg').open) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
@@ -1360,6 +1456,7 @@ function bind() {
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
+  bindFollow();
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */

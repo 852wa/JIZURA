@@ -760,6 +760,13 @@ function jzPickTreat(rng, st, en, fx, layout, emph, hist) {
     }
     return c.length ? rng.wpick(c) : 'none';
 }
+// side bands (same as the browser's J.sideZones): wide frames left / right, tall frames top / bottom
+function jzSideZones(W, H) {
+    if (H > W * 1.1) { var h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h: h, side: 'top' }, { x: 0, y: H - h, w: W, h: h, side: 'bottom' }]; }
+    var w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
+    return [{ x: 0, y: 0, w: w, h: H, side: 'left' }, { x: W - w, y: 0, w: w, h: H, side: 'right' }];
+}
+function jzZoneOf(zones, li) { var z = zones[Math.max(0, li || 0) % 2]; return { x: z.x, y: z.y, w: z.w, h: z.h, side: z.side }; }
 function jzPickBg(rng, st, en, fx, bgHist) {
     if (!rng.chance(0.2 + 0.35 * fx.decor + 0.2 * fx.bgSwitch)) return 'none';
     var c = [], order = jzOrder('bg'), last = bgHist.slice(Math.max(0, bgHist.length - 3));
@@ -876,8 +883,11 @@ function jzMakePlan(o) {
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
+    // \u4E2D\u592E\u3092\u7A7A\u3051\u308B: cuts laid out in side bands (left / right, or top / bottom on tall frames), alternating per line
+    var zones = o.centerFree ? jzSideZones(W, H) : null;
+    if (zones && en.bg) en.bg.bigChar = false;
     var plan = { version: 2, generator: 'JIZURA-AE', title: title, artist: artist, W: W, H: H, width: W, height: H, fps: o.fps, duration: duration, style: st, styleKey: o.style, fx: fx, lines: [], cuts: [], events: [], hud: fx.hud,
-        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title) };
+        lang: (o.lang && o.lang !== 'auto') ? o.lang : jzDetectLangText(o.lyrics + ' ' + title), centerFree: !!zones, zones: zones };
     jzSetLang(plan.lang);
     var hist = [], bgHist = [], fxHist = [], schemeIdx = 0, nS = st.schemes.length;
     function ev(t, type, amp, dur) { plan.events.push({ t: t, type: type, amp: amp, dur: dur }); }
@@ -917,7 +927,8 @@ function jzMakePlan(o) {
             var u = units[k], cs = bounds[k], ce = bounds[k + 1], dur = ce - cs, nn = jzCount(u.text);
             var emph = (ln.impact && (k === 0 || u.recap));
             for (var q = 0; q < ln.emph.length; q++) if (u.text.indexOf(ln.emph[q]) >= 0) emph = true;
-            var layout = jzPickLayout(rng, st, en, nn, dur, hist, emph, u.recap, portrait);
+            var Z = zones ? jzZoneOf(zones, li) : null, LW = Z ? Z.w : W, LH = Z ? Z.h : H;
+            var layout = jzPickLayout(rng, st, en, nn, dur, hist, emph, u.recap, Z ? LH > LW : portrait);
             var enter = jzPickEnter(rng, st, en, layout, dur, hist, emph, nn);
             var exit = jzPickExit(rng, st, en, layout, dur, k === units.length - 1, hist);
             var hold = jzPickHold(rng, en, fx, hist);
@@ -931,7 +942,7 @@ function jzMakePlan(o) {
             var mOut = jzTab(jzMeta('exit', exit).outDur, dur, nn); if (mOut != null) outDur = mOut;
             if (inDur + outDur > dur * 0.92) { var f = dur * 0.92 / (inDur + outDur); inDur *= f; outDur *= f; }
             var sch = schemeIdx; if (nS > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nS;
-            var params = jzPlanOf('layout', layout, rng, st, { text: u.text, n: nn, W: W, H: H, dur: dur });
+            var params = jzPlanOf('layout', layout, rng, st, { text: u.text, n: nn, W: LW, H: LH, dur: dur });
             var decor = jzPickDecor(rng, st, en, fx, layout, hist);
             var treat = jzPickTreat(rng, st, en, fx, layout, emph, hist), treatP = treat !== 'none' ? jzPlanOf('treat', treat, rng, st) : {};
             if (k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = jzPickBg(rng, st, en, fx, bgHist); lineBgP = lineBg !== 'none' ? jzPlanOf('bg', lineBg, rng, st) : {}; }
@@ -973,7 +984,7 @@ function jzMakePlan(o) {
         }
     }
     plan.cuts.sort(function (a, b) { return a.start - b.start; });
-    for (i = 0; i < plan.cuts.length; i++) plan.cuts[i].index = i;
+    for (i = 0; i < plan.cuts.length; i++) { plan.cuts[i].index = i; if (zones) plan.cuts[i].zone = jzZoneOf(zones, plan.cuts[i].line); }
     plan.events.sort(function (a, b) { return a.t - b.t; });
     return plan;
 }
@@ -30293,11 +30304,14 @@ function jzBuildStart(plan, opt) {
         var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
         var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
         // content
-        var pc = app.project.items.addComp(label + ' text', W, H, 1, cdur, fps);
+        // \u4E2D\u592E\u3092\u7A7A\u3051\u308B: the cut is laid out in its side band \u2014 content, ghosts and camera go into a band-sized "stage" comp
+        // placed over the full-frame background (the comp bounds clip it, like the browser's clip)
+        var Z = plan.centerFree && cut.zone ? cut.zone : null, CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u;
+        var pc = app.project.items.addComp(label + ' text', CW, CH, 1, cdur, fps);
         pc.parentFolder = folder;
-        var ctx = { comp: pc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
+        var ctx = { comp: pc, W: CW, H: CH, u: cu, sc: sc, st: st, fx: FXV, cut: cut, P: cut.params || {}, roles: roles, plan: plan };
         var bb = null, lk = jzFallback('layout', cut.layout, 'center');
-        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: W, H: H, dur: cut.dur }, st) : {}; }
+        if (lk !== cut.layout) { ctx.P = JZ_REG.layout[lk].plan ? JZ_REG.layout[lk].plan(new JzRng(jzHash(cut.seed, 31)), { text: cut.text, n: jzCount(cut.text), W: CW, H: CH, dur: cut.dur }, st) : {}; }
         try { bb = JZ_REG.layout[lk].build(ctx); }
         catch (e) { jzWarn('cut ' + (ci + 1) + ' ' + lk + ': ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
         try { jzDecorate(ctx, bb); } catch (e2) { jzWarn('decor: ' + e2.toString()); }
@@ -30317,7 +30331,9 @@ function jzBuildStart(plan, opt) {
             var bctx = { comp: wc, W: W, H: H, u: u, sc: sc, st: st, fx: FXV, cut: cut, plan: plan, P: cut.bgP || {} };
             try { JZ_REG.bg[bk].build(bctx, bctx.P); } catch (e3) { jzWarn('bg ' + bk + ': ' + e3.toString() + (e3.line ? ' (line ' + e3.line + ')' : '')); }
         }
-        var CL = wc.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
+        var stage = wc;
+        if (Z) { stage = app.project.items.addComp(label + ' stage', CW, CH, 1, cdur, fps); stage.parentFolder = folder; }
+        var CL = stage.layers.add(pc); CL.name = 'content'; CL.startTime = 0;
         var content = [CL];
         if (ghostAmt > 0.02 && opt.ghosts !== false) {
             // layers marked with jzNoGhost() stay out of the ghosts: feed them from a copy of the content comp with those layers off
@@ -30331,7 +30347,7 @@ function jzBuildStart(plan, opt) {
             }
             var ghosts = [['B', lagB, [-3.4, -1.3], sc.ghostB], ['A', lagA, [3.2, 1.9], sc.ghostA]];
             for (var g = 0; g < ghosts.length; g++) {
-                var G = gsrc ? wc.layers.add(gsrc) : CL.duplicate();
+                var G = gsrc ? stage.layers.add(gsrc) : CL.duplicate();
                 G.name = 'ghost ' + ghosts[g][0];
                 G.startTime = ghosts[g][1]; G.inPoint = 0; G.outPoint = cdur;
                 G.moveAfter(CL);
@@ -30345,13 +30361,14 @@ function jzBuildStart(plan, opt) {
             }
         }
         // camera: a null at the comp centre (identity transform) that carries the content and its ghosts
-        var nul = wc.layers.addNull(cdur); nul.name = 'JZ Camera';
-        jzXf(nul, 'ADBE Anchor Point').setValue([W / 2, H / 2]); jzXf(nul, 'ADBE Position').setValue([W / 2, H / 2]);
+        var nul = stage.layers.addNull(cdur); nul.name = 'JZ Camera';
+        jzXf(nul, 'ADBE Anchor Point').setValue([CW / 2, CH / 2]); jzXf(nul, 'ADBE Position').setValue([CW / 2, CH / 2]);
         for (var q = 0; q < content.length; q++) content[q].parent = nul;
         var ck = jzFallback('cam', cut.cam || 'push', 'push');
-        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: wc, nul: nul, content: content, P: cut.camP || {}, W: W, H: H, u: u, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
+        try { JZ_REG.cam[ck].apply({ ctx: ctx, comp: stage, nul: nul, content: content, P: cut.camP || {}, W: CW, H: CH, u: cu, cut: cut, fx: FXV, sc: sc }, cut.camP || {}); }
         catch (e4) { jzWarn('cam ' + ck + ': ' + e4.toString() + (e4.line ? ' (line ' + e4.line + ')' : '')); }
         // into the main comp
+        if (Z) { var SL = wc.layers.add(stage); SL.name = 'stage (' + (Z.side || 'side') + ')'; SL.startTime = 0; jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
         var WL = comp.layers.add(wc);
         WL.startTime = cut.start; WL.inPoint = cut.start; WL.outPoint = cut.end;
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
@@ -30648,6 +30665,8 @@ function jzUI(thisObj) {
     var gK = t1.add('group'); gK.add('statictext', undefined, 'Background');
     var ddKey = gK.add('dropdownlist', undefined, ['Style background', 'Green screen (compositing)', 'Black background (compositing)']); ddKey.selection = parseInt(jzGet('key', '0'), 10) || 0;
     ddKey.helpTip = 'Solid green or black background behind white text and effects. Key out green or use Screen blending for black.';
+    var cCenter = t1.add('checkbox', undefined, 'Keep the centre free (for a character: left / right on wide, top / bottom on tall frames)'); cCenter.value = jzGet('center', '0') === '1';
+    cCenter.helpTip = 'For a character or other footage in the middle: each cut is laid out in a side band (left / right on wide frames, top / bottom on tall ones, alternating line by line). Backgrounds and screen effects still cover the whole frame.';
 
     var pT = t1.add('panel', undefined, 'Timing'); pT.alignChildren = ['left', 'top']; pT.margins = 10;
     var rAuto = pT.add('radiobutton', undefined, 'Auto (text length and BPM) / LRC timestamps');
@@ -30823,7 +30842,7 @@ function jzUI(thisObj) {
         jzPut('size', ddSize.selection.index); jzPut('fps', ddFps.selection.index); jzPut('timing', rLayer.value ? 'layer' : rComp.value ? 'comp' : 'auto');
         jzPut('bpm', eBpm.text); jzPut('lineScale', eScale.text); jzPut('audio', cAudio.value ? '1' : '0'); jzPut('seed', eSeed.text);
         jzPut('twos', cTwos.value ? '1' : '0'); jzPut('flash', cFlash.value ? '1' : '0'); jzPut('hud', ddHud.selection.index);
-        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
+        jzPut('extra', cExtra.value ? '1' : '0'); jzPut('wa', cWa.value ? '1' : '0'); jzPut('key', ddKey.selection.index); jzPut('center', cCenter.value ? '1' : '0'); jzPut('lang', ddLang.selection ? ddLang.selection.index : 0);
         var sl = [sMotion, sGlitch, sChroma, sDecor, sDensity, sTexture, sBg]; for (var k = 0; k < sl.length; k++) jzPut(sl[k].key, sl[k].value);
         var active = app.project.activeItem, W = 1920, H = 1080, fps = [24, 30, 60][ddFps.selection.index], dur = null;
         var sz = ddSize.selection.index;
@@ -30846,7 +30865,7 @@ function jzUI(thisObj) {
             lyrics: lyr.text, title: eTitle.text, artist: eArtist.text, style: JZ_DATA.styleOrder[ddStyle.selection.index], seed: parseInt(eSeed.text, 10) || 1,
             fx: { motion: sMotion.value / 100, glitch: sGlitch.value / 100, chroma: sChroma.value / 100, decor: sDecor.value / 100, density: sDensity.value / 100, texture: sTexture.value / 100, bgSwitch: sBg.value / 100, onTwos: cTwos.value, flash: cFlash.value, hud: false },
             width: W, height: H, fps: fps, bpm: parseFloat(eBpm.text) || 0, starts: starts, enabled: en, offset: 0.4, lineScale: parseFloat(eScale.text) || 1, duration: dur,
-            extra: sw.extra, wa: sw.wa, lang: sw.lang
+            extra: sw.extra, wa: sw.wa, lang: sw.lang, centerFree: cCenter.value
         };
         var st = JZ_DATA.styles[o.style];
         o.fx.hud = ddHud.selection.index === 1 ? true : ddHud.selection.index === 2 ? false : !!st.hud;

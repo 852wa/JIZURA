@@ -11,6 +11,7 @@
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="zh-Hans" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
+<link rel="alternate" hreflang="id-ID" href="https://852wa.github.io/JIZURA/id/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="JIZURA — 歌词动态视频制作工具">
 <meta property="og:description" content="在浏览器中把歌词做成动态歌词视频，并导出 MP4。">
@@ -298,6 +299,10 @@ button.omakase:disabled { box-shadow: none; }
 button.linkish { background: none; border: 0; padding: 4px 0; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; }
 button.linkish:hover { color: var(--text); background: none; }
 dialog.terms { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 22px 24px 18px; background: var(--panel); color: var(--text); border: 1px solid var(--line2); border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.55); }
+dialog.terms .reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 3px; font-size: 13px; }
+button.danger { background: #c9433a; border-color: #c9433a; color: #fff; font-weight: 700; }
+button.danger:hover { background: #dd5146; }
+.sec-btns { display: inline-flex; gap: 6px; }
 dialog.terms::backdrop { background: rgba(6,6,8,0.66); }
 dialog.terms h2 { font-size: 15px; letter-spacing: 0.08em; color: var(--text); margin: 0 0 14px; }
 dialog.terms p { margin: 0 0 10px; line-height: 1.75; font-size: 13px; }
@@ -311,6 +316,19 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .terms-oss summary { cursor: pointer; }
 .terms-oss p { font-size: 12px !important; margin-top: 6px; }
 .terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+
+/* ---------- fixed workspace (wide & tall enough windows) ----------
+   The page no longer scrolls as a whole: the header and the preview + timeline stay put, and the
+   lyrics / line list (left) and settings (right) scroll inside their own columns. */
+@media (min-width: 1181px) and (min-height: 620px) {
+  html.fixed-ok body { overflow: hidden; }
+  html.fixed-ok #app { height: 100vh; height: 100dvh; min-height: 0; }
+  html.fixed-ok .work { overflow: hidden; }
+  html.fixed-ok .col-left, html.fixed-ok .col-right { overscroll-behavior: contain; }
+  html.fixed-ok .col-stage { overflow: hidden auto; }
+  html.fixed-ok .viewport { flex: 1 1 0; min-height: 180px; }
+  html.fixed-ok .viewport canvas { max-height: none; }
+}
 
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {
@@ -360,6 +378,7 @@ button.small.primary { padding: 4px 12px; }
 
 .lang-switch select { font: 500 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 
 </style>
 </head>
@@ -385,11 +404,12 @@ button.small.primary { padding: 4px 12px; }
       <button id="modePro" aria-pressed="true" title="显示全部设置">详细</button>
       <button id="btnTour" class="ghost tour-btn" title="简易模式使用导览" aria-label="使用导览">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans" selected>简体中文</option><option value="../ko/index.html" lang="ko">한국어</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans" selected>简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option></select></label>
     <div class="acts">
       <label class="file" title="打开已保存的项目（.json）">打开<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="将项目保存为 .json">保存</button>
       <button id="btnAE" title="导出供 After Effects 面板使用的项目数据">导出到 AE</button>
+      <button id="btnReset" class="ghost" title="清除歌词、歌曲、设置与历史，回到最初的状态">初始化</button>
       <button id="btnTerms" class="ghost terms-open" title="输出物的权利与许可">使用说明</button>
     </div>
   </header>
@@ -398,7 +418,7 @@ button.small.primary { padding: 4px 12px; }
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="歌词与时间">
       <div class="sec">
-        <div class="sec-h"><h2>歌词</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">语法</button></div>
+        <div class="sec-h"><h2>歌词</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="清除歌词，以及各行的时间点、逐行设置与导出范围（可用“撤销”或 Ctrl+Z 找回）">清除歌词</button><button id="btnSyntax" class="ghost small" aria-expanded="false">语法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌词（1 行 = 1 句）"></textarea>
         <label class="lang-row">歌词语言<select id="lyricLang"><option value="auto">自动识别</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -498,6 +518,8 @@ button.small.primary { padding: 4px 12px; }
           <div class="pick-sets">
             <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>使用新增特效<small>首个公开版之后新增的约 350 种特效、12 套配色和 6 款字体也会成为一键生成和随机编排的候选（关闭时只用首个公开版的特效）</small></span></label>
             <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>使用和风特效<small>灯笼、明信片、障子、折扇、家纹、青海波、樱花花瓣等和风图形。关闭后，一键生成和随机编排不会选用</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>统一感<small>每个段落使用一致的特效，重复的歌词会以相同的方式再次出现。动作方向交替，强烈的动作只留给重要的句子。以“!”结尾的句子（若没有，则为重复段落的第一句）会用大字强调（“亮点”），文字还会融化成下一句、相同的字移动到新位置（“变形”），以及由细字长成粗字（“粗细”）</small></span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字排列<small>缩小假名的字距让文字成块易读，助词缩小、句首字放大，英文字母稍微放大并与日文之间留一点空隙。文字比歌声早 0.2 秒出现，并避免效果叠加过多</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -521,8 +543,9 @@ button.small.primary { padding: 4px 12px; }
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
             <label class="field field-wide">背景<select id="eKey"><option value="off">常规（风格背景）</option><option value="green">绿幕（用于合成）</option><option value="black">黑底（用于合成）</option></select></label>
           </div>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>留出画面中央（放角色用）<small>以在中央叠加角色等素材为前提，把文字与特效放在横屏画面的左右、竖屏画面的上下，并逐行交替。背景与画面效果仍覆盖整个画面（预览会用虚线标出留空的范围）</small></span></label>
           <div class="rng-row"><span class="rng-lab">导出范围</span><select class="rngFrom" aria-label="导出范围的第一行"></select><span class="muted">～</span><select class="rngTo" aria-label="导出范围的最后一行"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">导出 MP4</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">导出 MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="先选择要保存的文件，直接写入该文件。长歌曲或 1080p 以上因浏览器内存不足而失败时使用（Chrome / Edge）">大型视频用（直接保存为文件）</button></div>
           <button class="terms-open linkish">关于导出视频的权利</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
@@ -559,6 +582,10 @@ button.small.primary { padding: 4px 12px; }
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
+        <div class="unify-box">
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>统一感<small>每个段落使用一致的特效，重复的歌词会以相同的方式再次出现。动作方向交替，强烈的动作只留给重要的句子。以“!”结尾的句子（若没有，则为重复段落的第一句）会用大字强调（“亮点”），文字还会融化成下一句、相同的字移动到新位置（“变形”），以及由细字长成粗字（“粗细”）</small></span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字排列<small>缩小假名的字距让文字成块易读，助词缩小、句首字放大，英文字母稍微放大并与日文之间留一点空隙。文字比歌声早 0.2 秒出现，并避免效果叠加过多</small></span></label>
+        </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 闪光</label>
@@ -590,10 +617,12 @@ button.small.primary { padding: 4px 12px; }
           <label class="field field-wide">背景<select id="outKey"><option value="off">常规（风格背景）</option><option value="green">绿幕（用于合成）</option><option value="black">黑底（用于合成）</option></select></label>
         </div>
         <p class="note key-note">选择绿幕／黑底时，只在纯色背景上绘制白色文字和特效（不含背景图案、纸张质感、粒子和暗角），预览也会同步显示。绿幕可用视频剪辑软件的色度键抠像，黑底可用“滤色”混合或亮度键抠像，再叠加到其他画面上。</p>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>留出画面中央（放角色用）<small>以在中央叠加角色等素材为前提，把文字与特效放在横屏画面的左右、竖屏画面的上下，并逐行交替。背景与画面效果仍覆盖整个画面（预览会用虚线标出留空的范围）</small></span></label>
         <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 在视频中包含音乐</label>
         <div class="rng-row"><span class="rng-lab">导出范围</span><select class="rngFrom" aria-label="导出范围的第一行"></select><span class="muted">～</span><select class="rngTo" aria-label="导出范围的最后一行"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
           <button id="btnMP4" class="primary">导出 MP4</button>
+          <button id="btnMP4File" class="mp4file" hidden title="先选择要保存的文件，直接写入该文件。长歌曲或 1080p 以上因浏览器内存不足而失败时使用（Chrome / Edge）">MP4（大型视频用，直接保存为文件）</button>
           <button id="btnPNG">PNG 序列（ZIP）</button>
           <button id="btnPNGA">透明 PNG（ZIP，无背景）</button>
           <button id="btnPNGL" title="将后景（背景图形和歌词后方的装饰）与前景（歌词及其装饰、重影）分别导出为透明 PNG，放在两个文件夹（back / front）中。全屏效果会同时作用于两者，把前景叠在后景上即可还原正常画面">透明 PNG 前景／后景（ZIP）</button>
@@ -609,6 +638,21 @@ button.small.primary { padding: 4px 12px; }
   </main>
 </div>
 
+<dialog id="resetDlg" class="terms" aria-labelledby="resetTitle">
+  <form method="dialog">
+    <h2 id="resetTitle">初始化</h2>
+    <p>将清除以下全部内容并回到最初的状态。<strong>此操作无法撤销。</strong></p>
+    <ul class="reset-list">
+      <li>歌词、歌名、艺人</li>
+      <li>已导入的歌曲（包括保存在此浏览器中的文件）</li>
+      <li>时间点、逐行设置、导出范围</li>
+      <li>风格、特效、配色、字体等设置</li>
+      <li>方案历史（◀ ▶）与歌词、时间点的“撤销”记录</li>
+    </ul>
+    <p class="terms-sub">显示模式（简易／详细）、预览音量与界面语言保持不变。已保存的项目文件（.json）也不会被删除。</p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">取消</button><button value="reset" class="danger">初始化</button></span></div>
+  </form>
+</dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
     <h2 id="termsTitle">使用说明</h2>
@@ -898,12 +942,18 @@ J.fontsOfPlan = (plan) => {
     if (typeof v === 'string' && J.FONTS[v]) set.add(v);
     else if (Array.isArray(v)) v.forEach(x => { if (typeof x === 'string' && J.FONTS[x]) set.add(x); });
   }
-  return [...set].filter(k => J.FONTS[k]);
+  const out = [...set].filter(k => J.FONTS[k]);
+  if ((plan.cuts || []).some(c => c.weightGrow)) out.push('@var');     // 太さ: the variable Noto Sans / Serif JP
+  return out;
 };
 /* make sure the glyphs we need are loaded (Google Fonts are unicode-range split). keys = null → every catalogue face */
 J.ensureFonts = async (text, keys) => {
   if (!document.fonts || !document.fonts.load) return;
   const uniq = [...new Set([...text])].join('') || 'あ';
+  if (keys && keys.includes('@var')) {
+    await Promise.all(['Noto+Sans+JP:wght@100..900', 'Noto+Serif+JP:wght@200..900'].map(attachFamily));
+    await Promise.all(['100 64px "Noto Sans JP"', '900 64px "Noto Sans JP"', '200 64px "Noto Serif JP"', '900 64px "Noto Serif JP"'].map(f => document.fonts.load(f, uniq).catch(() => null)));
+  }
   const list = (keys || Object.keys(J.FONTS)).filter(k => J.FONTS[k]);
   // faces in the current lyric language (+ its fallback sans / serif), each with the weight it is drawn at
   const faces = list.map(k => (J.faceOf ? J.faceOf(k) : J.FONTS[k]));
@@ -1234,6 +1284,42 @@ J.segLocale = () => (J.lang === 'zh-Hant' ? 'zh-Hant' : J.lang === 'zh-Hans' ? '
 J.PID = Object.freeze({ dx: 0, dy: 0, rot: 0, s: 1, st: 1, sdir: 0, a: 1 });
 J.PT = (dx = 0, dy = 0, rot = 0, s = 1, st = 1, sdir = 0, a = 1) => ({ dx, dy, rot, s, st, sdir, a });
 
+/* ---------- 文字整列 (typeset): set per plan by the planner / renderer (J.setTypeset) ----------
+   kana set a little tighter, particles smaller and the first character larger, Latin a little larger with a
+   small gap to Japanese. Only the size / advance of each glyph changes, so every layout keeps working. */
+J.TYPESET = false;
+J.setTypeset = on => { J.TYPESET = !!on; };
+const HIRA = /[ぁ-ゟ]/, KATA = /[゠-ヿㇰ-ㇿ]/, KANJI = /[㐀-鿿豈-﫿々〆]/, LATIN = /[A-Za-z0-9]/;
+const PARTICLES = 'はがをにでとのへも';
+const cls = ch => (!ch ? '' : LATIN.test(ch) ? 'L' : KANJI.test(ch) ? 'K' : KATA.test(ch) ? 'T' : HIRA.test(ch) ? 'H' : /\s/.test(ch) ? 'S' : 'P');
+function isParticle(arr, i) {
+  const ch = arr[i], prev = arr[i - 1], next = arr[i + 1];
+  if (!prev || PARTICLES.indexOf(ch) < 0 || prev === 'っ' || prev === 'ッ' || prev === 'ー') return false;
+  if (ch === 'を') return true;
+  const cp = cls(prev), cn = cls(next);
+  const nextOK = !next || cn === 'K' || cn === 'T' || cn === 'L' || cn === 'S' || cn === 'P';
+  return nextOK && cp !== 'S' && cp !== 'P' && !(cp === 'H' && cn === 'H');
+}
+/* per character: f = size factor, gap = extra space before it (in em) */
+J.typesetLine = (arr) => {
+  const out = arr.map(() => ({ f: 1, gap: 0, adv: 1 }));
+  if (!J.TYPESET) return out;
+  const content = arr.filter(c => !/\s/.test(c)).length;
+  let first = true;
+  arr.forEach((ch, i) => {
+    const c = cls(ch), o = out[i];
+    if (c === 'S') return;
+    if (c === 'H' || c === 'T') o.adv = J.isSmallKana(ch) ? 0.86 : ch === 'ー' ? 0.94 : 0.9;       // kana: set tighter
+    if (c === 'L') o.f = 1.08;
+    if ((c === 'H' || c === 'T') && content >= 3 && isParticle(arr, i)) o.f = 0.78;
+    if (first && content >= 3 && (c === 'K' || c === 'H' || c === 'T')) o.f = 1.18;               // 頭の字を大きく
+    first = false;
+    const pc = i > 0 ? cls(arr[i - 1]) : '';
+    if (i > 0 && pc !== 'S' && ((c === 'L') !== (pc === 'L')) && pc && pc !== 'P' && c !== 'P') o.gap = 0.2;   // 英字と日本語の間
+  });
+  return out;
+};
+
 /* layout: glyph centres relative to the item origin, in unscaled item space */
 J.layoutText = (it) => {
   const text = String(it.text ?? '');
@@ -1244,37 +1330,40 @@ J.layoutText = (it) => {
   const lead = (it.lead || 1.3) * size;
   let gi = 0;
   if (!vertical) {
-    const widths = lines.map(line => {
-      let w = 0; const arr = [...line];
-      arr.forEach((ch, i) => { w += J.metrics.adv(it.font, ch) * size + (i < arr.length - 1 ? track * size : 0); });
+    const sets = lines.map(line => { const arr = [...line]; return { arr, ts: J.typesetLine(arr) }; });
+    const widths = sets.map(({ arr, ts }) => {
+      let w = 0;
+      arr.forEach((ch, i) => { w += (J.metrics.adv(it.font, ch) * ts[i].adv * ts[i].f + ts[i].gap) * size + (i < arr.length - 1 ? track * size : 0); });
       return w;
     });
     const maxW = Math.max(1, ...widths);
-    lines.forEach((line, li) => {
-      const arr = [...line];
+    sets.forEach(({ arr, ts }, li) => {
       let x = it.align === 'left' ? 0 : it.align === 'right' ? -widths[li] : -widths[li] / 2;
       const y = (li - (lines.length - 1) / 2) * lead;
       arr.forEach((ch, ci) => {
-        const a = J.metrics.adv(it.font, ch) * size;
-        out.push({ ch, i: gi++, li, ci, n: arr.length, x: x + a / 2, y, w: a, h: size, r90: false, vx: 0, vy: 0 });
+        const t = ts[ci], a = J.metrics.adv(it.font, ch) * size * t.adv * t.f;
+        x += t.gap * size;
+        // smaller / larger glyphs keep the line's baseline
+        out.push({ ch, i: gi++, li, ci, n: arr.length, x: x + a / 2, y: y + (1 - t.f) * size * 0.36, w: a, h: size * t.f, r90: false, vx: 0, vy: 0, fs: t.f });
         x += a + track * size;
       });
     });
     out.W = maxW; out.H = lines.length * lead - (lead - size);
   } else {
-    const heights = lines.map(line => [...line].reduce((h, ch) => h + vAdv(it.font, ch, size) + track * size, 0) - track * size);
+    const sets = lines.map(line => { const arr = [...line]; return { arr, ts: J.typesetLine(arr) }; });
+    const heights = sets.map(({ arr, ts }) => arr.reduce((h, ch, i) => h + (vAdv(it.font, ch, size) * ts[i].adv * ts[i].f + ts[i].gap * size) + track * size, 0) - track * size);
     const maxH = Math.max(1, ...heights);
-    lines.forEach((line, li) => {
-      const arr = [...line];
+    sets.forEach(({ arr, ts }, li) => {
       let y = it.align === 'left' ? 0 : -heights[li] / 2;         // 'left' == top-aligned for vertical
       const x = -(li - (lines.length - 1) / 2) * lead;
       arr.forEach((ch, ci) => {
-        const a = vAdv(it.font, ch, size);
+        const t = ts[ci], a = vAdv(it.font, ch, size) * t.adv * t.f;
+        y += t.gap * size;
         const r90 = J.VERT_ROTATE.includes(ch) || /[A-Za-z0-9]/.test(ch);
         let vx = 0, vy = 0;
         if (J.isSmallKana(ch)) { vx = 0.11 * size; vy = -0.11 * size; }
         if ('、。，．'.includes(ch)) { vx = 0.3 * size; vy = -0.3 * size; }
-        out.push({ ch, i: gi++, li, ci, n: arr.length, x, y: y + a / 2, w: size, h: a, r90, vx, vy });
+        out.push({ ch, i: gi++, li, ci, n: arr.length, x, y: y + a / 2, w: size * t.f, h: a, r90, vx, vy, fs: t.f });
         y += a + track * size;
       });
     });
@@ -1339,7 +1428,7 @@ J.drawItem = (env, it) => {
   const ghostPass = env.pass !== 'main';
   if (ghostPass && it.ghost === false) return null;
   if (!it.text || it.size <= 0.5) return null;
-  if (!env.inLayer && env.allowFilter && !it.pieceFn && ((it.blur || 0) > 0.4 || (it.shadow && !ghostPass && (it.shadow.blur || 0) * (env.scale || 1) > 6))) {
+  if (!env.inLayer && !env.glyphLog && !env.hideText && env.allowFilter && !it.pieceFn && ((it.blur || 0) > 0.4 || (it.shadow && !ghostPass && (it.shadow.blur || 0) * (env.scale || 1) > 6))) {
     const r = drawItemLayered(env, it);
     if (r !== undefined) return r;
   }
@@ -1356,7 +1445,9 @@ J.drawItem = (env, it) => {
   if (it.skew) ctx.transform(1, 0, Math.tan(it.skew * J.DEG), 1, 0, 0);
   if (it.blend) ctx.globalCompositeOperation = it.blend;
   if (it.blur > 0.4 && env.allowFilter) ctx.filter = `blur(${(it.blur * env.scale).toFixed(1)}px)`;
-  ctx.font = J.fontCSS(it.font, size);
+  // 太さ (統一感): the lyric grows from a hairline to heavy on a variable face (Noto Sans / Serif JP)
+  const wg = env.cut && env.cut.weightGrow && !it.noWeight ? J.weightNow(env) : 0;
+  ctx.font = wg ? J.varFontCSS(it.font, size, wg) : J.fontCSS(it.font, size);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   let grad = null;
   if (!ghostPass && it.gradient && fill) {
@@ -1384,13 +1475,21 @@ J.drawItem = (env, it) => {
     const a = baseAlpha * (c && c.a != null ? c.a : 1);
     if (a <= 0.002) continue;
     const ch = (c && c.ch) || g.ch;
-    const cs = c && c.s != null ? c.s : 1;
+    const cs = (c && c.s != null ? c.s : 1) * (g.fs || 1);
     const gx = g.x * sx + g.vx * sx + (c ? c.dx || 0 : 0);
     const gy = g.y * sy + g.vy * sy + (c ? c.dy || 0 : 0);
     const crot = (c ? c.rot || 0 : 0) + (g.r90 ? 90 : 0);
     const csx = sx * cs * (c && c.sx ? c.sx : 1), csy = sy * cs * (c && c.sy ? c.sy : 1);
     const gcol = (!ghostPass && c && c.color) || col;
-    boxes.push({ x: gx, y: gy, w: g.w * sx * cs, h: g.h * sy * cs });
+    boxes.push({ x: gx, y: gy, w: g.w * sx * cs / (g.fs || 1), h: g.h * sy * cs / (g.fs || 1) });
+    // モーフ: record where each glyph ends up (device space) / leave the glyphs out while the morph draws them
+    if (env.glyphLog && !ghostPass) {
+      ctx.save(); ctx.translate(gx, gy); if (crot) ctx.rotate(crot * J.DEG); if (csx !== 1 || csy !== 1) ctx.scale(csx, csy);
+      const T = ctx.getTransform(); ctx.restore();
+      env.glyphLog.push({ ch, m: [T.a, T.b, T.c, T.d, T.e, T.f], font: ctx.font, px: size, color: typeof gcol === 'string' ? gcol : (it.color || '#fff'), a: a * (fill ? fillA : 1),
+        stroke: it.stroke > 0 ? it.stroke : 0, strokeColor: typeof sCol === 'string' ? sCol : null, fill: fill && !(c && c.outline) });
+    }
+    if (env.hideText) continue;
     // ---- piece mode ----
     if (it.pieceFn && fill && !(c && c.ch) && !it.gradient && dash == null && !(c && (c.clipY || c.clipX || c.outline))) {
       if (drawPieces(env, it, g, ch, gx, gy, crot, csx, csy, gcol, a, pxScale * cs)) continue;
@@ -1433,6 +1532,18 @@ J.drawItem = (env, it) => {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   for (const b of boxes) { x0 = Math.min(x0, b.x - b.w / 2); x1 = Math.max(x1, b.x + b.w / 2); y0 = Math.min(y0, b.y - b.h / 2); y1 = Math.max(y1, b.y + b.h / 2); }
   return { x0: it.x + x0, y0: it.y + y0, x1: it.x + x1, y1: it.y + y1, boxes, cx: it.x, cy: it.y };
+};
+
+/* 太さ: growth 0..1 of the current cut (never exactly 0, so it also means "on"); eased, over the first half of the cut */
+J.weightNow = (env) => {
+  const span = Math.max(0.5, Math.min(1.4, env.cut.dur * 0.5));
+  const k = J.clamp(((env.ltb ?? env.lt) || 0) / span);
+  return 1e-3 + (1 - Math.pow(1 - k, 3)) * (1 - 1e-3);
+};
+J.varFontCSS = (key, px, e) => {
+  const f = J.FONTS[key] || {}, serif = f.kind === 'mincho';
+  const w = Math.round(serif ? 200 + e * 700 : 100 + e * 800);
+  return `${w} ${px.toFixed(2)}px ${serif ? '"Noto Serif JP"' : '"Noto Sans JP"'},${f.fb || 'sans-serif'}`;
 };
 
 /* returns true if pieces were drawn (i.e. not at rest) */
@@ -3156,6 +3267,9 @@ J.defaultProject = () => ({
   wa: true,                       // …and the 和風 motifs (提灯・障子・家紋…) — applied after 'extra'
   lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
+  unify: false,                   // 統一感: part palettes, repeats shown the same way, キメ, モーフ, 太さ
+  typeset: false,                 // 文字整列: kana tracking, small particles / big first character, Latin sizing, 0.2 s lead, restraint
+  centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
@@ -3348,20 +3462,34 @@ J.plan = (project, audio) => {
   const title = project.title || parsed.meta.ti || '';
   const artist = project.artist || parsed.meta.ar || '';
   const tm = J.computeTiming(project, parsed, audio);
+  // 文字整列: the lyrics appear 0.2 s before the voice (reading ahead feels in time)
+  if (project.typeset) {
+    const LEAD = 0.2;
+    tm.starts = tm.starts.map(t => Math.max(0, t - LEAD));
+    tm.ends = tm.ends.map((t, i) => Math.max(tm.starts[i] + 0.3, t - LEAD));
+  }
   const [W, H] = J.designSize(project.aspect);
   // enabled map: anything not explicitly switched off is on (new pack entries appear enabled in old projects);
   // then the 追加分 / 和風 switches decide what random picks may use (a per-line override still works)
   const en = {};
   for (const g of J.GROUP_KEYS) { en[g] = {}; const src = (project.enabled || {})[g] || {}; for (const k of J.order(g)) en[g][k] = src[k] !== false && (!J.randomOk || J.randomOk(project, g, k)); }
+  // 中央を空ける (キャラクター用): every cut is laid out in a side band — left / right on wide frames, top / bottom on tall
+  // ones — alternating line by line; the centre keeps only the full-frame background and screen effects
+  const zones = project.centerFree ? J.sideZones(W, H) : null;
+  const zoneOf = li => (zones ? Object.assign({}, zones[Math.max(0, li) % 2]) : null);
+  if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
     version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
+    centerFree: !!zones, zones,
+    typeset: !!project.typeset, unify: !!project.unify,
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
   if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
+  if (J.setTypeset) J.setTypeset(plan.typeset);
   const beats = plan.beats;
   const snap = (t) => {
     if (!beats.length || !(project.timing && project.timing.snap)) return t;
@@ -3383,6 +3511,8 @@ J.plan = (project, audio) => {
     plan.cuts.push(makeCut({ text: title, note: artist, lineText: title, line: -1, start: 0.1, end: firstStart - 0.04, layout: 'title', enter: rng.pick(['blur', 'type', 'wipe', 'assemble']), exit: rng.pick(['blur', 'drift', 'wipe']), hold: 'still', params: J.LAYOUTS.title.plan(rng, {}, st), decor: [], scheme: 0, seed: J.h(project.seed, 999, 1) }));
   }
 
+  // 統一感: sections, repeated lines, キメ lines and the per-section palettes (see makeUnify below)
+  const U = plan.unify ? makeUnify(parsed.lines, { st, en, fx, history, lang: plan.lang, seed: project.seed }) : null;
   parsed.lines.forEach((ln, li) => {
     const s = tm.starts[li], e = tm.ends[li];
     const ov = (project.overrides || {})[li] || {};
@@ -3412,7 +3542,9 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    if (ov.single) nC = 1;
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed'].includes(k2));
+    const kime = !!(U && U.kime.has(li) && !ov.cuts);
+    if (ov.single || kime) nC = 1;
     // カット数の指定 (per line): exactly that many cuts — chunks are split further when the line has fewer
     const fixedN = ov.cuts > 0 ? Math.min(12, ov.cuts | 0) : 0;
     let chunks2 = chunks;
@@ -3430,7 +3562,7 @@ J.plan = (project, audio) => {
     units.forEach((u, k) => { acc += D * u.w / tot; bounds.push(k === units.length - 1 ? visEnd : acc); });
     for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
     // scheme per line
-    if (nSchemes > 1 && li > 0 && rng.chance(fx.bgSwitch * (ln.impact ? 1.8 : 1))) schemeIdx = (schemeIdx + 1 + rng.int(0, nSchemes - 2)) % nSchemes;
+    if (nSchemes > 1 && li > 0 && (U ? U.sectionStart(li) && rng.chance(0.25 + fx.bgSwitch) : rng.chance(fx.bgSwitch * (ln.impact ? 1.8 : 1)))) schemeIdx = (schemeIdx + 1 + rng.int(0, nSchemes - 2)) % nSchemes;
     const emphLine = ln.impact || ln.emph.length > 0;
     // background graphic: chosen per line, occasionally re-rolled per cut
     let lineBg = ov.bg && J.BG[ov.bg] ? ov.bg : pickBg(rng, st, en, fx, bgHistory);
@@ -3440,88 +3572,129 @@ J.plan = (project, audio) => {
       const cs = bounds[k], ce = bounds[k + 1], dur = ce - cs;
       const txt = u.text;
       const nn = [...txt.replace(/\s+/g, '')].length;
-      const emph = ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
-      const pickedLayout = pickLayout(rng, st, en, nn, dur, history, emph, u.recap, H > W);
+      const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => txt.includes(w));
+      const Z = zoneOf(li), LW = Z ? Z.w : W, LH = Z ? Z.h : H;       // the frame this cut is laid out in
+      const UU = U && !ovAny ? U : null;                              // per-line settings always win over 統一感
       const tech = cutTechOf(ov, k);
-      const layout = (tech.layout && J.LAYOUTS[tech.layout] && !J.LAYOUTS[tech.layout].special) ? tech.layout
-        : (ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickedLayout);
+      const pickedLayout = pickLayout(rng, st, en, nn, dur, history, emph, u.recap, LH > LW);
+      let layout = ov.layout && J.LAYOUTS[ov.layout] ? ov.layout : pickedLayout;
+      if (UU) layout = UU.layout(li, layout, { nn, dur, emph, kime, rng, portrait: LH > LW, recap: u.recap });
       const pickedEnter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, pickedLayout, dur, history, emph, nn);
       const pickedExit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, pickedLayout, dur, k === units.length - 1, history);
       const pickedHold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
       let enter = pickedEnter, exit = pickedExit, hold = pickedHold;
+      let weightGrow = false;
+      if (UU) {
+        enter = UU.enter(li, enter, { layout, dur, emph, kime, rng, nn });
+        exit = UU.exit(li, exit, { layout, dur, kime, rng });
+        hold = UU.hold(li, hold, { kime, rng });
+        weightGrow = UU.weightGrow({ kime, nn, rng, dur });
+        if (weightGrow) enter = UU.softEnter(enter, rng);
+      }
+      const durs = (en2, ex2) => {
+        let a = J.clamp(dur * 0.36, 0.12, 0.6);
+        if (en2 === 'type') a = J.clamp(nn * 0.055 + 0.1, 0.15, dur * 0.65);
+        if (en2 === 'assemble') a = J.clamp(dur * 0.45, 0.22, 0.75);
+        if (J.ENTER[en2] && J.ENTER[en2].inDur) a = J.ENTER[en2].inDur(dur, nn);
+        if (en2 === 'cut') a = 0.12;
+        let b = ex2 === 'cut' ? 0 : J.clamp(dur * 0.3, 0.14, 0.55);
+        if (['explode', 'fall', 'drift'].includes(ex2)) b = J.clamp(dur * 0.38, 0.25, 0.7);
+        if (J.EXIT[ex2] && J.EXIT[ex2].outDur) b = J.EXIT[ex2].outDur(dur, nn);
+        if (a + b > dur * 0.92) { const f = dur * 0.92 / (a + b); a *= f; b *= f; }
+        return [a, b];
+      };
+      let [inDur, outDur] = durs(enter, exit);
+      let sch = schemeIdx;
+      if (!U && nSchemes > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nSchemes;
+      const LD0 = J.LAYOUTS[pickedLayout];
+      let LD = J.LAYOUTS[layout];
+      let params = LD0.plan(rng, { text: txt, n: nn, W: LW, H: LH, dur }, st);
+      if (layout !== pickedLayout) {
+        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W: LW, H: LH, dur }, st); } catch (e) {}
+      }
+      let decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, pickedLayout, history);
+      const pickedDecor = decor.map(d => d.id);
+      const pickedTreat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
+      let treat = pickedTreat;
+      if (UU) { decor = UU.decor(li, decor, { layout, kime, rng }); treat = UU.treat(li, treat, { kime, rng, LD }); }
+      let treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
+      if (!ov.bg && k > 0 && !U && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = pickBg(rng, st, en, fx, bgHistory); lineBgP = J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {}; }
+      let bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
+      let bgP = bg === lineBg ? lineBgP : {};
+      const pickedCam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
+      let cam = pickedCam;
+      if (UU) cam = UU.cam(li, cam, { kime, emph, rng });
+      let camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
+      let cutSeed = J.h(lineSeed, k, 17);
+      // 統一感: a line that comes back (サビ etc.) is shown exactly as the first time
+      const again = UU ? UU.again(li, k, txt) : null;
+      if (again) {
+        ({ layout, enter, exit, hold, params, decor, treat, treatP, cam, camP, weightGrow } = again);
+        sch = again.scheme; cutSeed = again.seed; LD = J.LAYOUTS[layout];
+        if (again.bg && again.bg !== 'none') { bg = again.bg; bgP = again.bgP; lineBgP = again.bgP; lineBg = bg; }
+        [inDur, outDur] = durs(enter, exit);
+      }
+      if (tech.layout && J.LAYOUTS[tech.layout] && !J.LAYOUTS[tech.layout].special) {
+        layout = tech.layout; LD = J.LAYOUTS[layout];
+        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W: LW, H: LH, dur }, st); } catch (e) {}
+      }
       if (tech.enter && J.ENTER[tech.enter]) enter = tech.enter;
       if (tech.exit && J.EXIT[tech.exit]) exit = tech.exit;
       if (tech.hold && J.HOLD[tech.hold]) hold = tech.hold;
-      let inDur = J.clamp(dur * 0.36, 0.12, 0.6);
-      if (enter === 'type') inDur = J.clamp(nn * 0.055 + 0.1, 0.15, dur * 0.65);
-      if (enter === 'assemble') inDur = J.clamp(dur * 0.45, 0.22, 0.75);
-      if (J.ENTER[enter] && J.ENTER[enter].inDur) inDur = J.ENTER[enter].inDur(dur, nn);
-      if (enter === 'cut') inDur = 0.12;
-      let outDur = exit === 'cut' ? 0 : J.clamp(dur * 0.3, 0.14, 0.55);
-      if (['explode', 'fall', 'drift'].includes(exit)) outDur = J.clamp(dur * 0.38, 0.25, 0.7);
-      if (J.EXIT[exit] && J.EXIT[exit].outDur) outDur = J.EXIT[exit].outDur(dur, nn);
-      if (inDur + outDur > dur * 0.92) { const f = dur * 0.92 / (inDur + outDur); inDur *= f; outDur *= f; }
-      let sch = schemeIdx;
-      if (nSchemes > 1 && k > 0 && rng.chance(0.12 * fx.bgSwitch)) sch = (schemeIdx + 1) % nSchemes;
-      const LD0 = J.LAYOUTS[pickedLayout];
-      const LD = J.LAYOUTS[layout];
-      let params = LD0.plan(rng, { text: txt, n: nn, W, H, dur }, st);
-      if (layout !== pickedLayout) {
-        try { params = LD.plan(J.rng(J.h(lineSeed, k, 91)), { text: txt, n: nn, W, H, dur }, st); } catch (e) {}
-      }
-      const decor = Array.isArray(ov.decor) ? ov.decor.filter(id => J.DECOR[id]).map(id => decorParams(rng, id)) : pickDecor(rng, st, en, fx, pickedLayout, history);
-      const pickedDecor = decor.map(d => d.id);
       if (tech.decor !== undefined) {
-        if (!tech.decor || tech.decor === 'none' || !J.DECOR[tech.decor]) decor.length = 0;
-        else { decor.length = 0; decor.push(decorParams(J.rng(J.h(lineSeed, k, 92)), tech.decor)); }
+        if (!tech.decor || tech.decor === 'none' || !J.DECOR[tech.decor]) decor = [];
+        else decor = [decorParams(J.rng(J.h(lineSeed, k, 92)), tech.decor)];
       }
-      const pickedTreat = ov.treat && J.TREAT[ov.treat] ? ov.treat : pickTreat(rng, st, en, fx, LD0, emph, history);
-      let treat = pickedTreat;
-      let treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(rng, st) : {};
       if (tech.treat && J.TREAT[tech.treat]) {
         treat = tech.treat;
         treatP = J.TREAT[treat].plan ? J.TREAT[treat].plan(J.rng(J.h(lineSeed, k, 93)), st) : {};
       }
-      if (!ov.bg && k > 0 && rng.chance(0.18 * fx.bgSwitch + 0.04)) { lineBg = pickBg(rng, st, en, fx, bgHistory); lineBgP = J.BG[lineBg].plan ? J.BG[lineBg].plan(rng, st) : {}; }
-      let bg = LD.busy && !(J.BG[lineBg] && J.BG[lineBg].subtle) ? 'none' : lineBg;
-      let bgP = bg === lineBg ? lineBgP : {};
       if (tech.bg && J.BG[tech.bg]) {
         bg = tech.bg;
         bgP = J.BG[bg].plan ? J.BG[bg].plan(J.rng(J.h(lineSeed, k, 94)), st) : {};
       }
-      const pickedCam = ov.cam && J.CAMERA[ov.cam] ? ov.cam : pickCam(rng, st, en, fx, LD0, emph, history);
-      let cam = pickedCam;
-      let camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
       if (tech.cam && J.CAMERA[tech.cam]) {
         cam = tech.cam;
         camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(J.rng(J.h(lineSeed, k, 95)), st) : {};
       }
+      [inDur, outDur] = durs(enter, exit);
       const prevCut = plan.cuts[plan.cuts.length - 1];
-      let trans = null, transP = {}, transDur = 0;
+      let trans = null, transP = {}, transDur = 0, morph = null;
       const canTrans = prevCut && Math.abs(prevCut.end - cs) < 0.06 && prevCut.layout !== 'interlude' && dur > 0.5;
       let pickedTrans = null;
-      if (canTrans) {
+      // 統一感: モーフ — the next part of the same line grows out of this one (shared characters glide, the rest melts)
+      if (canTrans && UU && k > 0 && !kime && (again ? again.morph : rng.chance(u.recap ? 0.85 : 0.4))) {
+        morph = { dur: J.clamp(dur * 0.45, 0.28, 0.6) };
+        enter = 'cut'; inDur = 0.12; prevCut.exit = 'cut'; prevCut.outDur = 0;
+      } else if (canTrans) {
         pickedTrans = ov.trans && J.TRANS[ov.trans] ? ov.trans : pickTrans(rng, st, en, fx, emph, history);
         trans = pickedTrans;
+        if (trans && UU) trans = UU.trans(li, trans, { rng });
         if (trans && J.TRANS[trans]) {
           const TD = J.TRANS[trans];
           transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
           transP = TD.plan ? TD.plan(rng, st) : {};
         }
       }
-      if (tech.trans === '' || tech.trans === 'none') { trans = null; transP = {}; transDur = 0; }
+      if (tech.trans === '' || tech.trans === 'none') { trans = null; transP = {}; transDur = 0; morph = null; }
       else if (tech.trans && J.TRANS[tech.trans]) {
-        trans = tech.trans;
+        trans = tech.trans; morph = null;
         const TD = J.TRANS[trans];
         transDur = J.clamp(TD.dur || 0.35, 0.12, Math.min(0.6, dur * 0.45));
         transP = TD.plan ? TD.plan(J.rng(J.h(lineSeed, k, 96)), st) : {};
       }
-      if (trans && prevCut && prevCut.layout !== 'interlude') {
+      if ((trans || morph) && prevCut && prevCut.layout !== 'interlude') {
         enter = 'cut'; inDur = 0.12;
         prevCut.exit = 'cut'; prevCut.outDur = 0;
       }
-      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: J.h(lineSeed, k, 17), emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
-        treat, treatP, bg, bgP, cam, camP, trans, transP, transDur });
+      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
+        treat, treatP, bg, bgP, cam, camP, trans, transP, transDur, zone: Z });
+      if (kime) cut.kime = true;
+      if (weightGrow) cut.weightGrow = true;
+      if (morph) cut.morph = morph;
+      if (UU) UU.remember(li, k, txt, cut);
+      // 文字整列: effects don't pile up — one decoration, no text treatment on top of it
+      if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
       history.push({ layout: pickedLayout, enter: pickedEnter, exit: pickedExit, hold: pickedHold, treat: pickedTreat, cam: pickedCam, trans: pickedTrans, decor: pickedDecor });
       // events at cut start
@@ -3533,7 +3706,11 @@ J.plan = (project, audio) => {
       if (fxOn('slice') && rng.chance(g * 0.5 + (emph ? 0.3 : 0))) addEvent(cs, 'slice', 0.6 + rng.range(0, 0.8) * g + (emph ? 0.5 : 0), rng.pick([2, 3, 4]) * F);
       if (fxOn('block') && rng.chance(g * 0.22)) addEvent(cs + rng.range(0, 0.05), 'block', 0.5 + g, rng.pick([2, 4]) * F);
       if (fxOn('shake') && (emph || rng.chance(fx.motion * 0.18))) addEvent(cs, 'shake', (emph ? 1 : 0.5) * fx.motion, 0.3);
-      if (fxOn('flash') && fx.flash && (ln.impact && k === 0)) addEvent(cs, 'flash', 1, 3 * F);
+      if (fxOn('flash') && fx.flash && (ln.impact && k === 0 || kime)) addEvent(cs, 'flash', 1, 3 * F);
+      if (kime) {                                  // キメ: a hard accent where the line lands
+        if (fxOn('zoom')) addEvent(cs, 'zoom', 1.1, 0.25);
+        if (fxOn('shake')) addEvent(cs + 0.04, 'shake', 1.1 * Math.max(0.5, fx.motion), 0.35);
+      }
       if (fxOn('invert') && rng.chance(0.035 * g)) addEvent(cs, 'invert', 1, 2 * F);
       if (fxOn('zoom') && (emph && rng.chance(0.6) || rng.chance(0.06 * fx.motion))) addEvent(cs, 'zoom', 0.7 + 0.5 * fx.motion, 0.22);
       if (fxOn('mosaic') && rng.chance(0.04 * g)) addEvent(cs, 'mosaic', 1, 3 * F);
@@ -3544,6 +3721,12 @@ J.plan = (project, audio) => {
         if (pick) { const D2 = J.FXE[pick]; const d = (D2.dur || 4) * F; addEvent(cs - (D2.pre ? D2.pre * F : 0), pick, (D2.amp || 1) * (0.7 + 0.5 * g + (emph ? 0.3 : 0)), d); fxHistory.push(pick); }
       }
       if (dur > 1.1) { const pick = pickFx(rng, st, en, fx, emph, fxHistory, 'mid'); if (pick) { const D2 = J.FXE[pick]; addEvent(cs + rng.range(0.4, 0.75) * dur, pick, (D2.amp || 1) * (0.5 + 0.4 * g), (D2.dur || 3) * F); } }
+      // 文字整列: at most one screen effect per cut besides the colour split (the キメ line keeps its accents)
+      if (plan.typeset && !cut.kime) {
+        const mine = plan.events.splice(evMark);
+        let extra = 0;
+        for (const e of mine) if (e.type === 'chroma' || e.type === 'shake' && emph || extra++ < 1) plan.events.push(e);
+      }
     });
     // interlude in long gaps
     const nextStart = li < parsed.lines.length - 1 ? tm.starts[li + 1] : null;
@@ -3553,11 +3736,121 @@ J.plan = (project, audio) => {
     }
   });
   plan.cuts.sort((a, b) => a.start - b.start);
-  plan.cuts.forEach((c, i) => { c.index = i; });
+  plan.cuts.forEach((c, i) => { c.index = i; if (zones && !c.zone) c.zone = zoneOf(c.line); });
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
   return plan;
+};
+
+/* ---------- 統一感 (unify): the conventions of a hand-made lyric video ----------
+   · each part (a block between blank lines) keeps a small palette of layouts / motions / camera / decorations,
+     so the part reads as one idea; a new part may bring a new palette and colour scheme
+   · a line that comes back (サビ) is shown exactly as it was the first time
+   · directional moves alternate (left ↔ right, up ↔ down), strong moves are kept for the lines that matter
+   · キメ: lines ending in ! — or, when none is marked, the first line of a part that repeats — get one big cut
+   · モーフ between the parts of a line, and 太さ (thin → bold) now and then */
+const DIR_PAIRS = { enter: [['slideL', 'slideR'], ['riseMask', 'dropMask'], ['trackIn', 'trackOut'], ['flipX', 'flipY']],
+  exit: [['slideOutL', 'slideOutR'], ['sinkMask', 'riseOut'], ['flipOutX', 'flipOutY']],
+  cam: [['panL', 'panR'], ['tiltUp', 'tiltDown'], ['dollyIn', 'pullOut']] };
+const STRONG = { enter: ['bounceBig', 'whip', 'spin', 'slingshot', 'crumple', 'stamp', 'zoom', 'glitchIn', 'scramble', 'spiralIn', 'rollIn', 'shuffle', 'windBlown', 'matrixRain', 'stopMotion', 'splitFlap'],
+  cam: ['earthquake', 'shakeHard', 'crashZoom', 'barrelRoll', 'whipIn', 'snapPan', 'vertigo', 'roll', 'spiralIn', 'jelly', 'bounce', 'beatPunch', 'stepZoom'] };
+const KIME = { layout: ['huge', 'huge', 'huge', 'columnsBig', 'columnsBig', 'halftoneBig', 'center'], enter: ['stamp', 'zoom', 'bounceBig', 'overexpose', 'slingshot', 'blur'],
+  exit: ['zoomThrough', 'blur', 'shrink', 'zoomFar'], hold: ['still', 'pulse', 'heartbeat'], cam: ['beatPunch', 'crashZoom', 'dollyIn', 'push'] };
+const SOFT_ENTER = ['blur', 'fadeStagger', 'trackIn', 'blurStagger', 'cut'];
+function makeUnify(lines, C) {
+  const { st, en, fx, history } = C;
+  const norm = t => String(t || '').replace(/[\s、。，．,.!！?？…・「」『』（）()"'“”‘’~〜ー―-]/g, '');
+  // sections
+  const sec = [], starts = new Set([0]);
+  let si = 0;
+  lines.forEach((ln, i) => { if (i > 0 && (ln.gapBefore || ln.interlude || lines[i - 1].interlude)) { si++; starts.add(i); } sec.push(si); });
+  // repeats
+  const first = new Map(), repeatOf = [], count = new Map();
+  lines.forEach((ln, i) => { const k = norm(ln.text); if (ln.interlude || k.length < 2) { repeatOf.push(null); return; } count.set(k, (count.get(k) || 0) + 1); if (first.has(k)) repeatOf.push(first.get(k)); else { first.set(k, i); repeatOf.push(null); } });
+  // キメ
+  const kime = new Set();
+  lines.forEach((ln, i) => { if (ln.impact && !ln.interlude) kime.add(i); });
+  if (!kime.size) lines.forEach((ln, i) => { if (starts.has(i) && !ln.interlude && (count.get(norm(ln.text)) || 0) >= 2) kime.add(i); });
+  const ok = (g, k) => !!(k && en[g] && en[g][k] !== false && (g === 'layout' ? J.LAYOUTS[k] : g === 'enter' ? J.ENTER[k] : g === 'exit' ? J.EXIT[k] : g === 'hold' ? J.HOLD[k] : g === 'cam' ? J.CAMERA[k] : g === 'treat' ? J.TREAT[k] : g === 'trans' ? J.TRANS[k] : null));
+  const pals = new Map(), last = new Map();
+  const pal = i => { const s2 = sec[i]; if (!pals.has(s2)) pals.set(s2, { layout: [], enter: [], exit: [], hold: [], cam: [], decor: [], treat: [], trans: [] }); return pals.get(s2); };
+  // keep up to max distinct picks per part; once full, mostly reuse them
+  const sticky = (i, g, v, max, rng, fits = () => true, reuse = 0.85) => {
+    const P = pal(i)[g];
+    if (P.length >= max && rng.chance(reuse)) { const pool = P.filter(k => ok(g, k) && fits(k)); if (pool.length) return rng.pick(pool); }
+    if (!P.includes(v) && P.length < max) P.push(v);
+    return v;
+  };
+  // alternate directions within a part
+  const alternate = (i, g, v) => {
+    const key = sec[i] + ':' + g, prev = last.get(key);
+    for (const pr of DIR_PAIRS[g] || []) {
+      const j = pr.indexOf(v);
+      if (j >= 0 && prev && pr.includes(prev)) { const w = pr[1 - pr.indexOf(prev)]; if (ok(g, w)) v = w; }
+    }
+    last.set(key, v);
+    return v;
+  };
+  const strongRun = new Map();                 // was the previous cut of this part strong?
+  const calm = (i, g, v, emph, repick, rng) => {
+    const key = sec[i] + ':' + g;
+    if (!emph && STRONG[g] && STRONG[g].includes(v) && (strongRun.get(key) || rng.chance(0.55))) {
+      for (let t = 0; t < 4; t++) { const w = repick(); if (!STRONG[g].includes(w)) { v = w; break; } }
+    }
+    strongRun.set(key, !!(STRONG[g] && STRONG[g].includes(v)));
+    return v;
+  };
+  const kimePick = (g, v, rng, fits = () => true) => { const pool = KIME[g].filter(k => ok(g, k) && fits(k)); return pool.length ? rng.pick(pool) : v; };
+  const specs = new Map();
+  return {
+    kime,
+    sectionStart: i => starts.has(i),
+    layout(i, v, o) {
+      const fits = k => J.LAYOUTS[k] && J.LAYOUTS[k].fits(o.nn) && (!o.portrait || J.LAYOUTS[k].portrait !== 0);
+      if (o.kime) return kimePick('layout', v, o.rng, k => J.LAYOUTS[k].fits(o.nn));
+      return sticky(i, 'layout', v, 3, o.rng, fits, 0.9);
+    },
+    enter(i, v, o) {
+      if (o.kime) return kimePick('enter', v, o.rng);
+      v = sticky(i, 'enter', v, 2, o.rng);
+      v = calm(i, 'enter', v, o.emph, () => pickEnter(o.rng, st, en, o.layout, o.dur, history, false, o.nn), o.rng);
+      return alternate(i, 'enter', v);
+    },
+    exit(i, v, o) { if (o.kime) return kimePick('exit', v, o.rng); return alternate(i, 'exit', sticky(i, 'exit', v, 2, o.rng)); },
+    hold(i, v, o) { if (o.kime) return kimePick('hold', v, o.rng); return sticky(i, 'hold', v, 1, o.rng); },
+    cam(i, v, o) {
+      if (o.kime) return kimePick('cam', v, o.rng);
+      v = sticky(i, 'cam', v, 2, o.rng);
+      v = calm(i, 'cam', v, o.emph, () => pickCam(o.rng, st, en, fx, J.LAYOUTS.center, false, history), o.rng);
+      return alternate(i, 'cam', v);
+    },
+    decor(i, list, o) {
+      if (o.kime) return [];
+      const P = pal(i).decor;
+      if (P.length >= 2 && o.rng.chance(0.8)) { const id = o.rng.pick(P); return J.DECOR[id] ? [decorParams(o.rng, id)] : list; }
+      for (const d of list) if (!P.includes(d.id) && P.length < 2) P.push(d.id);
+      return list;
+    },
+    treat(i, v, o) { if (o.kime) return 'none'; return sticky(i, 'treat', v, 1, o.rng, () => true, 0.75); },
+    trans(i, v, o) { return sticky(i, 'trans', v, 2, o.rng); },
+    weightGrow(o) { if (!/^(ja|en)$/.test(C.lang || 'ja') || o.nn > 16 || o.dur < 0.7) return false; return o.rng.chance(o.kime ? 0.45 : 0.14); },
+    softEnter(v, rng) { const pool = SOFT_ENTER.filter(k => ok('enter', k)); return pool.length ? rng.pick(pool) : v; },
+    again(i, k, txt) { const f = repeatOf[i]; if (f == null) return null; const sp = (specs.get(f) || [])[k]; return sp && sp.text === txt ? sp : null; },
+    remember(i, k, txt, cut) {
+      if (!specs.has(i)) specs.set(i, []);
+      specs.get(i)[k] = { text: txt, layout: cut.layout, enter: cut.enter, exit: cut.exit, hold: cut.hold, params: cut.params, decor: cut.decor, treat: cut.treat, treatP: cut.treatP,
+        cam: cut.cam, camP: cut.camP, scheme: cut.scheme, seed: cut.seed, bg: cut.bg, bgP: cut.bgP, weightGrow: !!cut.weightGrow, morph: !!cut.morph };
+    },
+  };
+}
+
+/* side bands for 中央を空ける: [a, b] in design pixels. Wide frames: left / right thirds (a little narrower on 21:9);
+   tall frames: top / bottom; square-ish frames count as wide. */
+J.sideZones = (W, H) => {
+  if (H > W * 1.1) { const h = Math.round(H * 0.33); return [{ x: 0, y: 0, w: W, h, side: 'top' }, { x: 0, y: H - h, w: W, h, side: 'bottom' }]; }
+  const w = Math.round(W * (W / H > 2 ? 0.3 : 0.36));
+  return [{ x: 0, y: 0, w, h: H, side: 'left' }, { x: W - w, y: 0, w, h: H, side: 'right' }];
 };
 
 function makeCut(o) {
@@ -3996,6 +4289,7 @@ class Renderer {
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
     if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
+    if (J.setTypeset) J.setTypeset(plan.typeset);          // 文字整列
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
@@ -4055,6 +4349,10 @@ class Renderer {
       { pass: 'main', lag: 0, off: [0, 0] },
     ];
     const ghostOn = (fx.chroma ?? 0.7) > 0.02 && (st.ghost ?? 1) > 0.02 && !opt.noGhost;
+    // モーフ (統一感): during the first moments of a morph cut its lyric is drawn by drawMorph (glyphs glide / melt)
+    const MC = !opt.noTrans && !opt.glyphLog && mainCut && mainCut.morph && mainCut.index > 0 ? mainCut : null;
+    const mPrev = MC ? plan.cuts[MC.index - 1] : null, mlt = MC ? tq - MC.start : 0;
+    const morphOn = !!(MC && mPrev && mlt < MC.morph.dur && Math.abs(mPrev.end - MC.start) < 0.06);
     let mainBB = null, mainEnv = null;
     // camera blur (focus pulls etc.) is applied ONCE to the whole content layer — a blur filter on every
     // individual draw call is extremely slow when a layout draws many text rows
@@ -4076,14 +4374,20 @@ class Renderer {
       const tp = Math.max(0, tq - P.lag);
       const cut = P.lag ? J.cutAt(plan, tp) : mainCut;
       if (!cut) continue;
+      if (morphOn && cut !== mainCut) continue;
       const csc = st.schemes[cut.scheme % st.schemes.length] || st.schemes[0];
       const lt = tp - cut.start;
       const X = LX || ctx;
+      const Z = plan.centerFree && cut.zone ? cut.zone : null;
       const env = this.makeEnv(X, plan, cut, csc, {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
-        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer,
+        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer, zone: Z,
+        hideText: morphOn, glyphLog: P.pass === 'main' ? opt.glyphLog || null : null,
       });
       X.save();
+      // 中央を空ける: the cut (text, decorations, its camera) is drawn in its band and clipped to it
+      if (Z) { X.beginPath(); X.rect(Z.x, Z.y, Z.w, Z.h); X.clip(); X.translate(Z.x, Z.y); }
+      const W = env.W, H = env.H;
       // camera move for this cut (default: slow push-in)
       let cam = null;
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
@@ -4102,6 +4406,11 @@ class Renderer {
     if (LX) {
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       ctx.filter = `blur(${(layerBlur * scale).toFixed(1)}px)`; ctx.drawImage(LX.canvas, 0, 0); ctx.restore();
+    }
+    if (morphOn && layer !== 'back') {
+      const L = this.morphLogs(plan, mPrev, MC, cw, ch, scale, opt);
+      const k = J.clamp(mlt / MC.morph.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      this.drawMorph(ctx, L, e, allowFilter);
     }
     // ---------- cut-to-cut transition: composite the previous cut's resting frame with this one ----------
     if (!opt.noTrans && mainCut && mainCut.trans && J.TRANS[mainCut.trans] && mainCut.index > 0) {
@@ -4155,8 +4464,63 @@ class Renderer {
     ctx.restore();
   }
 
+  /* モーフ: where every glyph of the previous cut rests at its end, and where this cut's glyphs land (cached) */
+  morphLogs(plan, A, B, cw, ch, scale, opt) {
+    if (!this.morphCache || this.morphCache.plan !== plan) this.morphCache = { plan, map: new Map() };
+    const key = A.index + ':' + B.index + ':' + cw + 'x' + ch + ':' + scale.toFixed(4), M = this.morphCache.map;
+    if (M.has(key)) return M.get(key);
+    const cv = this.ensure(this.morphCv || (this.morphCv = mk(2, 2)), cw, ch), x = cv.getContext('2d');
+    const o2 = { scale, noPost: true, noHud: true, noTrans: true, noGhost: true, transparent: opt.transparent, fast: true };
+    const la = [], lb = [];
+    this.frame(x, plan, Math.max(A.start, A.end - 1e-3), Object.assign({}, o2, { glyphLog: la }));
+    this.frame(x, plan, B.start + B.morph.dur + 1e-3, Object.assign({}, o2, { glyphLog: lb }));
+    const r = { A: la, B: lb };
+    M.set(key, r); if (M.size > 24) M.delete(M.keys().next().value);
+    return r;
+  }
+  drawMorph(ctx, L, e, allowFilter) {
+    const used = new Array(L.A.length).fill(false), pairs = [];
+    for (const g of L.B) {
+      let j = -1;
+      for (let q = 0; q < L.A.length; q++) if (!used[q] && L.A[q].ch === g.ch) { j = q; break; }
+      if (j >= 0) used[j] = true;
+      pairs.push([j >= 0 ? L.A[j] : null, g]);
+    }
+    const det = m => Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2])) || 1;
+    const put = (g, col, alpha, blur) => {
+      if (alpha <= 0.01) return;
+      ctx.globalAlpha = Math.min(1, alpha);
+      ctx.filter = allowFilter && blur > 0.4 ? `blur(${blur.toFixed(1)}px)` : 'none';
+      ctx.font = g.font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (g.fill) { ctx.fillStyle = col; ctx.fillText(g.ch, 0, 0); }
+      if (g.stroke > 0) { ctx.lineJoin = 'round'; ctx.lineWidth = g.stroke; ctx.strokeStyle = g.strokeColor || col; ctx.strokeText(g.ch, 0, 0); }
+    };
+    ctx.save();
+    // the rest of the old line melts away (drips, swells, blurs)…
+    L.A.forEach((a, q) => {
+      if (used[q]) return;
+      ctx.setTransform(a.m[0], a.m[1], a.m[2], a.m[3], a.m[4], a.m[5]);
+      ctx.translate(0, e * a.px * 0.45); ctx.scale(1 + e * 0.12, 1 + e * 0.6);
+      put(a, a.color, a.a * Math.pow(1 - e, 1.4), e * a.px * 0.14 * det(a.m));
+    });
+    // …shared characters glide to their new place, new ones condense out of a blur
+    for (const [a, b] of pairs) {
+      if (a) {
+        const m = a.m.map((v, i) => v + (b.m[i] - v) * e);
+        ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        const k = (a.px / b.px) + (1 - a.px / b.px) * e; ctx.scale(k, k);
+        put(b, /^#[0-9a-f]{3,8}$/i.test(a.color) && /^#[0-9a-f]{3,8}$/i.test(b.color) ? J.mix(a.color, b.color, e) : (e < 0.5 ? a.color : b.color), a.a + (b.a - a.a) * e, 0);
+      } else {
+        const k = 1 - e;
+        ctx.setTransform(b.m[0], b.m[1], b.m[2], b.m[3], b.m[4], b.m[5]);
+        ctx.translate(0, -k * b.px * 0.3); ctx.scale(1 + k * 0.1, 1 + k * 0.4);
+        put(b, b.color, b.a * e, k * b.px * 0.14 * det(b.m));
+      }
+    }
+    ctx.restore();
+  }
   makeEnv(ctx, plan, cut, sc, o) {
-    const W = plan.W, H = plan.H;
+    const W = o.zone ? o.zone.w : plan.W, H = o.zone ? o.zone.h : plan.H;   // 中央を空ける: a cut lives in its side band
     const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan }, o);
     if (cut) {
       env.pIn = J.clamp(o.lt / Math.max(0.01, cut.inDur));
@@ -4549,21 +4913,50 @@ J.saveFile = async (filename, data) => {
 };
 
 /* ---------- codec negotiation ---------- */
+const VIDEO_CANDS = [
+  { codec: 'avc1.640034', mux: 'avc', label: 'H.264 High' },
+  { codec: 'avc1.640033', mux: 'avc', label: 'H.264 High' },
+  { codec: 'avc1.4d0033', mux: 'avc', label: 'H.264 Main' },
+  { codec: 'avc1.42003e', mux: 'avc', label: 'H.264 Baseline' },
+  { codec: 'vp09.00.51.08', mux: 'vp9', label: 'VP9' },
+  { codec: 'av01.0.12M.08', mux: 'av1', label: 'AV1' },
+];
+// hardware encoders often refuse very high bitrates (52 Mbps+ for 1080p60 at 最高) — keep them in a range they accept
+J.videoBitrate = (w, h, fps, quality) => {
+  const want = w * h * fps * (quality === 'max' ? 0.42 : quality === 'high' ? 0.28 : 0.16);
+  const px = w * h, cap = px <= 2.2e6 ? 40e6 : px <= 3.8e6 ? 60e6 : 90e6;
+  return Math.round(Math.min(want, cap));
+};
+const vcfg = (c, w, h, fps, bitrate, hw) => {
+  const cfg = { codec: c.codec, width: w, height: h, bitrate, framerate: fps };
+  if (hw) cfg.hardwareAcceleration = hw;
+  if (c.mux === 'avc') cfg.avc = { format: 'avc' };
+  return cfg;
+};
+async function supported(cfg) { try { const s = await VideoEncoder.isConfigSupported(cfg); return !!(s && s.supported); } catch (e) { return false; } }
 J.pickVideoCodec = async (w, h, fps, bitrate) => {
   if (typeof VideoEncoder === 'undefined') return null;
-  const cands = [
-    { codec: 'avc1.640033', mux: 'avc', label: 'H.264 High' },
-    { codec: 'avc1.4d0033', mux: 'avc', label: 'H.264 Main' },
-    { codec: 'avc1.42003e', mux: 'avc', label: 'H.264 Baseline' },
-    { codec: 'vp09.00.51.08', mux: 'vp9', label: 'VP9' },
-    { codec: 'av01.0.12M.08', mux: 'av1', label: 'AV1' },
-  ];
-  for (const c of cands) {
-    const cfg = { codec: c.codec, width: w, height: h, bitrate, framerate: fps };
-    if (c.mux === 'avc') cfg.avc = { format: 'avc' };
-    try { const s = await VideoEncoder.isConfigSupported(cfg); if (s.supported) return Object.assign({}, c, { cfg }); } catch (e) {}
-  }
+  for (const c of VIDEO_CANDS) { const cfg = vcfg(c, w, h, fps, bitrate); if (await supported(cfg)) return Object.assign({}, c, { cfg }); }
   return null;
+};
+/* the encoders to try, best first: the browser's choice, then the same codec in software (GPU encoders are the usual
+   reason an export fails every time on one PC), then a simpler profile / lower bitrate in software, then VP9 */
+J.videoAttempts = async (w, h, fps, bitrate) => {
+  if (typeof VideoEncoder === 'undefined') return [];
+  const out = [], seen = new Set();
+  const add = async (c, hw, br) => {
+    const key = c.codec + '|' + (hw || '') + '|' + br;
+    if (seen.has(key) || out.length >= 5) return;
+    const cfg = vcfg(c, w, h, fps, br, hw);
+    if (await supported(cfg)) { seen.add(key); out.push(Object.assign({}, c, { cfg, hw: hw || 'auto' })); }
+  };
+  let first = null;
+  for (const c of VIDEO_CANDS) { const cfg = vcfg(c, w, h, fps, bitrate); if (await supported(cfg)) { first = c; break; } }
+  if (first) { await add(first, null, bitrate); await add(first, 'prefer-software', bitrate); }
+  const avc = VIDEO_CANDS.filter(c => c.mux === 'avc' && c !== first);
+  for (const c of avc) { await add(c, 'prefer-software', Math.round(bitrate * 0.7)); if (out.length >= 3) break; }
+  for (const c of VIDEO_CANDS.filter(c => c.mux !== 'avc')) await add(c, 'prefer-software', Math.round(bitrate * 0.7));
+  return out;
 };
 J.pickAudioCodec = async (sr, chn) => {
   if (typeof AudioEncoder === 'undefined') return null;
@@ -4587,22 +4980,61 @@ J.exportSpan = (plan, range) => {
 };
 
 /* ---------- MP4 ---------- */
-J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signal, range }) => {
-  const span = J.exportSpan(plan, range);
+/* The MP4 is written as it is encoded (mp4-muxer, moov at the end) instead of being assembled in one huge
+   ArrayBuffer: into many small memory blocks (file: null), or straight into a file the user picked
+   (file: a FileSystemWritableFileStream, the "large video" button). A long 1080p / 1440p song used to need one contiguous
+   buffer of several hundred MB, doubled on finalize, which is what made those exports fail. */
+class BlockStore {                    // positioned writes into a list of blocks → Blob (no single giant buffer)
+  constructor() { this.blocks = []; this.end = 0; }
+  write(data, pos) {
+    let u = data instanceof Uint8Array ? data : new Uint8Array(data);
+    if (pos > this.end) { this.blocks.push({ pos: this.end, u: new Uint8Array(pos - this.end) }); this.end = pos; }
+    // overwrite what already exists (mp4-muxer patches the mdat size at finalize)
+    for (const b of this.blocks) {
+      if (pos >= this.end || !u.length) break;
+      const s0 = Math.max(pos, b.pos), s1 = Math.min(pos + u.length, b.pos + b.u.length);
+      if (s1 > s0) b.u.set(u.subarray(s0 - pos, s1 - pos), s0 - b.pos);
+    }
+    if (pos + u.length > this.end) { const from = Math.max(0, this.end - pos); this.blocks.push({ pos: this.end, u: u.slice(from) }); this.end = pos + u.length; }
+  }
+  blob(type) { return new Blob(this.blocks.map(b => b.u), { type }); }
+}
+J.exportMP4 = async (o) => {
+  const { plan, project, audio, quality = 'high', onProgress, signal, range, file = null } = o;
   const [w, h] = J.outputSize(project);
+  const fps = plan.fps, bitrate = J.videoBitrate(w, h, fps, quality);
+  const attempts = await J.videoAttempts(w, h, fps, bitrate);
+  if (!attempts.length) throw new Error('此浏览器不支持视频编码（WebCodecs）。请用最新版 Chrome 或 Edge 打开。');
+  const tried = [];
+  for (let k = 0; k < attempts.length; k++) {
+    const vc = attempts[k];
+    try {
+      if (file && k > 0) { await file.seek(0); await file.truncate(0); }
+      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? `（${vc.label}，用软件重试 ${k}）` : '' }));
+      r.tried = tried; return r;
+    } catch (e) {
+      if (signal && signal.aborted) throw new Error('已取消');
+      if (e && e.jzFatal) throw e;
+      tried.push(`${vc.label}/${vc.hw}: ${e && e.message ? e.message : e}`);
+      console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
+    }
+  }
+  const err = new Error('无法导出 MP4。请使用' + (file ? '' : '“大型视频用（直接保存为文件）”，或') + '降低分辨率、fps 或画质再试。详细：' + tried.join(' ／ '));
+  err.detail = tried; throw err;
+};
+async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
+  const span = J.exportSpan(plan, range);
   const fps = plan.fps;
-  const px = w * h * fps;
-  const bitrate = Math.round(px * (quality === 'max' ? 0.42 : quality === 'high' ? 0.28 : 0.16));
-  const vc = await J.pickVideoCodec(w, h, fps, bitrate);
-  if (!vc) throw new Error('此浏览器不支持视频编码（WebCodecs）。请用最新版 Chrome 或 Edge 打开。');
   let ac = null;
   if (audio && audio.buffer && project.includeAudio !== false) ac = await J.pickAudioCodec(48000, Math.min(2, audio.buffer.numberOfChannels));
-  const target = new Mp4Muxer.ArrayBufferTarget();
-  const muxOpts = { target, video: { codec: vc.mux, width: w, height: h, frameRate: fps }, fastStart: 'in-memory', firstTimestampBehavior: 'offset' };
+  const store = file ? null : new BlockStore();
+  const target = file ? new Mp4Muxer.FileSystemWritableFileStreamTarget(file, { chunkSize: 8 * 1048576 })
+    : new Mp4Muxer.StreamTarget({ onData: (data, pos) => store.write(data, pos), chunked: true, chunkSize: 8 * 1048576 });
+  const muxOpts = { target, video: { codec: vc.mux, width: w, height: h, frameRate: fps }, fastStart: false, firstTimestampBehavior: 'offset' };
   if (ac) muxOpts.audio = { codec: ac.mux, numberOfChannels: Math.min(2, audio.buffer.numberOfChannels), sampleRate: ac.sr };
   const muxer = new Mp4Muxer.Muxer(muxOpts);
-  let err = null;
-  const venc = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: e => { err = e; } });
+  let err = null, outFrames = 0;
+  const venc = new VideoEncoder({ output: (chunk, meta) => { outFrames++; try { muxer.addVideoChunk(chunk, meta); } catch (e) { err = e; } }, error: e => { err = e; } });
   venc.configure(Object.assign({}, vc.cfg, { latencyMode: 'quality' }));
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d', { alpha: false });
@@ -4610,28 +5042,37 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const total = Math.max(1, Math.round(span.dur * fps));
   const scale = w / plan.W;
   const prevRes = J.glyphs.maxRes; J.glyphs.maxRes = h >= 1000 ? 768 : 512;
+  const closeEnc = () => { try { if (venc.state !== 'closed') venc.close(); } catch (e) {} };
   try {
-  for (let i = 0; i < total; i++) {
-    if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('已取消'); }
+    for (let i = 0; i < total; i++) {
+      if (signal && signal.aborted) { closeEnc(); throw new Error('已取消'); }
+      if (err) throw err;
+      if (venc.state === 'closed') throw new Error('编码器已停止');
+      R.frame(ctx, plan, span.t0 + i / fps, { scale });
+      const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+      try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
+      let spins = 0;
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('编码器没有响应'); }
+      // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
+      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('编码器没有输出'); }
+      if (i % 3 === 0) { onProgress && onProgress(i / total, `帧 ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
+    }
+    await venc.flush();
     if (err) throw err;
-    R.frame(ctx, plan, span.t0 + i / fps, { scale });
-    const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
-    venc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
-    vf.close();
-    while (venc.encodeQueueSize > 4) await new Promise(r => setTimeout(r, 2));
-    if (i % 3 === 0) { onProgress && onProgress(i / total, `帧 ${i + 1}/${total}`); await new Promise(r => setTimeout(r, 0)); }
-  }
-  } finally { J.glyphs.maxRes = prevRes; }
-  await venc.flush(); venc.close();
+  } catch (e) { closeEnc(); throw e; }
+  finally { J.glyphs.maxRes = prevRes; }
+  closeEnc();
+  if (outFrames < total * 0.98) throw new Error(`帧数不足（${outFrames}/${total}）`);
   if (ac) {
     onProgress && onProgress(0.99, '正在编码音频');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
-    let aChunks = 0, aEnd = 0;
-    const aenc = new AudioEncoder({ output: (chunk, meta) => { aChunks++; aEnd = Math.max(aEnd, chunk.timestamp + (chunk.duration || 0)); muxer.addAudioChunk(chunk, meta); }, error: e => { err = e; } });
+    let aChunks = 0, aEnd = 0, aErr = null;
+    const aenc = new AudioEncoder({ output: (chunk, meta) => { aChunks++; aEnd = Math.max(aEnd, chunk.timestamp + (chunk.duration || 0)); muxer.addAudioChunk(chunk, meta); }, error: e => { aErr = e; } });
     aenc.configure({ codec: ac.codec, sampleRate: ac.sr, numberOfChannels: chn, bitrate: 192000 });
     const frames = rs.length, block = 4800;
     for (let off = 0; off < frames; off += block) {
+      if (aErr) break;
       const n = Math.min(block, frames - off);
       const data = new Float32Array(n * chn);
       for (let c = 0; c < chn; c++) data.set(rs.getChannelData(c).subarray(off, off + n), c * n);
@@ -4640,14 +5081,18 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
       if (aenc.encodeQueueSize > 16) await new Promise(r => setTimeout(r, 1));
     }
     await aenc.flush(); aenc.close();
-    if (err) throw err;
+    const fatal = m => { const e = new Error(m); e.jzFatal = true; return e; };    // audio problems: another video encoder won't help
+    if (aErr) throw fatal('音频编码失败：' + (aErr.message || aErr));
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('音频编码中途停止了（' + aChunks + '）。请重新导出');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('音频编码中途停止了（' + aChunks + '）。请重新导出');
   }
+  onProgress && onProgress(0.995, '正在完成文件');
   muxer.finalize();
+  if (file) await file.close();
   onProgress && onProgress(1, '完成');
-  return { blob: new Blob([target.buffer], { type: 'video/mp4' }), codec: vc.label, audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h };
-};
+  const size = file ? null : store.end;
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? '（软件）' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+}
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
@@ -4729,6 +5174,8 @@ J.planForAE = (plan, project, range) => {
     J.setLang(clean.lang);
     for (const k of Object.keys(clean.fontTable)) { const f = J.faceOf(k); clean.fontTable[k].langFamily = f.family.replace(/"/g, ''); clean.fontTable[k].langWeight = f.weight; }
   }
+  // モーフ has no After Effects counterpart yet: build it as the closest transition (an ink-blob dissolve)
+  for (const c of clean.cuts || []) if (c.morph && !c.trans) { c.trans = 'inkBlob'; c.transDur = c.morph.dur; c.transP = {}; c.webMorph = true; }
   // 行の範囲だけ: keep the cuts / events inside [t0, t1] and move them to start at 0.
   // audioOffset tells the AE panel to slide the song layer left by t0 so it stays in sync.
   if (range) {
@@ -29523,6 +29970,184 @@ J.randomOk = (project, g, k) => {
   J.SAMPLE_LYRICS = "我还记得/黎明的颜色\n远处响起渐渐散去的声音\n现在还来得及吗？\n不想就这样*透明*地结束!";
 })();
 
+/* Simplified Chinese part names (converted from the Traditional Chinese labels in app/chinese.js, with mainland
+   wording). Styles, moods and the sample lyrics come from app/i18n_zh_hans.py. Internal IDs stay language independent. */
+(() => {
+  'use strict';
+  const titles = {
+    layout: {
+      center: '居中', mixed: '大小混排', vcols: '竖排', marquee: '流动横幅', tile: '满版平铺',
+      scatter: '散落', ring: '环形', wave: '波浪轨迹', huge: '超出画面', labels: '标签贴',
+      condensed: '瘦长压缩', gloss: '注解', type: '打字', diag: '斜带', circle: '圆窗',
+      stack: '残影堆叠', pill: '胶囊', lowerThird: '下方字幕条', corners: '对角配置', staircase: '阶梯',
+      zigzag: '锯齿', arcTop: '彩虹弧', spiral: '螺旋', gridCells: '方格', dropCap: '首字放大',
+      justified: '版心', frameBox: '画框', bubble: '对话框', subtitleBar: '字幕条', ticker: '新闻跑马灯',
+      splitScreen: '二分割', mirror: '镜像', sideways: '横躺竖排', edgeFrame: '沿边环绕', perspective: '景深',
+      hanko: '落款', genkou: '稿纸', panels: '漫画分格', filmstrip: '胶片', quote: '引用',
+      ruler: '尺寸线', searchBar: '搜索框', chat: '聊天', notification: '通知', ticket: '票券',
+      rain: '文字雨', hanging: '吊挂', orbit: '环绕', tunnel: '隧道', wordCloud: '文字云',
+      bounceLine: '弹跳', elastic: '橡皮筋', crossBands: '交叉带', stickerBomb: '贴纸', neon: '霓虹',
+      keycaps: '键帽', bubbles: '泡泡', slotMachine: '老虎机', flipBoard: '翻牌看板', credits: '片尾字幕',
+      zoomRepeat: '连续放大', splitHalves: '上下分割', columnsBig: '大小竖排', circleWords: '同心圆', dotMatrix: '点阵显示',
+      depthStack: '景深重叠', typeSpecimen: '字体样本', kanjiFocus: '单字强调', halfVertical: '直横混排', curtain: '布幕',
+      equalizer: '等化器', tape: '胶带', magazine: '杂志跨页', headlineDeck: '标题与导言', contents: '目录',
+      footnote: '注脚', proofread: '校样', numbered: '编号', poster: '海报', swissGrid: '瑞士网格',
+      dictionary: '辞典', ema: '绘马', ransom: '剪报字', newspaper: '报纸', vinyl: '黑胶唱片',
+      cassette: '卡带', bookSpine: '书背', polaroid: '拍立得', stampSheet: '邮票版张', postcard: '明信片',
+      letterPaper: '信纸', calendar: '月历', chochin: '灯笼', routeMap: '路线图', stationSign: '站名牌',
+      noren: '暖帘', tanzaku: '短签', omikuji: '御神签', kakejiku: '挂轴', shoji: '障子',
+      clapper: '场记板', warningLabel: '警告标签', priceTag: '价格标签', nameTag: '名牌', stickyNotes: '便利贴',
+      karuta: '歌牌', cube: '立方体', cylinder: '圆柱', flipCards: '翻卡', accordion: '风琴折',
+      flag: '飘扬的旗', ribbon: '缎带', pendulum: '钟摆', pile: '文字堆', blocks: '积木',
+      balloons: '文字气球', magnets: '磁铁', tiles: '文字磁砖', bulbs: '灯泡招牌', ledScroll: '电子跑马灯',
+      billboard: '广告牌', crowdBubbles: '对话框群', crossword: '填字游戏', wordSearch: '找字游戏', puzzle: '拼图',
+      shadowPlay: '皮影戏', kaleido: '万花筒', dominoes: '骨牌', burst: '爆炸', fisheye: '鱼眼镜头',
+      wall: '墙面透视', origami: '折纸', zipper: '拉链', sliceStack: '切片堆叠', glitchGrid: '故障网格',
+      mosaicTiles: '磁砖拼画', maskReveal: '文字窗', contour: '等高线', halftoneBig: '网点巨字', stencil: '镂空模板',
+      title: '标题', interlude: '间奏'
+    },
+    enter: {
+      cut: '直切', assemble: '分解→聚合', slice: '切片', type: '打字', pop: '弹出',
+      drop: '落下', stretch: '伸缩', wipe: '擦除', blur: '模糊', spin: '旋转',
+      flicker: '闪烁', scramble: '乱码', zoom: '缩放', riseMask: '由下浮现', dropMask: '由上浮现',
+      slideL: '从左滑入', slideR: '从右滑入', slideWhole: '整体滑入', flipX: '纵轴翻转', flipY: '横轴翻转',
+      domino: '骨牌', fold: '折叠展开', unroll: '卷轴展开', strokeDraw: '线稿到上色', outlineFill: '轮廓→填色',
+      splitJoin: '上下合体', vSlice: '纵向切片', shutter: '快门', iris: '光圈', diagWipe: '斜向擦除',
+      blinds: '百叶窗', checker: '棋盘格', randomOrder: '随机顺序', bounceBig: '大跳跃', squashDrop: '压扁着地',
+      rubber: '橡皮拉伸', glitchIn: '故障浮现', echoIn: '残影聚合', whip: '急甩', skewIn: '倾斜',
+      trackIn: '字距收拢', trackOut: '字距扩张', blurStagger: '模糊错落', fadeStagger: '逐字淡入', waveIn: '波浪起伏',
+      spiralIn: '螺旋聚合', zoomOut: '巨大→原尺寸', resolve: '解码', magnet: '磁吸', inkBleed: '晕染',
+      neonOn: '霓虹点亮', cursorSweep: '光标扫过', stamp: '盖章', springIn: '弹簧', pendulum: '钟摆',
+      rollIn: '滚入', slingshot: '弹弓', rockSettle: '摇晃着地', bounceBall: '弹跳球', snapRail: '吸附对齐',
+      fanOpen: '扇子展开', cylinder: '圆柱旋转', shuffle: '洗牌', stopMotion: '定格动画', ripple: '涟漪',
+      zipper: '拉链', zoomAlt: '交错缩放', tiltUp: '站起', stickerPeel: '贴上贴纸', crumple: '揉皱还原',
+      noteUnfold: '展开信纸', tornJoin: '撕纸拼合', splitFlap: '翻牌', overexpose: '过曝', glint: '反光一闪',
+      loupe: '放大镜', filmFeed: '胶片滚动', backlight: '逆光', lightLeak: '漏光', heatHaze: '热浪扭曲',
+      crtOn: 'CRT 开机', interlace: '交错扫描', loadingBar: '加载条', dither: '抖动', odometer: '数字滚轮',
+      matrixRain: '数据雨', hatchFill: '斜线→实心', brushReveal: '笔触扫出', inkDrop: '墨滴', quarters: '四方聚合',
+      invertBox: '反转挖空', printRegister: '套印错位', echoCount: '数拍进场', liquidFill: '水位上升', windBlown: '乘风而来',
+      strokeOrder: '逐笔书写', clockWipe: '顺时针', shadowFirst: '影子先落', bubbles: '泡泡', tokoroten: '挤压成条'
+    },
+    hold: {
+      still: '静止', jitter: '抖动', drift: '漂移', breathe: '呼吸', wave: '波浪',
+      glitchtick: '故障', float: '轻飘飘', sway: '摇曳', pulse: '脉动', shimmer: '闪耀',
+      colorRun: '流动色彩', rotateSlow: '缓慢旋转', trackBreathe: '字距呼吸', skewWobble: '斜向摇晃', beatHop: '随拍跳动',
+      hWave: '横向波浪', heartbeat: '心跳', orbitSmall: '小圆周运动', jelly: '果冻', scanBand: '扫描带',
+      noiseDrift: '噪点漂移', tilt: '翘翘板', zoomSlow: '缓慢推近', stretchPulse: '随拍横向拉伸', glitchJump: '偶尔错位',
+      echoTrail: '残影拖尾', glowFlicker: '烛火摇曳', windGust: '阵风', dangle: '悬吊', eqBounce: '随音量伸缩',
+      flashBox: '随拍反转', glintSweep: '光泽扫过', flipSwap: '偶尔翻面', shadowSway: '影子摇晃', magnetJiggle: '磁力',
+      typeRattle: '打字震动', focusRack: '移焦', pluckString: '拨弦'
+    },
+    exit: {
+      cut: '直切', explode: '爆散', fall: '崩落', drift: '雾散', slice: '切片退场',
+      wipe: '擦除退场', shrink: '收缩', blur: '模糊退场', stretch: '伸缩退场', scatter: '飞散',
+      glitch: '故障退场', sinkMask: '下沉', riseOut: '向上消失', slideOutL: '向左滑出', slideOutR: '向右滑出',
+      flipOutX: '关门', flipOutY: '啪地倒下', foldOut: '折叠收起', squash: '压扁', trackOutWide: '字距散开',
+      collapse: '吸入', zoomThrough: '冲向镜头', zoomFar: '退向远方', spinOut: '旋转消失', twist: '扭转',
+      waveOut: '波浪崩解', blurOutStagger: '逐字模糊', undraw: '回到线稿', outlineOut: '填色褪去', irisClose: '光圈',
+      diagWipeOut: '斜向擦除', blindsClose: '百叶窗', checkerOut: '棋盘格', splitApart: '上下裂开', vSliceDrop: '纵向切片掉落',
+      melt: '融化', dissolve: '碎散', backspace: '退格删除', scrambleOut: '变成符号', glitchDissolve: '化为方块',
+      echoOut: '残响', whipOut: '急甩', gravity: '重力坠落', popOut: '迸裂', burn: '烧毁',
+      sweepCover: '横条遮盖', shatterLite: '四分飞散', peelOff: '撕下贴纸', crumpleOut: '揉成纸团丢掉', tearOut: '撕掉',
+      scorchOut: '烧焦消失', overexposeOut: '过曝泛白', scanOut: '扫描线消除', stripesOut: '条纹消除', halftoneOut: '化为网点',
+      eraserOut: '黑板擦擦掉', vacuumOut: '吸入一点', sandOut: '化沙飞散', shredOut: '碎纸机', dominoOut: '骨牌倒下',
+      hingeOut: '单边脱落', rocketOff: '发射升空', bounceOff: '弹跳离开', balloonOff: '气球飞走', deflateOut: '泄气飞走',
+      hazeOut: '消失于热浪', glassBreak: '玻璃碎裂', zipOut: '拉链', clapShut: '中央闭合', lampOff: '熄灯',
+      slotOut: '老虎机转动', clockOut: '时钟擦除', matrixOut: '数字雨', tornadoOut: '龙卷风', rollUpOut: '卷起',
+      snakeOut: '排队离开', flutterOut: '飘落', rollOff: '滚走', fanClose: '收起扇子', rgbSplitOut: '分色',
+      shockOut: '冲击波', floodOut: '淹没', slashOut: '一刀两断', mosaicOut: '马赛克', scribbleOut: '乱涂抹消',
+      candleOut: '吹熄'
+    },
+    decor: {
+      brackets: '框角标记', rings: '座标圆', dots: '点状圆环', arrows: '箭头', slash: '斜线',
+      sparks: '火花', leaders: '引线', waveform: '波形', barcode: '条码', grid: '网格',
+      stripes: '条纹', blobs: '墨渍', bars: '粗糙色带', shapes: '几何图形', counter: '大数字',
+      crosshair: '十字准线', cropMarks: '裁切标记', reticle: '锁定框', radar: '雷达', progressRing: '进度环',
+      timecodeBar: '时间码', rulerEdge: '边缘尺规', dimension: '尺寸线', indexNum: '流水号', dateStamp: '相片日期',
+      qrBlock: 'QR 风格方块', glitchRects: '故障碎片', concentricSquares: '同心方框', triangleSpin: '旋转三角', lineBurst: '放射线',
+      plusGrid: '十字网格', guides: '辅助线', waveLine: '波浪线', spiralLine: '漩涡', halftonePatch: '网点',
+      checkerStrip: '棋盘格带', beatRing: '节拍圆环', orbitDots: '环绕圆点', constellation: '星座', confetti: '彩纸',
+      petals: '花瓣', rainStreaks: '雨丝', snow: '雪', lightLeak: '漏光', bokeh: '散景光点',
+      speedCorner: '集中线', risingParticles: '上升粒子', twinkle: '闪烁星光', brushStroke: '笔刷痕', tapePieces: '纸胶带',
+      scribbleCircle: '手绘圈', scribbleUnder: '手绘底线', crossOut: '推敲笔记', highlightMark: '荧光笔', heartsStars: '爱心与星星',
+      watermarkKanji: '浮水印大字', verticalStrip: '竖排条', romajiLine: '罗马字', bracketsJP: '方头括号', seal: '落款',
+      kamon: '家纹', seigaiha: '青海波', asanoha: '麻叶纹', hanabi: '烟火', chochin: '灯笼',
+      shimenawa: '注连绳', sensu: '扇子', tsukiKumo: '云中月', momiji: '枫叶', namiGashira: '浪头',
+      kasumi: '霞', hexGrid: '六角网格', spectrumRing: '环形频谱', dataColumns: '数据列', spinner: '加载中',
+      headingTape: '方位刻度', glyphLock: '文字锁定', atomOrbit: '原子轨道', sonarArcs: '声波', circuit: '电路',
+      swatches: '色票', ruledLines: '横线笔记', registration: '套准标记', punchHoles: '打孔', staple: '钉书针',
+      paperClip: '回纹针', indexTabs: '索引标签', vines: '藤蔓', cloudPuffs: '云朵', starField: '星空',
+      moonPhases: '月相', sunRays: '阳光', rainRipples: '雨滴涟漪', bubbles: '肥皂泡', smoke: '烟',
+      dandelion: '蒲公英', fireflies: '萤火虫', memphis: '孟菲斯', zigzagRibbon: '锯齿缎带', polkaPatch: '圆点',
+      stripeCircle: '条纹圆', decoCorners: '装饰角', halfCircles: '半圆堆叠', loopArrows: '循环箭头', starburst: '星芒',
+      tally: '画正字', cursorClick: '光标', windowChrome: '窗口', progressBar: '进度条', toggleSwitch: '切换开关',
+      notifBell: '通知', likeCounter: '按赞数', mediaControls: '播放按钮', volumeBars: '音量', musicNotes: '音符'
+    },
+    treat: {
+      none: '无', outline: '空心字', outlineFill: '描边', doubleOutline: '双层描边', extrude: '立体字',
+      longShadow: '长阴影', hardShadow: '错位阴影', softShadow: '柔和阴影', glow: '发光', marker: '荧光笔',
+      underline: '底线', strike: '删除线', boxed: '方框字', gradientV: '垂直渐变', splitColor: '上下双色',
+      halftone: '网点', stripes: '条纹', hatch: '斜线', dotted: '点线轮廓', alternate: '交错配色',
+      italic: '斜体', wide: '扁平字', tall: '瘦长字', echoOutline: '轮廓残响', emphasisDots: '着重号',
+      neonOutline: '霓虹灯管', chrome: '镀铬', rainbow: '彩虹色', glitchSplit: '色版错位', shadowStack: '多重阴影',
+      stencilGap: '镂空字', waterline: '水位', karaoke: '卡拉 OK', sizeWave: '大小节奏', rotateAlt: '摇摆字',
+      baselineShift: '高低错落', fauxBold: '超粗', circled: '圆圈字', bracketsQuote: '引号', reflection: '倒影',
+      inline: '内框线', sticker: '贴纸描边', gradientSweep: '光泽扫过', kerningWide: '宽字距', monoGrid: '稿纸风',
+      outlineOffset: '错位空心字', toneShadow: '网点阴影', fadeChars: '余韵', cutShift: '切割错位', focusPull: '模糊移焦',
+      spotChar: '单字标记', ransom: '剪贴字'
+    },
+    bg: {
+      none: '素色', auroraRibbons: '极光', meshBlobs: '网格渐变', duotoneSweep: '双色扫动', horizonGlow: '行星边缘',
+      seigaiha: '青海波', asanoha: '麻叶纹', houndstooth: '千鸟格', herringbone: '人字纹', argyle: '菱格纹',
+      tartan: '苏格兰格纹', chevron: 'V 形纹', isoCubes: '立方体', hexGrid: '六角网格', triTess: '三角马赛克',
+      moire: '摩尔纹', squareTunnel: '方形隧道', spiralArms: '漩涡', topoLines: '等高线', ridgePlot: '山脊线图',
+      starfield: '星空', nightMoon: '月夜', skyline: '街景', sunsetSun: '夕阳', oceanWaves: '海浪',
+      rainWindow: '雨窗', snowLayers: '雪', fireworks: '烟火', cloudLayers: '云', mountains: '山峦',
+      filmStrip: '胶片', vhsBand: 'VHS 噪点', tornPaper: '撕纸', godRays: '光芒', vignettePulse: '彩色暗角',
+      kaleidoscope: '万花筒', marble: '大理石', paperCut: '剪纸', sunburst: '放射', concentric: '同心圆',
+      halftoneFade: '网点渐变', bigStripes: '大斜纹', splitV: '左右双色', splitH: '上下双色', splitDiag: '斜向双色',
+      gradientSweep: '渐变', spotlight: '聚光灯', tvBars: '电视彩条', checker: '棋盘格', bigChar: '巨大文字',
+      speedLines: '集中线', scanBars: '扫描线带', dotGrid: '点状网格', retroGrid: '复古网格', bokehBg: '散景光点',
+      particlesBg: '飞舞粒子', ripples: '涟漪', polka: '圆点', eqBars: '背景等化器', borderFrame: '粗框',
+      letterbox: '电影黑边', noiseField: '噪点扰动'
+    },
+    cam: {
+      push: '缓慢推近', orbitDrift: '环绕', barrelRoll: '桶滚', pendulumSway: '钟摆', focusIn: '对焦',
+      rackFocus: '失焦', earthquake: '地震', floatNoise: '漂浮', vertigo: '晕眩变焦', tiltDown: '镜头下摇',
+      spiralIn: '漩涡变焦', snapPan: '快速横摇', jelly: '果冻晃动', pullOut: '拉远', panL: '向左横摇',
+      panR: '向右横摇', tiltUp: '镜头上摇', dutch: '斜角镜头', handheld: '手持', beatPunch: '随拍放大',
+      whipIn: '急甩推入', crashZoom: '急速变焦', bounce: '弹跳', roll: '滚转', driftDiag: '斜向漂移',
+      shakeHard: '剧烈摇晃', dollyIn: '推轨', stepZoom: '分段变焦'
+    },
+    fx: {
+      chroma: '色彩错位跳动', shake: '摇晃', slice: '切片故障', block: '区块故障', invert: '反转',
+      flash: '闪光', zoom: '缩放模糊', mosaic: '马赛克', radialChroma: '放射色差', bloomFlash: '光晕',
+      bulge: '鱼眼', pixelSort: '像素排序', interlace: '交错扫描', macroBlock: '区块噪点', halftone: '网点',
+      duotone: '双色调', ditherBit: '1 位抖动', rotateSnap: '角度急转', echoFrames: '残影回声', kaleido: '万花筒',
+      bandInvert: '带状反转', lightRays: '光芒', anamorphic: '横向光斑', heartbeat: '心跳', tvStatic: '雪花噪点',
+      dustScratches: '胶片划痕', filmAdvance: '胶片滚动', perspectiveTilt: '透视摇晃', ripple: '涟漪', focusLines: '集中线',
+      speedLines: '速度线', starGlint: '星芒闪光', colorBars: '彩条', zoomStutter: '连续缩放', negativeRing: '反转圆环',
+      edgeDetect: '边缘侦测', shatter: '玻璃碎裂', defocus: '失焦', snapshot: '快门', squash: '伸缩',
+      scanBar: '扫描', loopScroll: '横向循环', panelWipe: '面板擦除', irisTrans: '光圈', doors: '门',
+      blindsTrans: '百叶窗', rgbSplit: 'RGB 分离', smear: '横向拖影', vhsRoll: 'VHS 滚动', trackingNoise: '磁道噪点',
+      mirrorFlash: '镜像', strobe: '频闪', posterize: '色调分离', hueShift: '色相偏移', tileShift: '磁砖错位',
+      filmBurn: '胶片烧灼', whipBlur: '急甩模糊', blackFrame: '黑画格', whiteFrame: '白画格', gridRepeat: '分割画面',
+      waveWarp: '波浪扭曲', pixelDrift: '像素偏移', zoomPunch: '缩放重击', lightSweep: '光束扫过', crtOff: '映像管关机',
+      splitSlide: '上下滑移'
+    },
+    trans: {
+      wipe: '边缘擦除', diagonalWipe: '斜带擦除', clockWipe: '时钟擦除', irisOpen: '光圈开启', pushSlide: '推移',
+      cover: '覆盖', uncover: '揭开', zoomThrough: '穿越缩放', doorsOpen: '对开门', blinds: '百叶窗转场',
+      checker: '棋盘格转场', blockDissolve: '方块崩解', whipPan: '急甩横摇', spinOut: '旋转转出', inkBlob: '墨渍',
+      shatterTiles: '磁砖崩落', sliceShift: '长条错位', cubeTurn: '立方体', flashCross: '闪光转场', pixelate: '马赛克转场'
+    }
+  };
+  for (const group of J.GROUP_KEYS) {
+    const table = J.registry(group), names = titles[group] || {};
+    for (const key of Object.keys(table)) if (names[key]) table[key].name = names[key];   // includes the special title / interlude layouts
+  }
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -29722,11 +30347,16 @@ function loadThumbFonts() {
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
 /* ---------------- viewport & drawing ---------------- */
+// 固定表示: on wide & tall windows the page itself doesn't scroll (see style.css html.fixed-ok)
+const FIXED_MQ = window.matchMedia ? window.matchMedia('(min-width: 1181px) and (min-height: 620px)') : null;
+document.documentElement.classList.add('fixed-ok');
+function fixedLayout() { return !!(FIXED_MQ && FIXED_MQ.matches) && document.documentElement.classList.contains('fixed-ok'); }
 function sizeViewport() {
   const vp = $('viewport'), c = $('view');
   const ar = S.plan.W / S.plan.H;
   let cssW = vp.clientWidth || 800, cssH = cssW / ar;
-  const maxH = Math.max(220, window.innerHeight * 0.68);
+  // fixed workspace: the viewport gets whatever height is left under the header / above the transport and timeline
+  const maxH = fixedLayout() ? Math.max(160, vp.clientHeight - 2) : Math.max(220, window.innerHeight * 0.68);
   if (cssH > maxH) { cssH = maxH; cssW = cssH * ar; }
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
@@ -29734,10 +30364,20 @@ function sizeViewport() {
   c.style.width = cssW + 'px'; c.style.height = cssH + 'px';
   S.need = true;
 }
+// preview only: dotted outline of the centre that 中央を空ける keeps free (never in exports)
+function drawCenterGuide(ctx, k) {
+  const P = S.plan, z = P.zones; if (!z) return;
+  const r = z[0].side === 'left' ? [z[0].w, 0, P.W - z[0].w - z[1].w, P.H] : [0, z[0].h, P.W, P.H - z[0].h - z[1].h];
+  ctx.save(); ctx.setTransform(k, 0, 0, k, 0, 0);
+  ctx.setLineDash([14, 10]); ctx.lineWidth = 2 / k * 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.strokeRect(r[0] + 4, r[1] + 4, r[2] - 8, r[3] - 8);
+  ctx.setLineDash([]); ctx.restore();
+}
 function draw() {
   const c = $('view'), ctx = c.getContext('2d');
   const t0 = performance.now();
   S.renderer.frame(ctx, S.plan, S.t, { scale: c.width / S.plan.W, fast: S.playing && S.slow });
+  if (S.plan.centerFree) drawCenterGuide(ctx, c.width / S.plan.W);
   const dt = performance.now() - t0;
   S.slow = S.playing ? (dt > 30 ? true : dt < 14 ? false : S.slow) : false;
   updateTimeUI(); drawTimeline(); updateCutInfo();
@@ -29879,6 +30519,23 @@ function tlDragTo(i, ev) {
   replan(); seek(t + 0.001);
 }
 
+/* ---------------- keep the playing line in view (the list scrolls inside its column) ---------------- */
+let listTouched = 0;
+function followLine(li) {
+  if (!S.playing || li < 0 || !fixedLayout()) return;
+  if (performance.now() - listTouched < 2500) return;                       // the user is scrolling the list
+  const el = S.lineEls[li], col = el && el.closest('.col-left');
+  if (!el || !col || col.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  const r = el.getBoundingClientRect(), c = col.getBoundingClientRect();
+  if (r.top >= c.top + 8 && r.bottom <= c.bottom - 8) return;
+  col.scrollTo({ top: col.scrollTop + (r.top - c.top) - c.height * 0.3, behavior: 'smooth' });
+}
+function bindFollow() {
+  const col = document.querySelector('.col-left'); if (!col) return;
+  const touch = () => { listTouched = performance.now(); };
+  col.addEventListener('wheel', touch, { passive: true }); col.addEventListener('touchmove', touch, { passive: true }); col.addEventListener('pointerdown', touch);
+}
+
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
   ['layout', 'l', '布局'], ['enter', 'e', '入场'], ['hold', 'h', '保持'], ['exit', 'x', '退场'],
@@ -29983,7 +30640,7 @@ function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
   const idx = cut ? cut.index : -1;
   const li = cut ? cut.line : -1;
-  if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; }
+  if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; followLine(li); }
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
@@ -30170,11 +30827,41 @@ function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s)
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
   if (!from.length) return;
-  to.push(edSnap());
-  const o = JSON.parse(from.pop());
+  const o = JSON.parse(from.pop()), cur = JSON.parse(edSnap());
+  if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
+  to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '已撤销' : '已重做');
+}
+// 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
+function clearLyrics() {
+  if (S.tap || S.exporting) return;
+  const P = S.project;
+  if (!P.lyrics.trim() && !Object.keys(P.timing.lineTimes || {}).length) { $('lyrics').focus(); return; }
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('已清除歌词（可用“撤销”或 Ctrl+Z 找回）');
+}
+// 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
+let audioNameDefault = '';
+async function resetAll() {
+  if (S.exporting) return;
+  if (S.tap) stopTap();
+  pause();
+  S.project = mergeProject(null); S.project.lyrics = '';
+  S.audio = null; if ($('audioFile')) $('audioFile').value = '';
+  if (J.forgetSong) await J.forgetSong();
+  $('audioName').textContent = audioNameDefault;
+  ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+  TL.z = 1; TL.off = 0;
+  $('lyrics').value = ''; fontKey = '';
+  syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
+  toast('已初始化');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
@@ -30607,6 +31294,7 @@ function syncOut() {
   $('outQuality').value = S.project.quality || 'high'; $('outAudio').checked = S.project.includeAudio !== false;
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
+  $('outCenter').checked = $('eCenter').checked = !!S.project.centerFree;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? '绿幕' : '黑底'}`;
@@ -30616,15 +31304,25 @@ async function codecNote() {
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
   $('codecNote').textContent = vc ? `此浏览器将以 ${vc.label} 导出（${w}×${h} / ${S.project.fps}fps）。导出期间请不要关闭此标签页。` : '此浏览器不支持视频编码（WebCodecs）。请用最新版 Chrome / Edge 打开，或改用 PNG 序列。';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
+  ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
   if (!vc) $('eMP4').title = '此浏览器不支持导出 MP4（推荐 Chrome / Edge）';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
 }
+const canPickFile = () => typeof window.showSaveFilePicker === 'function' && !document.documentElement.classList.contains('cep') && typeof VideoEncoder !== 'undefined';
 async function runExport(kind) {
   if (S.exporting) return;
+  // 大きな動画用: the save dialog must open straight from the click (before anything is awaited)
+  let file = null, fileName = '';
+  if (kind === 'mp4file') {
+    try {
+      const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
+      file = await hnd.createWritable(); fileName = hnd.name;
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('无法打开保存位置：' + (e && e.message ? e.message : e)); return; }
+  }
   pause();
   const ac = new AbortController(); S.exporting = ac;
   const boxes = [...document.querySelectorAll('.exp-box')];
@@ -30637,12 +31335,16 @@ async function runExport(kind) {
   const t0 = performance.now();
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
-    if (kind === 'mp4') {
+    if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
-      txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB · ${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}秒`;
-      const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += '（已取消保存）';
+      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      file = null;
+      txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}秒`;
+      if (r.blob) {
+        const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
+        if (res === 'declined') txt.textContent += '（已取消保存）';
+      } else txt.textContent += `，已保存到“${fileName}”`;
+      if (r.tried && r.tried.length) txt.textContent += '（第一种方式失败，已改用其他编码器导出）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
@@ -30656,6 +31358,7 @@ async function runExport(kind) {
   } catch (e) {
     txt.textContent = '错误：' + (e && e.message ? e.message : e);
     console.error(e);
+    if (file) { try { await file.abort(); } catch (e2) {} }
   } finally {
     S.exporting = null; S.need = true;
     EXP_BTNS.forEach(id => { $(id).disabled = false; });
@@ -30714,6 +31417,8 @@ function syncUI() {
   $('snap').checked = !!S.project.timing.snap;
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
+  document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
@@ -30802,6 +31507,8 @@ function bind() {
   }));
   setSwitch('extra-toggle', 'extra', true, '新增特效：使用', '新增特效：不使用（只用首个公开版的特效）');
   setSwitch('wa-toggle', 'wa', true, '和风特效：使用', '和风特效：不使用（一键生成和随机编排时不会选用）');
+  setSwitch('unify-toggle', 'unify', true, '统一感：开启（段落一致，并使用亮点、变形、粗细）', '统一感：关闭');
+  setSwitch('typeset-toggle', 'typeset', true, '文字排列：开启（字距、助词、英文、提前 0.2 秒、效果节制）', '文字排列：关闭');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -30839,7 +31546,13 @@ function bind() {
     toast(k ? `背景：${k === 'green' ? '绿幕' : '黑底'}（仅白色文字和特效）` : '背景：常规（风格配色）');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
+  ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
+    S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
+    const tall = S.plan.H > S.plan.W * 1.1;
+    toast(e.target.checked ? `已留出中央：文字与特效放在${tall ? '上下' : '左右'}` : '已取消留出中央');
+  }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
+  ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
   $('btnPNGL').addEventListener('click', () => runExport('pngl'));
@@ -30863,6 +31576,14 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(S.project, null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  audioNameDefault = $('audioName').textContent;
+  $('btnClearLyrics').addEventListener('click', clearLyrics);
+  $('btnReset').addEventListener('click', () => {
+    const dlg = $('resetDlg');
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('要清除歌词、歌曲、设置与历史，回到最初的状态吗？此操作无法撤销。')) resetAll(); return; }
+    dlg.returnValue = ''; dlg.showModal();
+  });
+  $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
@@ -30877,7 +31598,7 @@ function bind() {
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
-    if (typing || $('termsDlg').open) return;
+    if (typing || $('termsDlg').open || $('resetDlg').open) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
@@ -30885,6 +31606,7 @@ function bind() {
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
+  bindFollow();
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */

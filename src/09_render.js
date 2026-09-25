@@ -67,6 +67,7 @@ class Renderer {
     const sc = st.schemes[mainCut ? mainCut.scheme % st.schemes.length : 0] || st.schemes[0];
     const allowFilter = this.filterOK && !opt.fast;
     if (J.setLang) J.setLang(plan.lang || 'ja');           // faces follow the plan's lyric language
+    if (J.setTypeset) J.setTypeset(plan.typeset);          // 文字整列
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
@@ -126,6 +127,10 @@ class Renderer {
       { pass: 'main', lag: 0, off: [0, 0] },
     ];
     const ghostOn = (fx.chroma ?? 0.7) > 0.02 && (st.ghost ?? 1) > 0.02 && !opt.noGhost;
+    // モーフ (統一感): during the first moments of a morph cut its lyric is drawn by drawMorph (glyphs glide / melt)
+    const MC = !opt.noTrans && !opt.glyphLog && mainCut && mainCut.morph && mainCut.index > 0 ? mainCut : null;
+    const mPrev = MC ? plan.cuts[MC.index - 1] : null, mlt = MC ? tq - MC.start : 0;
+    const morphOn = !!(MC && mPrev && mlt < MC.morph.dur && Math.abs(mPrev.end - MC.start) < 0.06);
     let mainBB = null, mainEnv = null;
     // camera blur (focus pulls etc.) is applied ONCE to the whole content layer — a blur filter on every
     // individual draw call is extremely slow when a layout draws many text rows
@@ -147,14 +152,20 @@ class Renderer {
       const tp = Math.max(0, tq - P.lag);
       const cut = P.lag ? J.cutAt(plan, tp) : mainCut;
       if (!cut) continue;
+      if (morphOn && cut !== mainCut) continue;
       const csc = st.schemes[cut.scheme % st.schemes.length] || st.schemes[0];
       const lt = tp - cut.start;
       const X = LX || ctx;
+      const Z = plan.centerFree && cut.zone ? cut.zone : null;
       const env = this.makeEnv(X, plan, cut, csc, {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
-        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer,
+        t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer, zone: Z,
+        hideText: morphOn, glyphLog: P.pass === 'main' ? opt.glyphLog || null : null,
       });
       X.save();
+      // 中央を空ける: the cut (text, decorations, its camera) is drawn in its band and clipped to it
+      if (Z) { X.beginPath(); X.rect(Z.x, Z.y, Z.w, Z.h); X.clip(); X.translate(Z.x, Z.y); }
+      const W = env.W, H = env.H;
       // camera move for this cut (default: slow push-in)
       let cam = null;
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
@@ -173,6 +184,11 @@ class Renderer {
     if (LX) {
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       ctx.filter = `blur(${(layerBlur * scale).toFixed(1)}px)`; ctx.drawImage(LX.canvas, 0, 0); ctx.restore();
+    }
+    if (morphOn && layer !== 'back') {
+      const L = this.morphLogs(plan, mPrev, MC, cw, ch, scale, opt);
+      const k = J.clamp(mlt / MC.morph.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      this.drawMorph(ctx, L, e, allowFilter);
     }
     // ---------- cut-to-cut transition: composite the previous cut's resting frame with this one ----------
     if (!opt.noTrans && mainCut && mainCut.trans && J.TRANS[mainCut.trans] && mainCut.index > 0) {
@@ -226,8 +242,63 @@ class Renderer {
     ctx.restore();
   }
 
+  /* モーフ: where every glyph of the previous cut rests at its end, and where this cut's glyphs land (cached) */
+  morphLogs(plan, A, B, cw, ch, scale, opt) {
+    if (!this.morphCache || this.morphCache.plan !== plan) this.morphCache = { plan, map: new Map() };
+    const key = A.index + ':' + B.index + ':' + cw + 'x' + ch + ':' + scale.toFixed(4), M = this.morphCache.map;
+    if (M.has(key)) return M.get(key);
+    const cv = this.ensure(this.morphCv || (this.morphCv = mk(2, 2)), cw, ch), x = cv.getContext('2d');
+    const o2 = { scale, noPost: true, noHud: true, noTrans: true, noGhost: true, transparent: opt.transparent, fast: true };
+    const la = [], lb = [];
+    this.frame(x, plan, Math.max(A.start, A.end - 1e-3), Object.assign({}, o2, { glyphLog: la }));
+    this.frame(x, plan, B.start + B.morph.dur + 1e-3, Object.assign({}, o2, { glyphLog: lb }));
+    const r = { A: la, B: lb };
+    M.set(key, r); if (M.size > 24) M.delete(M.keys().next().value);
+    return r;
+  }
+  drawMorph(ctx, L, e, allowFilter) {
+    const used = new Array(L.A.length).fill(false), pairs = [];
+    for (const g of L.B) {
+      let j = -1;
+      for (let q = 0; q < L.A.length; q++) if (!used[q] && L.A[q].ch === g.ch) { j = q; break; }
+      if (j >= 0) used[j] = true;
+      pairs.push([j >= 0 ? L.A[j] : null, g]);
+    }
+    const det = m => Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2])) || 1;
+    const put = (g, col, alpha, blur) => {
+      if (alpha <= 0.01) return;
+      ctx.globalAlpha = Math.min(1, alpha);
+      ctx.filter = allowFilter && blur > 0.4 ? `blur(${blur.toFixed(1)}px)` : 'none';
+      ctx.font = g.font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (g.fill) { ctx.fillStyle = col; ctx.fillText(g.ch, 0, 0); }
+      if (g.stroke > 0) { ctx.lineJoin = 'round'; ctx.lineWidth = g.stroke; ctx.strokeStyle = g.strokeColor || col; ctx.strokeText(g.ch, 0, 0); }
+    };
+    ctx.save();
+    // the rest of the old line melts away (drips, swells, blurs)…
+    L.A.forEach((a, q) => {
+      if (used[q]) return;
+      ctx.setTransform(a.m[0], a.m[1], a.m[2], a.m[3], a.m[4], a.m[5]);
+      ctx.translate(0, e * a.px * 0.45); ctx.scale(1 + e * 0.12, 1 + e * 0.6);
+      put(a, a.color, a.a * Math.pow(1 - e, 1.4), e * a.px * 0.14 * det(a.m));
+    });
+    // …shared characters glide to their new place, new ones condense out of a blur
+    for (const [a, b] of pairs) {
+      if (a) {
+        const m = a.m.map((v, i) => v + (b.m[i] - v) * e);
+        ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        const k = (a.px / b.px) + (1 - a.px / b.px) * e; ctx.scale(k, k);
+        put(b, /^#[0-9a-f]{3,8}$/i.test(a.color) && /^#[0-9a-f]{3,8}$/i.test(b.color) ? J.mix(a.color, b.color, e) : (e < 0.5 ? a.color : b.color), a.a + (b.a - a.a) * e, 0);
+      } else {
+        const k = 1 - e;
+        ctx.setTransform(b.m[0], b.m[1], b.m[2], b.m[3], b.m[4], b.m[5]);
+        ctx.translate(0, -k * b.px * 0.3); ctx.scale(1 + k * 0.1, 1 + k * 0.4);
+        put(b, b.color, b.a * e, k * b.px * 0.14 * det(b.m));
+      }
+    }
+    ctx.restore();
+  }
   makeEnv(ctx, plan, cut, sc, o) {
-    const W = plan.W, H = plan.H;
+    const W = o.zone ? o.zone.w : plan.W, H = o.zone ? o.zone.h : plan.H;   // 中央を空ける: a cut lives in its side band
     const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan }, o);
     if (cut) {
       env.pIn = J.clamp(o.lt / Math.max(0.01, cut.inDur));
