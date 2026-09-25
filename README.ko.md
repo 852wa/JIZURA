@@ -2,7 +2,7 @@
 
 가사를 입력하면 브라우저에서 리릭 모션 영상을 자동으로 구성하고 MP4로 내보낼 수 있습니다. JIZURA는 레이아웃, 등장, 유지, 퇴장, 장식, 글자 효과, 배경, 카메라, 화면 효과, 전환을 조합하며, 시드를 바꾸거나 **자동으로 만들기**를 누르면 다른 구성을 만들 수 있습니다.
 
-**[한국어판 열기](https://852wa.github.io/JIZURA/ko/)** · [日本語版](https://852wa.github.io/JIZURA/) · [English](https://852wa.github.io/JIZURA/en/) · [일본어 가이드](README.md)
+**[한국어판 열기](https://852wa.github.io/JIZURA/ko/)** · [Tiếng Việt](https://852wa.github.io/JIZURA/vi/) · [日本語版](https://852wa.github.io/JIZURA/) · [English](https://852wa.github.io/JIZURA/en/) · [일본어 가이드](README.md)
 
 한국어·영어·일본어 브라우저판은 같은 프로젝트 형식과 브라우저 저장 데이터를 사용합니다. 편집기 상단의 언어 링크로 UI 언어를 바꿔도 가사와 설정은 그대로 유지됩니다.
 

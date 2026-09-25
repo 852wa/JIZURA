@@ -1,5 +1,5 @@
 """Check a translation module: every English glossary key is translated and no Japanese is left on the page.
-usage: python3 tools/check_i18n.py zh-Hant|zh-Hans|ko|id"""
+usage: python3 tools/check_i18n.py zh-Hant|zh-Hans|ko|id|vi"""
 import os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT); os.chdir(ROOT)

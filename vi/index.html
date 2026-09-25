@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="id-ID">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JIZURA — Pembuat video lirik bergerak</title>
-<meta name="description" content="Buat video lirik bergerak dari lirik di browser, lalu ekspor ke MP4.">
-<link rel="canonical" href="https://852wa.github.io/JIZURA/id/">
+<title>JIZURA — Trình tạo video lời bài hát chuyển động</title>
+<meta name="description" content="Tạo video lời bài hát chuyển động từ lời trong trình duyệt, rồi xuất MP4.">
+<link rel="canonical" href="https://852wa.github.io/JIZURA/vi/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
@@ -14,9 +14,9 @@
 <link rel="alternate" hreflang="id-ID" href="https://852wa.github.io/JIZURA/id/">
 <link rel="alternate" hreflang="vi" href="https://852wa.github.io/JIZURA/vi/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA — Pembuat video lirik bergerak">
-<meta property="og:description" content="Buat video lirik bergerak dari lirik di browser, lalu ekspor ke MP4.">
-<meta property="og:url" content="https://852wa.github.io/JIZURA/id/">
+<meta property="og:title" content="JIZURA — Trình tạo video lời bài hát chuyển động">
+<meta property="og:description" content="Tạo video lời bài hát chuyển động từ lời trong trình duyệt, rồi xuất MP4.">
+<meta property="og:url" content="https://852wa.github.io/JIZURA/vi/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -366,243 +366,243 @@ button.small.primary { padding: 4px 12px; }
     <div class="tour-step mono muted"></div>
     <h3 id="tourTitle" class="tour-title"></h3>
     <p class="tour-text"></p>
-    <div class="tour-nav"><button class="tour-skip ghost small">Lewati</button><span class="tour-sp"></span><button class="tour-prev ghost small">Kembali</button><button class="tour-next primary small">Berikutnya</button></div>
+    <div class="tour-nav"><button class="tour-skip ghost small">Bỏ qua</button><span class="tour-sp"></span><button class="tour-prev ghost small">Quay lại</button><button class="tour-next primary small">Tiếp theo</button></div>
   </div>
 </div>
 <div id="app">
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="Judul lagu (ditampilkan di kartu judul dan HUD)" aria-label="Judul lagu">
-      <input id="songArtist" type="text" placeholder="Artis" aria-label="Artis">
+      <input id="songTitle" type="text" placeholder="Tên bài hát (hiển thị trên tiêu đề và HUD)" aria-label="Tên bài hát">
+      <input id="songArtist" type="text" placeholder="Tên nghệ sĩ" aria-label="Tên nghệ sĩ">
     </div>
-    <div class="modes" role="group" aria-label="Mode editor">
-      <button id="modeEasy" aria-pressed="false" title="Tampilan sederhana dengan fokus pada pembuatan otomatis">Sederhana</button>
-      <button id="modePro" aria-pressed="true" title="Tampilkan semua pengaturan">Lanjutan</button>
-      <button id="btnTour" class="ghost tour-btn" title="Panduan singkat mode Sederhana" aria-label="Panduan penggunaan">？</button>
+    <div class="modes" role="group" aria-label="Chế độ soạn thảo">
+      <button id="modeEasy" aria-pressed="false" title="Giao diện đơn giản tập trung vào việc tạo tự động">Cơ bản</button>
+      <button id="modePro" aria-pressed="true" title="Hiển thị tất cả cài đặt">Nâng cao</button>
+      <button id="btnTour" class="ghost tour-btn" title="Hướng dẫn nhanh về chế độ đơn giản" aria-label="Hướng dẫn sử dụng">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Bahasa</span><select aria-label="Bahasa" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID" selected>Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Ngôn ngữ</span><select aria-label="Ngôn ngữ" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi" selected>Tiếng Việt</option></select></label>
     <div class="acts">
-      <label class="file" title="Buka proyek tersimpan (.json)">Buka<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="Simpan proyek sebagai .json">Simpan</button>
-      <button id="btnAE" title="Ekspor data proyek untuk panel After Effects">Ekspor untuk AE</button>
-      <button id="btnReset" class="ghost" title="Hapus lirik, lagu, pengaturan, dan riwayat, lalu mulai dari awal">Atur ulang</button>
-      <button id="btnTerms" class="ghost terms-open" title="Hak dan lisensi hasil ekspor">Tentang dan hak</button>
+      <label class="file" title="Mở dự án đã lưu (.json)">Mở dự án<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="Lưu dự án dưới dạng .json">Lưu</button>
+      <button id="btnAE" title="Xuất dữ liệu dự án sang bảng After Effects">Xuất cho AE</button>
+      <button id="btnReset" class="ghost" title="Xóa lời bài hát, bài hát, cài đặt và lịch sử rồi bắt đầu lại">Đặt lại</button>
+      <button id="btnTerms" class="ghost terms-open" title="Quyền và giấy phép đối với sản phẩm đã xuất">Giới thiệu & quyền sử dụng</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="Lirik dan timing">
+    <section class="col col-left" aria-label="Lời bài hát và thời gian">
       <div class="sec">
-        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lirik (satu frasa per baris)"></textarea>
-        <label class="lang-row">Bahasa lirik<select id="lyricLang"><option value="auto">Deteksi otomatis</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
+        <div class="sec-h"><h2>Lời bài hát</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Xóa lời bài hát cùng với câu và cắt cảnh, cài đặt trên mỗi câu và phạm vi xuất (có thể được khôi phục bằng Hoàn tác hoặc Ctrl+Z)">Xóa</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Cú pháp</button></span></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lời bài hát (mỗi câu một dòng)"></textarea>
+        <label class="lang-row">Ngôn ngữ lời bài hát<select id="lyricLang"><option value="auto">Tự động</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>Satu frasa per baris. Baris kosong memberi jeda singkat.</li>
-            <li><code>Ku ingat/warna fajar</code> … <code>/</code> menandai batas cut</li>
-            <li><code>*transparan*</code> … penekanan (lebih besar, efek lebih kuat)</li>
-            <li>Di akhir baris: <code>!</code> … menambahkan flash dan goyangan</li>
-            <li><code>lirik|bacaan atau catatan</code> … teks kecil dalam layout anotasi</li>
-            <li><code>[01:23.45]Lirik</code> … memakai timestamp LRC apa adanya</li>
-            <li><code>[interlude 8]</code> … bagian instrumental 8 detik (tanpa lirik, hanya latar dan dekorasi). Kalau angkanya dihilangkan, durasinya 4 detik; ketuk atau marker bisa dipakai untuk mengatur durasinya</li>
-            <li><code>#</code> mengawali komentar (diabaikan)</li>
+            <li>Một câu trên mỗi dòng. Dòng trống sẽ tạo khoảng dừng ngắn.</li>
+            <li><code>Tôi nhớ/màu của bình minh</code> … <code>/</code> đánh dấu điểm ngắt câu</li>
+            <li><code>*nhấn mạnh*</code> …nhấn mạnh (hiệu ứng lớn hơn, mạnh hơn)</li>
+            <li>Ở cuối dòng: <code>!</code> …thêm đèn flash và rung</li>
+            <li><code>lời bài hát|ghi chú</code> …văn bản nhỏ trong bố cục</li>
+            <li><code>[01:23.45]Lời bài hát</code> …sử dụng dấu thời gian LRC như hiện tại</li>
+            <li><code>[interlude 8]</code> … đoạn nhạc nền 8 giây (không hiện lời, chỉ nền và hiệu ứng). Không số thì mặc định 4 giây; Đặt điểm chuyển cảnh hoặc thanh neo để chỉnh độ dài</li>
+            <li><code>#</code> Đánh dấu ghi chú (bỏ qua)</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Audio dan timing</h2></div>
-        <div id="audioName" class="muted audio-name">Tidak ada audio. Impor lagu untuk mendeteksi ketukan dan menyesuaikan cut.</div>
+        <div class="sec-h"><h2>Âm thanh và thời gian</h2></div>
+        <div id="audioName" class="muted audio-name">Không có âm thanh. Chọn một tệp để phát hiện nhịp và điều chỉnh các đoạn chuyển cảnh.</div>
         <div class="row">
-          <label class="file" title="MP3, WAV, M4A, dan lainnya">Impor audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="Ketuk di awal setiap baris sambil lagu diputar">Sinkronkan ke ketukan</button>
+          <label class="file" title="MP3, WAV, M4A, v.v...">Chọn tệp<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="Nhấn vào đầu mỗi dòng trong khi bài hát đang phát">Đặt điểm chuyển cảnh</button>
         </div>
         <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Otomatis"></label>
-          <label class="field">Mulai (dtk)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">Durasi baris<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Tự động"></label>
+          <label class="field">Bắt đầu (giây)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">Thời lượng<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Ikuti ketukan</label>
-          <button id="btnResetTimes" class="ghost small">Hapus timing manual</button>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Bám theo nhịp</label>
+          <button id="btnResetTimes" class="ghost small">Xóa thời gian thủ công</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Tekan <span class="kbd">Space</span> atau tombol saat tiap baris dimulai. Kepencet? Tekan <span class="kbd">Backspace</span> atau “Batalkan ketukan”. Untuk mengulang dari baris tertentu, tekan ◎ di daftar baris.</div>
-          <div class="next">Berikutnya: <b id="tapLine">—</b></div>
+          <div class="hint">Nhấn <span class="kbd">Space</span> hoặc nút ở đầu câu. Nhấn nhầm? Bấm <span class="kbd">Backspace</span> hoặc “Hoàn tác”. Để làm lại từ một câu giữa chừng, bấm ◎ trong danh các câu.</div>
+          <div class="next">Kế tiếp: <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">Batalkan ketukan</button>
-          <button id="tapStop" class="ghost">Selesai</button>
+          <button id="tapBack" class="ghost">Hoàn tác</button>
+          <button id="tapStop" class="ghost">Hoàn thành</button>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Baris dan cut</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>Lời bài hát và cắt cảnh</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="Pratinjau">
+    <section class="col col-stage" aria-label="Xem trước">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Putar">▶</button>
+        <button id="btnPlay" class="play" aria-label="Phát">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Posisi pemutaran">
-        <button id="btnLoop" class="ghost small" aria-pressed="true">Loop</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Klik untuk membisukan / menyalakan suara (hanya pratinjau — volume ekspor tetap asli)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume pratinjau"></span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Vị trí phát lại">
+        <button id="btnLoop" class="ghost small" aria-pressed="true">Vòng lặp</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Nhấp để tắt tiếng / bật tiếng (chỉ xem trước — bản xuất vẫn giữ nguyên âm lượng)">Âm lượng</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Âm lượng xem trước"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="Kembali ke variasi sebelumnya" aria-label="Sebelumnya">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="Lanjut ke variasi berikutnya" aria-label="Berikutnya">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="Quay lại biến thể trước đó" aria-label="Biến thể trước">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="Tiếp tục với biến thể tiếp theo" aria-label="Biến thể sau">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="Acak ulang susunan tanpa mengubah pengaturan (baris terkunci tetap)">Acak susunan</button>
-        <button id="btnOmakase" class="primary" title="Acak gaya, suasana, efek, dan warna sekaligus (tombol R)">Buat variasi</button>
+        <button id="btnShuffle" class="accent" title="Sắp xếp các hiệu ứng mà không thay đổi cài đặt (không tác động tới các câu đã khoá)">Sắp xêp ngẫu nhiên</button>
+        <button id="btnOmakase" class="primary" title="Chọn ngẫu nhiên các kiểu, cảnh, hiệu ứng và màu sắc cùng một lúc (nút R)">Ngẫu nhiên</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">Seret marker baris di bagian atas untuk memindahkan awal baris. Tahan <span class="kbd">Shift</span> agar tidak menempel ke ketukan</span>
+        <span class="tl-hint muted">Kéo thanh neo ở trên để dời điểm bắt đầu câu. Giữ <span class="kbd">Shift</span> để kéo tự do không bám nhịp</span>
         <span class="tl-btns">
-          <button id="btnUndoEdit" class="ghost small" title="Urungkan perubahan lirik dan waktu (Ctrl+Z)" disabled>Urungkan</button>
-          <button id="tlOut" class="ghost small icon-txt" title="Perkecil" aria-label="Perkecil timeline">−</button>
-          <button id="tlIn" class="ghost small icon-txt" title="Perbesar (atau gulir di timeline)" aria-label="Perbesar timeline">＋</button>
-          <button id="tlFit" class="ghost small" title="Tampilkan seluruh lagu">Semua</button>
+          <button id="btnUndoEdit" class="ghost small" title="Hoàn tác thay đổi lời và thời gian (Ctrl+Z)" disabled>Hoàn tác</button>
+          <button id="tlOut" class="ghost small icon-txt" title="Thu nhỏ" aria-label="Thu nhỏ dòng thời gian">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="Phóng to (hoặc cuộn trong dòng thời gian)" aria-label="Phóng to dòng thời gian">＋</button>
+          <button id="tlFit" class="ghost small" title="Hiển thị tất cả bài hát">Tất cả</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Timeline (klik untuk berpindah, drag marker baris untuk menyesuaikan)"></canvas>
+      <canvas id="timeline" aria-label="Dòng thời gian (bấm để di chuyển, kéo điểm đánh dấu hàng để điều chỉnh)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="Gaya dan ekspor">
+    <section class="col col-right" aria-label="Phong cách và xuất khẩu">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
-          <button id="btnOmakaseBig" class="omakase">Buat variasi</button>
-          <p class="hint">Setiap klik mengubah gaya, suasana, gerakan, warna, dan susunan. Tekan <span class="kbd">R</span> di keyboard untuk melakukan hal yang sama.</p>
+          <button id="btnOmakaseBig" class="omakase">TẠO NGẪU NHIÊN</button>
+          <p class="hint">Mỗi cú nhấp chuột sẽ thay đổi phong cách, bầu không khí (mood), chuyển động, màu sắc và bố cục. Hoặc nhấn <span class="kbd">R</span> </p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ Sebelumnya</button>
+            <button id="btnPrev2" class="ghost">◀ Biến thể trước</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">Berikutnya ▶</button>
+            <button id="btnNext2" class="ghost">Biến thể sau ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Sertakan efek baru<small>Sertakan sekitar 350 efek tambahan, 12 gaya warna, dan 6 font baru dalam pilihan acak. Jika dimatikan, hanya set awal yang dipakai.</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Sertakan motif Jepang<small>Sertakan grafik bernuansa Jepang seperti lentera, kartu pos, shoji, kipas, lambang keluarga, ombak, dan kelopak sakura dalam pilihan acak.</small></span></label>
-            <label class="check"><input class="unify-toggle" type="checkbox"><span>Tampilan seragam</span></label>
-            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Penataan teks</span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Sử dụng các hiệu ứng mới<small>Bao gồm khoảng 350 hiệu ứng bổ sung, 12 kiểu màu và 6 phông chữ mới trong một lựa chọn ngẫu nhiên. Nếu tắt, chỉ cài đặt ban đầu được sử dụng.</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Sử dụng các họa tiết Nhật Bản<small>Bao gồm họa tiết lấy cảm hứng từ Nhật Bản như đèn lồng, bưu thiếp, shoji, quạt, gia huy, sóng và cánh hoa anh đào trong một lựa chọn ngẫu nhiên.</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>Sử dụng hiệu ứng đồng nhất</span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Tạo kiểu cho văn bản</span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Variasi saat ini</h3>
+          <h3>Biến thể hiện tại</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>Ubah satu hal</h3>
+          <h3>Thay đổi một điều</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="Ganti gaya saja">Gaya</button>
-            <button id="ePalette" title="Acak warna aksen dan offset">Palet</button>
-            <button id="eMood" title="Ubah gerakan, glitch, dan nuansa teknik saja">Suasana</button>
-            <button id="eCut" title="Ubah susunan dan gerakan saja">Susunan</button>
+            <button id="eStyle" title="Chỉ cần thay đổi phong cách">Phong cách</button>
+            <button id="ePalette" title="Chọn ngẫu nhiên màu nhấn và màu bù">Bảng màu</button>
+            <button id="eMood" title="Chỉ cần thay đổi các bước di chuyển, trục trặc và cảm nhận về kỹ thuật">Bầu không khí</button>
+            <button id="eCut" title="Chỉ cần thay đổi cách sắp xếp và chuyển động">Sắp xếp</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Ekspor</h3>
+          <h3>Xuất bản</h3>
           <div class="fields">
-            <label class="field">Rasio aspek<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 tegak</option><option value="4:3">4:3</option><option value="3:4">3:4 tegak</option><option value="1:1">1:1</option><option value="4:5">4:5 tegak</option><option value="21:9">21:9</option></select></label>
-            <label class="field">Resolusi<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">Tỷ lệ khung hình<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 Chiều dọc</option><option value="4:3">4:3</option><option value="3:4">3:4 Chiều dọc</option><option value="1:1">1:1</option><option value="4:5">4:5 Chiều dọc</option><option value="21:9">21:9</option></select></label>
+            <label class="field">Độ phân giải<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">Latar<select id="eKey"><option value="off">Latar gaya</option><option value="green">Green screen (komposit)</option><option value="black">Latar hitam (komposit)</option></select></label>
+            <label class="field field-wide">Nền<select id="eKey"><option value="off">Nền phong cách</option><option value="green">Màn hình xanh (tổng hợp)</option><option value="black">Nền đen (tổng hợp)</option></select></label>
           </div>
-          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span></label>
-          <label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>
-          <div class="rng-row"><span class="rng-lab">Rentang ekspor</span><select class="rngFrom" aria-label="Baris pertama rentang ekspor"></select><span class="muted">〜</span><select class="rngTo" aria-label="Baris terakhir rentang ekspor"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Ekspor MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button></div>
-          <button class="terms-open linkish">Hak atas video yang diekspor</button>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Để trống giữa (cho nhân vật)<small>Để đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng đặt trái / phải trên khung ngang và trên / dưới trên khung dọc, xen kẽ từng dòng. Nền và hiệu ứng màn hình vẫn phủ toàn khung (xem trước đánh dấu vùng trống bằng nét đứt)</small></span></label>
+          <label class="row center-dir" hidden>Khi khung dọc<select class="centerDirSel" aria-label="Cách chia trên khung dọc"><option value="tb">Trên / dưới</option><option value="lr">Trái / phải</option></select></label>
+          <div class="rng-row"><span class="rng-lab">Xuất phạm vi</span><select class="rngFrom" aria-label="Hàng đầu tiên của phạm vi xuất"></select><span class="muted">〜</span><select class="rngTo" aria-label="Hàng cuối cùng của phạm vi xuất"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Xuất MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">Đối với video lớn (lưu trực tiếp vào tệp)</button></div>
+          <button class="terms-open linkish">Về quyền đối với video đã xuất</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Batal</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Đã hủy</button></div>
           </div>
         </div>
       </div>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="style" aria-selected="true">Gaya</button>
-        <button role="tab" data-tab="fx" aria-selected="false">Efek</button>
-        <button role="tab" data-tab="tech" aria-selected="false">Teknik</button>
-        <button role="tab" data-tab="out" aria-selected="false">Ekspor</button>
+        <button role="tab" data-tab="style" aria-selected="true">Phong cách</button>
+        <button role="tab" data-tab="fx" aria-selected="false">Hiệu ứng</button>
+        <button role="tab" data-tab="tech" aria-selected="false">Kỹ thuật</button>
+        <button role="tab" data-tab="out" aria-selected="false">Xuất bản</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
         <div id="styleGrid" class="style-grid"></div>
-        <h3>Peran font</h3>
+        <h3>Cài đặt phông chữ</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="Nama font di komputer (contoh: Arial)" style="flex:1">
-          <button id="btnAddFont">Tambah</button>
+          <input id="localFont" type="text" placeholder="Tên font trên máy tính (ví dụ: Arial)" style="flex:1">
+          <button id="btnAddFont">Thêm</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">File font (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Warna aksen dan offset</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>Pakai warna kustom<small>Berlaku untuk semua adegan. Kecerahan menyesuaikan latar secara otomatis.</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">Tệp phông chữ (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>Màu nhấn và màu bù</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>Sử dụng màu sắc tùy chỉnh<small>Áp dụng cho tất cả các cảnh. Độ sáng sẽ tự động điều chỉnh nền.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">Acak palet</button>
+          <button id="btnRandPalette" class="accent">Màu ngẫu nhiên</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>Warna latar dan teks</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>Pakai warna kustom untuk latar dan teks utama</span></label>
+        <h3>Màu nền và văn bản</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>Sử dụng màu tùy chỉnh cho nền và văn bản chính</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
         <div class="unify-box">
-          <label class="check"><input class="unify-toggle" type="checkbox"><span>Tampilan seragam</span></label>
-          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Penataan teks</span></label>
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>Sử dụng hiệu ứng đồng nhất</span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Tạo kiểu cho văn bản</span></label>
         </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
-          <label class="row" style="gap:6px">Interval frame <select id="fxKoma" title="Jumlah gambar per detik untuk gerakan (terpisah dari fps ekspor)"><option value="0">Penuh (mengikuti fps ekspor)</option><option value="12">Setiap 2 frame (12 gambar/dtk)</option><option value="8">Setiap 3 frame (8 gambar/dtk)</option></select></label>
+          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Hiệu ứng nhấp nháy</label>
+          <label class="row" style="gap:6px">Thời điểm thay đổi hiệu ứng <select id="fxKoma" title="Số lượng hình ảnh chuyển động mỗi giây (tách biệt với khung hình xuất bản)"><option value="0">Đầy đủ (theo khung hình xuất bản)</option><option value="12">Cứ 2 khung hình (12 hình/giây)</option><option value="8">Cứ sau 3 khung hình (8 hình/giây)</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">Otomatis (sesuai gaya)</option><option value="on">Selalu tampilkan</option><option value="off">Sembunyikan</option></select></label>
-          <label class="field">Seed<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Seed baru</button></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">Tự động (theo phong cách)</option><option value="on">Luôn hiển thị</option><option value="off">Ẩn</option></select></label>
+          <label class="field">Hạt giống<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Hạt giống mới</button></label>
         </div>
-        <p class="note">Seed yang sama akan menghasilkan susunan yang sama. Acak ulang atau kunci tiap baris dari daftar di sebelah kiri.</p>
+        <p class="note">Cùng một hạt giống sẽ tạo ra thứ tự hiệu ứng giống nhau. Sắp xếp lại hoặc khóa từng câu từ danh sách bên trái.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Sertakan efek baru<small>Sertakan teknik, gaya, dan font bertanda Baru dalam pilihan otomatis.</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Sertakan motif Jepang<small>Sertakan teknik dan gaya bertanda JP dalam pilihan otomatis. Pilihan manual per baris tetap bisa digunakan.</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Sử dụng các hiệu ứng mới<small>Bao gồm các kỹ thuật, kiểu và phông chữ được đánh dấu Mới trong lựa chọn tự động.</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Sử dụng các họa tiết Nhật Bản<small>Bao gồm các kỹ thuật và phong cách được đánh dấu JP trong lựa chọn tự động. Tùy chọn thủ công trên mỗi dòng vẫn có thể được sử dụng.</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter teknik berdasarkan nama" style="flex:1" aria-label="Filter teknik berdasarkan nama"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Kỹ thuật lọc theo tên" style="flex:1" aria-label="Kỹ thuật lọc theo tên"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">Rasio aspek<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 tegak</option><option value="4:3">4:3</option><option value="3:4">3:4 tegak</option><option value="1:1">1:1</option><option value="4:5">4:5 tegak</option><option value="21:9">21:9</option></select></label>
-          <label class="field">Resolusi<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">Tỷ lệ khung hình<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 Chiều dọc</option><option value="4:3">4:3</option><option value="3:4">3:4 Chiều dọc</option><option value="1:1">1:1</option><option value="4:5">4:5 Chiều dọc</option><option value="21:9">21:9</option></select></label>
+          <label class="field">Độ phân giải<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">Kualitas<select id="outQuality"><option value="standard">Standar</option><option value="high">Tinggi</option><option value="max">Maksimum</option></select></label>
-          <label class="field field-wide">Latar<select id="outKey"><option value="off">Latar gaya</option><option value="green">Green screen (komposit)</option><option value="black">Latar hitam (komposit)</option></select></label>
+          <label class="field">Chất lượng<select id="outQuality"><option value="standard">Tiêu chuẩn</option><option value="high">Cao</option><option value="max">Tối đa</option></select></label>
+          <label class="field field-wide">Nền<select id="outKey"><option value="off">Nền phong cách</option><option value="green">Màn hình xanh (tổng hợp)</option><option value="black">Nền đen (tổng hợp)</option></select></label>
         </div>
-        <p class="note key-note">Green screen dan latar hitam hanya menampilkan teks putih dan efek di atas warna solid, tanpa pola latar, tekstur kertas, partikel, atau vignette. Pratinjau juga mengikuti pengaturan ini. Gunakan chroma key untuk green screen, atau mode campur Screen / luma key untuk latar hitam agar bisa ditumpuk di atas video lain.</p>
-        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span></label>
-          <label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Sertakan audio dalam video</label>
-        <div class="rng-row"><span class="rng-lab">Rentang ekspor</span><select class="rngFrom" aria-label="Baris pertama rentang ekspor"></select><span class="muted">〜</span><select class="rngTo" aria-label="Baris terakhir rentang ekspor"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">Màn hình màu xanh lá cây và nền đen chỉ hiển thị văn bản và hiệu ứng màu trắng trên nền màu đồng nhất, không có mẫu nền, họa tiết giấy, hạt hoặc họa tiết. Xem trước cũng tuân theo cài đặt này. Sử dụng khóa màu (chroma key) cho màn hình xanh hoặc chế độ kết hợp khóa Màn hình / luma cho nền đen để có thể xếp lớp lên trên các video khác.</p>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Để trống giữa (cho nhân vật)<small>Để đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng đặt trái / phải trên khung ngang và trên / dưới trên khung dọc, xen kẽ từng dòng. Nền và hiệu ứng màn hình vẫn phủ toàn khung (xem trước đánh dấu vùng trống bằng nét đứt)</small></span></label>
+          <label class="row center-dir" hidden>Khi khung dọc<select class="centerDirSel" aria-label="Cách chia trên khung dọc"><option value="tb">Trên / dưới</option><option value="lr">Trái / phải</option></select></label>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Đưa âm thanh vào video</label>
+        <div class="rng-row"><span class="rng-lab">Xuất phạm vi</span><select class="rngFrom" aria-label="Hàng đầu tiên của phạm vi xuất"></select><span class="muted">〜</span><select class="rngTo" aria-label="Hàng cuối cùng của phạm vi xuất"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">Ekspor MP4</button>
-          <button id="btnMP4File" class="mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">MP4 (video besar, simpan langsung ke file)</button>
-          <button id="btnPNG">PNG berurutan (ZIP)</button>
-          <button id="btnPNGA">PNG transparan (ZIP, tanpa latar)</button>
-          <button id="btnPNGL" title="Ekspor PNG transparan ke dua folder: back/ (grafik latar dan dekorasi di belakang lirik) serta front/ (lirik, dekorasi, dan efek ghost). Efek layar diterapkan ke keduanya, jadi tumpuk front di atas back untuk mendapatkan tampilan normal.">Layer PNG transparan (ZIP)</button>
+          <button id="btnMP4" class="primary">Xuất MP4</button>
+          <button id="btnMP4File" class="mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">MP4 (video lớn, lưu trực tiếp vào tệp)</button>
+          <button id="btnPNG">PNG theo thứ tự(ZIP)</button>
+          <button id="btnPNGA">PNG trong suốt (ZIP, không có nền)</button>
+          <button id="btnPNGL" title="Xuất PNG trong suốt sang hai thư mục: back/ (đồ họa, nền và trang trí phía sau lời bài hát) và front/ (lời bài hát, trang trí và hiệu ứng). Hiệu ứng màn hình được áp dụng cho cả hai, vì vậy hãy xếp chồng mặt trước lên trên mặt sau để có giao diện bình thường.">Lớp PNG trong suốt (trước/sau, ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Batal</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Đã hủy</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">Hak dan lisensi video serta gambar yang diekspor</button>
-        <p class="note" id="codecNote">Ekspor diproses di browser ini (disarankan Chrome atau Edge).</p>
+        <button class="terms-open linkish" style="margin-top:10px">Quyền và giấy phép đối với video, hình ảnh đã xuất</button>
+        <p class="note" id="codecNote">Quá trình xuất được xử lý trong trình duyệt này (khuyên dùng Chrome hoặc Edge).</p>
       </div>
     </section>
   </main>
@@ -610,33 +610,33 @@ button.small.primary { padding: 4px 12px; }
 
 <dialog id="resetDlg" class="terms" aria-labelledby="resetTitle">
   <form method="dialog">
-    <h2 id="resetTitle">Atur ulang</h2>
-    <p>Semua hal di bawah ini akan dihapus dan editor kembali ke keadaan awal. <strong>Tindakan ini tidak bisa diurungkan.</strong></p>
+    <h2 id="resetTitle">Đặt lại</h2>
+    <p>Mọi thứ bên dưới sẽ bị xóa và trình chỉnh sửa trở về trạng thái ban đầu. <strong>Không thể hoàn tác hành động này.</strong></p>
     <ul class="reset-list">
-      <li>Lirik, judul lagu, dan artis</li>
-      <li>Lagu yang dimuat (termasuk salinan yang disimpan di browser ini)</li>
-      <li>Waktu, pengaturan per baris, dan rentang ekspor</li>
-      <li>Gaya, efek, palet, font, dan pengaturan lainnya</li>
-      <li>Riwayat variasi (◀ ▶) dan riwayat Urungkan untuk lirik / waktu</li>
+      <li>Lời bài hát, tên bài hát và nghệ sĩ</li>
+      <li>Các bài hát đã tải (bao gồm các bản sao được lưu trong trình duyệt này)</li>
+      <li>Cài đặt thời gian, hàng và phạm vi xuất</li>
+      <li>Phong cách, hiệu ứng, bảng màu, phông chữ và các cài đặt khác</li>
+      <li>Lịch sử đa dạng (◀ ▶) và lịch sử Hoàn tác lời bài hát/thời gian</li>
     </ul>
-    <p class="terms-sub">Mode editor (Sederhana / Lanjutan), volume pratinjau, dan bahasa antarmuka tidak berubah. File proyek yang sudah disimpan (.json) juga tidak terhapus.</p>
-    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Batal</button><button value="reset" class="danger">Atur ulang</button></span></div>
+    <p class="terms-sub">Chế độ soạn thảo (Đơn giản / Nâng cao), âm lượng xem trước và ngôn ngữ giao diện không thay đổi. Các tệp dự án đã lưu (.json) cũng không bị xóa.</p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Hủy</button><button value="reset" class="danger">Đặt lại</button></span></div>
   </form>
 </dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">Tentang dan hak</h2>
+    <h2 id="termsTitle">Giới thiệu & quyền sử dụng</h2>
     <div class="terms-main">
-      <p class="terms-big">Hak atas<strong>video dan gambar yang kamu buat</strong>menjadi milik pembuatnya.</p>
-      <p class="terms-sub">Lirik dan musik yang dipakai tetap menjadi milik pemegang haknya masing-masing.</p>
+      <p class="terms-big">Bạn sở hữu <strong>video và hình ảnh (sản phẩm đầu ra) do bạn tạo ra</strong>.</p>
+      <p class="terms-sub">Lời bài hát và âm nhạc được sử dụng vẫn là tài sản của chủ sở hữu quyền tương ứng.</p>
     </div>
-    <p>Aplikasi ini dirilis di bawah <strong>MIT lisensi</strong>. Lihat lisensi lengkapnya di sini:</p>
+    <p>Công cụ này được phát hành theo giấy phép <strong>MIT </strong>. Xem giấy phép đầy đủ ở đây:</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">Lirik dan audio yang kamu masukkan diproses hanya di browser ini dan tidak dikirim ke server.</p>
-    <details class="terms-oss"><summary>Perangkat lunak open source</summary>
-      <p>Ekspor MP4: mp4-muxer（MIT License）<br>Font: Google Fonts font yang didistribusikan（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">Lời bài hát và âm thanh đã tải lên chỉ được xử lý trong trình duyệt này và không được gửi đến máy chủ.</p>
+    <details class="terms-oss"><summary>Phần mềm nguồn mở</summary>
+      <p>Xuất MP4:mp4-muxer（MIT License）<br>Phông chữ:Google Fonts phông chữ phân phối（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Tutup</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Đóng</button></div>
   </form>
 </dialog>
 
@@ -4891,22 +4891,22 @@ J.exportMP4 = async (o) => {
   const [w, h] = J.outputSize(project);
   const fps = plan.fps, bitrate = J.videoBitrate(w, h, fps, quality);
   const attempts = await J.videoAttempts(w, h, fps, bitrate);
-  if (!attempts.length) throw new Error('Encoding video (WebCodecs) tidak tersedia. Buka di Chrome atau Edge terbaru.');
+  if (!attempts.length) throw new Error('Mã hóa video (WebCodecs) không khả dụng. Mở trong Chrome hoặc Edge mới nhất.');
   const tried = [];
   for (let k = 0; k < attempts.length; k++) {
     const vc = attempts[k];
     try {
       if (file && k > 0) { await file.seek(0); await file.truncate(0); }
-      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, coba ulang dengan perangkat lunak ${k})` : '' }));
+      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, thử lại bằng phần mềm ${k})` : '' }));
       r.tried = tried; return r;
     } catch (e) {
-      if (signal && signal.aborted) throw new Error('Dibatalkan');
+      if (signal && signal.aborted) throw new Error('Đã hủy');
       if (e && e.jzFatal) throw e;
       tried.push(`${vc.label}/${vc.hw}: ${e && e.message ? e.message : e}`);
       console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
     }
   }
-  const err = new Error('MP4 tidak bisa diekspor: ' + (file ? '' : 'gunakan “Untuk video besar (simpan langsung ke file)”, atau ') + 'coba resolusi, fps, atau kualitas yang lebih rendah. Detail: ' + tried.join(' ／ '));
+  const err = new Error('MP4 không thể xuất được:' + (file ? '' : 'sử dụng “Đối với video lớn (lưu trực tiếp vào tệp)” hoặc ') + 'thử độ phân giải, khung hình/giây hoặc chất lượng thấp hơn. Chi tiết: ' + tried.join(' ／ '));
   err.detail = tried; throw err;
 };
 async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
@@ -4932,26 +4932,26 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
   const closeEnc = () => { try { if (venc.state !== 'closed') venc.close(); } catch (e) {} };
   try {
     for (let i = 0; i < total; i++) {
-      if (signal && signal.aborted) { closeEnc(); throw new Error('Dibatalkan'); }
+      if (signal && signal.aborted) { closeEnc(); throw new Error('Đã hủy'); }
       if (err) throw err;
-      if (venc.state === 'closed') throw new Error('Encoder berhenti');
+      if (venc.state === 'closed') throw new Error('Bộ mã hóa đã dừng');
       R.frame(ctx, plan, span.t0 + i / fps, { scale });
       const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
       let spins = 0;
-      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('Encoder tidak merespons'); }
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('Bộ mã hóa không phản hồi'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
-      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('Encoder tidak mengeluarkan hasil'); }
-      if (i % 3 === 0) { onProgress && onProgress(i / total, `Frame ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
+      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('Bộ mã hóa không tạo ra kết quả'); }
+      if (i % 3 === 0) { onProgress && onProgress(i / total, `Khung${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
     }
     await venc.flush();
     if (err) throw err;
   } catch (e) { closeEnc(); throw e; }
   finally { J.glyphs.maxRes = prevRes; }
   closeEnc();
-  if (outFrames < total * 0.98) throw new Error(`Frame kurang (${outFrames}/${total})`);
+  if (outFrames < total * 0.98) throw new Error(`Thiếu frame (${outFrames}/${total})`);
   if (ac) {
-    onProgress && onProgress(0.99, 'Mengodekan audio');
+    onProgress && onProgress(0.99, 'Mã hóa âm thanh');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0, aErr = null;
@@ -4969,16 +4969,16 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
     }
     await aenc.flush(); aenc.close();
     const fatal = m => { const e = new Error(m); e.jzFatal = true; return e; };    // audio problems: another video encoder won't help
-    if (aErr) throw fatal('Encoding audio gagal: ' + (aErr.message || aErr));
+    if (aErr) throw fatal('Mã hóa âm thanh không thành công:' + (aErr.message || aErr));
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Encoding audio berhenti di tengah (' + aChunks + '). Silakan ekspor lagi');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Mã hóa âm thanh dừng ở giữa (' + aChunks + '). Vui lòng xuất lại');
   }
-  onProgress && onProgress(0.995, 'Menyelesaikan file');
+  onProgress && onProgress(0.995, 'Hoàn thành tập tin');
   muxer.finalize();
   if (file) await file.close();
-  onProgress && onProgress(1, 'Selesai');
+  onProgress && onProgress(1, 'Hoàn thành');
   const size = file ? null : store.end;
-  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (perangkat lunak)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (phần mềm)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
 }
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
@@ -5020,7 +5020,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('Dibatalkan');
+    if (signal && signal.aborted) throw new Error('Đã hủy');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -5029,7 +5029,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, 'Selesai');
+  onProgress && onProgress(1, 'Hoàn thành');
   return zip.finish();
 };
 
@@ -29850,11 +29850,11 @@ J.randomOk = (project, g, k) => {
 })();
 
 (() => {
-  const S = {"noir": ["Noir Kromatik", "Hitam-putih dengan pergeseran warna sian dan amber"], "crimson": ["Sinyal Crimson", "Merah tua, font monokrom, dan data yang rusak"], "caution": ["Peringatan", "Kuning, merah, biru, dan grafis panel instrumen"], "magenta": ["Pop Magenta", "Merah muda terang, font bulat tebal, dan garis penunjuk"], "paper": ["Kertas dan Tinta", "Tekstur kertas, nila, magenta, dan bayangan serif"], "hud": ["HUD Gelap", "Arang, bingkai tipis, aksen oranye, dan gerhana"], "mint": ["Terminal Mint", "Hitam, teal, limau, dan efek pemindaian"], "specimen": ["Spesimen Tipografi", "Latar warna tinta dengan anotasi serif"], "transit": ["Transit", "Zaitun dan kuning, rambu petunjuk, dan halftone"], "blueprint": ["Blueprint", "Kolase grafis biru, putih, dan hitam"], "rouge": ["Gradien Rouge", "Gradien abu-abu terang dan merah dengan bentuk kapsul"], "mono": ["Mono RGB", "Ruang abu-abu, serif putih, dan pemisahan RGB yang kuat"], "sakura": ["Sakura", "Merah muda sakura lembut dan ungu plum, dengan font bulat dan serif"], "ocean": ["Laut Dalam", "Navy, sian bercahaya, gelembung, dan sans-serif tipis"], "sunset": ["Gradien Senja", "Gradien oranye ke ungu, serif tebal, dan cahaya dari belakang"], "forest": ["Catatan Hutan", "Hijau lumut, kertas natural, dan tulisan pensil"], "vapor": ["Vaporwave", "Merah muda dan biru pastel dengan pendar VHS"], "newsprint": ["Kertas Koran", "Kertas abu-abu, hitam dan merah, halftone, dan salah cetak"], "synth80": ["Synth 80-an", "Latar hitam dengan magenta dan sian neon serta garis pindai"], "kraft": ["Kertas Kraft", "Kertas hangat, cap merah dan nila, serta selotip kertas"], "candy": ["Permen", "Warna mint dan pastel buah dengan huruf yang memantul"], "acid": ["Acid", "Hitam, hijau acid, dan magenta dengan font kasar"], "sumi": ["Tinta dan Shu", "Kertas Jepang, kaligrafi kuas, dan cap merah"], "gold": ["Malam Emas", "Hitam pekat, foil emas, serif gading, dan kilau"]};
+  const S = {"noir": ["Noir sắc màu", "Đen trắng với bù màu xanh lơ và hổ phách"], "crimson": ["Tín hiệu đỏ thẫm", "Màu đỏ thẫm, chữ đơn sắc và dữ liệu hỏng"], "caution": ["Cảnh báo", "Vàng, đỏ, xanh và đồ họa bảng điều khiển"], "magenta": ["Pop magenta", "Hồng sáng, chữ tròn đậm và đường chỉ dẫn"], "paper": ["Giấy và mực", "Kết cấu giấy, chàm, magenta và bóng serif"], "hud": ["HUD tối", "Than, khung mỏng, điểm nhấn cam và nhật thực"], "mint": ["Terminal mint", "Đen, teal, chanh và hiệu ứng quét"], "specimen": ["Mẫu chữ", "Nền mực với chú thích serif"], "transit": ["Giao thông", "Ô liu và vàng, biển báo và halftone"], "blueprint": ["Bản vẽ", "Collage đồ họa xanh, trắng và đen"], "rouge": ["Gradient đỏ", "Gradient xám nhạt và đỏ với hình viên nang"], "mono": ["Mono RGB", "Không gian xám, serif trắng và tách RGB mạnh"], "sakura": ["Sakura", "Hồng sakura dịu và mận tím, chữ tròn và serif"], "ocean": ["Biển sâu", "Navy, cyan phát sáng, bong bóng và sans mảnh"], "sunset": ["Gradient hoàng hôn", "Gradient cam sang tím, serif đậm và ánh sáng sau"], "forest": ["Ghi chú rừng", "Xanh rêu, giấy tự nhiên và chữ bút chì"], "vapor": ["Vaporwave", "Hồng và xanh pastel với quầng VHS"], "newsprint": ["Giấy báo", "Giấy xám, đen và đỏ, halftone và lệch in"], "synth80": ["Synth thập niên 80", "Nền đen với magenta và cyan neon cùng vạch quét"], "kraft": ["Giấy kraft", "Giấy ấm, con dấu đỏ và chàm, băng dính giấy"], "candy": ["Kẹo", "Mint và pastel trái cây với chữ nảy"], "acid": ["Acid", "Đen, xanh acid và magenta với chữ thô"], "sumi": ["Mực và đỏ", "Giấy Nhật, thư pháp và con dấu đỏ"], "gold": ["Đêm vàng", "Đen sâu, foil vàng, serif ngà và lấp lánh"]};
   for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
-  const M = {"glitch": "Glitch", "calm": "Tenang", "pop": "Pop", "graphic": "Grafis", "editorial": "Editorial", "emotional": "Emosional", "chaos": "Bebas"};
+  const M = {"glitch": "Glitch", "calm": "Êm dịu", "pop": "Pop", "graphic": "Đồ họa", "editorial": "Biên tập", "emotional": "Cảm xúc", "chaos": "Hỗn loạn"};
   for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
-  J.SAMPLE_LYRICS = "Aku masih ingat/warna fajar\nSuara yang terurai terdengar jauh\nHei, masih sempatkah?\nTak bisa berakhir dalam keadaan *transparan*!";
+  J.SAMPLE_LYRICS = "Tôi vẫn nhớ/màu bình minh\nTiếng nói tan dần vang xa\nNày, còn kịp không?\nKhông thể kết thúc trong trạng thái *trong suốt*!";
 })();
 
 /* ============================================================
@@ -29865,7 +29865,7 @@ J.randomOk = (project, g, k) => {
 if (!document.getElementById('app')) return;          // engine-only pages (tests)
 const $ = id => document.getElementById(id);
 const LS_KEY = 'jizura.project.v1';
-const HUD_CHARS = '0123456789:./-_()【】 · No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
+const HUD_CHARS = '0123456789:./-_()【】·No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
 const ICON = {
   dice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="5.5" r="1" fill="currentColor"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
@@ -29900,7 +29900,7 @@ function initVolume() {
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Suara mati' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Tắt âm thanh' : 'Âm lượng'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Âm lượng ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
@@ -29924,7 +29924,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="Ditambahkan setelah rilis awal">Baru</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Motif Jepang">JP</span>' : '');
+  return (d && d.extra ? '<span class="set-badge ex" title="Đã thêm sau khi phát hành lần đầu">Mới</span>' : '') + (d && d.wa ? '<span class="set-badge" title="họa tiết nhật bản">JP</span>' : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -29943,7 +29943,7 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* Otomatis判定のとき、判定結果を言語欄の横に出す */
+/* Tự động判定のとき、判定結果を言語欄の横に出す */
 function langNote() {
   const el = $('langNote'); if (!el) return;
   el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
@@ -29991,7 +29991,7 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('Memuat font…');
+  showMsg('Đang tải phông chữ…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
@@ -30060,11 +30060,11 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Jeda');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Tạm dừng');
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Putar'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Phát'); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -30193,17 +30193,17 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">Tidak ada cut di posisi ini</span>'; return; }
+  if (!cut) { el.innerHTML = '<span class="hint">Không có cắt cảnh ở vị trí này</span>'; return; }
   const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
   const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
   el.innerHTML = [
     `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-    chip('l', 'Layout', n(J.LAYOUTS, cut.layout)), chip('e', 'Masuk', n(J.ENTER, cut.enter)), chip('h', 'Tahan', n(J.HOLD, cut.hold)), chip('x', 'Keluar', n(J.EXIT, cut.exit)),
-    cut.decor && cut.decor.length ? chip('', 'Dekorasi', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
-    cut.treat && cut.treat !== 'none' ? chip('t', 'Perlakuan', n(J.TREAT, cut.treat)) : '',
-    cut.bg && cut.bg !== 'none' ? chip('b', 'Latar', n(J.BG, cut.bg)) : '',
-    cut.cam && cut.cam !== 'push' ? chip('c', 'Kamera', n(J.CAMERA, cut.cam)) : '',
-    cut.trans ? chip('c', 'Transisi', n(J.TRANS, cut.trans)) : '',
+    chip('l', 'Bố cục', n(J.LAYOUTS, cut.layout)), chip('e', 'Đi vào', n(J.ENTER, cut.enter)), chip('h', 'Đứng', n(J.HOLD, cut.hold)), chip('x', 'Đi ra', n(J.EXIT, cut.exit)),
+    cut.decor && cut.decor.length ? chip('', 'Trang trí', cut.decor.map(d => n(J.DECOR, d.id)).join('·')) : '',
+    cut.treat && cut.treat !== 'none' ? chip('t', 'Xử lý', n(J.TREAT, cut.treat)) : '',
+    cut.bg && cut.bg !== 'none' ? chip('b', 'Nền', n(J.BG, cut.bg)) : '',
+    cut.cam && cut.cam !== 'push' ? chip('c', 'Camera', n(J.CAMERA, cut.cam)) : '',
+    cut.trans ? chip('c', 'Chuyển cảnh', n(J.TRANS, cut.trans)) : '',
   ].join('');
 }
 
@@ -30211,25 +30211,25 @@ function updateCutInfo() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
-  const layoutOpts = '<option value="">Otomatis</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
-  const cutOpts = '<option value="">Cut: otomatis</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cut: ${n}</option>`).join('');
+  const layoutOpts = '<option value="">Tự động</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const cutOpts = '<option value="">Vị trí: tự động</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Vị trí: ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
     const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Mulai (dtk)${manual ? ' · manual' : ' · otomatis'}" aria-label="Waktu mulai baris ${i + 1} (dtk)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Bắt đầu (giây)${manual ? '· thủ công' : '· tự động'}" aria-label="Thời gian bắt đầu câu ${i + 1} (giây)" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="Edit lirik di baris ini" aria-label="Edit lirik baris ke-${i + 1}">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="Jumlah cut di baris ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Pilih layout">${layoutOpts}</select>`}
-        <button class="icon ghost tapfrom" title="Sinkronkan ulang dengan ketukan mulai dari baris ini" aria-label="Sinkronkan dengan ketukan mulai baris ${i + 1}">${ICON.tap}</button>
-        <button class="icon ghost rng" title="Jadikan rentang ekspor (Shift+klik untuk memperluas rentang)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Ekspor baris ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Acak ulang baris ini">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Kunci susunan baris ini" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="Chỉnh sửa lời bài hát" aria-label="Chỉnh sửa lời bài hát trên ${i + 1}">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="Số lần cắt trong hàng ${i + 1}">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Chọn bố cục">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="Đặt lại điểm đánh dấu chuyển cảnh" aria-label="Đồng bộ hóa với các nhịp bắt đầu từ hàng ${i + 1}">${ICON.tap}</button>
+        <button class="icon ghost rng" title="Tạo phạm vi xuất (Shift+click để mở rộng phạm vi)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Xuất hàng ${i + 1}">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Sắp xếp lại hàng này">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Khóa cách sắp xếp hàng này" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) q('.lay').value = o.layout || '';
@@ -30264,11 +30264,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length} baris / ${S.plan.cuts.length} cut`;
+  $('linesInfo').textContent = `${S.plan.lines.length} câu /${S.plan.cuts.length} cảnh`;
   syncRangeUI();
 }
 
-/* ---------------- baris から歌詞を直す ---------------- */
+/* ---------------- dòngから歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -30276,8 +30276,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lirik baris ${ln.index + 1}`);
-  inp.title = 'Sintaks lirik juga bisa dipakai di sini (/ potong, *penekanan*, ! di akhir, | catatan, [interlude 8]). Enter untuk menerapkan, Esc untuk membatalkan';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lời dòng ${ln.index + 1}`);
+  inp.title = 'Cú pháp lời cũng dùng ở đây (/ cắt, *nhấn mạnh*, ! cuối dòng, | chú thích, [interlude 8]). Enter để áp dụng, Esc để hủy';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -30287,14 +30287,14 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`Baris ${ln.index + 1} diperbarui`);
+      replan(); flushSave(); toast(`Dòng ${ln.index + 1} đã cập nhật`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
   inp.addEventListener('blur', () => finish(true));
 }
 
-/* ---------------- 歌詞 · タイミングの取り消し（Ctrl+Z） ---------------- */
+/* ---------------- 歌詞·タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
 const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
@@ -30308,7 +30308,7 @@ function edGo(d) {
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? 'Dibatalkan' : 'Diulang kembali');
+  toast(d < 0 ? 'Đã hoàn tác' : 'Đã làm lại');
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
@@ -30320,7 +30320,7 @@ function clearLyrics() {
   pause();
   P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
-  toast('Lirik dihapus (Urungkan atau Ctrl+Z untuk mengembalikan)');
+  toast('Lời bài hát đã bị xóa (Hoàn tác hoặc Ctrl+Z để khôi phục)');
 }
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
@@ -30336,11 +30336,11 @@ async function resetAll() {
   TL.z = 1; TL.off = 0;
   $('lyrics').value = ''; fontKey = '';
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
-  toast('Editor sudah diatur ulang');
+  toast('Trình chỉnh sửa đã được đặt lại');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだbaris だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだdòngだけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -30362,15 +30362,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `Rentang ekspor: baris ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Rentang ekspor: seluruh lagu');
+  toast(R2 ? `Phạm vi xuất: hàng ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Phạm vi xuất bản: tất cả các bài hát');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
   const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Seluruh lagu'); el.value = R ? String(R.from) : '-1'; });
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Tất cả bài hát'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)} dtk)` : `Seluruh lagu (${S.plan.duration.toFixed(1)} dtk)`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)} giây)` : `Toàn bộ bài hát (${S.plan.duration.toFixed(1)} giây)`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -30408,7 +30408,7 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (efek baru dinonaktifkan untuk pilihan otomatis)' : ' (motif Jepang dinonaktifkan untuk pilihan otomatis)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '(hiệu ứng mới bị tắt khi chọn tự động)' : '(Motif tiếng Nhật bị vô hiệu hóa khi chọn tự động)') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
@@ -30421,22 +30421,22 @@ function drawStyleGrid() {
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Bawaan gaya</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+  return '<option value="">Mặc định</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', 'Tampilan'], ['serif', 'Bingkai serif'], ['body', 'Teks kecil']].forEach(([role, label]) => {
+  [['display', 'Tiêu đề'], ['serif', 'Khung Serif'], ['body', 'Văn bản nhỏ']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} font">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}phông chữ">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', 'Latar'], ['fg', 'Teks'], ['sub', 'Sekunder']];
-const ACCENT_KEYS = [['accent', 'Aksen'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
+const BASE_KEYS = [['bg', 'Nền'], ['fg', 'Chữ'], ['sub', 'Phụ']];
+const ACCENT_KEYS = [['accent', 'Màu nhấn'], ['ghostA', 'Màu bù A'], ['ghostB', 'Màu bù B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -30475,7 +30475,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Palet: warna aksen dan offset diubah', [p.accent, p.ghostA, p.ghostB]);
+  toast('Bảng màu: màu nhấn và màu bù đã thay đổi', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -30501,7 +30501,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} variasi`);
+  toast(`${j + 1} / ${H.list.length} biến thể`);
   restartPreview();
 }
 function updateHist() {
@@ -30519,7 +30519,7 @@ function omakase() {
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`Diacak: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast(`Ngẫu nhiên:${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -30533,14 +30533,14 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `Gaya：${J.STYLES[P.style].name}`;
+    msg = `Phong cách：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
-    msg = `Suasana：${J.MOODS[r.mood].name}`;
+    msg = `Bầu không khí：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = 'Susunan: layout dan gerakan diacak ulang';
+    msg = 'Sắp xếp: bố cục và chuyển động được cải tổ lại';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -30549,18 +30549,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Kustom';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Tùy chỉnh';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('Gaya', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('Suasana', escapeHtml(moodName))
-    + row('Palet', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Acak</span>' : ''}`)
-    + row('Font tampilan', escapeHtml(fontName))
-    + row('Susunan', `${cuts.length} cut · Layout ${kinds} jenis`)
-    + row('Efek', `Perlakuan ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Latar ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} jenis · Kamera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row('Phong cách', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
+    + row('Bầu không khí', escapeHtml(moodName))
+    + row('Bảng màu', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Ngẫu nhiên</span>' : ''}`)
+    + row('Phông chữ hiển thị', escapeHtml(fontName))
+    + row('Sắp xếp', `${cuts.length} cảnh·Bố cục ${kinds}kiểu`)
+    + row('Hiệu ứng', `Xử lý ${cuts.filter(c => c.treat && c.treat !== 'none').length}·Nền ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size}kiểu·Camera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -30585,7 +30585,7 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Kekuatan gerakan'], ['glitch', 'Glitch'], ['chroma', 'Pergeseran warna'], ['decor', 'Jumlah dekorasi'], ['density', 'Kerapatan cut'], ['texture', 'Tekstur'], ['bgSwitch', 'Perubahan latar']];
+const FX = [['motion', 'Cường độ chuyển động'], ['glitch', 'Glitch'], ['chroma', 'Màu bù'], ['decor', 'Số lượng đồ trang trí'], ['density', 'Mật độ cắt'], ['texture', 'Kết cấu'], ['bgSwitch', 'Thay đổi nền']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -30603,7 +30603,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'Layout'], ['enter', 'Masuk'], ['hold', 'Tahan'], ['exit', 'Keluar'], ['decor', 'Dekorasi'], ['treat', 'Efek teks'], ['bg', 'Latar'], ['cam', 'Kamera'], ['fx', 'Efek layar'], ['trans', 'Transisi']];
+const GROUPS = [['layout', 'Bố cục'], ['enter', 'Đi vào'], ['hold', 'Đứng'], ['exit', 'Đi ra'], ['decor', 'Trang trí'], ['treat', 'Hiệu ứng văn bản'], ['bg', 'Nền'], ['cam', 'Camera'], ['fx', 'Hiệu ứng màn hình'], ['trans', 'Chuyển tiếp']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 function renderTech() {
@@ -30619,12 +30619,12 @@ function renderTech() {
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
     d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">Semua aktif</button><button class="ghost small" data-a="off">Semua nonaktif</button><button class="ghost small" data-a="flip">Balikkan</button></div>`;
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">Bật tất cả</button><button class="ghost small" data-a="off">Tắt tất cả</button><button class="ghost small" data-a="flip">Đảo ngược</button></div>`;
     const list = document.createElement('div'); list.className = 'checks';
     shown.forEach(k => {
       const l = document.createElement('label');
-      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (efek baru dinonaktifkan untuk pilihan otomatis)' : ' (motif Jepang dinonaktifkan untuk pilihan otomatis)'; }
+      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('·') + '）' : '');
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '(hiệu ứng mới bị tắt khi chọn tự động)' : '(Motif tiếng Nhật bị vô hiệu hóa khi chọn tự động)'; }
       l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
@@ -30657,15 +30657,15 @@ function syncOut() {
   document.querySelectorAll('.centerDirSel').forEach(el => { el.value = S.project.centerDir === 'lr' ? 'lr' : 'tb'; });
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Latar hitam'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Màn hình xanh' : 'Nền đen'}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `Browser ini mengekspor dengan ${vc.label} pada (${w}×${h} / ${S.project.fps}fps). Biarkan tab ini tetap terbuka selama ekspor.` : 'Browser ini tidak mendukung encoding video (WebCodecs). Coba Chrome atau Edge terbaru, atau ekspor sebagai urutan PNG.';
+  $('codecNote').textContent = vc ? `Trình duyệt này xuất với ${vc.label} TRÊN (${w}×${h} / ${S.project.fps}fps). Giữ tab này mở trong khi xuất.` : 'Trình duyệt này không hỗ trợ mã hóa video (WebCodecs). Hãy dùng thử Chrome hoặc Edge mới nhất hoặc xuất dưới dạng một chuỗi PNG.';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
-  if (!vc) $('eMP4').title = 'Browser ini tidak mendukung ekspor MP4 (disarankan Chrome atau Edge)';
+  if (!vc) $('eMP4').title = 'Trình duyệt này không hỗ trợ xuất MP4 (khuyên dùng Chrome hoặc Edge)';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
 function baseName() {
@@ -30681,7 +30681,7 @@ async function runExport(kind) {
     try {
       const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('Tidak bisa membuka file tujuan: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('Không thể mở tệp:' + (e && e.message ? e.message : e)); return; }
   }
   pause();
   const ac = new AbortController(); S.exporting = ac;
@@ -30689,7 +30689,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('Menyiapkan…');
+  setText('Chuẩn bị…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -30699,24 +30699,24 @@ async function runExport(kind) {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
-      txt.textContent = `Selesai: ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}dtk`;
+      txt.textContent = `Hoàn thành:${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB·' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}·${((performance.now() - t0) / 1000).toFixed(0)}giây`;
       if (r.blob) {
         const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-        if (res === 'declined') txt.textContent += ' (penyimpanan dibatalkan)';
-      } else txt.textContent += ` · disimpan ke “${fileName}”`;
-      if (r.tried && r.tried.length) txt.textContent += ' (cara pertama gagal, jadi dipakai encoder lain)';
+        if (res === 'declined') txt.textContent += '(hủy lưu)';
+      } else txt.textContent += ` · đã lưu vào “${fileName}”`;
+      if (r.tried && r.tried.length) txt.textContent += ' (phương pháp đầu tiên không thành công nên một bộ mã hóa khác đã được sử dụng)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '. Browser ini menyimpan audio dalam format Opus, yang mungkin tidak diputar di iPhone, QuickTime, atau pemutar tertentu. Karena itu, audio juga disimpan sebagai WAV' : '. Browser ini tidak bisa mengodekan audio, jadi audio disimpan terpisah sebagai WAV (gabungkan di editor video)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. Tidak ada lagu yang dimuat, jadi video tidak memiliki audio (muat lagi lewat “Impor audio”)';
+        txt.textContent += r.audio ? '. Trình duyệt này lưu âm thanh ở định dạng Opus, định dạng này có thể không phát trên iPhone, QuickTime hoặc một số trình phát nhất định. Vì vậy, âm thanh cũng được lưu dưới dạng WAV' : '. Trình duyệt này không thể mã hóa âm thanh nên âm thanh được lưu riêng dưới dạng WAV (hợp nhất trong trình chỉnh sửa video)';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. Không có bài hát nào được tải nên video không có âm thanh (tải lại qua “Chọn tệp”)';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `Selesai: ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `Hoàn thành:${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
-    txt.textContent = 'Error: ' + (e && e.message ? e.message : e);
+    txt.textContent = 'Lỗi:' + (e && e.message ? e.message : e);
     console.error(e);
     if (file) { try { await file.abort(); } catch (e2) {} }
   } finally {
@@ -30739,7 +30739,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`Sinkronkan mulai dari baris ${from + 1} (pemutaran dimulai dari ${J.fmtTime(t0)})`);
+  if (from > 0) toast(`Đồng bộ hóa bắt đầu từ dòng ${from + 1} (phát lại bắt đầu từ ${J.fmtTime(t0)})`);
 }
 function tapNow() {
   if (!S.tap) return;
@@ -30771,7 +30771,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `Otomatis ${S.audio.bpm}` : 'Tidak ada';
+  $('bpm').placeholder = S.audio ? `Tự động ${S.audio.bpm}` : 'không có bất kỳ';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -30790,7 +30790,7 @@ function bind() {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? 'Bahasa lirik: deteksi otomatis → ' : 'Bahasa lirik: ') + J.LANG_LABEL[l]);
+    toast((S.project.lang === 'auto' ? 'Ngôn ngữ lời bài hát: tự động phát hiện →' : 'Ngôn ngữ lời bài hát:') + J.LANG_LABEL[l]);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -30853,10 +30853,10 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, 'Efek baru: aktif', 'Efek baru: nonaktif (hanya set awal)');
-  setSwitch('wa-toggle', 'wa', true, 'Motif Jepang: aktif', 'Motif Jepang: nonaktif untuk pilihan acak');
-  setSwitch('unify-toggle', 'unify', true, 'Tampilan seragam: aktif (bagian seragam; klimaks, morf, dan ketebalan juga dipakai)', 'Tampilan seragam: nonaktif');
-  setSwitch('typeset-toggle', 'typeset', true, 'Penataan teks: aktif (jarak, partikel, Latin, 0,2 detik lebih awal, efek secukupnya)', 'Penataan teks: nonaktif');
+  setSwitch('extra-toggle', 'extra', true, 'Hiệu ứng mới: kích hoạt', 'Hiệu ứng mới: tắt (chỉ cài đặt ban đầu)');
+  setSwitch('wa-toggle', 'wa', true, 'Họa tiết Nhật Bản: bật', 'Họa tiết Nhật Bản: tắt (không được chọn khi tự động/ngẫu nhiên)');
+  setSwitch('unify-toggle', 'unify', true, 'Sử dụng hiệu ứng đồng nhất: bật (các hiệu ứng đồng nhất; cao trào, hình thái và độ dày cũng áp dụng)', 'Sử dụng hiệu ứng đồng nhất: tắt');
+  setSwitch('typeset-toggle', 'typeset', true, 'Tạo kiểu cho văn bản: bật (khoảng cách, các phần tử, tiếng Latin, sớm hơn 0,2 giây, hiệu ứng theo sở thích)', 'Tạo kiểu cho văn bản: tắt');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -30874,15 +30874,15 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (terpasang)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (terpasang)', family: name, weight }]);
+    J.addUserFont(key, name + '(đã cài đặt)', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '(đã cài đặt)', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
-    catch (err) { showMsg('Font tidak dapat dimuat'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Không thể tải phông chữ'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -30891,17 +30891,17 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `Latar：${k === 'green' ? 'Green screen' : 'Latar hitam'}（hanya teks putih dan efek）` : 'Latar：Warna gaya');
+    toast(k ? `Nền：${k === 'green' ? 'Màn hình xanh' : 'Nền đen'}（chỉ có văn bản và hiệu ứng màu trắng）` : 'Nền：Màu mặc định (theo phong cách)');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   document.querySelectorAll('.centerDirSel').forEach(el => el.addEventListener('change', e => {
     S.project.centerDir = e.target.value; syncOut(); replan(); flushSave();
-    toast(e.target.value === 'lr' ? 'Layar tegak: dibagi kiri / kanan' : 'Layar tegak: dibagi atas / bawah');
+    toast(e.target.value === 'lr' ? 'Màn hình cao: chia trái/phải' : 'Màn hình thẳng đứng: chia lên/xuống');
   }));
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
     const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
-    toast(e.target.checked ? `Bagian tengah dikosongkan: teks dan efek ditempatkan di ${tall ? 'atas / bawah' : 'kiri / kanan'}` : 'Bagian tengah tidak lagi dikosongkan');
+    toast(e.target.checked ? `Phần giữa được để trống: văn bản và hiệu ứng được đặt trong ${tall ? 'trên / dưới' : 'trái / phải'}` : 'Phần giữa không còn trống nữa');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
@@ -30921,7 +30921,7 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
-  // 利用について（出力物の権利 · ライセンス）
+  // 利用について（出力物の権利·ライセンス）
   const dlg = $('termsDlg');
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
@@ -30932,14 +30932,14 @@ function bind() {
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Hapus lirik, lagu, pengaturan, dan riwayat, lalu mulai dari awal? Tindakan ini tidak bisa diurungkan.')) resetAll(); return; }
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Xóa lời bài hát, bài hát, cài đặt và lịch sử rồi bắt đầu lại từ đầu? Hành động này không thể hoàn tác được.')) resetAll(); return; }
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('Proyek gagal dibuka'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Dự án không mở được'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -30963,27 +30963,27 @@ function bind() {
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 async function loadAudioFile(f, restored) {
-  $('audioName').textContent = 'Menganalisis audio…';
+  $('audioName').textContent = 'Đang phân tích âm thanh…';
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · sekitar ${S.audio.bpm}BPM）` + (restored ? ' · lagu terakhir' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}·khoảng${S.audio.bpm}BPM）` + (restored ? ' · bài hát cuối cùng' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = 'Tidak dapat memuat: ' + err.message; S.audio = null; return false; }
+  } catch (err) { $('audioName').textContent = 'Không thể tải:' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. Masukkan lirik', text: 'Satu baris menjadi satu frasa. Baris kosong memberi jeda singkat; [interlude 8] membuat bagian instrumental 8 detik (hanya latar dan dekorasi).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Impor lagu', text: 'Impor mp3 atau file sejenis: JIZURA mencari ketukan dan menyesuaikan pergantian cut. Kamu juga bisa bekerja tanpa lagu. “Sinkronkan ke ketukan” bisa dipakai untuk menandai awal tiap baris.' },
-  { t: () => $('btnOmakaseBig'), title: '3. Buat variasi', text: 'Gaya, suasana, gerakan, palet, dan susunan dipilih otomatis. Setiap klik membuat variasi baru; “◀ Sebelumnya” untuk kembali.' },
-  { t: () => $('btnPlay'), title: '4. Putar untuk mengecek', text: 'Coba putar hasilnya. Di timeline bawah, marker baris bisa digeser dengan drag (＋− untuk zoom).' },
-  { t: () => $('lineList'), title: '5. Perbaiki baris tertentu', text: 'Untuk tiap baris, kamu bisa mengedit lirik (✎), mengatur jumlah cut, mengulang sinkronisasi dari baris ini (◎), atau mengacak ulang baris ini saja (dadu).' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Ekspor', text: 'Pilih rasio aspek (misalnya tegak 9:16) dan resolusi, lalu ekspor MP4. “Rentang ekspor” juga bisa dipakai untuk mengekspor baris yang dipilih saja.' },
+  { t: () => $('lyrics'), title: '1. Nhập lời bài hát', text: 'Mỗi dòng là một câu. Dòng trống tạo khoảng dừng ngắn; [interlude 8] sẽ tạo đoạn nhạc nền 8 giây (chỉ hình nền và hiệu ứng).' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Chọn tệp âm thanh', text: 'Chọn tệp mp3 hoặc tệp tương tự: JIZURA nhận diện nhịp và căn chỉnh chuyển cảnh. Có thể làm không cần bài hát. “Đặt điểm chuyển cảnh” để đánh dấu bắt đầu của mỗi câu.' },
+  { t: () => $('btnOmakaseBig'), title: '3. Tạo ngẫu nhiên', text: 'Phong cách, bầu không khí, chuyển động, bảng màu và bố cục được chọn tự động. Mỗi lần bấm tạo biến thể mới; “◀ Biến thể trước” để quay lại.' },
+  { t: () => $('btnPlay'), title: '4. Phát thử', text: 'Phát để xem trước. Trên dòng thời gian phía dưới, kéo thanh neo để chỉnh (＋− để phóng to).' },
+  { t: () => $('lineList'), title: '5. Sửa từng câu', text: 'Mỗi câu: sửa lời (✎), đặt vị trí chuyển cảnh, đặt lại vị trí chuyển cảnh cho câu này (◎), hoặc tạo lại cho riêng câu này (ngẫu nhiên).' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Xuất bản', text: 'Chọn tỷ lệ khung hình (ví dụ dọc 9:16) và độ phân giải, rồi xuất MP4. “Phạm vi xuất” chỉ xuất các câu đã chọn.' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -30996,7 +30996,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Mulai' : 'Berikutnya';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Bắt đầu': 'Tiếp theo';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();
