@@ -767,21 +767,34 @@ function jzSideZones(W, H) {
     return [{ x: 0, y: 0, w: w, h: H, side: 'left' }, { x: W - w, y: 0, w: w, h: H, side: 'right' }];
 }
 function jzZoneOf(zones, li) { var z = zones[Math.max(0, li || 0) % 2]; return { x: z.x, y: z.y, w: z.w, h: z.h, side: z.side }; }
-// \u4E2D\u592E\u3092\u7A7A\u3051\u308B: what the other band shows (same rules as the browser's companionOf)
-var JZ_COMP_LAYOUTS = ['type', 'labels', 'gloss', 'vcols', 'stack', 'condensed', 'lowerThird', 'dotMatrix', 'credits', 'ticker', 'marquee', 'tile', 'columnsBig', 'huge', 'center', 'mixed', 'typeSpecimen', 'halfVertical', 'quote'];
-function jzCompanion(cut, o) {
-    var rng = o.rng, z = o.zone, base = { line: cut.line, start: cut.start, end: cut.end, dur: cut.end - cut.start, scheme: cut.scheme, seed: jzHash(cut.seed, 78) % 1000000, zone: z, companion: true, bg: 'none', bgP: {}, treat: 'none', treatP: {}, cam: 'push', camP: {}, stagger: 0.04 };
-    function mk(extra) { var c = {}, k; for (k in base) c[k] = base[k]; for (k in extra) c[k] = extra[k]; return c; }
-    function quiet() { return mk({ text: '', lineText: '', layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3, params: { variant: 'quiet', showTitle: false, titleText: '' }, decor: jzPickDecor(rng, o.st, o.en, { decor: 1 }, 'interlude', []), words: [] }); }
-    var text = !o.single && o.line && o.line !== o.txt ? o.line : o.txt;
-    if (!text || (o.single && rng.chance(0.3))) return quiet();
-    var n = jzChars(text.replace(/\s+/g, '')).length, pool = [], i;
-    for (i = 0; i < JZ_COMP_LAYOUTS.length; i++) { var k = JZ_COMP_LAYOUTS[i]; if (JZ_REG.layout[k] && o.en.layout[k] && jzFitsN(k, n) && k !== cut.layout) pool.push(k); }
-    if (!pool.length) return quiet();
-    var layout = rng.pick(pool), enter = jzPickEnter(rng, o.st, o.en, layout, o.dur, o.hist, false, n);
-    return mk({ text: text, lineText: o.line, layout: layout, enter: enter === 'type' ? 'blur' : enter, exit: jzPickExit(rng, o.st, o.en, layout, o.dur, true, o.hist), hold: jzPickHold(rng, o.en, o.fx, o.hist),
-        inDur: Math.min(jzClamp(o.dur * 0.36, 0.12, 0.6), o.dur * 0.45), outDur: Math.min(jzClamp(o.dur * 0.3, 0.14, 0.55), o.dur * 0.4),
-        params: jzPlanOf('layout', layout, rng, o.st, { text: text, n: n, W: z.w, H: z.h, dur: o.dur }), decor: rng.chance(0.5) ? jzPickDecor(rng, o.st, o.en, o.fx, layout, []) : [], words: jzChunk(text) });
+// \u4E2D\u592E\u3092\u7A7A\u3051\u308B: the lyric split in two (same as the browser's splitCut): first half left / top, second half right / bottom,
+// same layout, motion, decorations and camera
+function jzSplitHalf(t, lang) {
+    t = jzTrim(String(t || ''));
+    var n = jzChars(t.replace(/\s+/g, '')).length, k;
+    var words = lang === 'en' ? jzPhraseChunks(jzChunk(t)) : jzChunk(t);
+    if (words.length >= 2) {
+        var total = 0, acc = 0, best = 1, bd = 1e9, sep = /[A-Za-z]/.test(t) ? ' ' : '';
+        for (k = 0; k < words.length; k++) total += jzChars(String(words[k]).replace(/\s+/g, '')).length;
+        for (k = 1; k < words.length; k++) { acc += jzChars(String(words[k - 1]).replace(/\s+/g, '')).length; var d = Math.abs(acc - total / 2); if (d < bd) { bd = d; best = k; } }
+        return [jzTrim(words.slice(0, best).join(sep)), jzTrim(words.slice(best).join(sep))];
+    }
+    if (n <= 3 || /^[A-Za-z0-9'\u2019-]+$/.test(t)) return [t, t];
+    var all = jzChars(t), cut = Math.ceil(all.length / 2);
+    // a half never starts with a particle, punctuation or a small kana
+    for (var g = 0; g < 3 && cut < all.length - 1 && /[\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u30FB\u30FC\u3063\u30C3\u3083\u3085\u3087\u30E3\u30E5\u30E7\u3041\u3043\u3045\u3047\u3049\u30A1\u30A3\u30A5\u30A7\u30A9\u3092\u304C\u306F\u306B\u3067\u3068\u306E\u3078\u3082\u3084\u3088\u306D\u300D\u300F\uFF09)]/.test(all[cut]); g++) cut++;
+    return [all.slice(0, cut).join(''), all.slice(cut).join('')];
+}
+function jzSplitCut(cut, zones, st, dur, lang) {
+    var hv = jzSplitHalf(cut.text, lang), seed = jzHash(cut.seed, 23);
+    function planFor(text, z) { return jzPlanOf('layout', cut.layout, new JzRng(seed), st, { text: text, n: jzChars(text.replace(/\s+/g, '')).length, W: z.w, H: z.h, dur: dur }); }
+    cut.text = hv[0]; cut.lineText = hv[0]; cut.words = jzChunk(hv[0]); cut.zone = jzZoneOf(zones, 0); cut.params = planFor(hv[0], zones[0]);
+    var tw = {}, k2;
+    for (k2 in cut) if (cut.hasOwnProperty(k2)) tw[k2] = cut[k2];
+    var delay = Math.min(0.12, dur * 0.08);
+    tw.text = hv[1]; tw.lineText = hv[1]; tw.words = jzChunk(hv[1]); tw.zone = jzZoneOf(zones, 1); tw.params = planFor(hv[1], zones[1]);
+    tw.start = cut.start + delay; tw.dur = cut.end - tw.start; tw.bg = 'none'; tw.bgP = {}; tw.trans = null; tw.transP = {}; tw.transDur = 0; tw.companion = true;
+    cut.companion = tw;
 }
 function jzPickBg(rng, st, en, fx, bgHist) {
     if (!rng.chance(0.2 + 0.35 * fx.decor + 0.2 * fx.bgSwitch)) return 'none';
@@ -928,6 +941,7 @@ function jzMakePlan(o) {
         plan.lines.push({ index: li, text: ln.text, start: s0, end: e0, visEnd: visEnd, note: ln.note, impact: ln.impact });
         var chunks = ln.manual || (plan.lang === 'en' ? jzPhraseChunks(jzChunk(ln.text)) : jzChunk(ln.text)), L = jzLerp(1.3, 0.5, fx.density), nC = Math.round(D / L);
         var maxC = chunks.length + (chunks.length >= 2 && D > 2 ? 1 : 0); nC = jzClamp(nC, 1, Math.max(1, maxC));
+        if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // \u4E2D\u592E\u3092\u7A7A\u3051\u308B: \u2265 2 words per cut (each cut is split in two)
         var nG = Math.min(nC, chunks.length), groups = [];
         if (nG <= 1) groups = [ln.text];
         else { var pg = jzPartition(chunks, nG); for (i = 0; i < pg.length; i++) groups.push(pg[i].join(/[A-Za-z]/.test(pg[i].join('')) ? ' ' : '')); }
@@ -978,7 +992,7 @@ function jzMakePlan(o) {
                 params: params, decor: decor, scheme: sch, seed: jzHash(o.seed, li, k) % 1000000, emph: emph, recap: !!u.recap, words: jzChunk(u.text), stagger: rng.range(0.025, 0.06),
                 treat: treat, treatP: treatP, bg: bg, bgP: bg === lineBg ? lineBgP : {}, cam: cam, camP: camP, trans: trans, transP: transP, transDur: transDur });
             hist.push({ layout: layout, enter: enter, exit: exit, hold: hold, treat: treat, cam: cam, trans: trans, decor: dids });
-            if (zones) { var mc = plan.cuts[plan.cuts.length - 1]; mc.zone = jzZoneOf(zones, li); mc.companion = jzCompanion(mc, { line: ln.text, txt: u.text, single: units.length === 1, dur: dur, zone: jzZoneOf(zones, li + 1), rng: new JzRng(jzHash(o.seed, li, k, 77)), st: st, en: en, fx: fx, hist: hist }); }
+            if (zones) jzSplitCut(plan.cuts[plan.cuts.length - 1], zones, st, dur, plan.lang);
             var g = fx.glitch * (st.glitchBoost || 1);
             if (en.fx.chroma !== false) ev(cs, 'chroma', 1.4 + rng.range(0, 2) * fx.chroma + (emph ? 2.5 : 0), 0.25);
             if (en.fx.slice !== false && rng.chance(g * 0.5 + (emph ? 0.3 : 0))) ev(cs, 'slice', 0.6 + rng.range(0, 0.8) * g + (emph ? 0.5 : 0), rng.pick([2, 3, 4]) * F);
@@ -1001,7 +1015,12 @@ function jzMakePlan(o) {
         }
     }
     plan.cuts.sort(function (a, b) { return a.start - b.start; });
-    for (i = 0; i < plan.cuts.length; i++) { plan.cuts[i].index = i; if (zones) plan.cuts[i].zone = jzZoneOf(zones, plan.cuts[i].line); }
+    for (i = 0; i < plan.cuts.length; i++) {
+        var pc0 = plan.cuts[i]; pc0.index = i;
+        if (!zones || pc0.zone) continue;
+        if (pc0.layout === 'interlude') { pc0.params.showTitle = false; continue; }     // no lyric: the whole frame
+        pc0.zone = jzZoneOf(zones, 0);
+    }
     plan.events.sort(function (a, b) { return a.t - b.t; });
     return plan;
 }
@@ -30409,7 +30428,7 @@ function jzBuildStart(plan, opt) {
             var CW = Z ? Z.w : W, CH = Z ? Z.h : H, cu = Z ? CH / 1080 : u, T = wc;
             if (Z) { T = app.project.items.addComp(label + (pi ? ' side' : ' stage'), CW, CH, 1, cdur, fps); T.parentFolder = folder; }
             var CL = buildContent(c, T, CW, CH, cu, sc, label + (pi ? ' side' : ''), cdur, ci);
-            if (Z) { var SL = wc.layers.add(T); SL.name = (pi ? 'side (' : 'stage (') + (Z.side || 'side') + ')'; SL.startTime = 0; jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
+            if (Z) { var SL = wc.layers.add(T); SL.name = (pi ? 'side (' : 'stage (') + (Z.side || 'side') + ')'; SL.startTime = Math.max(0, c.start - cut.start); jzXf(SL, 'ADBE Position').setValue([Z.x + CW / 2, Z.y + CH / 2]); }
             if (!pi) { mainStage = Z ? T : null; mainContent = CL; }
         }
         // into the main comp
