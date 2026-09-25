@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JIZURA — Lyric Motion Video Maker</title>
-<meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<link rel="canonical" href="https://852wa.github.io/JIZURA/en/">
+<title>JIZURA — 動態歌詞影片製作工具</title>
+<meta name="description" content="在瀏覽器中把歌詞做成動態歌詞影片，並匯出 MP4。">
+<link rel="canonical" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="zh-Hans" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA — Lyric Motion Video Maker">
-<meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<meta property="og:url" content="https://852wa.github.io/JIZURA/en/">
+<meta property="og:title" content="JIZURA — 動態歌詞影片製作工具">
+<meta property="og:description" content="在瀏覽器中把歌詞做成動態歌詞影片，並匯出 MP4。">
+<meta property="og:url" content="https://852wa.github.io/JIZURA/zh-hant/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -370,240 +370,240 @@ button.small.primary { padding: 4px 12px; }
     <div class="tour-step mono muted"></div>
     <h3 id="tourTitle" class="tour-title"></h3>
     <p class="tour-text"></p>
-    <div class="tour-nav"><button class="tour-skip ghost small">Skip</button><span class="tour-sp"></span><button class="tour-prev ghost small">Back</button><button class="tour-next primary small">Next</button></div>
+    <div class="tour-nav"><button class="tour-skip ghost small">略過</button><span class="tour-sp"></span><button class="tour-prev ghost small">上一步</button><button class="tour-next primary small">下一步</button></div>
   </div>
 </div>
 <div id="app">
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="Song title (shown on title cards and HUD)" aria-label="Song title">
-      <input id="songArtist" type="text" placeholder="Artist" aria-label="Artist">
+      <input id="songTitle" type="text" placeholder="歌名（顯示在標題卡與 HUD）" aria-label="歌名">
+      <input id="songArtist" type="text" placeholder="演唱者" aria-label="演唱者">
     </div>
-    <div class="modes" role="group" aria-label="Editor mode">
-      <button id="modeEasy" aria-pressed="false" title="A simple workspace focused on automatic creation">Simple</button>
-      <button id="modePro" aria-pressed="true" title="Show all settings">Advanced</button>
-      <button id="btnTour" class="ghost tour-btn" title="A short tour of the Simple mode" aria-label="Tour">？</button>
+    <div class="modes" role="group" aria-label="顯示模式">
+      <button id="modeEasy" aria-pressed="false" title="以「隨機生成」按鈕為主的簡易畫面">簡易</button>
+      <button id="modePro" aria-pressed="true" title="顯示所有設定">進階</button>
+      <button id="btnTour" class="ghost tour-btn" title="簡易模式的使用導覽" aria-label="使用導覽">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en" selected>English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant" selected>繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option></select></label>
     <div class="acts">
-      <label class="file" title="Open a saved project (.json)">Open<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="Save project as .json">Save</button>
-      <button id="btnAE" title="Export project data for the After Effects panel">Export for AE</button>
-      <button id="btnTerms" class="ghost terms-open" title="Rights and licenses for your exports">About / rights</button>
+      <label class="file" title="開啟已儲存的專案（.json）">開啟<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="將專案儲存為 .json">儲存</button>
+      <button id="btnAE" title="匯出給 After Effects 面板使用的編排資料">匯出 AE 資料</button>
+      <button id="btnTerms" class="ghost terms-open" title="產出物的權利與授權">使用須知</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="Lyrics and timing">
+    <section class="col col-left" aria-label="歌詞與時間軸">
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
-        <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
+        <div class="sec-h"><h2>歌詞</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">語法</button></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1 行 = 1 句）"></textarea>
+        <label class="lang-row">歌詞語言<select id="lyricLang"><option value="auto">自動偵測</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>One phrase per line. A blank line adds a short pause.</li>
-            <li><code>I remember/the dawn</code> … <code>/</code> marks a cut boundary</li>
-            <li><code>*transparent*</code> … emphasis (larger, stronger effects)</li>
-            <li>A trailing <code>!</code> … adds a flash and shake</li>
-            <li><code>lyrics|reading or note</code> … smaller text in annotation layouts</li>
-            <li><code>[01:23.45]Lyrics</code> … uses an LRC timestamp</li>
-            <li><code>[interlude 8]</code> … an 8-second instrumental part (no lyrics, background and decorations only). Without a number it lasts 4 seconds; tap sync or markers set its length</li>
-            <li><code>#</code> starts a comment (ignored)</li>
+            <li>一行就是一句。空行會多留一小段空白</li>
+            <li><code>晚風把影子/拉成一條線</code> … <code>/</code> 標示片段的切換點</li>
+            <li><code>*微光*</code> … 強調（放大、更有衝擊力的效果）</li>
+            <li>行尾的 <code>!</code> … 加入閃光與震動</li>
+            <li><code>歌詞|讀音或註解</code> … 註解版面中的小字</li>
+            <li><code>[01:23.45]歌詞</code> … 直接使用 LRC 時間戳記</li>
+            <li><code>[間奏 8]</code> … 8 秒的間奏（不顯示歌詞，只有背景與裝飾）。省略秒數時為 4 秒，也可用點擊同步或標記調整長度</li>
+            <li><code>#</code> 開頭的行 … 註解（會被忽略）</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Audio and timing</h2></div>
-        <div id="audioName" class="muted audio-name">No audio. Import a song to detect beats and align cuts.</div>
+        <div class="sec-h"><h2>歌曲與時間軸</h2></div>
+        <div id="audioName" class="muted audio-name">尚未匯入歌曲（匯入後會偵測節拍並對齊片段）</div>
         <div class="row">
-          <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
+          <label class="file" title="mp3 / wav / m4a 等格式">匯入歌曲<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="播放歌曲時，在每一行開頭點一下">點擊對拍</button>
         </div>
         <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
-          <label class="field">Start (s)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">Line duration<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
+          <label class="field">起始（秒）<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">每行長度<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Snap to beat</label>
-          <button id="btnResetTimes" class="ghost small">Clear manual timing</button>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 對齊節拍</label>
+          <button id="btnResetTimes" class="ghost small">清除手動時間</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.</div>
-          <div class="next">Next: <b id="tapLine">—</b></div>
+          <div class="hint">請跟著歌曲，在每一行開始的瞬間按 <span class="kbd">Space</span> 或下方按鈕。按錯時請按 <span class="kbd">Backspace</span> 或「退回一步」。要從中間某一行重來，請按行列表中的 ◎。</div>
+          <div class="next">下一行： <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">Undo tap</button>
-          <button id="tapStop" class="ghost">Finish</button>
+          <button id="tapBack" class="ghost">退回一步</button>
+          <button id="tapStop" class="ghost">結束</button>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Lines and cuts</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>行與片段</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="Preview">
+    <section class="col col-stage" aria-label="預覽">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Play">▶</button>
+        <button id="btnPlay" class="play" aria-label="播放">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position">
-        <button id="btnLoop" class="ghost small" aria-pressed="true">Loop</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Click to mute / unmute (preview only — exports keep the original level)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Preview volume"></span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="播放位置">
+        <button id="btnLoop" class="ghost small" aria-pressed="true">循環</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="點一下切換靜音（只影響預覽，不會改變匯出的音量）">音量</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="預覽音量"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="Previous variation" aria-label="Previous">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="Next variation" aria-label="Next">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="回到上一個方案" aria-label="上一個方案">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="前往下一個方案" aria-label="下一個方案">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
-        <button id="btnOmakase" class="primary" title="Randomize style, mood, effects and colors (R)">Randomize</button>
+        <button id="btnShuffle" class="accent" title="保留設定，只重新抽選編排（已鎖定的行不變）">重新排列</button>
+        <button id="btnOmakase" class="primary" title="風格、氛圍、效果、配色全部隨機（快捷鍵 R）">隨機生成</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">Drag the line markers (top) to move line starts. Hold <span class="kbd">Shift</span> to ignore beats</span>
+        <span class="tl-hint muted">拖曳行的分隔（上方刻度）即可移動。按住 <span class="kbd">Shift</span> 不吸附節拍</span>
         <span class="tl-btns">
-          <button id="btnUndoEdit" class="ghost small" title="Undo lyric and timing changes (Ctrl+Z)" disabled>Undo</button>
-          <button id="tlOut" class="ghost small icon-txt" title="Zoom out" aria-label="Zoom the timeline out">−</button>
-          <button id="tlIn" class="ghost small icon-txt" title="Zoom in (or scroll on the timeline)" aria-label="Zoom the timeline in">＋</button>
-          <button id="tlFit" class="ghost small" title="Show the whole song">Fit</button>
+          <button id="btnUndoEdit" class="ghost small" title="復原歌詞與時間的變更（Ctrl+Z）" disabled>復原</button>
+          <button id="tlOut" class="ghost small icon-txt" title="縮小" aria-label="縮小時間軸">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="放大（也可在時間軸上用滾輪）" aria-label="放大時間軸">＋</button>
+          <button id="tlFit" class="ghost small" title="顯示全曲">全曲</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Timeline (click to seek, drag line markers to adjust)"></canvas>
+      <canvas id="timeline" aria-label="時間軸（點擊跳轉，拖曳行的分隔可調整）"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick" hidden>
         <div class="cut-pick-h">
-          <strong id="cutPickTitle">Techniques</strong>
-          <span class="muted" id="cutPickHint">Replace on this cut only</span>
-          <button type="button" id="cutPickAuto" class="ghost small">Auto</button>
-          <button type="button" id="cutPickClose" class="ghost small" aria-label="Close">✕</button>
+          <strong id="cutPickTitle">手法</strong>
+          <span class="muted" id="cutPickHint">このカットだけ差し替え</span>
+          <button type="button" id="cutPickAuto" class="ghost small">自動</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="關閉">✕</button>
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="Style and export">
+    <section class="col col-right" aria-label="風格與匯出">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
-          <button id="btnOmakaseBig" class="omakase">Create a variation</button>
-          <p class="hint">Each click changes the style, mood, motion, colors and arrangement. Press <span class="kbd">R</span> to do the same.</p>
+          <button id="btnOmakaseBig" class="omakase">隨機生成一版</button>
+          <p class="hint">每按一次，風格、氛圍、動態、配色與編排都會整組換新。也可以按鍵盤的 <span class="kbd">R</span> 執行。</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ Previous</button>
+            <button id="btnPrev2" class="ghost">◀ 上一個方案</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">Next ▶</button>
+            <button id="btnNext2" class="ghost">下一個方案 ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include about 350 more effects, 12 styles and 6 fonts in random picks. Off uses the original set.</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include Japanese motifs such as lanterns, postcards, shoji, fans, family crests, waves and cherry blossoms in random picks.</small></span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>也使用新增的效果<small>首次公開版之後新增的約 350 種效果、12 種風格與 6 款字型，也列入隨機生成與重新排列的候選（關閉時只用首次公開版的效果）</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>也使用和風效果<small>燈籠、明信片、障子、扇子、家紋、青海波、櫻花花瓣等和風圖形。關閉後，隨機生成與重新排列就不會選用</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Current variation</h3>
+          <h3>目前的方案</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>Change one thing</h3>
+          <h3>只換這一項</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="Change the style only">Style</button>
-            <button id="ePalette" title="Randomize accent and offset colors">Palette</button>
-            <button id="eMood" title="Change motion, glitch and technique mood">Mood</button>
-            <button id="eCut" title="Change the arrangement and motion only">Arrangement</button>
+            <button id="eStyle" title="只換風格">風格</button>
+            <button id="ePalette" title="隨機更換強調色與錯位色 A/B">配色</button>
+            <button id="eMood" title="只換動態、故障風與手法的氛圍">氛圍</button>
+            <button id="eCut" title="只換版面與動態的組合">編排</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Export</h3>
+          <h3>匯出</h3>
           <div class="fields">
-            <label class="field">Aspect ratio<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-            <label class="field">Resolution<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">畫面比例<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 直式</option><option value="4:3">4:3</option><option value="3:4">3:4 直式</option><option value="1:1">1:1</option><option value="4:5">4:5 直式</option><option value="21:9">21:9</option></select></label>
+            <label class="field">解析度<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">Background<select id="eKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+            <label class="field field-wide">背景<select id="eKey"><option value="off">一般（風格的背景）</option><option value="green">綠幕（合成用）</option><option value="black">黑底（合成用）</option></select></label>
           </div>
-          <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button></div>
-          <button class="terms-open linkish">Rights to exported videos</button>
+          <div class="rng-row"><span class="rng-lab">匯出範圍</span><select class="rngFrom" aria-label="匯出範圍的第一行"></select><span class="muted">〜</span><select class="rngTo" aria-label="匯出範圍的最後一行"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">匯出 MP4</button></div>
+          <button class="terms-open linkish">關於匯出影片的權利</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">取消</button></div>
           </div>
         </div>
       </div>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="style" aria-selected="true">Style</button>
-        <button role="tab" data-tab="fx" aria-selected="false">Effects</button>
-        <button role="tab" data-tab="tech" aria-selected="false">Techniques</button>
-        <button role="tab" data-tab="out" aria-selected="false">Export</button>
+        <button role="tab" data-tab="style" aria-selected="true">風格</button>
+        <button role="tab" data-tab="fx" aria-selected="false">效果</button>
+        <button role="tab" data-tab="tech" aria-selected="false">手法</button>
+        <button role="tab" data-tab="out" aria-selected="false">匯出</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
         <div id="styleGrid" class="style-grid"></div>
-        <h3>Font roles</h3>
+        <h3>字型用途</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="Installed font name (e.g. Arial)" style="flex:1">
-          <button id="btnAddFont">Add</button>
+          <input id="localFont" type="text" placeholder="電腦上的字型名稱（例：微軟正黑體）" style="flex:1">
+          <button id="btnAddFont">加入</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">Font file (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Accent and offset colors</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>Use custom colors<small>Applies to every scene. Brightness adapts to the background.</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">字型檔（.ttf/.otf）<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>強調色與錯位色</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>改用自訂顏色<small>套用到所有場景，亮度會依背景自動調整</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">Randomize palette</button>
+          <button id="btnRandPalette" class="accent">隨機配色</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>Background and text colors</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>Use custom background and text colors</span></label>
+        <h3>背景與文字顏色</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>主背景與文字改用自訂顏色</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
-          <label class="row" style="gap:6px">Frame stepping <select id="fxKoma" title="Motion drawings per second (independent of export fps)"><option value="0">Full (export fps)</option><option value="12">On twos (12 drawings/s)</option><option value="8">On threes (8 drawings/s)</option></select></label>
+          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 閃光</label>
+          <label class="row" style="gap:6px">動畫拍數 <select id="fxKoma" title="動態每秒畫幾張（與輸出 fps 無關）"><option value="0">完整（同輸出 fps）</option><option value="12">一拍二（每秒 12 張）</option><option value="8">一拍三（每秒 8 張）</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (by style)</option><option value="on">Always show</option><option value="off">Hide</option></select></label>
-          <label class="field">Seed<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">New seed</button></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">依風格而定</option><option value="on">一律顯示</option><option value="off">不顯示</option></select></label>
+          <label class="field">種子<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">新種子</button></label>
         </div>
-        <p class="note">The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.</p>
+        <p class="note">相同的種子會產生相同的編排。要逐行「重新抽選」或「鎖定」，請使用左側的行清單。</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include techniques, styles and fonts marked New in automatic picks.</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include techniques and styles marked JP in automatic picks. Manual selections remain available.</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>也使用新增的效果<small>標有「新增」的手法、風格與字型。關閉時，隨機生成與重新排列只使用首次公開版的效果</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>也使用和風效果<small>標有「和」的手法與風格。關閉後，隨機生成與重新排列不會選用（在「新增」的判定之後套用；逐行手動指定時仍可使用）</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter techniques by name" style="flex:1" aria-label="Filter techniques by name"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="依名稱篩選手法" style="flex:1" aria-label="依名稱篩選手法"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">Aspect ratio<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-          <label class="field">Resolution<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">畫面比例<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 直式</option><option value="4:3">4:3</option><option value="3:4">3:4 直式</option><option value="1:1">1:1</option><option value="4:5">4:5 直式</option><option value="21:9">21:9</option></select></label>
+          <label class="field">解析度<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">Quality<select id="outQuality"><option value="standard">Standard</option><option value="high">High</option><option value="max">Maximum</option></select></label>
-          <label class="field field-wide">Background<select id="outKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+          <label class="field">畫質<select id="outQuality"><option value="standard">標準</option><option value="high">高</option><option value="max">最高</option></select></label>
+          <label class="field field-wide">背景<select id="outKey"><option value="off">一般（風格的背景）</option><option value="green">綠幕（合成用）</option><option value="black">黑底（合成用）</option></select></label>
         </div>
-        <p class="note key-note">Green screen and black background render white text and effects over a solid color, without background patterns, paper texture, particles or vignette. The preview shows the export. Use a chroma key for green or Screen blending / a luma key for black to composite over footage.</p>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Include audio in video</label>
-        <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">選擇綠幕／黑底時，只會在單色背景上繪製白色文字與效果（不含背景圖樣、紙張質感、粒子與暗角），預覽也會同步呈現。綠幕可在影片剪輯軟體中用色度鍵去背，黑底可用「濾色」混合模式或亮度鍵去背，再疊到其他影片上。</p>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 將歌曲加入影片</label>
+        <div class="rng-row"><span class="rng-lab">匯出範圍</span><select class="rngFrom" aria-label="匯出範圍的第一行"></select><span class="muted">〜</span><select class="rngTo" aria-label="匯出範圍的最後一行"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">Export MP4</button>
-          <button id="btnPNG">PNG sequence (ZIP)</button>
-          <button id="btnPNGA">Transparent PNG (ZIP)</button>
-          <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
+          <button id="btnMP4" class="primary">匯出 MP4</button>
+          <button id="btnPNG">PNG 序列圖（ZIP）</button>
+          <button id="btnPNGA">微光 PNG（ZIP，無背景）</button>
+          <button id="btnPNGL" title="將後景（背景圖形與歌詞後方的裝飾）和前景（歌詞及其裝飾、殘影）分別匯出為微光 PNG，存放在不同資料夾（back / front）。全畫面效果會同時套用在兩者，把前景疊在後景上就是一般的畫面。">微光 PNG 前景／後景（ZIP）</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">取消</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">Rights and licenses for exported videos and images</button>
-        <p class="note" id="codecNote">Export runs in your browser (Chrome or Edge recommended).</p>
+        <button class="terms-open linkish" style="margin-top:10px">關於匯出影片與圖片的權利和授權</button>
+        <p class="note" id="codecNote">匯出會在這個瀏覽器中進行（建議使用 Chrome / Edge）。</p>
       </div>
     </section>
   </main>
@@ -611,18 +611,18 @@ button.small.primary { padding: 4px 12px; }
 
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">About / rights</h2>
+    <h2 id="termsTitle">使用須知</h2>
     <div class="terms-main">
-      <p class="terms-big">You own the <strong>videos and images you create</strong>.</p>
-      <p class="terms-sub">Lyrics and music remain the property of their respective rights holders.</p>
+      <p class="terms-big">使用本工具製作的<strong>影片與圖片（產出物），權利歸製作者</strong>所有。</p>
+      <p class="terms-sub">※ 所使用的歌詞與歌曲，權利歸各自的權利人所有。</p>
     </div>
-    <p>The tool is released under the <strong>MIT license</strong>. See the license at:</p>
+    <p>工具本身以 <strong>MIT 授權</strong>條款公開。完整授權內容請見：</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">Your lyrics and audio are processed in this browser and are not sent to a server.</p>
-    <details class="terms-oss"><summary>Open source software</summary>
-      <p>MP4 export: mp4-muxer（MIT License）<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">輸入的歌詞與歌曲只會在這個瀏覽器中處理，不會傳送到伺服器。</p>
+    <details class="terms-oss"><summary>使用的開放原始碼軟體</summary>
+      <p>MP4 匯出：mp4-muxer（MIT License）<br>字型：Google Fonts 提供的各款字型（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Close</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>關閉</button></div>
   </form>
 </dialog>
 
@@ -4594,7 +4594,7 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const px = w * h * fps;
   const bitrate = Math.round(px * (quality === 'max' ? 0.42 : quality === 'high' ? 0.28 : 0.16));
   const vc = await J.pickVideoCodec(w, h, fps, bitrate);
-  if (!vc) throw new Error('Video encoding (WebCodecs) is unavailable. Open in the latest Chrome or Edge.');
+  if (!vc) throw new Error('這個瀏覽器不支援影片編碼（WebCodecs）。請改用最新版 Chrome 或 Edge 開啟。');
   let ac = null;
   if (audio && audio.buffer && project.includeAudio !== false) ac = await J.pickAudioCodec(48000, Math.min(2, audio.buffer.numberOfChannels));
   const target = new Mp4Muxer.ArrayBufferTarget();
@@ -4612,19 +4612,19 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const prevRes = J.glyphs.maxRes; J.glyphs.maxRes = h >= 1000 ? 768 : 512;
   try {
   for (let i = 0; i < total; i++) {
-    if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('Canceled'); }
+    if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('已取消'); }
     if (err) throw err;
     R.frame(ctx, plan, span.t0 + i / fps, { scale });
     const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
     venc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
     vf.close();
     while (venc.encodeQueueSize > 4) await new Promise(r => setTimeout(r, 2));
-    if (i % 3 === 0) { onProgress && onProgress(i / total, `Frame ${i + 1}/${total}`); await new Promise(r => setTimeout(r, 0)); }
+    if (i % 3 === 0) { onProgress && onProgress(i / total, `畫格 ${i + 1}/${total}`); await new Promise(r => setTimeout(r, 0)); }
   }
   } finally { J.glyphs.maxRes = prevRes; }
   await venc.flush(); venc.close();
   if (ac) {
-    onProgress && onProgress(0.99, 'Encoding audio');
+    onProgress && onProgress(0.99, '正在編碼音訊');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0;
@@ -4642,10 +4642,10 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
     await aenc.flush(); aenc.close();
     if (err) throw err;
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('Audio encoding stopped partway (' + aChunks + '). Please export again');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('音訊編碼中途停止（' + aChunks + '）。請重新匯出');
   }
   muxer.finalize();
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, '完成');
   return { blob: new Blob([target.buffer], { type: 'video/mp4' }), codec: vc.label, audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h };
 };
 
@@ -4688,7 +4688,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('Canceled');
+    if (signal && signal.aborted) throw new Error('已取消');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -4697,7 +4697,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, '完成');
   return zip.finish();
 };
 
@@ -29505,6 +29505,223 @@ J.randomOk = (project, g, k) => {
   J.SAMPLE_LYRICS = 'I remember/the color of dawn\nA voice faded into the distance\nCan we still make it in time?\n*Transparent* is not how this ends!';
 })();
 
+(() => {
+  const S = {"noir": ["黑白色差", "黑白畫面，帶有青色與琥珀色的色差偏移"], "crimson": ["緋紅訊號", "深紅、單色字體與損毀的資料"], "caution": ["警示", "黃、紅、藍配上儀表圖形"], "magenta": ["流行洋紅", "亮粉紅、圓潤粗體與標註線"], "paper": ["紙與墨", "紙張質感、靛藍、洋紅與襯線殘影"], "hud": ["暗色 HUD", "炭灰、細框、橘色點綴與日蝕"], "mint": ["薄荷終端機", "黑、青綠與萊姆綠，加上掃描效果"], "specimen": ["字體樣本", "墨色背景搭配襯線註解"], "transit": ["交通號誌", "橄欖綠與黃，搭配標誌與網點"], "blueprint": ["藍圖", "藍、白、黑的圖像拼貼"], "rouge": ["胭脂漸層", "淺灰與紅色漸層，搭配膠囊形狀"], "mono": ["單色 RGB", "灰色空間、白色襯線與強烈的 RGB 分離"], "sakura": ["櫻花", "柔和櫻粉與梅紫，搭配圓體與襯線字"], "ocean": ["深海", "海軍藍、發光青色、氣泡與細黑體"], "sunset": ["夕陽漸層", "橘到紫的漸層、粗襯線與逆光"], "forest": ["森林筆記", "苔綠、原色紙與鉛筆字"], "vapor": ["蒸氣波", "粉彩粉紅與藍，加上 VHS 光暈"], "newsprint": ["新聞紙", "灰色紙張、黑與紅，帶網點套印"], "synth80": ["80 年代合成", "黑底配霓虹洋紅、青色與掃描線"], "kraft": ["牛皮紙", "暖色紙張、紅與靛藍印章及紙膠帶"], "candy": ["糖果", "薄荷與水果粉彩，搭配彈跳文字"], "acid": ["酸性", "黑、螢光綠與洋紅，搭配破損字體"], "sumi": ["墨與朱", "和紙、毛筆字與朱紅印章"], "gold": ["金色夜晚", "深黑、燙金、象牙色襯線與閃光"]};
+  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
+  const M = {"glitch": "故障", "calm": "溫和", "pop": "流行", "graphic": "圖像", "editorial": "編輯排版", "emotional": "感性", "chaos": "隨心所欲"};
+  for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
+  J.SAMPLE_LYRICS = "我還記得/黎明的顏色\n散開的聲音在遠方響起\n欸，現在還來得及嗎\n不能就這樣*透明*地結束!";
+})();
+
+/* Traditional Chinese (Taiwan) labels are applied after all expression packs register, before the editor starts.
+   Internal IDs and project JSON remain language independent. Entries without a label here keep their Japanese name. */
+(() => {
+  'use strict';
+  const titles = {
+    layout: {
+      center: '置中', mixed: '大小混排', vcols: '直書', marquee: '流動橫幅', tile: '滿版鋪排',
+      scatter: '散落', ring: '環形', wave: '波浪軌跡', huge: '超出畫面', labels: '標籤貼',
+      condensed: '瘦長壓縮', gloss: '註解', type: '打字', diag: '斜帶', circle: '圓窗',
+      stack: '殘影堆疊', pill: '膠囊', lowerThird: '下方字卡', corners: '對角配置', staircase: '階梯',
+      zigzag: '鋸齒', arcTop: '彩虹弧', spiral: '螺旋', gridCells: '方格', dropCap: '首字放大',
+      justified: '版心', frameBox: '畫框', bubble: '對話框', subtitleBar: '字幕條', ticker: '新聞跑馬燈',
+      splitScreen: '二分割', mirror: '鏡像', sideways: '橫躺直書', edgeFrame: '沿邊環繞', perspective: '景深',
+      hanko: '落款', genkou: '稿紙', panels: '漫畫分格', filmstrip: '底片', quote: '引用',
+      ruler: '尺寸線', searchBar: '搜尋框', chat: '聊天', notification: '通知', ticket: '票券',
+      rain: '文字雨', hanging: '吊掛', orbit: '環繞', tunnel: '隧道', wordCloud: '文字雲',
+      bounceLine: '彈跳', elastic: '橡皮筋', crossBands: '交叉帶', stickerBomb: '貼紙', neon: '霓虹',
+      keycaps: '鍵帽', bubbles: '泡泡', slotMachine: '拉霸機', flipBoard: '翻牌看板', credits: '片尾名單',
+      zoomRepeat: '連續放大', splitHalves: '上下分割', columnsBig: '大小直排', circleWords: '同心圓', dotMatrix: '點陣顯示',
+      depthStack: '景深重疊', typeSpecimen: '字型樣本', kanjiFocus: '單字強調', halfVertical: '直橫混排', curtain: '布幕',
+      equalizer: '等化器', tape: '膠帶', magazine: '雜誌跨頁', headlineDeck: '標題與導言', contents: '目錄',
+      footnote: '註腳', proofread: '校樣', numbered: '編號', poster: '海報', swissGrid: '瑞士網格',
+      dictionary: '辭典', ema: '繪馬', ransom: '剪報字', newspaper: '報紙', vinyl: '黑膠唱片',
+      cassette: '卡帶', bookSpine: '書背', polaroid: '拍立得', stampSheet: '郵票版張', postcard: '明信片',
+      letterPaper: '信紙', calendar: '月曆', chochin: '燈籠', routeMap: '路線圖', stationSign: '站名牌',
+      noren: '暖簾', tanzaku: '短籤', omikuji: '御神籤', kakejiku: '掛軸', shoji: '障子',
+      clapper: '場記板', warningLabel: '警告標籤', priceTag: '價格標籤', nameTag: '名牌', stickyNotes: '便利貼',
+      karuta: '歌牌', cube: '立方體', cylinder: '圓柱', flipCards: '翻卡', accordion: '風琴摺',
+      flag: '飄揚的旗', ribbon: '緞帶', pendulum: '鐘擺', pile: '文字堆', blocks: '積木',
+      balloons: '文字氣球', magnets: '磁鐵', tiles: '文字磁磚', bulbs: '燈泡招牌', ledScroll: '電子跑馬燈',
+      billboard: '看板', crowdBubbles: '對話框群', crossword: '填字遊戲', wordSearch: '找字遊戲', puzzle: '拼圖',
+      shadowPlay: '皮影戲', kaleido: '萬花筒', dominoes: '骨牌', burst: '爆炸', fisheye: '魚眼鏡頭',
+      wall: '牆面透視', origami: '摺紙', zipper: '拉鍊', sliceStack: '切片堆疊', glitchGrid: '故障網格',
+      mosaicTiles: '磁磚拼畫', maskReveal: '文字窗', contour: '等高線', halftoneBig: '網點巨字', stencil: '鏤空模板',
+      title: '標題', interlude: '間奏'
+    },
+    enter: {
+      cut: '直切', assemble: '分解→聚合', slice: '切片', type: '打字', pop: '彈出',
+      drop: '落下', stretch: '伸縮', wipe: '擦除', blur: '模糊', spin: '旋轉',
+      flicker: '閃爍', scramble: '亂碼', zoom: '縮放', riseMask: '由下浮現', dropMask: '由上浮現',
+      slideL: '從左滑入', slideR: '從右滑入', slideWhole: '整體滑入', flipX: '縱軸翻轉', flipY: '橫軸翻轉',
+      domino: '骨牌', fold: '摺疊展開', unroll: '捲軸展開', strokeDraw: '線稿到上色', outlineFill: '輪廓→填色',
+      splitJoin: '上下合體', vSlice: '縱向切片', shutter: '快門', iris: '光圈', diagWipe: '斜向擦除',
+      blinds: '百葉窗', checker: '棋盤格', randomOrder: '隨機順序', bounceBig: '大跳躍', squashDrop: '壓扁著地',
+      rubber: '橡皮拉伸', glitchIn: '故障浮現', echoIn: '殘影聚合', whip: '急甩', skewIn: '傾斜',
+      trackIn: '字距收攏', trackOut: '字距擴張', blurStagger: '模糊錯落', fadeStagger: '逐字淡入', waveIn: '波浪起伏',
+      spiralIn: '螺旋聚合', zoomOut: '巨大→原尺寸', resolve: '解碼', magnet: '磁吸', inkBleed: '暈染',
+      neonOn: '霓虹點亮', cursorSweep: '游標掃過', stamp: '蓋章', springIn: '彈簧', pendulum: '鐘擺',
+      rollIn: '滾入', slingshot: '彈弓', rockSettle: '搖晃著地', bounceBall: '彈跳球', snapRail: '吸附對齊',
+      fanOpen: '扇子展開', cylinder: '圓柱旋轉', shuffle: '洗牌', stopMotion: '定格動畫', ripple: '漣漪',
+      zipper: '拉鍊', zoomAlt: '交錯縮放', tiltUp: '站起', stickerPeel: '貼上貼紙', crumple: '揉皺還原',
+      noteUnfold: '展開信紙', tornJoin: '撕紙拼合', splitFlap: '翻牌', overexpose: '過曝', glint: '反光一閃',
+      loupe: '放大鏡', filmFeed: '底片捲動', backlight: '逆光', lightLeak: '漏光', heatHaze: '熱浪扭曲',
+      crtOn: 'CRT 開機', interlace: '交錯掃描', loadingBar: '載入條', dither: '遞色', odometer: '數字滾輪',
+      matrixRain: '資料雨', hatchFill: '斜線→實心', brushReveal: '筆觸掃出', inkDrop: '墨滴', quarters: '四方聚合',
+      invertBox: '反轉挖空', printRegister: '套印錯位', echoCount: '數拍進場', liquidFill: '水位上升', windBlown: '乘風而來',
+      strokeOrder: '逐筆書寫', clockWipe: '順時針', shadowFirst: '影子先落', bubbles: '泡泡', tokoroten: '擠壓成條'
+    },
+    hold: {
+      still: '靜止', jitter: '抖動', drift: '漂移', breathe: '呼吸', wave: '波浪',
+      glitchtick: '故障', float: '輕飄飄', sway: '搖曳', pulse: '脈動', shimmer: '閃耀',
+      colorRun: '流動色彩', rotateSlow: '緩慢旋轉', trackBreathe: '字距呼吸', skewWobble: '斜向搖晃', beatHop: '隨拍跳動',
+      hWave: '橫向波浪', heartbeat: '心跳', orbitSmall: '小圓周運動', jelly: '果凍', scanBand: '掃描帶',
+      noiseDrift: '雜訊漂移', tilt: '翹翹板', zoomSlow: '緩慢推近', stretchPulse: '隨拍橫向拉伸', glitchJump: '偶爾錯位',
+      echoTrail: '殘影拖尾', glowFlicker: '燭火搖曳', windGust: '陣風', dangle: '懸吊', eqBounce: '隨音量伸縮',
+      flashBox: '隨拍反轉', glintSweep: '光澤掃過', flipSwap: '偶爾翻面', shadowSway: '影子搖晃', magnetJiggle: '磁力',
+      typeRattle: '打字震動', focusRack: '移焦', pluckString: '撥弦'
+    },
+    exit: {
+      cut: '直切', explode: '爆散', fall: '崩落', drift: '霧散', slice: '切片退場',
+      wipe: '擦除退場', shrink: '收縮', blur: '模糊退場', stretch: '伸縮退場', scatter: '飛散',
+      glitch: '故障退場', sinkMask: '下沉', riseOut: '向上消失', slideOutL: '向左滑出', slideOutR: '向右滑出',
+      flipOutX: '關門', flipOutY: '啪地倒下', foldOut: '摺疊收起', squash: '壓扁', trackOutWide: '字距散開',
+      collapse: '吸入', zoomThrough: '衝向鏡頭', zoomFar: '退向遠方', spinOut: '旋轉消失', twist: '扭轉',
+      waveOut: '波浪崩解', blurOutStagger: '逐字模糊', undraw: '回到線稿', outlineOut: '填色褪去', irisClose: '光圈',
+      diagWipeOut: '斜向擦除', blindsClose: '百葉窗', checkerOut: '棋盤格', splitApart: '上下裂開', vSliceDrop: '縱向切片掉落',
+      melt: '融化', dissolve: '碎散', backspace: '退格刪除', scrambleOut: '變成符號', glitchDissolve: '化為方塊',
+      echoOut: '殘響', whipOut: '急甩', gravity: '重力墜落', popOut: '迸裂', burn: '燒毀',
+      sweepCover: '橫條遮蓋', shatterLite: '四分飛散', peelOff: '撕下貼紙', crumpleOut: '揉成紙團丟掉', tearOut: '撕掉',
+      scorchOut: '燒焦消失', overexposeOut: '過曝泛白', scanOut: '掃描線消除', stripesOut: '條紋消除', halftoneOut: '化為網點',
+      eraserOut: '黑板擦擦掉', vacuumOut: '吸入一點', sandOut: '化沙飛散', shredOut: '碎紙機', dominoOut: '骨牌倒下',
+      hingeOut: '單邊脫落', rocketOff: '發射升空', bounceOff: '彈跳離開', balloonOff: '氣球飛走', deflateOut: '洩氣飛走',
+      hazeOut: '消失於熱浪', glassBreak: '玻璃碎裂', zipOut: '拉鍊', clapShut: '中央閉合', lampOff: '熄燈',
+      slotOut: '拉霸轉動', clockOut: '時鐘擦除', matrixOut: '數位雨', tornadoOut: '龍捲風', rollUpOut: '捲起',
+      snakeOut: '排隊離開', flutterOut: '飄落', rollOff: '滾走', fanClose: '收起扇子', rgbSplitOut: '分色',
+      shockOut: '衝擊波', floodOut: '淹沒', slashOut: '一刀兩斷', mosaicOut: '馬賽克', scribbleOut: '亂塗抹消',
+      candleOut: '吹熄'
+    },
+    decor: {
+      brackets: '框角標記', rings: '座標圓', dots: '點狀圓環', arrows: '箭頭', slash: '斜線',
+      sparks: '火花', leaders: '引線', waveform: '波形', barcode: '條碼', grid: '網格',
+      stripes: '條紋', blobs: '墨漬', bars: '粗糙色帶', shapes: '幾何圖形', counter: '大數字',
+      crosshair: '十字準線', cropMarks: '裁切標記', reticle: '鎖定框', radar: '雷達', progressRing: '進度環',
+      timecodeBar: '時間碼', rulerEdge: '邊緣尺規', dimension: '尺寸線', indexNum: '流水號', dateStamp: '相片日期',
+      qrBlock: 'QR 風格方塊', glitchRects: '故障碎片', concentricSquares: '同心方框', triangleSpin: '旋轉三角', lineBurst: '放射線',
+      plusGrid: '十字網格', guides: '參考線', waveLine: '波浪線', spiralLine: '漩渦', halftonePatch: '網點',
+      checkerStrip: '棋盤格帶', beatRing: '節拍圓環', orbitDots: '環繞圓點', constellation: '星座', confetti: '彩紙',
+      petals: '花瓣', rainStreaks: '雨絲', snow: '雪', lightLeak: '漏光', bokeh: '散景光點',
+      speedCorner: '集中線', risingParticles: '上升粒子', twinkle: '閃爍星光', brushStroke: '筆刷痕', tapePieces: '紙膠帶',
+      scribbleCircle: '手繪圈', scribbleUnder: '手繪底線', crossOut: '推敲筆記', highlightMark: '螢光筆', heartsStars: '愛心與星星',
+      watermarkKanji: '浮水印大字', verticalStrip: '直書條', romajiLine: '羅馬字', bracketsJP: '方頭括號', seal: '落款',
+      kamon: '家紋', seigaiha: '青海波', asanoha: '麻葉紋', hanabi: '煙火', chochin: '燈籠',
+      shimenawa: '注連繩', sensu: '扇子', tsukiKumo: '雲中月', momiji: '楓葉', namiGashira: '浪頭',
+      kasumi: '霞', hexGrid: '六角網格', spectrumRing: '環形頻譜', dataColumns: '資料列', spinner: '載入中',
+      headingTape: '方位刻度', glyphLock: '文字鎖定', atomOrbit: '原子軌道', sonarArcs: '聲波', circuit: '電路',
+      swatches: '色票', ruledLines: '橫線筆記', registration: '套準標記', punchHoles: '打孔', staple: '釘書針',
+      paperClip: '迴紋針', indexTabs: '索引標籤', vines: '藤蔓', cloudPuffs: '雲朵', starField: '星空',
+      moonPhases: '月相', sunRays: '陽光', rainRipples: '雨滴漣漪', bubbles: '肥皂泡', smoke: '煙',
+      dandelion: '蒲公英', fireflies: '螢火蟲', memphis: '孟菲斯', zigzagRibbon: '鋸齒緞帶', polkaPatch: '圓點',
+      stripeCircle: '條紋圓', decoCorners: '裝飾角', halfCircles: '半圓堆疊', loopArrows: '循環箭頭', starburst: '星芒',
+      tally: '畫正字', cursorClick: '游標', windowChrome: '視窗', progressBar: '進度條', toggleSwitch: '切換開關',
+      notifBell: '通知', likeCounter: '按讚數', mediaControls: '播放按鈕', volumeBars: '音量', musicNotes: '音符'
+    },
+    treat: {
+      none: '無', outline: '空心字', outlineFill: '描邊', doubleOutline: '雙層描邊', extrude: '立體字',
+      longShadow: '長陰影', hardShadow: '錯位陰影', softShadow: '柔和陰影', glow: '發光', marker: '螢光筆',
+      underline: '底線', strike: '刪除線', boxed: '方框字', gradientV: '垂直漸層', splitColor: '上下雙色',
+      halftone: '網點', stripes: '條紋', hatch: '斜線', dotted: '點線輪廓', alternate: '交錯配色',
+      italic: '斜體', wide: '扁平字', tall: '瘦長字', echoOutline: '輪廓殘響', emphasisDots: '著重號',
+      neonOutline: '霓虹燈管', chrome: '鍍鉻', rainbow: '彩虹色', glitchSplit: '色版錯位', shadowStack: '多重陰影',
+      stencilGap: '鏤空字', waterline: '水位', karaoke: '卡拉 OK', sizeWave: '大小節奏', rotateAlt: '搖擺字',
+      baselineShift: '高低錯落', fauxBold: '超粗', circled: '圓圈字', bracketsQuote: '引號', reflection: '倒影',
+      inline: '內框線', sticker: '貼紙描邊', gradientSweep: '光澤掃過', kerningWide: '寬字距', monoGrid: '稿紙風',
+      outlineOffset: '錯位空心字', toneShadow: '網點陰影', fadeChars: '餘韻', cutShift: '切割錯位', focusPull: '模糊移焦',
+      spotChar: '單字標記', ransom: '剪貼字'
+    },
+    bg: {
+      none: '素色', auroraRibbons: '極光', meshBlobs: '網格漸層', duotoneSweep: '雙色掃動', horizonGlow: '行星邊緣',
+      seigaiha: '青海波', asanoha: '麻葉紋', houndstooth: '千鳥格', herringbone: '人字紋', argyle: '菱格紋',
+      tartan: '蘇格蘭格紋', chevron: 'V 形紋', isoCubes: '立方體', hexGrid: '六角網格', triTess: '三角馬賽克',
+      moire: '摩爾紋', squareTunnel: '方形隧道', spiralArms: '漩渦', topoLines: '等高線', ridgePlot: '山脊線圖',
+      starfield: '星空', nightMoon: '月夜', skyline: '街景', sunsetSun: '夕陽', oceanWaves: '海浪',
+      rainWindow: '雨窗', snowLayers: '雪', fireworks: '煙火', cloudLayers: '雲', mountains: '山巒',
+      filmStrip: '底片', vhsBand: 'VHS 雜訊', tornPaper: '撕紙', godRays: '光芒', vignettePulse: '彩色暗角',
+      kaleidoscope: '萬花筒', marble: '大理石', paperCut: '剪紙', sunburst: '放射', concentric: '同心圓',
+      halftoneFade: '網點漸層', bigStripes: '大斜紋', splitV: '左右雙色', splitH: '上下雙色', splitDiag: '斜向雙色',
+      gradientSweep: '漸層', spotlight: '聚光燈', tvBars: '電視彩條', checker: '棋盤格', bigChar: '巨大文字',
+      speedLines: '集中線', scanBars: '掃描線帶', dotGrid: '點狀網格', retroGrid: '復古網格', bokehBg: '散景光點',
+      particlesBg: '飛舞粒子', ripples: '漣漪', polka: '圓點', eqBars: '背景等化器', borderFrame: '粗框',
+      letterbox: '電影黑邊', noiseField: '雜訊擾動'
+    },
+    cam: {
+      push: '緩慢推近', orbitDrift: '環繞', barrelRoll: '桶滾', pendulumSway: '鐘擺', focusIn: '對焦',
+      rackFocus: '失焦', earthquake: '地震', floatNoise: '漂浮', vertigo: '暈眩變焦', tiltDown: '鏡頭下搖',
+      spiralIn: '漩渦變焦', snapPan: '快速橫搖', jelly: '果凍晃動', pullOut: '拉遠', panL: '向左橫搖',
+      panR: '向右橫搖', tiltUp: '鏡頭上搖', dutch: '斜角鏡頭', handheld: '手持', beatPunch: '隨拍放大',
+      whipIn: '急甩推入', crashZoom: '急速變焦', bounce: '彈跳', roll: '滾轉', driftDiag: '斜向漂移',
+      shakeHard: '劇烈搖晃', dollyIn: '推軌', stepZoom: '分段變焦'
+    },
+    fx: {
+      chroma: '色彩錯位跳動', shake: '搖晃', slice: '切片故障', block: '區塊故障', invert: '反轉',
+      flash: '閃光', zoom: '縮放模糊', mosaic: '馬賽克', radialChroma: '放射色差', bloomFlash: '光暈',
+      bulge: '魚眼', pixelSort: '像素排序', interlace: '交錯掃描', macroBlock: '區塊雜訊', halftone: '網點',
+      duotone: '雙色調', ditherBit: '1 位元遞色', rotateSnap: '角度急轉', echoFrames: '殘影回聲', kaleido: '萬花筒',
+      bandInvert: '帶狀反轉', lightRays: '光芒', anamorphic: '橫向光斑', heartbeat: '心跳', tvStatic: '雪花雜訊',
+      dustScratches: '底片刮痕', filmAdvance: '底片捲動', perspectiveTilt: '透視搖晃', ripple: '漣漪', focusLines: '集中線',
+      speedLines: '速度線', starGlint: '星芒閃光', colorBars: '彩條', zoomStutter: '連續縮放', negativeRing: '反轉圓環',
+      edgeDetect: '邊緣偵測', shatter: '玻璃碎裂', defocus: '失焦', snapshot: '快門', squash: '伸縮',
+      scanBar: '掃描', loopScroll: '橫向循環', panelWipe: '面板擦除', irisTrans: '光圈', doors: '門',
+      blindsTrans: '百葉窗', rgbSplit: 'RGB 分離', smear: '橫向拖影', vhsRoll: 'VHS 滾動', trackingNoise: '磁軌雜訊',
+      mirrorFlash: '鏡像', strobe: '頻閃', posterize: '色調分離', hueShift: '色相偏移', tileShift: '磁磚錯位',
+      filmBurn: '底片燒灼', whipBlur: '急甩模糊', blackFrame: '黑畫格', whiteFrame: '白畫格', gridRepeat: '分割畫面',
+      waveWarp: '波浪扭曲', pixelDrift: '像素偏移', zoomPunch: '縮放重擊', lightSweep: '光束掃過', crtOff: '映像管關機',
+      splitSlide: '上下滑移'
+    },
+    trans: {
+      wipe: '邊緣擦除', diagonalWipe: '斜帶擦除', clockWipe: '時鐘擦除', irisOpen: '光圈開啟', pushSlide: '推移',
+      cover: '覆蓋', uncover: '揭開', zoomThrough: '穿越縮放', doorsOpen: '對開門', blinds: '百葉窗轉場',
+      checker: '棋盤格轉場', blockDissolve: '方塊崩解', whipPan: '急甩橫搖', spinOut: '旋轉轉出', inkBlob: '墨漬',
+      shatterTiles: '磁磚崩落', sliceShift: '長條錯位', cubeTurn: '立方體', flashCross: '閃光轉場', pixelate: '馬賽克轉場'
+    }
+  };
+  for (const group of J.GROUP_KEYS) {
+    const table = J.registry(group), names = titles[group] || {};
+    for (const key of Object.keys(table)) if (names[key]) table[key].name = names[key];   // includes the special title / interlude layouts
+  }
+  const styles = {
+    noir: ['暗黑色差', '黑底、白字、青色／琥珀色的色彩錯位'],
+    crimson: ['深紅訊號', '深紅底、黑白雙層排版、資料毀損'],
+    caution: ['警示', '黃色底、紅藍強調色、儀表介面'],
+    magenta: ['普普洋紅', '螢光粉紅×白、粗圓體、標示引線'],
+    paper: ['紙與墨', '紙張質感、靛藍與洋紅、明體殘影'],
+    hud: ['暗色 HUD', '炭灰底、細線框、橘色點綴、日蝕'],
+    mint: ['薄荷終端機', '黑×青綠×萊姆綠、標籤貼紙、狹縫掃描'],
+    specimen: ['字型樣本', '墨色底、明體、辭典註解與引線'],
+    transit: ['交通指標', '橄欖綠×黃色、箭頭與標誌、網點'],
+    blueprint: ['藍圖', '鮮藍×白×黑、圖形拼貼、斜帶'],
+    rouge: ['胭脂漸層', '淺灰底、紅色漸層、膠囊'],
+    mono: ['單色 RGB', '灰色空間、白色明體、強烈 RGB 分離、座標圓'],
+    sakura: ['櫻花', '淡櫻色、深梅紫、夜櫻、圓體與明體'],
+    ocean: ['深海', '深藍的深海、青色螢光、泡泡與細黑體'],
+    sunset: ['夕陽漸層', '橘到紫羅蘭的漸層、粗明體、逆光'],
+    forest: ['森林手帖', '苔綠與米白、樹皮棕、鉛筆手寫字'],
+    vapor: ['蒸氣波', '淡紫與粉彩粉紅／水藍、明體、VHS 暈染'],
+    newsprint: ['報紙', '灰色新聞紙、墨黑與紅、標題明體、CMY 套印錯位與網點'],
+    synth80: ['合成器 80s', '黑底霓虹洋紅／青色、立體字、掃描線'],
+    kraft: ['牛皮紙', '牛皮紙與米白、朱紅與靛藍印章、紙膠帶'],
+    candy: ['糖果', '薄荷／草莓／檸檬／葡萄的粉彩色、圓潤跳動的文字'],
+    acid: ['酸性', '黑×酸性綠×洋紅、粗糙字型與故障畫面'],
+    sumi: ['墨與朱', '和紙米白、毛筆墨字、朱紅落款'],
+    gold: ['金夜', '漆黑與金箔、象牙色明體、閃爍光芒']
+  };
+  for (const [key, [name, desc]] of Object.entries(styles)) {
+    if (J.STYLES[key]) { J.STYLES[key].name = name; J.STYLES[key].desc = desc; }
+  }
+  for (const [key, name] of Object.entries({glitch: '故障風', calm: '沉靜', pop: '普普', graphic: '圖形感', editorial: '編輯排版', emotional: '感性', chaos: '全都來'})) if (J.MOODS[key]) J.MOODS[key].name = name;
+  J.SAMPLE_LYRICS = '晚風把影子/拉成一條線\n口袋裡還藏著沒寄出的信\n喂，現在追上去還來得及嗎\n*微光*也要燒到最後!';
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -29513,7 +29730,7 @@ J.randomOk = (project, g, k) => {
 if (!document.getElementById('app')) return;          // engine-only pages (tests)
 const $ = id => document.getElementById(id);
 const LS_KEY = 'jizura.project.v1';
-const HUD_CHARS = '0123456789:./-_()【】 · No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
+const HUD_CHARS = '0123456789:./-_()【】、No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
 const ICON = {
   dice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="5.5" r="1" fill="currentColor"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
@@ -29526,9 +29743,9 @@ const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), 
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
-  line: { ja: 'line ループ', en: 'Line loop', titleJa: 'このline を繰り返し', titleEn: 'Loop this line' },
-  cut:  { ja: 'cutsループ', en: 'Cut loop', titleJa: 'このcutsを繰り返し', titleEn: 'Loop this cut' },
-  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返しNone', titleEn: 'No loop' },
+  line: { ja: '行ループ', en: 'Line loop', titleJa: 'この行を繰り返し', titleEn: 'Loop this line' },
+  cut:  { ja: ' 個片段ループ', en: 'Cut loop', titleJa: 'この 個片段を繰り返し', titleEn: 'Loop this cut' },
+  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返し無', titleEn: 'No loop' },
 };
 const isEn = () => document.documentElement.lang === 'en';
 function cutAround(t) {
@@ -29598,7 +29815,7 @@ function initVolume() {
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muted' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '靜音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '音量 ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
@@ -29622,7 +29839,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="Added after the original release">New</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Japanese motifs">JP</span>' : '');
+  return (d && d.extra ? '<span class="set-badge ex" title="首次公開版之後新增">新增</span>' : '') + (d && d.wa ? '<span class="set-badge" title="和風效果">和</span>' : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -29641,7 +29858,7 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* Auto判定のとき、判定結果を言語欄の横に出す */
+/* 自動判定のとき、判定結果を言語欄の横に出す */
 function langNote() {
   const el = $('langNote'); if (!el) return;
   el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
@@ -29692,14 +29909,14 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('Loading fonts…');
+  showMsg('正在載入字型…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
 // style thumbnails need two glyphs of every style's display face — fetched only once the style grid is actually shown
 function loadThumbFonts() {
   if (thumbFonts || !$('styleGrid').offsetParent) return;
-  thumbFonts = J.ensureFonts('JIZURA', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
+  thumbFonts = J.ensureFonts('字面', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
 }
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
@@ -29747,12 +29964,12 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Pause');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '暫停');
   refreshLoopHold();
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Play'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', '播放'); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -29819,7 +30036,7 @@ function drawTimeline() {
     x.fillStyle = on ? '#f5a50c' : man ? '#6fb7c8' : '#5d5a63'; x.fillRect(lx - (on ? dpr : 0), 0, on ? 2 * dpr : 1, top);
     // handle
     x.beginPath(); x.moveTo(lx - 5 * dpr, 0); x.lineTo(lx + 5 * dpr, 0); x.lineTo(lx, 7 * dpr); x.closePath(); x.fill();
-    x.fillStyle = on ? '#f5a50c' : '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' inst.' : ''), lx + 4 * dpr, 17 * dpr);
+    x.fillStyle = on ? '#f5a50c' : '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' 間奏' : ''), lx + 4 * dpr, 17 * dpr);
   }
   if (TL.z > 1) {                                          // where the view sits in the whole song
     x.fillStyle = 'rgba(255,255,255,0.18)'; x.fillRect(0, h - 2 * dpr, w, 2 * dpr);
@@ -29863,8 +30080,8 @@ function tlDragTo(i, ev) {
 
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
-  ['layout', 'l', 'Layout'], ['enter', 'e', 'Entrance'], ['hold', 'h', 'Hold'], ['exit', 'x', 'Exit'],
-  ['decor', '', 'Decoration'], ['treat', 't', 'Treatment'], ['bg', 'b', 'Background'], ['cam', 'c', 'Camera'], ['trans', 'c', 'Transition'],
+  ['layout', 'l', '版面'], ['enter', 'e', '進場'], ['hold', 'h', '停留'], ['exit', 'x', '退場'],
+  ['decor', '', '裝飾'], ['treat', 't', '文字效果'], ['bg', 'b', '背景'], ['cam', 'c', '運鏡'], ['trans', 'c', '轉場'],
 ];
 const cutPick = { g: null, line: -1, k: -1 };
 let lastCutIdx = -2;
@@ -29914,7 +30131,7 @@ function cutGroupVal(cut, g) {
   return '';
 }
 function groupName(g, k) {
-  if (!k) return 'None';
+  if (!k) return '無';
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
@@ -29942,7 +30159,7 @@ function rerollCurrentCut(kind) {
   if (S.exporting || S.tap) return;
   const cut = J.cutAt(S.plan, S.t);
   const k = lyricCutK(cut);
-  if (!cut || k < 0) { toast('この位置のcutsは抽選できません'); return; }
+  if (!cut || k < 0) { toast('この位置の 個片段は抽選できません'); return; }
   remember();
   const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
   const groups = kind === 'omakase'
@@ -29959,7 +30176,7 @@ function rerollCurrentCut(kind) {
   replan();
   commit();
   seek(t0);
-  toast(kind === 'omakase' ? 'このcutsをおまかせ' : 'このcutsをシャッフル');
+  toast(kind === 'omakase' ? 'この 個片段をおまかせ' : 'この 個片段をシャッフル');
 }
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
@@ -29969,7 +30186,7 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">No cut at this position</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">這個位置沒有片段</span>'; closeCutPick(); return; }
   const k = lyricCutK(cut);
   const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
   const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
@@ -29978,8 +30195,8 @@ function updateCutInfo() {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
-  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このcutsだけArrangementを再抽選">シャッフル</button>`);
-  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このcutsだけ手法をRandomに">おまかせ</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="この 個片段だけ編排を再抽選">シャッフル</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="この 個片段だけ手法を隨機に">おまかせ</button>`);
   el.innerHTML = bits.join('');
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
@@ -30012,7 +30229,7 @@ function fillCutPick() {
     const none = document.createElement('button');
     none.type = 'button';
     none.className = 'tcard' + (forced === 'none' ? ' is-on' : '');
-    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>None</span></span>';
+    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>無</span></span>';
     none.addEventListener('click', () => { setCutTech(cutPick.line, cutPick.k, g, 'none'); replan(); });
     grid.appendChild(none);
   }
@@ -30040,25 +30257,25 @@ function fillCutPick() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
-  const layoutOpts = '<option value="">Auto</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
-  const cutOpts = '<option value="">Cuts: auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cuts: ${n}</option>`).join('');
+  const layoutOpts = '<option value="">自動</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const cutOpts = '<option value="">片段數 自動</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">${n}  個片段</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
-    const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]` : ln.text;
+    const label = ln.interlude ? `〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Start (s)${manual ? ' · manual' : ' · automatic'}" aria-label="Line ${i + 1} start time (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="起始（秒）${manual ? ' · 手動' : ' · 自動'}" aria-label="第 ${i + 1} 行的起始秒數" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="Edit this line’s lyrics" aria-label="Edit the lyrics of line ${i + 1}">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="Number of cuts in line ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout">${layoutOpts}</select>`}
-        <button class="icon ghost tapfrom" title="Tap sync again from this line" aria-label="Tap sync from line ${i + 1}">${ICON.tap}</button>
-        <button class="icon ghost rng" title="Set as the export range (Shift+click extends it)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Export line ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Reroll this line">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Lock this line" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="修改這一行的歌詞" aria-label="修改第 ${i + 1} 行的歌詞">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="第 ${i + 1} 行的片段數">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="指定版面">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="從這一行重新點擊對拍" aria-label="從第 ${i + 1} 行點擊對拍">${ICON.tap}</button>
+        <button class="icon ghost rng" title="設為匯出範圍（Shift+點擊可擴大範圍）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="將第 ${i + 1} 行設為匯出範圍">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="重新抽選這一行">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="鎖定這一行的編排" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) q('.lay').value = o.layout || '';
@@ -30092,7 +30309,7 @@ function renderLines() {
       sel.innerHTML = layoutOpts;
       sel.value = forced || c.layout;
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sel.setAttribute('aria-label', `${i + 1}line 目 cuts${k + 1}のLayout`);
+      sel.setAttribute('aria-label', `${i + 1}行目  個片段${k + 1}の版面`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
@@ -30100,11 +30317,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length} lines / ${S.plan.cuts.length} cuts`;
+  $('linesInfo').textContent = `${S.plan.lines.length}  行 / ${S.plan.cuts.length} 個片段`;
   syncRangeUI();
 }
 
-/* ---------------- line から歌詞を直す ---------------- */
+/* ---------------- 行から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -30112,8 +30329,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lyrics of line ${ln.index + 1}`);
-  inp.title = 'Lyric syntax works here too (/ cut, *emphasis*, final !, | note, [interlude 8]). Enter to apply, Esc to cancel';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `第 ${ln.index + 1} 行的歌詞`);
+  inp.title = '也可以使用歌詞語法（/ 分隔、*強調*、行尾的 !、| 註解、[間奏 8]）。Enter 確定，Esc 取消';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -30123,14 +30340,14 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`Line ${ln.index + 1} updated`);
+      replan(); flushSave(); toast(`已修改第 ${ln.index + 1} 行的歌詞`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
   inp.addEventListener('blur', () => finish(true));
 }
 
-/* ---------------- 歌詞 · タイミングの取り消し（Ctrl+Z） ---------------- */
+/* ---------------- 歌詞、タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
 const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
@@ -30142,11 +30359,11 @@ function edGo(d) {
   const o = JSON.parse(from.pop());
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? 'Undone' : 'Redone');
+  toast(d < 0 ? '已復原' : '已重做');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだline だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -30168,15 +30385,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `Export range: line ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Export range: whole song');
+  toast(R2 ? `匯出範圍：第 ${R2.from + 1}${R2.to > R2.from ? '～' + (R2.to + 1) : ''} 行` : '匯出範圍：全曲');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
-  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Whole song'); el.value = R ? String(R.from) : '-1'; });
+  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '〔間奏〕' : ln.text).slice(0, 14))}</option>`).join('');
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, '全曲'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)}s)` : `Whole song (${S.plan.duration.toFixed(1)}s)`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} ～ ${J.fmtTime(r.t1)}（${(r.t1 - r.t0).toFixed(1)} 秒）` : `全曲（${S.plan.duration.toFixed(1)} 秒）`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -30239,35 +30456,35 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（已關閉新增效果，隨機生成不會選用）' : '（已關閉和風效果，隨機生成不會選用）') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
     x.font = J.fontCSS(f, 46); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillStyle = sc.ghostB; x.fillText('JIZURA', 96 - 3, 54 - 1);
-    x.fillStyle = sc.ghostA; x.fillText('JIZURA', 96 + 3, 54 + 2);
-    x.fillStyle = sc.fg; x.fillText('JIZURA', 96, 54);
+    x.fillStyle = sc.ghostB; x.fillText('字面', 96 - 3, 54 - 1);
+    x.fillStyle = sc.ghostA; x.fillText('字面', 96 + 3, 54 + 2);
+    x.fillStyle = sc.fg; x.fillText('字面', 96, 54);
     x.fillStyle = sc.accent; x.fillRect(12, 90, 30, 4);
     x.font = J.fontCSS('mono', 9); x.textAlign = 'left'; x.fillStyle = sc.sub; x.fillText(k.toUpperCase(), 48, 93);
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+  return '<option value="">風格預設</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', 'Display'], ['serif', 'Serif frame'], ['body', 'Small text']].forEach(([role, label]) => {
+  [['display', '標題'], ['serif', '明體'], ['body', '小字']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} font">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}字型">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', 'Background'], ['fg', 'Text'], ['sub', 'Secondary']];
-const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
+const BASE_KEYS = [['bg', '背景'], ['fg', '文字'], ['sub', '輔助']];
+const ACCENT_KEYS = [['accent', '強調色'], ['ghostA', '錯位色 A'], ['ghostB', '錯位色 B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -30306,7 +30523,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Palette: changed accent and offset colors', [p.accent, p.ghostA, p.ghostB]);
+  toast('配色：已更換強調色與錯位色 A/B', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -30332,7 +30549,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} variation`);
+  toast(`方案 ${j + 1} / ${H.list.length}`);
   restartPreview();
 }
 function updateHist() {
@@ -30350,7 +30567,7 @@ function omakase() {
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`Randomized: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast(`隨機生成：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -30364,14 +30581,14 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `Style：${J.STYLES[P.style].name}`;
+    msg = `風格：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
-    msg = `Mood：${J.MOODS[r.mood].name}`;
+    msg = `氛圍：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = 'Arrangement: rerolled layout and motion';
+    msg = '編排：已重新抽選版面與動態';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -30380,18 +30597,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Custom';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : '自訂';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('Style', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('Mood', escapeHtml(moodName))
-    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Random</span>' : ''}`)
-    + row('Display font', escapeHtml(fontName))
-    + row('Arrangement', `${cuts.length} cuts · Layout ${kinds} types`)
-    + row('Effects', `Treatment ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Background ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Camera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row('風格', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
+    + row('氛圍', escapeHtml(moodName))
+    + row('配色', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">隨機</span>' : ''}`)
+    + row('標題字型', escapeHtml(fontName))
+    + row('編排', `${cuts.length}  個片段 · ${kinds} 種版面`)
+    + row('效果', `文字效果 ${cuts.filter(c => c.treat && c.treat !== 'none').length}、背景 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} 種、運鏡 ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -30416,7 +30633,7 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Motion strength'], ['glitch', 'Glitch'], ['chroma', 'Color offset'], ['decor', 'Decoration amount'], ['density', 'Cut density'], ['texture', 'Texture'], ['bgSwitch', 'Background changes']];
+const FX = [['motion', '動態強度'], ['glitch', '故障風'], ['chroma', '色彩錯位'], ['decor', '裝飾量'], ['density', '片段密度'], ['texture', '質感'], ['bgSwitch', '背景切換']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -30434,7 +30651,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'Layout'], ['enter', 'Entrance'], ['hold', 'Hold'], ['exit', 'Exit'], ['decor', 'Decoration'], ['treat', 'Text treatments'], ['bg', 'Background'], ['cam', 'Camera'], ['fx', 'Screen effects'], ['trans', 'Transitions']];
+const GROUPS = [['layout', '版面'], ['enter', '進場'], ['hold', '停留'], ['exit', '退場'], ['decor', '裝飾'], ['treat', '文字效果'], ['bg', '背景'], ['cam', '運鏡'], ['fx', '畫面效果'], ['trans', '片段轉場']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 
@@ -30538,7 +30755,7 @@ function renderTech() {
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">All on</button><button class="ghost small" data-a="off">All off</button><button class="ghost small" data-a="flip">Invert</button></div>`;
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">全部開啟</button><button class="ghost small" data-a="off">全部關閉</button><button class="ghost small" data-a="flip">反轉</button></div>`;
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
@@ -30546,8 +30763,8 @@ function renderTech() {
     shown.forEach(k => {
       const l = document.createElement('label');
       l.className = 'tcard';
-      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)'; }
+      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('、') + '）' : '');
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（已關閉新增效果，自動挑選時不會選用）' : '（已關閉和風效果，自動挑選時不會選用）'; }
       l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
       const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
@@ -30577,14 +30794,14 @@ function syncOut() {
   $('outKey').value = k; $('eKey').value = k;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Black background'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? '綠幕' : '黑底'}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `This browser exports with ${vc.label} at (${w}×${h} / ${S.project.fps}fps). Keep this tab open during export.` : 'Video encoding (WebCodecs) is unavailable here. Try the latest Chrome or Edge, or export a PNG sequence.';
+  $('codecNote').textContent = vc ? `這個瀏覽器將以 ${vc.label} 匯出（${w}×${h} / ${S.project.fps}fps）。匯出期間請勿關閉這個分頁。` : '這個瀏覽器不支援影片編碼（WebCodecs）。請改用最新版 Chrome / Edge 開啟，或改為匯出 PNG 序列圖。';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
+  if (!vc) $('eMP4').title = '這個瀏覽器不支援匯出 MP4（建議使用 Chrome / Edge）';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {
@@ -30599,7 +30816,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('Preparing…');
+  setText('準備中…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -30608,21 +30825,21 @@ async function runExport(kind) {
     if (kind === 'mp4') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
-      txt.textContent = `Done: ${(r.blob.size / 1048576).toFixed(1)}MB · ${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
+      txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB、${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}、${((performance.now() - t0) / 1000).toFixed(0)}秒`;
       const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += ' (save canceled)';
+      if (res === 'declined') txt.textContent += '（已取消儲存）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '. This browser encodes audio as Opus, which iPhone, QuickTime and some players cannot play, so the audio was also saved as WAV' : '. This browser cannot encode audio, so the audio was saved separately as WAV (combine it in a video editor)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. No song is loaded, so the video has no audio (load the song again with “Load song”)';
+        txt.textContent += r.audio ? '。此瀏覽器會以 Opus 編碼音訊，iPhone、QuickTime 等可能無法播放，因此另外將音訊存成 WAV' : '。此瀏覽器無法匯出音訊，因此將音訊另存成 WAV（請在影片剪輯軟體中合併）';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。尚未匯入歌曲，因此影片沒有聲音（請從「匯入歌曲」重新載入）';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `Done: ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
-    txt.textContent = 'Error: ' + (e && e.message ? e.message : e);
+    txt.textContent = '錯誤：' + (e && e.message ? e.message : e);
     console.error(e);
   } finally {
     S.exporting = null; S.need = true;
@@ -30644,7 +30861,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  if (from > 0) toast(`從第 ${from + 1} 行開始點擊對拍（從 ${J.fmtTime(t0)} 播放）`);
 }
 function tapNow() {
   if (!S.tap) return;
@@ -30667,7 +30884,7 @@ function tapBack() {                    // 1つ戻る: undo the last tap and jum
 function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
 function updateTap() {
   const ln = S.plan.lines[S.tap.i];
-  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '[interlude]' : ln.text}` : '—';
+  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
 }
 
@@ -30676,7 +30893,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'None';
+  $('bpm').placeholder = S.audio ? `自動 ${S.audio.bpm}` : '無';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -30693,7 +30910,7 @@ function bind() {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? 'Lyrics language: auto-detect → ' : 'Lyrics language: ') + J.LANG_LABEL[l]);
+    toast((S.project.lang === 'auto' ? '歌詞語言：自動偵測 → ' : '歌詞語言：') + J.LANG_LABEL[l]);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -30768,8 +30985,8 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, 'New effects: on', 'New effects: off (original set only)');
-  setSwitch('wa-toggle', 'wa', true, 'Japanese motifs: on', 'Japanese motifs: off for random picks');
+  setSwitch('extra-toggle', 'extra', true, '新增效果：使用', '新增效果：不使用（只用首次公開版的效果）');
+  setSwitch('wa-toggle', 'wa', true, '和風效果：使用', '和風效果：不使用（隨機生成與重新排列不會選用）');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -30787,15 +31004,15 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (installed)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installed)', family: name, weight }]);
+    J.addUserFont(key, name + '（本機）', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '（本機）', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
-    catch (err) { showMsg('Could not load the font'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('無法載入字型'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -30804,7 +31021,7 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `Background：${k === 'green' ? 'Green screen' : 'Black background'}（white text and effects only）` : 'Background：Style colors');
+    toast(k ? `背景：${k === 'green' ? '綠幕' : '黑底'}（只有白色文字與效果）` : '背景：一般（風格的配色）');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
@@ -30824,7 +31041,7 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
-  // 利用について（出力物の権利 · ライセンス）
+  // 利用について（出力物の権利、ライセンス）
   const dlg = $('termsDlg');
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
@@ -30834,7 +31051,7 @@ function bind() {
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('Could not open the project'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('無法開啟專案'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -30857,27 +31074,27 @@ function bind() {
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 async function loadAudioFile(f, restored) {
-  $('audioName').textContent = 'Analyzing audio…';
+  $('audioName').textContent = '分析中…';
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · about ${S.audio.bpm}BPM）` + (restored ? ' · last song' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}、約${S.audio.bpm}BPM）` + (restored ? ' · 上次的歌曲' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = 'Could not load: ' + err.message; S.audio = null; return false; }
+  } catch (err) { $('audioName').textContent = '無法載入：' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. Enter lyrics', text: 'One line is one phrase. A blank line adds a short pause; [interlude 8] makes an 8-second instrumental part (background and decorations only).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Load the song', text: 'Load an mp3 or similar file: JIZURA finds the beats and times the cuts to them. It also works without a song. “Tap to sync” lets you mark where each line starts.' },
-  { t: () => $('btnOmakaseBig'), title: '3. Create a variation', text: 'Style, mood, motion, palette and arrangement are chosen for you. Each press makes a new variation; “◀ Previous” goes back.' },
-  { t: () => $('btnPlay'), title: '4. Play it', text: 'Play it back. On the timeline below you can drag the line markers (+ and − zoom).' },
-  { t: () => $('lineList'), title: '5. Fix single lines', text: 'For each line you can edit the lyrics (✎), set the number of cuts, redo tap sync from that line (◎) or reroll just that line (dice).' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Export', text: 'Choose the aspect ratio (such as vertical 9:16) and resolution, then export MP4. “Export range” exports only the lines you pick.' },
+  { t: () => $('lyrics'), title: '1. 輸入歌詞', text: '1 行就是 1 個樂句。空行會留一點間隔；寫成 [間奏 8] 就是 8 秒的間奏（只有背景與裝飾）。' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 匯入歌曲', text: '載入 mp3 等檔案後會偵測節拍，讓片段切換對齊節拍。沒有歌曲也能製作。也可以用「點擊對拍」對齊每行的開頭。' },
+  { t: () => $('btnOmakaseBig'), title: '3. 隨機生成一版', text: '風格、氛圍、動態、配色與編排會一次全部決定。每按一次就是不同的方案，按「◀ 上一個方案」可以返回。' },
+  { t: () => $('btnPlay'), title: '4. 播放確認', text: '播放看看吧。在下方的時間軸上，可以拖曳行的分隔來移動（＋−縮放）。' },
+  { t: () => $('lineList'), title: '5. 只修改在意的行', text: '每一行都可以修改歌詞（✎）、設定片段數、從這一行重新點擊對拍（◎），或只重做這一行（骰子）。' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 匯出', text: '選擇畫面比例（如直式 9:16）與解析度後匯出 MP4。也可以用「匯出範圍」只匯出選取的行。' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -30890,7 +31107,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Start' : 'Next';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? '開始' : '下一步';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();

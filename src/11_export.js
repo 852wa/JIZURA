@@ -49,16 +49,22 @@ J.pickAudioCodec = async (sr, chn) => {
   return null;
 };
 
-async function resample(buffer, sr, duration) {
+async function resample(buffer, sr, duration, offset = 0) {
   const chn = Math.min(2, buffer.numberOfChannels);
   const len = Math.ceil(duration * sr);
   const oc = new OfflineAudioContext(chn, len, sr);
-  const src = oc.createBufferSource(); src.buffer = buffer; src.connect(oc.destination); src.start(0);
+  const src = oc.createBufferSource(); src.buffer = buffer; src.connect(oc.destination); src.start(0, Math.max(0, offset));
   return oc.startRendering();
 }
+/* part of the song to export: range = { t0, t1 } in seconds (選んだ行だけ), default the whole plan */
+J.exportSpan = (plan, range) => {
+  const t0 = range ? Math.max(0, range.t0) : 0, t1 = range ? Math.min(plan.duration, range.t1) : plan.duration;
+  return { t0, dur: Math.max(1 / plan.fps, t1 - t0) };
+};
 
 /* ---------- MP4 ---------- */
-J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signal }) => {
+J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signal, range }) => {
+  const span = J.exportSpan(plan, range);
   const [w, h] = J.outputSize(project);
   const fps = plan.fps;
   const px = w * h * fps;
@@ -77,14 +83,14 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d', { alpha: false });
   const R = new J.Renderer();
-  const total = Math.max(1, Math.round(plan.duration * fps));
+  const total = Math.max(1, Math.round(span.dur * fps));
   const scale = w / plan.W;
   const prevRes = J.glyphs.maxRes; J.glyphs.maxRes = h >= 1000 ? 768 : 512;
   try {
   for (let i = 0; i < total; i++) {
     if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('キャンセルしました'); }
     if (err) throw err;
-    R.frame(ctx, plan, i / fps, { scale });
+    R.frame(ctx, plan, span.t0 + i / fps, { scale });
     const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
     venc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
     vf.close();
@@ -95,9 +101,10 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   await venc.flush(); venc.close();
   if (ac) {
     onProgress && onProgress(0.99, '音声をエンコード中');
-    const rs = await resample(audio.buffer, ac.sr, plan.duration);
+    const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
-    const aenc = new AudioEncoder({ output: (chunk, meta) => muxer.addAudioChunk(chunk, meta), error: e => { err = e; } });
+    let aChunks = 0, aEnd = 0;
+    const aenc = new AudioEncoder({ output: (chunk, meta) => { aChunks++; aEnd = Math.max(aEnd, chunk.timestamp + (chunk.duration || 0)); muxer.addAudioChunk(chunk, meta); }, error: e => { err = e; } });
     aenc.configure({ codec: ac.codec, sampleRate: ac.sr, numberOfChannels: chn, bitrate: 192000 });
     const frames = rs.length, block = 4800;
     for (let off = 0; off < frames; off += block) {
@@ -110,10 +117,12 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
     }
     await aenc.flush(); aenc.close();
     if (err) throw err;
+    // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('音声のエンコードが途中で止まりました（' + aChunks + '）。もう一度書き出してください');
   }
   muxer.finalize();
   onProgress && onProgress(1, '完了');
-  return { blob: new Blob([target.buffer], { type: 'video/mp4' }), codec: vc.label, audio: ac ? ac.mux : null, width: w, height: h };
+  return { blob: new Blob([target.buffer], { type: 'video/mp4' }), codec: vc.label, audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h };
 };
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
@@ -145,19 +154,20 @@ class ZipWriter {
 }
 /* layers: transparent PNGs in two folders — back/ (background graphic + decorations behind the lyrics) and front/
    (lyrics, their decorations, ghosts, HUD). Screen effects are applied to both, so stacking front over back matches. */
-J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal, every = 1 }) => {
+J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal, every = 1, range }) => {
+  const span = J.exportSpan(plan, range);
   const [w, h] = J.outputSize(project);
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   const R = new J.Renderer();
-  const fps = plan.fps, total = Math.max(1, Math.round(plan.duration * fps));
+  const fps = plan.fps, total = Math.max(1, Math.round(span.dur * fps));
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
     if (signal && signal.aborted) throw new Error('キャンセルしました');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
-      R.frame(ctx, plan, i / fps, { scale, transparent: transparent || !!layers, layer });
+      R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
       const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
       zip.add((layer ? layer + '/' : '') + name, new Uint8Array(await blob.arrayBuffer()));
     }

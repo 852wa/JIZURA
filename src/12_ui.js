@@ -10,9 +10,12 @@ const HUD_CHARS = '0123456789:./-_()【】・No.LYRICRECUNTITLEDXYlinebpminterlu
 const ICON = {
   dice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="5.5" r="1" fill="currentColor"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
+  pen: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13l1-3.5L11 2.5l2.5 2.5L6.5 12z"/><path d="M9.5 4l2.5 2.5"/></svg>',
+  tap: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.2" fill="currentColor"/><circle cx="8" cy="8" r="5.5"/></svg>',
+  range: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v10M13 3v10"/><path d="M5.5 8h5M8.5 5.5L11 8l-2.5 2.5"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, tlZoom: 1, tlStart: 0, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -179,7 +182,7 @@ let thumbFonts = null;
 async function ensureFonts() {
   const txt = S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS;
   const keys = J.fontsOfPlan(S.plan);                       // only the faces this plan draws with
-  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
+  const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
   showMsg('フォントを読み込み中…');
@@ -226,7 +229,6 @@ function tick(now) {
       else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); }
     }
     S.t = t; S.need = true;
-    followTlPlayhead();
   }
   if (S.need) { S.need = false; draw(); }
 }
@@ -236,10 +238,10 @@ function updateTimeUI() {
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
 function play() {
-  refreshLoopHold();
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
   S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '一時停止');
+  refreshLoopHold();
 }
 function pause() {
   S.playing = false; AP.stop();
@@ -254,114 +256,67 @@ function seek(t) {
 }
 
 /* ---------------- timeline ---------------- */
+// zoomable view: [TL.off, TL.off + D / TL.z] seconds; line starts are draggable handles in the top band
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
-const TL_ZOOM_MIN = 1, TL_ZOOM_MAX = 32;
-let tlViewHold = null, tlScrollSync = false;
-function clampTlStart() {
-  if (!S.plan) return;
-  const D = Math.max(0.001, S.plan.duration);
-  const dur = D / (S.tlZoom || 1);
-  S.tlStart = J.clamp(S.tlStart || 0, 0, Math.max(0, D - dur));
-}
+const TL = { z: 1, off: 0, hover: -1, drag: -1 };
 function tlView() {
-  if (!S.plan) return { start: 0, end: 1, dur: 1, D: 1 };
-  if (tlViewHold) return tlViewHold;
-  const D = Math.max(0.001, S.plan.duration);
-  const z = S.tlZoom || 1;
-  const dur = D / z;
-  if (z <= 1) return { start: 0, end: D, dur: D, D };
-  clampTlStart();
-  return { start: S.tlStart, end: S.tlStart + dur, dur, D };
+  if (!S.plan) return { D: 1, vd: 1, off: 0 };
+  const D = Math.max(0.001, S.plan.duration), vd = D / TL.z;
+  TL.off = J.clamp(TL.off, 0, Math.max(0, D - vd));
+  return { D, vd, off: TL.off };
 }
-function syncTlZoom() {
-  const minus = $('btnTlMinus'), plus = $('btnTlPlus');
-  if (minus) minus.disabled = (S.tlZoom || 1) <= TL_ZOOM_MIN;
-  if (plus) plus.disabled = (S.tlZoom || 1) >= TL_ZOOM_MAX;
-}
-function syncTlScroll() {
-  if (!S.plan) return;
-  const bar = $('tlBar'), inner = $('tlBarInner');
-  if (!bar || !inner) return;
-  const z = S.tlZoom || 1;
-  inner.style.width = (Math.max(1, z) * 100) + '%';
-  const view = tlView();
-  const max = bar.scrollWidth - bar.clientWidth;
-  tlScrollSync = true;
-  bar.scrollLeft = max <= 0 || view.D <= view.dur ? 0 : (view.start / (view.D - view.dur)) * max;
-  tlScrollSync = false;
-}
-function onTlBarScroll() {
-  if (tlScrollSync) return;
-  const bar = $('tlBar'); if (!bar) return;
-  const D = Math.max(0.001, S.plan.duration);
-  const dur = D / (S.tlZoom || 1);
-  const max = bar.scrollWidth - bar.clientWidth;
-  S.tlStart = max <= 0 ? 0 : (bar.scrollLeft / max) * Math.max(0, D - dur);
-  tlViewHold = null;
-  S.need = true;
-}
-function followTlPlayhead() {
-  if (!S.plan || tlViewHold || (S.tlZoom || 1) <= 1) return;
-  const view = tlView();
-  if (S.t >= view.start && S.t <= view.end) return;
-  S.tlStart = S.t - view.dur * 0.4;
-  clampTlStart();
-  syncTlScroll();
-}
-function setTlZoom(next) {
-  if (!S.plan) { S.tlZoom = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX); syncTlZoom(); return; }
-  const D = Math.max(0.001, S.plan.duration);
-  const z = J.clamp(next, TL_ZOOM_MIN, TL_ZOOM_MAX);
-  S.tlZoom = z;
-  tlViewHold = null;
-  const dur = D / z;
-  S.tlStart = z <= 1 ? 0 : S.t - dur * 0.4;
-  clampTlStart();
-  syncTlZoom();
-  syncTlScroll();
-  S.need = true;
+function tlZoom(f, tc) {
+  const { D, vd } = tlView();
+  const z = J.clamp(TL.z * f, 1, Math.max(1, D / 2));
+  const c = tc == null ? S.t : tc, frac = (c - TL.off) / vd;
+  TL.z = z; TL.off = c - frac * (D / z); tlView(); drawTimeline();
 }
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.max(10, Math.round(c.clientWidth * dpr)), h = Math.max(10, Math.round(c.clientHeight * dpr));
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
-  const x = c.getContext('2d'), view = tlView();
-  const X = t => (t - view.start) / view.dur * w;
+  let { D, vd, off } = tlView();
+  // follow the playhead while playing (zoomed in)
+  if (TL.z > 1 && S.playing && TL.drag < 0 && (S.t < off || S.t > off + vd * 0.92)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
+  const x = c.getContext('2d'), X = t => (t - off) / vd * w, T = px => off + px / w * vd;
   x.fillStyle = '#131316'; x.fillRect(0, 0, w, h);
   if (S.audio && S.audio.peaks) {
     const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
     x.fillStyle = '#2b2b33';
-    for (let i = 0; i < w; i += 2) {
-      const t = view.start + i / w * view.dur; if (t > sd) break;
-      const v = pk[Math.min(n - 1, Math.floor(t / sd * n))]; const hh = v * h * 0.8;
-      x.fillRect(i, h * 0.6 - hh / 2, 1.5, hh);
-    }
+    for (let i = 0; i < w; i += 2) { const t = T(i); if (t > sd) break; if (t < 0) continue; const v = pk[Math.min(n - 1, Math.floor(t / sd * n))]; const hh = v * h * 0.8; x.fillRect(i, h * 0.6 - hh / 2, 1.5, hh); }
   }
   const beats = S.plan.beats || [];
   x.fillStyle = '#3a3a44';
-  for (const b of beats) {
-    if (b < view.start || b > view.end) continue;
-    x.fillRect(Math.round(X(b)), h - 6 * dpr, 1, 6 * dpr);
-  }
+  for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 6 * dpr, 1, 6 * dpr); }
   const top = h * 0.3, bot = h - 8 * dpr;
+  const R = exportRange();
+  if (R) { x.fillStyle = 'rgba(245,165,12,0.10)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
   for (const cut of S.plan.cuts) {
-    if (cut.end < view.start || cut.start > view.end) continue;
     const x0 = X(cut.start), x1 = X(cut.end);
+    if (x1 < 0 || x0 > w) continue;
     const hue = layoutHue(cut.layout);
     x.fillStyle = `hsla(${hue},70%,58%,0.28)`; x.fillRect(x0, top, Math.max(1, x1 - x0 - 1), bot - top);
     x.fillStyle = `hsla(${hue},80%,62%,0.95)`; x.fillRect(x0, top, Math.max(1, 2 * dpr), bot - top);
     if (x1 - x0 > 34 * dpr) {
       x.fillStyle = 'rgba(236,231,225,0.85)'; x.font = `${10 * dpr}px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
       x.save(); x.beginPath(); x.rect(x0, top, x1 - x0 - 3, bot - top); x.clip();
-      x.fillText((J.LAYOUTS[cut.layout] || {}).name || cut.layout, x0 + 5 * dpr, top + 13 * dpr); x.restore();
+      x.fillText(TL.z > 3 && cut.text ? cut.text : ((J.LAYOUTS[cut.layout] || {}).name || cut.layout), x0 + 5 * dpr, top + 13 * dpr); x.restore();
     }
   }
   x.font = `${10 * dpr}px monospace`;
+  const LT = S.project.timing.lineTimes || {};
   for (const ln of S.plan.lines) {
-    if (ln.start < view.start - 0.05 || ln.start > view.end) continue;
     const lx = X(ln.start);
-    x.fillStyle = '#5d5a63'; x.fillRect(lx, 0, 1, top);
-    x.fillStyle = '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, 12 * dpr);
+    if (lx < -20 * dpr || lx > w + 2) continue;
+    const on = ln.index === TL.drag || ln.index === TL.hover, man = LT[ln.index] != null;
+    x.fillStyle = on ? '#f5a50c' : man ? '#6fb7c8' : '#5d5a63'; x.fillRect(lx - (on ? dpr : 0), 0, on ? 2 * dpr : 1, top);
+    // handle
+    x.beginPath(); x.moveTo(lx - 5 * dpr, 0); x.lineTo(lx + 5 * dpr, 0); x.lineTo(lx, 7 * dpr); x.closePath(); x.fill();
+    x.fillStyle = on ? '#f5a50c' : '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' 間奏' : ''), lx + 4 * dpr, 17 * dpr);
+  }
+  if (TL.z > 1) {                                          // where the view sits in the whole song
+    x.fillStyle = 'rgba(255,255,255,0.18)'; x.fillRect(0, h - 2 * dpr, w, 2 * dpr);
+    x.fillStyle = '#f5a50c'; x.fillRect(off / D * w, h - 2 * dpr, Math.max(4, vd / D * w), 2 * dpr);
   }
   if (S.loop === 'line' || S.loop === 'cut') {
     const r = activeLoopRange();
@@ -371,10 +326,32 @@ function drawTimeline() {
   const px = X(S.t);
   x.fillStyle = '#f5a50c'; x.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
 }
-function timelineSeek(ev) {
-  const r = $('timeline').getBoundingClientRect();
-  const view = tlViewHold || tlView();
-  seek(view.start + (ev.clientX - r.left) / r.width * view.dur);
+function tlTime(ev) {
+  const r = $('timeline').getBoundingClientRect(), { vd, off } = tlView();
+  return off + J.clamp((ev.clientX - r.left) / r.width, 0, 1) * vd;
+}
+function timelineSeek(ev) { seek(tlTime(ev)); }
+/* the line whose start handle is under the pointer (top band, ±7px) */
+function tlHandleAt(ev) {
+  const c = $('timeline'), r = c.getBoundingClientRect(), { vd, off } = tlView();
+  if (ev.clientY - r.top > r.height * 0.45) return -1;
+  let best = -1, bd = 8;
+  for (const ln of S.plan.lines) { const d = Math.abs((ln.start - off) / vd * r.width - (ev.clientX - r.left)); if (d < bd) { bd = d; best = ln.index; } }
+  return best;
+}
+function tlDragTo(i, ev) {
+  let t = tlTime(ev);
+  if (!ev.shiftKey && S.plan.beats && S.plan.beats.length) {       // snap to the nearest beat (Shift: free)
+    let bt = null, bd = 0.12; for (const b of S.plan.beats) { const d = Math.abs(b - t); if (d < bd) { bd = d; bt = b; } if (b > t + 0.2) break; }
+    if (bt != null) t = bt;
+  }
+  const L = S.plan.lines, lo = i > 0 ? L[i - 1].start + 0.2 : 0, hi = i < L.length - 1 ? L[i + 1].start - 0.2 : S.plan.duration - 0.2;
+  t = +J.clamp(t, lo, Math.max(lo, hi)).toFixed(3);
+  if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
+  // pin the neighbours too, so moving one boundary never shifts the lines after it
+  L.forEach(ln => { if (S.project.timing.lineTimes[ln.index] == null) S.project.timing.lineTimes[ln.index] = +ln.start.toFixed(3); });
+  S.project.timing.lineTimes[i] = t;
+  replan(); seek(t + 0.001);
 }
 
 /* ---------------- cut info ---------------- */
@@ -551,38 +528,56 @@ function fillCutPick() {
   queueThumbs(grid);
 }
 
+
 /* ---------------- line list ---------------- */
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
-  const ov = S.project.overrides;
+  const ov = S.project.overrides, R = exportRangeLines();
   const layoutOpts = '<option value="">自動</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const cutOpts = '<option value="">カット 自動</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">カット ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
-    const li = document.createElement('li'); li.className = 'ln';
+    const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
+    const label = ln.interlude ? `〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
       <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
-      <span class="txt" title="${escapeHtml(ln.text)}">${escapeHtml(ln.text)}</span>
+      <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>
-        <button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>
+        <button class="icon ghost edit" title="この行の歌詞を直す" aria-label="${i + 1}行目の歌詞を直す">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="${i + 1}行目のカット数">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="レイアウト指定">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="この行からタップで同期し直す" aria-label="${i + 1}行目からタップ">${ICON.tap}</button>
+        <button class="icon ghost rng" title="書き出す範囲にする（Shift+クリックで範囲を広げる）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}行目を書き出す範囲に">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
-    li.querySelector('.time').addEventListener('change', e => {
+    const q = sel => li.querySelector(sel);
+    if (q('.lay')) q('.lay').value = o.layout || '';
+    if (q('.ncut')) q('.ncut').value = o.cuts ? String(o.cuts) : '';
+    q('.time').addEventListener('change', e => {
       const v = parseFloat(e.target.value);
+      pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
       if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
       replan();
     });
-    li.querySelector('.txt').addEventListener('click', () => seek(ln.start + 0.001));
-    li.querySelector('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
-    li.querySelector('.lock').addEventListener('click', () => {
+    q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
+    q('.txt').addEventListener('dblclick', () => editLine(li, ln));
+    q('.edit').addEventListener('click', () => editLine(li, ln));
+    if (q('.lay')) q('.lay').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
+    if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
+    q('.tapfrom').addEventListener('click', () => startTap(i));
+    q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
+    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false }); replan(); seek(ln.start + 0.001); });
+    if (q('.lock')) q('.lock').addEventListener('click', () => {
       const cur = ov[i] || {};
       if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined });
       else setOv(i, { lock: true, lockedSeed: ln.seed });
       replan();
     });
-    const cutsEl = li.querySelector('.cuts');
+    const cutsEl = q('.cuts');
     S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
       const forced = o.cutLayouts && o.cutLayouts[k];
       const sel = document.createElement('select');
@@ -599,6 +594,94 @@ function renderLines() {
     ol.appendChild(li); S.lineEls.push(li);
   });
   $('linesInfo').textContent = `${S.plan.lines.length}行 / ${S.plan.cuts.length}カット`;
+  syncRangeUI();
+}
+
+/* ---------------- 行から歌詞を直す ---------------- */
+// the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
+const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
+function editLine(li, ln) {
+  if (ln.src == null || li.querySelector('.txt-edit')) return;
+  const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
+  const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
+  const txt = li.querySelector('.txt'), inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `${ln.index + 1}行目の歌詞`);
+  inp.title = '記法（/ 区切り・*強調*・行末の ! ・| 注釈・[間奏 8]）もそのまま使えます。Enter で確定、Esc で取り消し';
+  txt.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = ok => {
+    if (done) return; done = true;
+    const v = inp.value.trim();
+    if (ok && v && v !== body) {
+      pushEdit();
+      rows[ln.src] = pre + v;
+      S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
+      replan(); flushSave(); toast(`${ln.index + 1}行目の歌詞を直しました`);
+    } else renderLines();
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+  inp.addEventListener('blur', () => finish(true));
+}
+
+/* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
+// separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
+const ED = { undo: [], redo: [] };
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
+function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
+function edGo(d) {
+  const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
+  if (!from.length) return;
+  to.push(edSnap());
+  const o = JSON.parse(from.pop());
+  S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  replan(); flushSave(); updateEditBtns();
+  toast(d < 0 ? '元に戻しました' : 'やり直しました');
+}
+function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
+
+/* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
+function exportRangeLines() {
+  const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
+  if (!r || !n || !(r.from >= 0)) return null;
+  const from = Math.min(n - 1, r.from | 0), to = Math.min(n - 1, Math.max(from, r.to | 0));
+  return { from, to };
+}
+function exportRange() {
+  const R = exportRangeLines(); if (!R) return null;
+  const L = S.plan.lines, a = L[R.from], b = L[R.to], last = R.to === L.length - 1;
+  const t0 = Math.max(0, a.start - 0.25);
+  const t1 = last ? S.plan.duration : Math.min(L[R.to + 1].start, (b.interlude ? b.end : b.visEnd) + 0.35);
+  return { t0, t1 };
+}
+function rangeSuffix() { const R = exportRangeLines(); if (!R) return ''; const f = n => String(n + 1).padStart(2, '0'); return '_L' + f(R.from) + (R.to > R.from ? '-' + f(R.to) : ''); }
+function setExportRange(i, extend) {
+  const R = exportRangeLines();
+  if (extend && R) S.project.exportRange = { from: Math.min(R.from, i), to: Math.max(R.to, i) };
+  else if (R && R.from === i && R.to === i) S.project.exportRange = null;          // click again: back to the whole song
+  else S.project.exportRange = { from: i, to: i };
+  flushSave(); renderLines();
+  const R2 = exportRangeLines();
+  toast(R2 ? `書き出す範囲：${R2.from + 1}${R2.to > R2.from ? '〜' + (R2.to + 1) : ''}行目` : '書き出す範囲：全体');
+}
+function syncRangeUI() {
+  const R = exportRangeLines(), n = S.plan.lines.length;
+  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '〔間奏〕' : ln.text).slice(0, 14))}</option>`).join('');
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, '全体'); el.value = R ? String(R.from) : '-1'; });
+  document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
+  const r = exportRange();
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} 〜 ${J.fmtTime(r.t1)}（${(r.t1 - r.t0).toFixed(1)}秒）` : `全体（${S.plan.duration.toFixed(1)}秒）`; });
+}
+function bindRangeUI() {
+  document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
+    const v = +el.value, R = exportRangeLines();
+    S.project.exportRange = v < 0 ? null : { from: v, to: R ? Math.max(v, R.to) : v };
+    flushSave(); renderLines();
+  }));
+  document.querySelectorAll('.rngTo').forEach(el => el.addEventListener('change', () => {
+    const v = +el.value, R = exportRangeLines(); if (!R) return;
+    S.project.exportRange = v < 0 ? { from: R.from, to: R.from } : { from: Math.min(R.from, v), to: Math.max(R.from, v) };
+    flushSave(); renderLines();
+  }));
 }
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
@@ -1016,14 +1099,20 @@ async function runExport(kind) {
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     if (kind === 'mp4') {
-      const r = await J.exportMP4({ plan: S.plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal });
+      const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
+      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
       txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB・${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
-      const res = await J.saveFile(baseName() + '.mp4', r.blob);
+      const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
       if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+      // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
+      if (r.audioWanted && r.audio !== 'aac') {
+        await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
+        txt.textContent += r.audio ? '。このブラウザでは音声が Opus になり、iPhone・QuickTime などでは音が出ないことがあるため、音声を WAV でも保存しました' : '。このブラウザは音声を書き出せないため、音声を WAV で別に保存しました（動画編集ソフトで重ねてください）';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal });
+      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
+      await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
     txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
@@ -1036,41 +1125,43 @@ async function runExport(kind) {
 }
 
 /* ---------------- tap sync ---------------- */
-function startTap(from) {
+// start from any line: playback begins a little before that line, earlier lines keep their times
+function startTap(from = 0) {
   if (!S.plan.lines.length) return;
-  const n = S.plan.lines.length;
-  const i0 = J.clamp(from == null ? 0 : (from | 0), 0, n - 1);
-  S.tap = { i: i0 };
+  from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
+  pushEdit();
+  S.tap = { i: from, from, done: [] };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-  $('tapPanel').hidden = false;
-  $('btnTap').setAttribute('aria-pressed', String(i0 === 0));
-  const fromBtn = $('btnTapFrom');
-  if (fromBtn) fromBtn.setAttribute('aria-pressed', String(i0 > 0));
-  const ln = S.plan.lines[i0];
-  const t0 = i0 === 0 ? 0 : Math.max(0, (ln.start || 0) - 1.2);
+  $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
+  const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
+  const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
+  if (from > 0) toast(`${from + 1}行目からタップで同期します（${J.fmtTime(t0)} から再生）`);
 }
 function tapNow() {
   if (!S.tap) return;
-  S.project.timing.lineTimes[S.tap.i] = +S.t.toFixed(3);
+  const LT = S.project.timing.lineTimes, i = S.tap.i, t = +S.t.toFixed(3);
+  S.tap.done.push({ i, had: LT[i] });
+  LT[i] = t;
+  // later lines tapped earlier (a previous pass) must not come before this one
+  for (const k of Object.keys(LT)) if (+k > i && LT[k] <= t + 0.2) delete LT[k];
   S.tap.i++;
   replan();
   if (S.tap.i >= S.plan.lines.length) stopTap(); else updateTap();
 }
-function stopTap() {
-  S.tap = null; $('tapPanel').hidden = true;
-  $('btnTap').setAttribute('aria-pressed', 'false');
-  const fromBtn = $('btnTapFrom'); if (fromBtn) fromBtn.setAttribute('aria-pressed', 'false');
-  replan();
+function tapBack() {                    // 1つ戻る: undo the last tap and jump back a little
+  if (!S.tap || !S.tap.done.length) return;
+  const d = S.tap.done.pop(), LT = S.project.timing.lineTimes;
+  if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
+  S.tap.i = d.i; replan(); updateTap();
+  seek(Math.max(0, S.t - 3)); if (!S.playing) play();
 }
-function updateTap() { const ln = S.plan.lines[S.tap.i]; $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.text}` : '—'; }
-function selectedLineIndex() {
-  if (S.curLine >= 0) return S.curLine;
-  const cut = typeof cutAround === 'function' ? cutAround(S.t) : J.cutAt(S.plan, S.t);
-  if (cut && cut.line >= 0) return cut.line;
-  const ln = S.plan.lines.find(l => l.start >= S.t - 0.05);
-  return ln ? ln.index : 0;
+function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
+function updateTap() {
+  const ln = S.plan.lines[S.tap.i];
+  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
+  const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -1106,9 +1197,7 @@ function bind() {
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
-  $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap(0)));
-  const btnTapFrom = $('btnTapFrom');
-  if (btnTapFrom) btnTapFrom.addEventListener('click', () => (S.tap ? stopTap() : startTap(selectedLineIndex())));
+  $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
@@ -1129,17 +1218,33 @@ function bind() {
   sc.addEventListener('input', () => { S.scrubbing = true; seek(sc.value / 10000 * S.plan.duration); });
   sc.addEventListener('change', () => { S.scrubbing = false; });
   const tl = $('timeline');
-  let drag = false;
-  tl.addEventListener('pointerdown', e => { drag = true; tlViewHold = tlView(); tl.setPointerCapture(e.pointerId); timelineSeek(e); });
-  tl.addEventListener('pointermove', e => { if (drag) timelineSeek(e); });
-  tl.addEventListener('pointerup', () => { drag = false; tlViewHold = null; S.need = true; });
-  const btnTlPlus = $('btnTlPlus'), btnTlMinus = $('btnTlMinus');
-  if (btnTlPlus) btnTlPlus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) * 2));
-  if (btnTlMinus) btnTlMinus.addEventListener('click', () => setTlZoom((S.tlZoom || 1) / 2));
-  const tlBar = $('tlBar');
-  if (tlBar) tlBar.addEventListener('scroll', onTlBarScroll, { passive: true });
-  syncTlZoom();
-  syncTlScroll();
+  let drag = false, raf = 0;
+  tl.addEventListener('pointerdown', e => {
+    tl.setPointerCapture(e.pointerId);
+    const h = S.tap || S.exporting ? -1 : tlHandleAt(e);
+    if (h >= 0) { pushEdit(); TL.drag = h; pause(); tl.style.cursor = 'ew-resize'; return; }
+    drag = true; timelineSeek(e);
+  });
+  tl.addEventListener('pointermove', e => {
+    if (TL.drag >= 0) { const ev = { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }; cancelAnimationFrame(raf); raf = requestAnimationFrame(() => tlDragTo(TL.drag, ev)); return; }
+    if (drag) { timelineSeek(e); return; }
+    const hv = tlHandleAt(e); if (hv !== TL.hover) { TL.hover = hv; tl.style.cursor = hv >= 0 ? 'ew-resize' : 'pointer'; drawTimeline(); }
+  });
+  const endDrag = () => { if (TL.drag >= 0) { TL.drag = -1; flushSave(); renderLines(); drawTimeline(); } drag = false; };
+  tl.addEventListener('pointerup', endDrag); tl.addEventListener('pointercancel', endDrag);
+  tl.addEventListener('pointerleave', () => { if (TL.hover >= 0 && TL.drag < 0) { TL.hover = -1; drawTimeline(); } });
+  tl.addEventListener('wheel', e => {
+    e.preventDefault();
+    const { vd } = tlView();
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { TL.off += (e.shiftKey ? e.deltaY : e.deltaX) / tl.clientWidth * vd; tlView(); drawTimeline(); }
+    else tlZoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0025)), tlTime(e));
+  }, { passive: false });
+  $('tlIn').addEventListener('click', () => tlZoom(1.6));
+  $('tlOut').addEventListener('click', () => tlZoom(1 / 1.6));
+  $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
+  $('btnUndoEdit').addEventListener('click', () => edGo(-1));
+  $('tapBack').addEventListener('click', tapBack);
+  bindRangeUI();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });
@@ -1230,27 +1335,94 @@ function bind() {
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
+    if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
     if (typing || $('termsDlg').open) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.exporting) { e.preventDefault(); omakase(); }
   });
-  window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); syncTlScroll(); });
+  window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
-async function loadAudioFile(f) {
+async function loadAudioFile(f, restored) {
   $('audioName').textContent = '解析中…';
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）`;
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）` + (restored ? '・前回の曲' : '');
+    S.project.audioName = f.name;
+    if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
   } catch (err) { $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
+}
+
+/* ---------------- かんたんモードの案内ツアー ---------------- */
+const TOUR = [
+  { t: () => $('lyrics'), title: '1. 歌詞を入れる', text: '1行が1フレーズになります。空行で少し間が空き、[間奏 8] と書くと8秒の間奏（背景と装飾だけ）になります。' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 曲を読み込む', text: 'mp3 などを読み込むと拍を検出して、カットの切り替わりを合わせます。曲がなくても作れます。「タップで同期」で行の頭を合わせることもできます。' },
+  { t: () => $('btnOmakaseBig'), title: '3. おまかせで作る', text: 'スタイル・雰囲気・動き・配色・構成をまるごと決めます。押すたびに別の案になり、「◀ 前の案」で戻れます。' },
+  { t: () => $('btnPlay'), title: '4. 再生して確認する', text: '再生して見てみましょう。下のタイムラインでは、行の区切りをドラッグして動かせます（＋−で拡大）。' },
+  { t: () => $('lineList'), title: '5. 気になる行だけ直す', text: '行ごとに、歌詞を直す（✎）、カット数を決める、この行からタップし直す（◎）、この行だけ作り直す（サイコロ）ができます。' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 書き出す', text: '画面比（縦長 9:16 など）と解像度を選んで MP4 を書き出します。「書き出す範囲」で選んだ行だけを書き出すこともできます。' },
+];
+const TR = { i: -1 };
+function tourShow(i) {
+  const el = $('tour'), n = TOUR.length;
+  if (i < 0 || i >= n) return tourEnd();
+  TR.i = i;
+  const st = TOUR[i], tg = st.t();
+  el.hidden = false;
+  el.querySelector('.tour-step').textContent = `${i + 1} / ${n}`;
+  el.querySelector('.tour-title').textContent = st.title;
+  el.querySelector('.tour-text').textContent = st.text;
+  el.querySelector('.tour-prev').disabled = i === 0;
+  el.querySelector('.tour-next').textContent = i === n - 1 ? 'はじめる' : '次へ';
+  if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
+  requestAnimationFrame(() => tourPlace(tg));
+  el.querySelector('.tour-next').focus();
+}
+function tourPlace(tg) {
+  const el = $('tour'), spot = el.querySelector('.tour-spot'), bub = el.querySelector('.tour-bub');
+  const vw = window.innerWidth, vh = window.innerHeight, pad = 6;
+  const r = tg ? tg.getBoundingClientRect() : { left: vw / 2, top: vh / 2, width: 0, height: 0, right: vw / 2, bottom: vh / 2 };
+  const x0 = Math.max(4, r.left - pad), y0 = Math.max(4, r.top - pad), x1 = Math.min(vw - 4, r.right + pad), y1 = Math.min(vh - 4, r.bottom + pad);
+  Object.assign(spot.style, { left: x0 + 'px', top: y0 + 'px', width: Math.max(0, x1 - x0) + 'px', height: Math.max(0, y1 - y0) + 'px' });
+  const bw = bub.offsetWidth, bh = bub.offsetHeight, gap = 12;
+  let top = y1 + gap <= vh - bh - 8 ? y1 + gap : y0 - gap - bh >= 8 ? y0 - gap - bh : Math.max(8, vh - bh - 8);
+  let left = J.clamp(x0 + (x1 - x0) / 2 - bw / 2, 8, vw - bw - 8);
+  Object.assign(bub.style, { top: top + 'px', left: left + 'px' });
+}
+function tourStart() {
+  if (S.exporting || S.tap) return;
+  if (S.mode !== 'easy') setMode('easy');
+  pause(); tourShow(0);
+}
+function tourEnd() {
+  $('tour').hidden = true; TR.i = -1;
+  try { localStorage.setItem('jizura.tourDone', '1'); } catch (e) {}
+}
+function bindTour() {
+  const el = $('tour');
+  el.querySelector('.tour-next').addEventListener('click', () => tourShow(TR.i + 1));
+  el.querySelector('.tour-prev').addEventListener('click', () => tourShow(TR.i - 1));
+  el.querySelector('.tour-skip').addEventListener('click', tourEnd);
+  $('btnTour').addEventListener('click', tourStart);
+  document.addEventListener('keydown', e => {
+    if (TR.i < 0) return;
+    if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); tourShow(TR.i + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopImmediatePropagation(); tourShow(TR.i - 1); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); tourEnd(); }
+    else if (e.key !== 'Tab') { e.stopImmediatePropagation(); }
+  }, true);
+  window.addEventListener('resize', () => { if (TR.i >= 0) tourPlace(TOUR[TR.i].t()); });
+  window.addEventListener('scroll', () => { if (TR.i >= 0) tourPlace(TOUR[TR.i].t()); }, true);
 }
 
 /* ---------------- boot ---------------- */
@@ -1259,10 +1431,15 @@ function boot() {
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
+  bindTour();
+  let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
+  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(tourStart, 600);   // first visit: show the tour once
   // open on a representative frame (end of the first cut's entrance)
   const c0 = S.plan.cuts.find(c => c.line >= 0);
   if (c0) seek(c0.start + Math.min(c0.dur * 0.6, c0.inDur + 0.25));
   requestAnimationFrame(tick);
+  // the song used last time (same name as the saved project's) comes back after a reload
+  if (J.loadSong && S.project.audioName) J.loadSong().then(f => { if (f && f.name === S.project.audioName && !S.audio) loadAudioFile(f, true); });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;

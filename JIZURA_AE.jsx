@@ -91,6 +91,15 @@ function jzParseLyrics(raw) {
         var s = s0, times = [], m;
         while ((m = s.match(/^\[(\d+):(\d+(?:[.:]\d+)?)\]/))) { times.push(parseInt(m[1], 10) * 60 + parseFloat(m[2].replace(':', '.'))); s = s.substr(m[0].length); }
         s = jzTrim(s);
+        // \u9593\u594F: [\u9593\u594F] / [\u9593\u594F 8] \u2014 also [interlude] [inst] [\u95F4\u594F] [\uAC04\uC8FC]
+        var im = s.match(/^\[\s*(\u9593\u594F|\u95F4\u594F|interlude|instrumental|inst|\uAC04\uC8FC)(?:\s*[:\uFF1A]?\s*(\d+(?:\.\d+)?)\s*(?:s|sec|\u79D2|\uCD08)?)?\s*\]$/i);
+        if (im) {
+            var ib = { text: '', interlude: true, secs: im[2] ? parseFloat(im[2]) : null, note: null, impact: false, emph: [], manual: null, gapBefore: gap, lrc: null };
+            gap = false;
+            if (times.length) { for (var it = 0; it < times.length; it++) { var ic = jzCopy(ib); ic.lrc = times[it]; lines.push(ic); } }
+            else lines.push(ib);
+            continue;
+        }
         var note = null, bar = s.indexOf('|');
         if (bar >= 0) { note = jzTrim(s.substr(bar + 1)) || null; s = jzTrim(s.substr(0, bar)); }
         var impact = false;
@@ -855,15 +864,15 @@ function jzMakePlan(o) {
         else if (allLrc) s = lines[i].lrc;
         else if (i === 0) s = o.offset || 0.4;
         else {
-            var n0 = jzChars(lines[i - 1].text).length, d0 = jzClamp(0.8 + n0 * 0.17, 1.3, 5.2) * (o.lineScale || 1);
-            if (beat) d0 = Math.max(2, Math.round(d0 / beat)) * beat;
+            var pl = lines[i - 1], n0 = jzChars(pl.text).length, d0 = pl.interlude ? (pl.secs > 0 ? pl.secs : 4) : jzClamp(0.8 + n0 * 0.17, 1.3, 5.2) * (o.lineScale || 1);
+            if (beat && !(pl.interlude && pl.secs > 0)) d0 = Math.max(2, Math.round(d0 / beat)) * beat;
             s = starts[i - 1] + d0 + (lines[i].gapBefore ? (beat ? beat * 2 : 0.8) : 0);
         }
         starts.push(s);
     }
     for (i = 0; i < lines.length; i++) {
         if (i < lines.length - 1) ends.push(Math.max(starts[i] + 0.35, starts[i + 1]));
-        else { var nl = jzChars(lines[i].text).length, dl = jzClamp(0.8 + nl * 0.17, 1.5, 5.2) * (o.lineScale || 1); if (beat) dl = Math.max(2, Math.round(dl / beat)) * beat; ends.push(starts[i] + dl); }
+        else { var Li = lines[i], nl = jzChars(Li.text).length, dl = Li.interlude ? (Li.secs > 0 ? Li.secs : 4) : jzClamp(0.8 + nl * 0.17, 1.5, 5.2) * (o.lineScale || 1); if (beat && !(Li.interlude && Li.secs > 0)) dl = Math.max(2, Math.round(dl / beat)) * beat; ends.push(starts[i] + dl); }
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
@@ -879,6 +888,16 @@ function jzMakePlan(o) {
     var F = 1 / 24;
     for (var li = 0; li < lines.length; li++) {
         var ln = lines[li], s0 = starts[li], e0 = ends[li], rng = new JzRng(jzHash(o.seed, li + 1));
+        if (ln.interlude) {                                // [\u9593\u594F]: background, decorations and effects only
+            plan.lines.push({ index: li, text: '', interlude: true, start: s0, end: e0, visEnd: e0, note: null, impact: false });
+            var ibg = jzPickBg(rng, st, en, fx, bgHist); bgHist.push(ibg);
+            var idur = e0 - s0, ishow = idur >= 6 && !!(title || artist);
+            plan.cuts.push({ index: plan.cuts.length, text: '', lineText: '', line: li, start: s0, end: e0, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.4, outDur: 0.4,
+                params: { variant: 'quiet', showTitle: ishow, titleText: ishow ? (title + (title && artist ? '  /  ' : '') + artist) : '' }, decor: jzPickDecor(rng, st, en, { decor: Math.max(0.6, fx.decor) }, 'interlude', hist), scheme: schemeIdx, seed: jzHash(o.seed, li, 405) % 1000000,
+                treat: 'none', bg: ibg, bgP: ibg !== 'none' ? jzPlanOf('bg', ibg, rng, st) : {}, cam: 'push' });
+            for (var itt = s0 + 1.2; itt < e0 - 0.8; itt += jzClamp(idur / 4, 1.6, 3.2)) { var ipk = jzPickFx(rng, st, en, fx, false, fxHist, 'mid'); if (ipk) { var IM = jzMeta('fx', ipk); ev(itt, ipk, (IM.amp || 1) * 0.6, (IM.dur || 3) * F); fxHist.push(ipk); } }
+            continue;
+        }
         var nch = jzCount(ln.text), visEnd = Math.min(e0, s0 + Math.max(3.6, nch * 0.5 + 1.2)), D = visEnd - s0;
         plan.lines.push({ index: li, text: ln.text, start: s0, end: e0, visEnd: visEnd, note: ln.note, impact: ln.impact });
         var chunks = ln.manual || (plan.lang === 'en' ? jzPhraseChunks(jzChunk(ln.text)) : jzChunk(ln.text)), L = jzLerp(1.3, 0.5, fx.density), nC = Math.round(D / L);
@@ -948,7 +967,7 @@ function jzMakePlan(o) {
             }
             if (dur > 1.1) { var pm = jzPickFx(rng, st, en, fx, emph, fxHist, 'mid'); if (pm) { var M2 = jzMeta('fx', pm); ev(cs + rng.range(0.4, 0.75) * dur, pm, (M2.amp || 1) * (0.5 + 0.4 * g), (M2.dur || 3) * F); } }
         }
-        if (li < lines.length - 1 && starts[li + 1] - visEnd > 1.3) {
+        if (li < lines.length - 1 && starts[li + 1] - visEnd > 1.3 && !lines[li + 1].interlude) {
             var r2 = new JzRng(jzHash(o.seed, li, 404));
             plan.cuts.push({ index: plan.cuts.length, text: title || '', lineText: '', line: li, start: visEnd, end: starts[li + 1], layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3, params: { variant: r2.pick(['counter', 'rings']) }, decor: jzPickDecor(r2, st, en, { decor: 1 }, 'interlude', []), scheme: schemeIdx, seed: jzHash(o.seed, li, 405) % 1000000, treat: 'none', bg: 'none', cam: 'push' });
         }
@@ -1744,6 +1763,10 @@ JZ_LAYOUTS.title = function (ctx) {
 
 JZ_LAYOUTS.interlude = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut;
+    if (jzP(ctx, 'variant', 'counter') === 'quiet') {       // [\u9593\u594F]: background and decorations only (+ the title on long ones)
+        if (jzP(ctx, 'showTitle', false) && jzP(ctx, 'titleText', '')) jzNoGhost(jzSmall(ctx, jzP(ctx, 'titleText', ''), { size: Math.max(12, H * 0.024), color: sc.sub, x: W / 2, y: H * 0.88, track: 0.3 }));
+        return { x0: W * 0.3, x1: W * 0.7, y0: H * 0.3, y1: H * 0.7, cx: W / 2, cy: H / 2 };
+    }
     var S = jzNoGhost(jzShapeLayer(ctx, 'rings', W / 2, H / 2));
     for (var k = 0; k < 3; k++) { var g = jzGrp(S); jzAddEllipse(g, H * (0.4 + k * 0.2), H * (0.4 + k * 0.2)); jzAddStroke(g, sc.sub, 1.2, 50); }
     jzSetExpr(jzXf(S, 'ADBE Scale'), 'var s=100*(1+0.04*Math.sin(time*2));[s,s]');

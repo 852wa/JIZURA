@@ -442,6 +442,10 @@ JZ_LAYOUTS.title = function (ctx) {
 
 JZ_LAYOUTS.interlude = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut;
+    if (jzP(ctx, 'variant', 'counter') === 'quiet') {       // [間奏]: background and decorations only (+ the title on long ones)
+        if (jzP(ctx, 'showTitle', false) && jzP(ctx, 'titleText', '')) jzNoGhost(jzSmall(ctx, jzP(ctx, 'titleText', ''), { size: Math.max(12, H * 0.024), color: sc.sub, x: W / 2, y: H * 0.88, track: 0.3 }));
+        return { x0: W * 0.3, x1: W * 0.7, y0: H * 0.3, y1: H * 0.7, cx: W / 2, cy: H / 2 };
+    }
     var S = jzNoGhost(jzShapeLayer(ctx, 'rings', W / 2, H / 2));
     for (var k = 0; k < 3; k++) { var g = jzGrp(S); jzAddEllipse(g, H * (0.4 + k * 0.2), H * (0.4 + k * 0.2)); jzAddStroke(g, sc.sub, 1.2, 50); }
     jzSetExpr(jzXf(S, 'ADBE Scale'), 'var s=100*(1+0.04*Math.sin(time*2));[s,s]');

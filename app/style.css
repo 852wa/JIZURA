@@ -42,6 +42,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lang-switch a:hover { color: var(--text); background: var(--raised2); }
 .lang-switch [aria-current=page] { color: var(--ink); background: var(--amber); }
 html[lang=en] { --ui: system-ui, -apple-system, "Segoe UI", sans-serif; --brand: Georgia, "Times New Roman", serif; }
+html[lang=zh-Hant] { --ui: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+html[lang=ko] { --ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; --brand: "Noto Serif KR", "AppleMyungjo", "Batang", serif; }
 html[lang=en] .work { grid-template-columns: minmax(315px, 365px) minmax(0, 1fr) minmax(350px, 395px); }
 html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px; }
 html[lang=en] .now-row { grid-template-columns: 105px minmax(0, 1fr); }
@@ -107,10 +109,10 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .ln .no { font: 500 11px var(--mono); color: var(--faint); text-align: right; }
 .ln .time { width: 100%; padding: 3px 5px; font-size: 12px; }
 .ln .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
-.ln .meta { grid-column: 2 / 4; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
-.ln .tools { display: flex; gap: 4px; flex: none; }
-.ln .tools select { padding: 2px 4px; font-size: 11px; max-width: 92px; }
-.ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; }
+.ln .meta { grid-column: 2 / 4; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+.ln .tools { display: flex; gap: 4px; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+.ln .tools select { padding: 2px 4px; font-size: 11px; max-width: 92px; width: auto; }
+.ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; flex: 1 1 140px; }
 .ln .cuts span { font-size: 10px; padding: 1px 6px; border-radius: 2px; border: 1px solid var(--line2); color: var(--muted); cursor: pointer; }
 .ln .cuts span:hover { color: var(--text); border-color: var(--amber); }
 .ln .cuts select.cut-lay { font-size: 10px; padding: 1px 4px; max-width: 112px; border: 1px solid var(--line2); border-radius: 2px; background: var(--raised); color: var(--text); }
@@ -134,16 +136,19 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .transport .tc { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; }
 .transport input[type=range] { flex: 1 1 160px; accent-color: var(--amber); }
 button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
+/* timeline controls, export range, line tools */
+.tl-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 8px 0 4px; flex-wrap: wrap; }
+.tl-hint { font-size: 11px; }
+.tl-btns { display: flex; gap: 4px; margin-left: auto; }
+.rng-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; font-size: 12px; }
+.rng-row select { width: auto; max-width: 150px; }
+.rng-lab { color: var(--muted); font-size: 11px; }
+.rngInfo { font-size: 11px; }
+.ln.in-range { border-color: var(--amber); }
+.ln.is-inter .txt { color: var(--muted); font-style: italic; }
+.ln .txt-edit { width: 100%; padding: 3px 6px; font-size: 13px; }
+.ln .tools .icon[aria-pressed=true] { color: var(--amber); }
 #timeline { width: 100%; height: 76px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; }
-.tl-row { display: block; position: relative; }
-.tl-row #timeline { width: 100%; display: block; }
-.tl-zoom { position: absolute; right: 6px; top: 6px; z-index: 2; display: flex; flex-direction: row; gap: 4px; }
-.tl-zoom button { width: 28px; height: 28px; padding: 0; font-size: 16px; line-height: 1; background: rgba(19,19,22,0.88); border-color: var(--line2); }
-.tl-bar { overflow-x: auto; overflow-y: hidden; height: 14px; margin-top: 2px; scrollbar-width: thin; scrollbar-color: var(--line2) var(--raised); }
-.tl-bar::-webkit-scrollbar { height: 10px; }
-.tl-bar::-webkit-scrollbar-track { background: var(--raised); border-radius: 5px; }
-.tl-bar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 5px; }
-#tlBarInner { height: 1px; width: 100%; }
 .cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; }
 .cutinfo .cut-roll { margin-left: 2px; }
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--line2); color: var(--text); background: var(--raised); }
@@ -319,3 +324,18 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .stile .badges { position: absolute; top: 4px; left: 4px; padding: 0; display: flex; gap: 3px; }
 .stile .set-badge { margin: 0; padding: 0 4px; font-size: 10px; line-height: 15px; background: rgba(0,0,0,0.55); }
 .stile.set-off { opacity: 0.55; }
+
+/* ---------- かんたんモードの案内ツアー ---------- */
+.tour { position: fixed; inset: 0; z-index: 200; pointer-events: auto; }
+.tour-spot { position: fixed; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(8, 8, 10, 0.66); outline: 2px solid var(--amber); transition: all 0.22s ease; pointer-events: none; }
+.tour-bub { position: fixed; width: min(340px, calc(100vw - 24px)); background: var(--panel); color: var(--text); border: 1px solid var(--line2); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); transition: top 0.22s ease, left 0.22s ease; }
+.tour-step { font-size: 11px; }
+.tour-title { margin: 4px 0 6px; font-size: 15px; }
+.tour-text { margin: 0 0 12px; font-size: 13px; line-height: 1.7; color: var(--muted); }
+.tour-nav { display: flex; gap: 6px; align-items: center; }
+.tour-sp { flex: 1; }
+.tour-btn { min-width: 30px; font-weight: 700; }
+button.small.primary { padding: 4px 12px; }
+
+.lang-switch select { font: 500 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
