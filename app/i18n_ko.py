@@ -1,6 +1,10 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="스타일·분위기·연출·배색을 한꺼번에 무작위로">자동 생성</button>',
+    'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">메뉴</button>',
+    'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="스마트폰 화면(자동 생성 버튼을 위에 고정, 줄은 접어서 표시)">스마트폰</button>',
+    '<button class="exp-share primary" hidden>共有して保存</button>': '<button class="exp-share primary" hidden>공유해서 저장</button>',
     '画面に見えているプレビューは自動でループします。': '화면에 보이는 미리보기는 자동으로 반복 재생됩니다.',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>세로 화면일 때<select class="centerDirSel" aria-label="세로 화면에서 나누는 방법"><option value="tb">위아래로 나누기</option><option value="lr">좌우로 나누기</option></select></label>',
     '<span>統一感</span>': '<span>통일감</span>',
@@ -129,6 +133,7 @@ BODY = {
 }
 
 UI = {
+    "'スマホの画面では 1080p で書き出します'": "'스마트폰 화면에서는 최대 1080p로 내보냅니다'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`불러온 글꼴(${[...new Set(lost)].join(', ')})이 이 브라우저에 없어 내보내기를 멈췄습니다. 「글꼴」에서 같은 파일을 다시 불러오거나 다른 글꼴을 고르세요`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`불러온 글꼴(${missing.join(', ')})이 이 브라우저에 없습니다. 「글꼴」에서 같은 파일을 다시 불러오세요(그때까지는 비슷한 글꼴로 표시합니다)`",
     "'縦長の画面：左右に分けます'": "'세로 화면: 좌우로 나눕니다'",

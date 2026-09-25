@@ -40,6 +40,10 @@ STYLES = {
 }
 
 BODY = {
+    'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="随机决定风格、氛围、演出与配色">随机生成一版</button>',
+    'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">菜单</button>',
+    'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="手机版面（随机按钮固定在上方，句子折叠显示）">手机</button>',
+    '<button class="exp-share primary" hidden>共有して保存</button>': '<button class="exp-share primary" hidden>分享并保存</button>',
     '画面に見えているプレビューは自動でループします。': '画面上可见的预览会自动循环播放。',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>竖屏时<select class="centerDirSel" aria-label="竖屏画面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>',
     '<span>統一感</span>': '<span>统一感</span>',
@@ -172,6 +176,7 @@ BODY = {
 }
 
 UI = {
+    "'スマホの画面では 1080p で書き出します'": "'手机版面最高以 1080p 导出'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`导入的字体（${[...new Set(lost)].join('、')}）不在此浏览器中，已停止导出。请在“字体”重新导入同一个文件，或选择其他字体`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`导入的字体（${missing.join('、')}）不在此浏览器中。请在“字体”重新导入同一个文件（在此之前以相近的字体显示）`",
     "'縦長の画面：左右に分けます'": "'竖屏画面：分成左右'",

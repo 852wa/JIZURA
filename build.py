@@ -7,6 +7,7 @@ from app import i18n
 ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
 read = lambda p: open(p, encoding='utf-8').read()
+VERSION = read('VERSION').strip()
 sources = sorted(glob.glob('src/*.js'))
 js = '\n'.join(read(f) for f in sources)
 mux = '/*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */\n' + read('vendor/mp4-muxer.min.js')
@@ -19,12 +20,13 @@ def build(lang):
     folder = dict((c, f) for c, f, _, _ in i18n.EDITIONS)[lang]
     canonical = i18n.BASE + (folder + '/' if folder else '')
     language_nav = i18n.nav(lang)
-    body = read('app/body.html').replace('    <div class="acts">', '    ' + language_nav + '\n    <div class="acts">', 1)
+    body = read('app/body.html').replace('@VERSION@', VERSION).replace('    <div class="acts">', '    ' + language_nav + '\n    <div class="acts">', 1)
     if english: body = localize_body(body)
     elif local: body = i18n.localize_body(lang, body)
     if english: script = '\n'.join(localize_js(read(f), f) for f in sources)
     elif local: script = '\n'.join(i18n.localize_js(lang, read(f), f) for f in sources)
     else: script = js
+    script = script.replace('@VERSION@', VERSION)
     if english or local:
         marker = '/* ============================================================\n   JIZURA — editor UI'
         if marker not in script: raise ValueError('Could not find browser UI entry point')

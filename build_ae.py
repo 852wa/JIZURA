@@ -27,7 +27,9 @@ if a.lang == 'en':
             if key in data['names'].get(group, {}): data['names'][group][key] = name
             if key in data['meta'].get(group, {}): data['meta'][group][key]['name'] = name
 body = '\n'.join(localize_ae(open(f'ae/{p}.jsx', encoding='utf-8').read()) if a.lang == 'en' and p == '90_ui' else open(f'ae/{p}.jsx', encoding='utf-8').read() for p in parts)
-head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v2.0)
+VERSION = open('VERSION', encoding='utf-8').read().strip()
+body = body.replace('@VERSION@', VERSION)
+head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v@VERSION@)
     Put this file in:  After Effects <version>/Support Files/Scripts/ScriptUI Panels/
     Restart AE, then open  Window > JIZURA_AE.jsx
     (Or run it once via File > Scripts > Run Script File... as a floating window.)
@@ -35,12 +37,14 @@ head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v2.
 */
 '''
 if a.core:
-    head = '/*  JIZURA 字面 — After Effects build engine for the CEP panel (v2.0). Loaded by host.jsx. */\n'
+    head = '/*  JIZURA 字面 — After Effects build engine for the CEP panel (v@VERSION@). Loaded by host.jsx. */\n'
     api = ('$.global.JZ_CORE = { version: 3, build: jzBuild, start: jzBuildStart, makePlan: jzMakePlan, keyStyle: jzKeyStyle, parse: jzParseJSON, '
            'log: function () { return JZLOG; }, fallbacks: function () { return JZ_FALLBACKS; }, missingFonts: jzMissingFonts, diagnose: jzDiagnose, saveReport: jzSaveReport, parts: jzPartsCount, panelVersion: JZ_PANEL_VERSION, fontCheckUnavailable: function () { return JZ_FONT_NOAPI; }, roleDefault: JZ_ROLE_DEFAULT, data: JZ_DATA };')
+    head = head.replace('@VERSION@', VERSION)
     src = head + '(function () {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\n' + api + '\n})();\n'
 else:
     if a.lang == 'en': head = head.replace('JIZURA 字面', 'JIZURA')
+    head = head.replace('@VERSION@', VERSION)
     src = head + '(function (thisObj) {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\njzUI(thisObj);\n})(this);\n'
     src = '#target aftereffects\n' + src
 # escape every non-ASCII character so the file is encoding-proof in ExtendScript

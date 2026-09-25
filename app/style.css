@@ -34,6 +34,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand .mark { font: 900 26px/1 var(--brand); letter-spacing: 0.02em; color: var(--text); text-shadow: -2px -1px 0 rgba(22,244,212,0.85), 2px 1px 0 rgba(245,165,12,0.9); }
 .brand .word { font: 600 12px/1 var(--mono); letter-spacing: 0.34em; color: var(--text); }
 .brand .tag { font: 400 11px/1 var(--mono); color: var(--muted); letter-spacing: 0.08em; }
+.brand .ver { font: 400 10px/1 var(--mono); color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
 .proj { display: flex; gap: 8px; flex: 1 1 280px; min-width: 0; }
 .proj input { flex: 1 1 0; min-width: 0; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -348,3 +349,51 @@ button.small.primary { padding: 4px 12px; }
 .unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .center-dir { gap: 6px; margin: -2px 0 8px 26px; font-size: 12px; }
 .center-dir select { width: auto; }
+
+/* ================= スマホ mode (#app.is-mobile) =================
+   one column: sticky header with おまかせ, the preview right under it, then folding sections */
+.omk-top, .menu-btn { display: none; }
+.mode-mobile { display: none; }
+@media (max-width: 900px), (pointer: coarse) { .mode-mobile { display: inline-block; } }
+#app.is-mobile .mode-mobile { display: inline-block; }
+#app.is-mobile .bar { position: sticky; top: 0; z-index: 40; gap: 8px; padding: 8px 10px; }
+#app.is-mobile .brand .tag, #app.is-mobile .brand .word, #app.is-mobile .tour-btn { display: none; }
+#app.is-mobile .brand .mark { font-size: 22px; }
+#app.is-mobile .omk-top, #app.is-mobile .menu-btn { display: inline-block; }
+#app.is-mobile .omk-top { order: 2; margin-left: auto; padding: 9px 16px; font-size: 15px; }
+#app.is-mobile .menu-btn { order: 3; padding: 9px 10px; }
+#app.is-mobile .modes { order: 4; flex: 1 1 100%; }
+#app.is-mobile .modes button { flex: 1 1 0; padding: 7px 4px; }
+#app.is-mobile .proj, #app.is-mobile .acts, #app.is-mobile .lang-switch { display: none; order: 5; flex: 1 1 100%; }
+#app.is-mobile.menu-open .proj, #app.is-mobile.menu-open .acts, #app.is-mobile.menu-open .lang-switch { display: flex; }
+#app.is-mobile .acts > * { flex: 1 1 auto; }
+#app.is-mobile .work { display: flex; flex-direction: column; overflow: visible; }
+#app.is-mobile .col-left, #app.is-mobile .col-right { overflow: visible; border: 0; border-top: 1px solid var(--line); }
+#app.is-mobile .col-stage { order: -1; position: sticky; top: var(--mbar, 96px); z-index: 30; background: var(--ink); padding: 8px 10px; gap: 6px; box-shadow: 0 8px 18px rgba(0,0,0,0.45); }
+#app.is-mobile .viewport canvas { max-height: 34vh; }
+#app.is-mobile .tl-bar, #app.is-mobile #timeline, #app.is-mobile .cutinfo, #app.is-mobile .transport .vol, #app.is-mobile #btnLoop, #app.is-mobile #btnShuffle, #app.is-mobile #btnOmakase { display: none; }
+#app.is-mobile .transport { gap: 8px; flex-wrap: nowrap; }
+#app.is-mobile .transport .hist-btns { display: inline-flex; }
+#app.is-mobile .col-right { order: 0; }
+#app.is-mobile .col-left { order: 1; }
+#app.is-mobile .easy-hero .omakase { display: none; }
+#app.is-mobile button, #app.is-mobile select, #app.is-mobile input[type=text], #app.is-mobile label.file { min-height: 40px; }
+#app.is-mobile button.small, #app.is-mobile .ln button, #app.is-mobile .ln select { min-height: 34px; }
+#app.is-mobile .easy .fields, #app.is-mobile .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* folding sections: tap the heading */
+#app.is-mobile .sec > .sec-h h2 { cursor: pointer; font-size: 13px; }
+#app.is-mobile .sec > .sec-h h2::before { content: '▾'; display: inline-block; width: 1.2em; color: var(--amber); }
+#app.is-mobile .sec.fold > .sec-h h2::before { content: '▸'; }
+#app.is-mobile .sec.fold > :not(.sec-h) { display: none !important; }
+/* lines: one compact row each, tap to open its tools */
+#app.is-mobile .ln { grid-template-columns: 22px minmax(0, 1fr); padding: 8px 6px; }
+#app.is-mobile .ln .time { display: none; }
+#app.is-mobile .ln .meta { display: none; grid-column: 1 / -1; }
+#app.is-mobile .ln.open .meta { display: block; }
+#app.is-mobile .ln .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#app.is-mobile .ln.open .txt { white-space: normal; }
+.exp-share { width: 100%; margin-bottom: 8px; }
+#app.is-mobile .transport .tc.muted, #app.is-mobile #timeDur { display: none; }
+#app.is-mobile .transport input[type=range] { flex: 1 1 40px; min-width: 0; }
+#app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
+#app.is-mobile button.play { flex: none; width: 44px; }

@@ -8,7 +8,7 @@ import argparse, glob, os, shutil, subprocess, sys, zipfile
 from app.english import localize_cep
 ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
-VERSION = '1.0.0'
+VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION'), encoding='utf-8').read().strip()
 ap = argparse.ArgumentParser()
 ap.add_argument('--out', default='dist' if os.path.isdir('dist') else 'build')
 ap.add_argument('--debug', action='store_true')

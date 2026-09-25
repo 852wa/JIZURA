@@ -1,6 +1,10 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="隨機決定風格、氛圍、演出與配色">隨機生成一版</button>',
+    'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">選單</button>',
+    'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="手機版面（隨機按鈕固定在上方，句子收合顯示）">手機</button>',
+    '<button class="exp-share primary" hidden>共有して保存</button>': '<button class="exp-share primary" hidden>分享並儲存</button>',
     '画面に見えているプレビューは自動でループします。': '畫面上看得到的預覽會自動循環播放。',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>直式畫面時<select class="centerDirSel" aria-label="直式畫面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>',
     '<span>統一感</span>': '<span>統一感</span>',
@@ -131,6 +135,7 @@ BODY = {
 }
 
 UI = {
+    "'スマホの画面では 1080p で書き出します'": "'手機版面最高以 1080p 輸出'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`匯入的字型（${[...new Set(lost)].join('、')}）不在此瀏覽器中，已停止輸出。請在「字型」重新匯入同一個檔案，或選擇其他字型`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`匯入的字型（${missing.join('、')}）不在此瀏覽器中。請在「字型」重新匯入同一個檔案（在那之前以相近的字型顯示）`",
     "'縦長の画面：左右に分けます'": "'直式畫面：分成左右'",

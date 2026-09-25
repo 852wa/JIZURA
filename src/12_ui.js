@@ -58,6 +58,7 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
+  delete o.appVersion;
   // project files are untrusted: colours must be colours, font keys plain keys (they end up in the page's HTML / CSS)
   o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
   for (const [k, v] of Object.entries((p && p.colors) || {})) {
@@ -414,6 +415,14 @@ function renderLines() {
       sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       cutsEl.appendChild(sp);
     });
+    // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
+    if (S.openLine === i) li.classList.add('open');
+    li.addEventListener('click', e => {
+      if (S.mode !== 'mobile' || e.target.closest('button, select, input, .cuts')) return;
+      const was = li.classList.contains('open');
+      S.lineEls.forEach(x => x.classList.remove('open'));
+      if (!was) { li.classList.add('open'); S.openLine = i; } else S.openLine = -1;
+    });
     ol.appendChild(li); S.lineEls.push(li);
   });
   $('linesInfo').textContent = `${S.plan.lines.length}行 / ${S.plan.cuts.length}カット`;
@@ -664,7 +673,7 @@ function updateHist() {
 }
 
 /* ---------------- おまかせ ---------------- */
-function restartPreview() { seek(0); if (!S.playing && S.mode === 'easy') play(); }
+function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
@@ -725,15 +734,31 @@ function toast(m, cols) {
 
 /* ---------------- かんたん / 詳細 ---------------- */
 function setMode(m) {
-  S.mode = m === 'easy' ? 'easy' : 'pro';
-  const easy = S.mode === 'easy';
+  S.mode = m === 'easy' ? 'easy' : m === 'mobile' ? 'mobile' : 'pro';
+  const mobile = S.mode === 'mobile', easy = S.mode === 'easy' || mobile;   // スマホ = the かんたん panel, laid out for a phone
   $('app').classList.toggle('is-easy', easy);
+  $('app').classList.toggle('is-mobile', mobile);
+  $('app').classList.remove('menu-open'); $('btnMenu').setAttribute('aria-expanded', 'false');
+  document.documentElement.classList.toggle('fixed-ok', !mobile);           // one scrolling page on a phone
   $('easyPanel').hidden = !easy;
-  $('modeEasy').setAttribute('aria-pressed', String(easy));
-  $('modePro').setAttribute('aria-pressed', String(!easy));
+  $('modeMobile').setAttribute('aria-pressed', String(mobile));
+  $('modeEasy').setAttribute('aria-pressed', String(S.mode === 'easy'));
+  $('modePro').setAttribute('aria-pressed', String(S.mode === 'pro'));
   try { localStorage.setItem('jizura.mode', S.mode); } catch (e) {}
+  if (mobile) mobileInit();
   if (easy) { showNow(); syncOut(); codecNote(); }
   sizeViewport(); drawTimeline(); loadThumbFonts();
+}
+
+/* スマホ: the preview sticks right under the header; the first time, a phone-friendly size and the line list folded */
+function mobileBar() { const b = document.querySelector('.bar'); if (b) document.documentElement.style.setProperty('--mbar', b.offsetHeight + 'px'); }
+function mobileInit() {
+  mobileBar();
+  let first = true; try { first = localStorage.getItem('jizura.mobileInit') !== '1'; localStorage.setItem('jizura.mobileInit', '1'); } catch (e) {}
+  if (first) {
+    if ((S.project.res || 1080) > 720) { S.project.res = 720; syncOut(); autosave(); }
+    const sec = $('lineList') && $('lineList').closest('.sec'); if (sec) sec.classList.add('fold');
+  }
 }
 
 /* ---------------- fx tab ---------------- */
@@ -937,18 +962,26 @@ async function runExport(kind) {
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
+  boxes.forEach(b => { const sh = b.querySelector('.exp-share'); if (sh) sh.hidden = true; });
+  // keep the phone's screen on while exporting (a sleeping screen stops the encoder)
+  let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
+  // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
+  const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
+  if (proj !== S.project) toast('スマホの画面では 1080p で書き出します');
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
     if (lost.length) throw new Error(`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
       txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB・' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
       if (r.blob) {
-        const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
+        const name = baseName() + rangeSuffix() + '.mp4';
+        const res = await J.saveFile(name, r.blob);
         if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+        offerShare(boxes, r.blob, name);
       } else txt.textContent += `・「${fileName}」に保存しました`;
       if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
@@ -957,7 +990,7 @@ async function runExport(kind) {
         txt.textContent += r.audio ? '。このブラウザでは音声が Opus になり、iPhone・QuickTime などでは音が出ないことがあるため、音声を WAV でも保存しました' : '。このブラウザは音声を書き出せないため、音声を WAV で別に保存しました（動画編集ソフトで重ねてください）';
       } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
+      const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
@@ -968,8 +1001,20 @@ async function runExport(kind) {
   } finally {
     S.exporting = null; S.need = true;
     EXP_BTNS.forEach(id => { $(id).disabled = false; });
+    try { if (wake) await wake.release(); } catch (e) {}
     codecNote();
   }
+}
+/* phones: the share sheet is the reliable way to put a video into Photos / Files (a download link often isn't) */
+function offerShare(boxes, blob, name) {
+  let f = null;
+  try { f = new File([blob], name, { type: blob.type || 'video/mp4' }); } catch (e) { return; }
+  if (!navigator.canShare || !navigator.share || !navigator.canShare({ files: [f] })) return;
+  boxes.forEach(b => {
+    const sh = b.querySelector('.exp-share'); if (!sh) return;
+    sh.hidden = false;
+    sh.onclick = async () => { try { await navigator.share({ files: [f], title: name }); } catch (e) {} };
+  });
 }
 
 /* ---------------- tap sync ---------------- */
@@ -1164,6 +1209,11 @@ function bind() {
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
   $('modeEasy').addEventListener('click', () => setMode('easy'));
+  $('modeMobile').addEventListener('click', () => setMode('mobile'));
+  $('btnOmakaseTop').addEventListener('click', omakase);
+  $('btnMenu').addEventListener('click', () => { const on = !$('app').classList.contains('menu-open'); $('app').classList.toggle('menu-open', on); $('btnMenu').setAttribute('aria-expanded', String(on)); mobileBar(); });
+  document.querySelectorAll('.sec > .sec-h h2').forEach(h => h.addEventListener('click', () => { if (S.mode === 'mobile') h.closest('.sec').classList.toggle('fold'); }));
+  if (window.ResizeObserver) new ResizeObserver(mobileBar).observe(document.querySelector('.bar'));
   $('modePro').addEventListener('click', () => setMode('pro'));
   $('btnOmakase').addEventListener('click', omakase);
   $('btnOmakaseBig').addEventListener('click', omakase);
@@ -1178,7 +1228,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(S.project, null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '@VERSION@' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
@@ -1308,7 +1358,9 @@ function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); replan();
   restoreFonts();
-  let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
+  // first visit on a phone: スマホ mode
+  let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
+  try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}

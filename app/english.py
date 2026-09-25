@@ -1,6 +1,10 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="Randomize style, mood, effects and palette">Randomize</button>',
+    'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">Menu</button>',
+    'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="Phone layout (Randomize pinned at the top, lines folded)">Phone</button>',
+    '<button class="exp-share primary" hidden>共有して保存</button>': '<button class="exp-share primary" hidden>Share / save</button>',
     '<label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>': '<label class="row center-dir" hidden>On tall frames<select class="centerDirSel" aria-label="Split on tall frames"><option value="tb">Top / bottom</option><option value="lr">Left / right</option></select></label>',
     '<span>統一感</span>': '<span>Unified look</span>',
     '<span>文字整列</span>': '<span>Typesetting</span>',
@@ -125,6 +129,7 @@ BODY = {
 }
 
 UI = {
+    "'スマホの画面では 1080p で書き出します'": "'In the Phone layout the export is 1080p at most'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`The uploaded font (${[...new Set(lost)].join(', ')}) is not in this browser, so the export was stopped. Load the same file again under Fonts, or pick another font`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`The uploaded font (${missing.join(', ')}) is not in this browser. Load the same file again under Fonts (a similar font is used until then)`",
     "'縦長の画面：左右に分けます'": "'Tall frames: split left / right'",

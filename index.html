@@ -56,6 +56,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand .mark { font: 900 26px/1 var(--brand); letter-spacing: 0.02em; color: var(--text); text-shadow: -2px -1px 0 rgba(22,244,212,0.85), 2px 1px 0 rgba(245,165,12,0.9); }
 .brand .word { font: 600 12px/1 var(--mono); letter-spacing: 0.34em; color: var(--text); }
 .brand .tag { font: 400 11px/1 var(--mono); color: var(--muted); letter-spacing: 0.08em; }
+.brand .ver { font: 400 10px/1 var(--mono); color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
 .proj { display: flex; gap: 8px; flex: 1 1 280px; min-width: 0; }
 .proj input { flex: 1 1 0; min-width: 0; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -371,6 +372,54 @@ button.small.primary { padding: 4px 12px; }
 .center-dir { gap: 6px; margin: -2px 0 8px 26px; font-size: 12px; }
 .center-dir select { width: auto; }
 
+/* ================= スマホ mode (#app.is-mobile) =================
+   one column: sticky header with おまかせ, the preview right under it, then folding sections */
+.omk-top, .menu-btn { display: none; }
+.mode-mobile { display: none; }
+@media (max-width: 900px), (pointer: coarse) { .mode-mobile { display: inline-block; } }
+#app.is-mobile .mode-mobile { display: inline-block; }
+#app.is-mobile .bar { position: sticky; top: 0; z-index: 40; gap: 8px; padding: 8px 10px; }
+#app.is-mobile .brand .tag, #app.is-mobile .brand .word, #app.is-mobile .tour-btn { display: none; }
+#app.is-mobile .brand .mark { font-size: 22px; }
+#app.is-mobile .omk-top, #app.is-mobile .menu-btn { display: inline-block; }
+#app.is-mobile .omk-top { order: 2; margin-left: auto; padding: 9px 16px; font-size: 15px; }
+#app.is-mobile .menu-btn { order: 3; padding: 9px 10px; }
+#app.is-mobile .modes { order: 4; flex: 1 1 100%; }
+#app.is-mobile .modes button { flex: 1 1 0; padding: 7px 4px; }
+#app.is-mobile .proj, #app.is-mobile .acts, #app.is-mobile .lang-switch { display: none; order: 5; flex: 1 1 100%; }
+#app.is-mobile.menu-open .proj, #app.is-mobile.menu-open .acts, #app.is-mobile.menu-open .lang-switch { display: flex; }
+#app.is-mobile .acts > * { flex: 1 1 auto; }
+#app.is-mobile .work { display: flex; flex-direction: column; overflow: visible; }
+#app.is-mobile .col-left, #app.is-mobile .col-right { overflow: visible; border: 0; border-top: 1px solid var(--line); }
+#app.is-mobile .col-stage { order: -1; position: sticky; top: var(--mbar, 96px); z-index: 30; background: var(--ink); padding: 8px 10px; gap: 6px; box-shadow: 0 8px 18px rgba(0,0,0,0.45); }
+#app.is-mobile .viewport canvas { max-height: 34vh; }
+#app.is-mobile .tl-bar, #app.is-mobile #timeline, #app.is-mobile .cutinfo, #app.is-mobile .transport .vol, #app.is-mobile #btnLoop, #app.is-mobile #btnShuffle, #app.is-mobile #btnOmakase { display: none; }
+#app.is-mobile .transport { gap: 8px; flex-wrap: nowrap; }
+#app.is-mobile .transport .hist-btns { display: inline-flex; }
+#app.is-mobile .col-right { order: 0; }
+#app.is-mobile .col-left { order: 1; }
+#app.is-mobile .easy-hero .omakase { display: none; }
+#app.is-mobile button, #app.is-mobile select, #app.is-mobile input[type=text], #app.is-mobile label.file { min-height: 40px; }
+#app.is-mobile button.small, #app.is-mobile .ln button, #app.is-mobile .ln select { min-height: 34px; }
+#app.is-mobile .easy .fields, #app.is-mobile .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* folding sections: tap the heading */
+#app.is-mobile .sec > .sec-h h2 { cursor: pointer; font-size: 13px; }
+#app.is-mobile .sec > .sec-h h2::before { content: '▾'; display: inline-block; width: 1.2em; color: var(--amber); }
+#app.is-mobile .sec.fold > .sec-h h2::before { content: '▸'; }
+#app.is-mobile .sec.fold > :not(.sec-h) { display: none !important; }
+/* lines: one compact row each, tap to open its tools */
+#app.is-mobile .ln { grid-template-columns: 22px minmax(0, 1fr); padding: 8px 6px; }
+#app.is-mobile .ln .time { display: none; }
+#app.is-mobile .ln .meta { display: none; grid-column: 1 / -1; }
+#app.is-mobile .ln.open .meta { display: block; }
+#app.is-mobile .ln .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#app.is-mobile .ln.open .txt { white-space: normal; }
+.exp-share { width: 100%; margin-bottom: 8px; }
+#app.is-mobile .transport .tc.muted, #app.is-mobile #timeDur { display: none; }
+#app.is-mobile .transport input[type=range] { flex: 1 1 40px; min-width: 0; }
+#app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
+#app.is-mobile button.play { flex: none; width: 44px; }
+
 </style>
 </head>
 <body>
@@ -385,12 +434,15 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.7.0</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="曲名（タイトルカード・HUDに表示）" aria-label="曲名">
       <input id="songArtist" type="text" placeholder="アーティスト" aria-label="アーティスト">
     </div>
+    <button id="btnOmakaseTop" class="primary omk-top" title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>
+    <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">メニュー</button>
     <div class="modes" role="group" aria-label="表示モード">
+      <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>
       <button id="modeEasy" aria-pressed="false" title="おまかせボタン中心のシンプルな画面">かんたん</button>
       <button id="modePro" aria-pressed="true" title="すべての設定を表示">詳細</button>
       <button id="btnTour" class="ghost tour-btn" title="かんたんモードの使い方を案内します" aria-label="使い方の案内">？</button>
@@ -531,6 +583,7 @@ button.small.primary { padding: 4px 12px; }
           <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button><button id="eMP4File" class="ghost mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button></div>
           <button class="terms-open linkish">書き出した動画の権利について</button>
           <div class="exp-box" hidden>
+            <button class="exp-share primary" hidden>共有して保存</button>
             <div class="progress"><i class="exp-bar"></i></div>
             <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
           </div>
@@ -613,6 +666,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnPNGL" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
+          <button class="exp-share primary" hidden>共有して保存</button>
           <div class="progress"><i class="exp-bar"></i></div>
           <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
         </div>
@@ -3499,7 +3553,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.7.0', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -5121,7 +5175,8 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
       const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
       let spins = 0;
-      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (++spins > 15000) throw new Error('エンコーダーが応答しません'); }
+      // (time in the background doesn't count: a phone pauses the encoder while the page is hidden)
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('エンコーダーが応答しません'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
       if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('エンコーダーが出力を返しません'); }
       if (i % 3 === 0) { onProgress && onProgress(i / total, `フレーム ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
@@ -29851,6 +29906,7 @@ function mergeProject(p) {
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
   o.overrides = (p && p.overrides) || {};
+  delete o.appVersion;
   // project files are untrusted: colours must be colours, font keys plain keys (they end up in the page's HTML / CSS)
   o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
   for (const [k, v] of Object.entries((p && p.colors) || {})) {
@@ -30207,6 +30263,14 @@ function renderLines() {
       sp.addEventListener('click', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       cutsEl.appendChild(sp);
     });
+    // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
+    if (S.openLine === i) li.classList.add('open');
+    li.addEventListener('click', e => {
+      if (S.mode !== 'mobile' || e.target.closest('button, select, input, .cuts')) return;
+      const was = li.classList.contains('open');
+      S.lineEls.forEach(x => x.classList.remove('open'));
+      if (!was) { li.classList.add('open'); S.openLine = i; } else S.openLine = -1;
+    });
     ol.appendChild(li); S.lineEls.push(li);
   });
   $('linesInfo').textContent = `${S.plan.lines.length}行 / ${S.plan.cuts.length}カット`;
@@ -30457,7 +30521,7 @@ function updateHist() {
 }
 
 /* ---------------- おまかせ ---------------- */
-function restartPreview() { seek(0); if (!S.playing && S.mode === 'easy') play(); }
+function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
@@ -30518,15 +30582,31 @@ function toast(m, cols) {
 
 /* ---------------- かんたん / 詳細 ---------------- */
 function setMode(m) {
-  S.mode = m === 'easy' ? 'easy' : 'pro';
-  const easy = S.mode === 'easy';
+  S.mode = m === 'easy' ? 'easy' : m === 'mobile' ? 'mobile' : 'pro';
+  const mobile = S.mode === 'mobile', easy = S.mode === 'easy' || mobile;   // スマホ = the かんたん panel, laid out for a phone
   $('app').classList.toggle('is-easy', easy);
+  $('app').classList.toggle('is-mobile', mobile);
+  $('app').classList.remove('menu-open'); $('btnMenu').setAttribute('aria-expanded', 'false');
+  document.documentElement.classList.toggle('fixed-ok', !mobile);           // one scrolling page on a phone
   $('easyPanel').hidden = !easy;
-  $('modeEasy').setAttribute('aria-pressed', String(easy));
-  $('modePro').setAttribute('aria-pressed', String(!easy));
+  $('modeMobile').setAttribute('aria-pressed', String(mobile));
+  $('modeEasy').setAttribute('aria-pressed', String(S.mode === 'easy'));
+  $('modePro').setAttribute('aria-pressed', String(S.mode === 'pro'));
   try { localStorage.setItem('jizura.mode', S.mode); } catch (e) {}
+  if (mobile) mobileInit();
   if (easy) { showNow(); syncOut(); codecNote(); }
   sizeViewport(); drawTimeline(); loadThumbFonts();
+}
+
+/* スマホ: the preview sticks right under the header; the first time, a phone-friendly size and the line list folded */
+function mobileBar() { const b = document.querySelector('.bar'); if (b) document.documentElement.style.setProperty('--mbar', b.offsetHeight + 'px'); }
+function mobileInit() {
+  mobileBar();
+  let first = true; try { first = localStorage.getItem('jizura.mobileInit') !== '1'; localStorage.setItem('jizura.mobileInit', '1'); } catch (e) {}
+  if (first) {
+    if ((S.project.res || 1080) > 720) { S.project.res = 720; syncOut(); autosave(); }
+    const sec = $('lineList') && $('lineList').closest('.sec'); if (sec) sec.classList.add('fold');
+  }
 }
 
 /* ---------------- fx tab ---------------- */
@@ -30730,18 +30810,26 @@ async function runExport(kind) {
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
+  boxes.forEach(b => { const sh = b.querySelector('.exp-share'); if (sh) sh.hidden = true; });
+  // keep the phone's screen on while exporting (a sleeping screen stops the encoder)
+  let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
+  // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
+  const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
+  if (proj !== S.project) toast('スマホの画面では 1080p で書き出します');
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
     if (lost.length) throw new Error(`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
       txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB・' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
       if (r.blob) {
-        const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
+        const name = baseName() + rangeSuffix() + '.mp4';
+        const res = await J.saveFile(name, r.blob);
         if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+        offerShare(boxes, r.blob, name);
       } else txt.textContent += `・「${fileName}」に保存しました`;
       if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
@@ -30750,7 +30838,7 @@ async function runExport(kind) {
         txt.textContent += r.audio ? '。このブラウザでは音声が Opus になり、iPhone・QuickTime などでは音が出ないことがあるため、音声を WAV でも保存しました' : '。このブラウザは音声を書き出せないため、音声を WAV で別に保存しました（動画編集ソフトで重ねてください）';
       } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
+      const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
@@ -30761,8 +30849,20 @@ async function runExport(kind) {
   } finally {
     S.exporting = null; S.need = true;
     EXP_BTNS.forEach(id => { $(id).disabled = false; });
+    try { if (wake) await wake.release(); } catch (e) {}
     codecNote();
   }
+}
+/* phones: the share sheet is the reliable way to put a video into Photos / Files (a download link often isn't) */
+function offerShare(boxes, blob, name) {
+  let f = null;
+  try { f = new File([blob], name, { type: blob.type || 'video/mp4' }); } catch (e) { return; }
+  if (!navigator.canShare || !navigator.share || !navigator.canShare({ files: [f] })) return;
+  boxes.forEach(b => {
+    const sh = b.querySelector('.exp-share'); if (!sh) return;
+    sh.hidden = false;
+    sh.onclick = async () => { try { await navigator.share({ files: [f], title: name }); } catch (e) {} };
+  });
 }
 
 /* ---------------- tap sync ---------------- */
@@ -30957,6 +31057,11 @@ function bind() {
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
   $('modeEasy').addEventListener('click', () => setMode('easy'));
+  $('modeMobile').addEventListener('click', () => setMode('mobile'));
+  $('btnOmakaseTop').addEventListener('click', omakase);
+  $('btnMenu').addEventListener('click', () => { const on = !$('app').classList.contains('menu-open'); $('app').classList.toggle('menu-open', on); $('btnMenu').setAttribute('aria-expanded', String(on)); mobileBar(); });
+  document.querySelectorAll('.sec > .sec-h h2').forEach(h => h.addEventListener('click', () => { if (S.mode === 'mobile') h.closest('.sec').classList.toggle('fold'); }));
+  if (window.ResizeObserver) new ResizeObserver(mobileBar).observe(document.querySelector('.bar'));
   $('modePro').addEventListener('click', () => setMode('pro'));
   $('btnOmakase').addEventListener('click', omakase);
   $('btnOmakaseBig').addEventListener('click', omakase);
@@ -30971,7 +31076,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(S.project, null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.7.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
@@ -31101,7 +31206,9 @@ function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); replan();
   restoreFonts();
-  let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
+  // first visit on a phone: スマホ mode
+  let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
+  try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
