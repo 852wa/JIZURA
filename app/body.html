@@ -1,3 +1,12 @@
+<div id="tour" class="tour" hidden role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+  <div class="tour-spot"></div>
+  <div class="tour-bub">
+    <div class="tour-step mono muted"></div>
+    <h3 id="tourTitle" class="tour-title"></h3>
+    <p class="tour-text"></p>
+    <div class="tour-nav"><button class="tour-skip ghost small">スキップ</button><span class="tour-sp"></span><button class="tour-prev ghost small">戻る</button><button class="tour-next primary small">次へ</button></div>
+  </div>
+</div>
 <div id="app">
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
@@ -8,6 +17,7 @@
     <div class="modes" role="group" aria-label="表示モード">
       <button id="modeEasy" aria-pressed="false" title="おまかせボタン中心のシンプルな画面">かんたん</button>
       <button id="modePro" aria-pressed="true" title="すべての設定を表示">詳細</button>
+      <button id="btnTour" class="ghost tour-btn" title="かんたんモードの使い方を案内します" aria-label="使い方の案内">？</button>
     </div>
     <div class="acts">
       <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
@@ -32,6 +42,7 @@
             <li>行末の <code>!</code> … フラッシュと揺れを入れる</li>
             <li><code>歌詞|ruby or note</code> … 注釈レイアウトの小さな文字</li>
             <li><code>[01:23.45]歌詞</code> … LRC のタイムスタンプをそのまま使用</li>
+            <li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>
             <li><code>#</code> で始まる行 … コメント（無視）</li>
           </ul>
         </div>
@@ -54,9 +65,10 @@
           <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。</div>
+          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。</div>
           <div class="next">次: <b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
+          <button id="tapBack" class="ghost">1つ戻る</button>
           <button id="tapStop" class="ghost">終了する</button>
         </div>
       </div>
@@ -83,7 +95,16 @@
         <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
       </div>
-      <canvas id="timeline" aria-label="タイムライン（クリックで移動）"></canvas>
+      <div class="tl-bar">
+        <span class="tl-hint muted">行の区切り（上の目盛り）はドラッグで動かせます。<span class="kbd">Shift</span> で拍に吸着しない</span>
+        <span class="tl-btns">
+          <button id="btnUndoEdit" class="ghost small" title="歌詞・タイミングの変更を元に戻す（Ctrl+Z）" disabled>元に戻す</button>
+          <button id="tlOut" class="ghost small icon-txt" title="縮小" aria-label="タイムラインを縮小">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="拡大（タイムライン上でホイールでも）" aria-label="タイムラインを拡大">＋</button>
+          <button id="tlFit" class="ghost small" title="全体を表示">全体</button>
+        </span>
+      </div>
+      <canvas id="timeline" aria-label="タイムライン（クリックで移動・行の区切りはドラッグで調整）"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
     </section>
 
@@ -124,6 +145,7 @@
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
             <label class="field field-wide">背景<select id="eKey"><option value="off">通常（スタイルの背景）</option><option value="green">グリーンバック（合成用）</option><option value="black">ブラックバック（合成用）</option></select></label>
           </div>
+          <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
           <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button></div>
           <button class="terms-open linkish">書き出した動画の権利について</button>
           <div class="exp-box" hidden>
@@ -193,6 +215,7 @@
         </div>
         <p class="note key-note">グリーンバック／ブラックバックにすると、白い文字と演出だけを単色の背景の上に描きます（背景の模様・紙の質感・粒子・周辺減光は入りません）。プレビューにもそのまま反映されます。グリーンバックは動画編集ソフトのクロマキーで、ブラックバックは「スクリーン」合成や輝度キーで抜いて、別の映像の上に重ねられます。</p>
         <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 曲を動画に含める</label>
+        <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
           <button id="btnMP4" class="primary">MP4 を書き出す</button>
           <button id="btnPNG">連番PNG（ZIP）</button>
