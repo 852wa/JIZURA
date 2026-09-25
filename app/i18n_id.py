@@ -7,10 +7,13 @@ SAMPLE = 'Aku masih ingat/warna fajar\nSuara yang terurai terdengar jauh\nHei, m
 
 MOODS = {
     'glitch': 'Glitch', 'calm': 'Tenang', 'pop': 'Pop', 'graphic': 'Grafis',
-    'editorial': 'Editorial', 'emotional': 'Emosional', 'chaos': 'Bebas',
+    'editorial': 'Editorial', 'emotional': 'Emosional', 'chaos': 'Bebas', 'horror': 'Horor',
 }
 
 STYLES = {
+    'hrRuin': ('Reruntuhan', 'Hijau keabuan pudar, merah karat, dan huruf serif yang bergema'),
+    'hrNightRec': ('Rekaman Tengah Malam', 'Layar hitam pekat, putih dan merah kamera CCTV, derau statis'),
+    'hrCurse': ('Surat Kutukan', 'Kertas menguning, tinta pudar, dan tulisan merah gelap'),
     'noir': ('Noir Kromatik', 'Hitam-putih dengan pergeseran warna sian dan amber'),
     'crimson': ('Sinyal Crimson', 'Merah tua, font monokrom, dan data yang rusak'),
     'caution': ('Peringatan', 'Kuning, merah, biru, dan grafis panel instrumen'),
@@ -38,6 +41,15 @@ STYLES = {
 }
 
 BODY = {
+    '文字PV系の部品を使う': 'Pakai bagian tipografi',
+    'キネティックの部品を使う': 'Pakai bagian kinetik',
+    'ホラーの演出も使う': 'Sertakan efek horor',
+    '<small>線・数字・字組みだけで見せる、文字PVらしい部品（約50）</small>': '<small>Sekitar 50 bagian yang hanya memakai garis, angka, dan tata huruf, khas video lirik</small>',
+    '<small>語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）</small>': '<small>Sekitar 50 bagian yang mengutamakan gerak: kata bergerak, memantul, dan bertumpuk satu per satu</small>',
+    '<small>不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります</small>': '<small>Sekitar 50 bagian bernuansa seram dan 3 gaya. Jika aktif, Acak menambahkan suasana Horor</small>',
+    '<small>「文」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Teknik bertanda T. Jika nonaktif, Acak dan Kocok tidak memilihnya</small>',
+    '<small>「キ」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Teknik bertanda K. Jika nonaktif, Acak dan Kocok tidak memilihnya</small>',
+    '<small>「ホ」印の手法とスタイル。おまかせでは雰囲気が「ホラー」のときだけ使います</small>': '<small>Teknik dan gaya bertanda H. Acak hanya memakainya pada suasana Horor</small>',
     'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="Acak gaya, suasana, efek, dan palet sekaligus">Acak</button>',
     'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">Menu</button>',
     'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="Tampilan ponsel (tombol Acak di atas, baris dilipat)">Ponsel</button>',
@@ -156,9 +168,6 @@ BODY = {
     'かんたん': 'Sederhana', '詳細': 'Lanjutan', '開く': 'Buka', '保存': 'Simpan',
     'AE用に書き出し': 'Ekspor untuk AE', '利用について': 'Tentang dan hak',
     '記法': 'Sintaks', 'プレビュー': 'Pratinjau', '再生': 'Putar', 'ループ': 'Loop',
-    '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
-    '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
-    'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
     '前の案': 'Sebelumnya', '次の案': 'Berikutnya', 'シャッフル': 'Acak susunan', 'おまかせで作る': 'Buat variasi',
     'おまかせ': 'Buat variasi', 'いまの案': 'Variasi saat ini', 'ここだけ変える': 'Ubah satu hal',
     'スタイル': 'Gaya', '配色': 'Palet', '雰囲気': 'Suasana', '構成': 'Susunan',
@@ -166,13 +175,23 @@ BODY = {
     '追加': 'Baru', '和': 'JP', '演出': 'Efek', '手法': 'Teknik',
     'コマ打ち': 'Interval frame', 'フラッシュ': 'Flash', 'シード': 'Seed', '新しいシード': 'Seed baru',
     '標準': 'Standar', '最高': 'Maksimum', '高': 'Tinggi', '中止': 'Batal',
-}
-
-UI = {
-    'ループ': 'Loop',
     '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
     '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
     'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
+}
+
+UI = {
+    "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
+    "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
+    "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",
+    "'キネティックの部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian kinetik: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
+    "'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）'": "'Efek horor: aktif (Acak menambahkan suasana Horor)'",
+    "'ホラーの演出：使わない'": "'Efek horor: nonaktif'",
+    "'（このセットがオフのため、おまかせでは選ばれません）'": "' (set ini dinonaktifkan untuk pilihan otomatis)'",
+    "'（このセットがオフのため、自動では選ばれません）'": "' (set ini dinonaktifkan untuk pilihan otomatis)'",
+    "{ name: 'ホラー', badge: 'ホ' }": "{ name: 'Horor', badge: 'H' }",
+    "{ name: '文字PV系', badge: '文' }": "{ name: 'Tipografi', badge: 'T' }",
+    "{ name: 'キネティック', badge: 'キ' }": "{ name: 'Kinetik', badge: 'K' }",
     "'スマホの画面では 1080p で書き出します'": "'Di tampilan ponsel, ekspor maksimal 1080p'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`Font yang dimuat (${[...new Set(lost)].join(', ')}) tidak ada di browser ini, jadi ekspor dihentikan. Muat ulang file yang sama di Font, atau pilih font lain`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`Font yang dimuat (${missing.join(', ')}) tidak ada di browser ini. Muat ulang file yang sama di Font (sampai itu, dipakai font yang mirip)`",
@@ -275,6 +294,10 @@ UI = {
     '解析中…': 'Menganalisis audio…', '読み込めませんでした: ': 'Tidak dapat memuat: ',
     '約': 'sekitar ', '（PC）': ' (terpasang)',
     '字面': 'JIZURA', '追加': 'Baru', '和': 'JP',
+    'ループ': 'Loop',
+    '行ループ': 'Loop baris', 'カットループ': 'Loop cut',
+    '全体を繰り返し': 'Ulangi seluruh lagu', 'この行を繰り返し': 'Ulangi baris ini',
+    'このカットを繰り返し': 'Ulangi cut ini', '繰り返しなし': 'Tanpa loop',
 }
 
 EXPORT = {

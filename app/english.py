@@ -1,6 +1,15 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '文字PV系の部品を使う': 'Use typographic parts',
+    'キネティックの部品を使う': 'Use kinetic parts',
+    'ホラーの演出も使う': 'Include horror effects',
+    '<small>線・数字・字組みだけで見せる、文字PVらしい部品（約50）</small>': '<small>About 50 parts that work with lines, numbers and type alone, in the spirit of lyric videos</small>',
+    '<small>語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）</small>': '<small>About 50 motion-first parts: words move, bounce and stack one by one</small>',
+    '<small>不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります</small>': '<small>About 50 eerie parts and 3 styles. When on, Randomize adds a Horror mood</small>',
+    '<small>「文」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Techniques marked T. When off, Randomize and Shuffle skip them</small>',
+    '<small>「キ」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Techniques marked K. When off, Randomize and Shuffle skip them</small>',
+    '<small>「ホ」印の手法とスタイル。おまかせでは雰囲気が「ホラー」のときだけ使います</small>': '<small>Techniques and styles marked H. Randomize uses them only in the Horror mood</small>',
     'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="Randomize style, mood, effects and palette">Randomize</button>',
     'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">Menu</button>',
     'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="Phone layout (Randomize pinned at the top, lines folded)">Phone</button>',
@@ -119,9 +128,6 @@ BODY = {
     'かんたん': 'Simple', '詳細': 'Advanced', '開く': 'Open', '保存': 'Save',
     'AE用に書き出し': 'Export for AE', '利用について': 'About / rights',
     '記法': 'Syntax', 'プレビュー': 'Preview', '再生': 'Play', 'ループ': 'Loop',
-    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
-    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
-    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
     '前の案': 'Previous', '次の案': 'Next', 'シャッフル': 'Shuffle', 'おまかせで作る': 'Create a variation',
     'おまかせ': 'Randomize', 'いまの案': 'Current variation', 'ここだけ変える': 'Change one thing',
     'スタイル': 'Style', '配色': 'Palette', '雰囲気': 'Mood', '構成': 'Arrangement',
@@ -129,13 +135,23 @@ BODY = {
     '追加': 'New', '和': 'JP', '演出': 'Effects', '手法': 'Techniques',
     'コマ打ち': 'Frame stepping', 'フラッシュ': 'Flash', 'シード': 'Seed', '新しいシード': 'New seed',
     '標準': 'Standard', '最高': 'Maximum', '高': 'High', '中止': 'Cancel',
-}
-
-UI = {
-    'ループ': 'Loop',
     '行ループ': 'Line loop', 'カットループ': 'Cut loop',
     '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
     'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
+}
+
+UI = {
+    "'文字PV系の部品：使う'": "'Typographic parts: on'",
+    "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
+    "'キネティックの部品：使う'": "'Kinetic parts: on'",
+    "'キネティックの部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Kinetic parts: off (not picked by Randomize or Shuffle)'",
+    "'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）'": "'Horror effects: on (Randomize adds a Horror mood)'",
+    "'ホラーの演出：使わない'": "'Horror effects: off'",
+    "'（このセットがオフのため、おまかせでは選ばれません）'": "' (this set is off for automatic picks)'",
+    "'（このセットがオフのため、自動では選ばれません）'": "' (this set is off for automatic picks)'",
+    "{ name: 'ホラー', badge: 'ホ' }": "{ name: 'Horror', badge: 'H' }",
+    "{ name: '文字PV系', badge: '文' }": "{ name: 'Typographic', badge: 'T' }",
+    "{ name: 'キネティック', badge: 'キ' }": "{ name: 'Kinetic', badge: 'K' }",
     "'スマホの画面では 1080p で書き出します'": "'In the Phone layout the export is 1080p at most'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`The uploaded font (${[...new Set(lost)].join(', ')}) is not in this browser, so the export was stopped. Load the same file again under Fonts, or pick another font`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`The uploaded font (${missing.join(', ')}) is not in this browser. Load the same file again under Fonts (a similar font is used until then)`",
@@ -238,6 +254,10 @@ UI = {
     '解析中…': 'Analyzing audio…', '読み込めませんでした: ': 'Could not load: ',
     '約': 'about ', '（PC）': ' (installed)',
     '字面': 'JIZURA', '追加': 'New', '和': 'JP',
+    'ループ': 'Loop',
+    '行ループ': 'Line loop', 'カットループ': 'Cut loop',
+    '全体を繰り返し': 'Loop the whole piece', 'この行を繰り返し': 'Loop this line',
+    'このカットを繰り返し': 'Loop this cut', '繰り返しなし': 'No loop',
 }
 
 EXPORT = {

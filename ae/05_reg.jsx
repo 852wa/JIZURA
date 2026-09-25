@@ -45,6 +45,7 @@ function jzRandomOk(o, g, k) {
     if (!m) return false;
     if (m.extra && !(o && o.extra === true)) return false;
     if (m.wa && o && o.wa === false) return false;
+    if (m.set && !(o && o[m.set] === true)) return false;   // part sets (horror / typo / kinetic) are browser-only for now
     return true;
 }
 // inDur / outDur tables exported from the web (duration grid 0.2..4.0 s, optional glyph-count rows)
