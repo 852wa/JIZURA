@@ -303,6 +303,12 @@ function tlZoom(f, tc) {
   const c = tc == null ? S.t : tc, frac = (c - TL.off) / vd;
   TL.z = z; TL.off = c - frac * (D / z); tlView(); drawTimeline();
 }
+// while playing zoomed in: redraw (which scrolls the view) once the playhead leaves the visible part
+function followTlPlayhead() {
+  if (!(TL.z > 1) || TL.drag >= 0) return;
+  const { vd, off } = tlView();
+  if (S.t < off || S.t > off + vd * 0.92) drawTimeline();
+}
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.max(10, Math.round(c.clientWidth * dpr)), h = Math.max(10, Math.round(c.clientHeight * dpr));
