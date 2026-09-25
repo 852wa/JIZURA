@@ -2,7 +2,7 @@
 // Walks a built comp tree, evaluates every expression at a few times and collects AE's own error messages
 // (Property.expressionError), plus the substitutions and warnings of the build. Used by the panels'
 // "診断レポート" button; the report is plain text so it can be sent as-is.
-var JZ_PANEL_VERSION = '2.0';
+var JZ_PANEL_VERSION = '@VERSION@';
 // parts this panel can build, counted like the browser (its expression groups' orders)
 function jzPartsCount() {
     var n = 0, g, i, o = JZ_DATA.orders || {};
