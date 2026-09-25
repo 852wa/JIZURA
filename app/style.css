@@ -341,6 +341,9 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .easy-hero .pick-sets { margin-top: 14px; }
 .set-badge { display: inline-block; margin-left: 4px; padding: 0 4px; border: 1px solid var(--amber); border-radius: 3px; color: var(--amber); font-size: 10px; line-height: 15px; vertical-align: 1px; }
 .set-badge.ex { border-color: var(--cyan, #4cc9d9); color: var(--cyan, #4cc9d9); }
+.set-badge.set-horror { border-color: #c0544a; color: #e0786e; }
+.set-badge.set-typo { border-color: #9aa3ad; color: #c5ccd3; }
+.set-badge.set-kinetic { border-color: #7fbf6a; color: #9fd98a; }
 .checks label.set-off { opacity: 0.45; }
 .checks label.set-off .set-badge { border-color: var(--muted); color: var(--muted); }
 .stile { position: relative; }

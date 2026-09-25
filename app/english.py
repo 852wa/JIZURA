@@ -1,6 +1,15 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '文字PV系の部品を使う': 'Use typographic parts',
+    'キネティックの部品を使う': 'Use kinetic parts',
+    'ホラーの演出も使う': 'Include horror effects',
+    '<small>線・数字・字組みだけで見せる、文字PVらしい部品（約50）</small>': '<small>About 50 parts that work with lines, numbers and type alone, in the spirit of lyric videos</small>',
+    '<small>語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）</small>': '<small>About 50 motion-first parts: words move, bounce and stack one by one</small>',
+    '<small>不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります</small>': '<small>About 50 eerie parts and 3 styles. When on, Randomize adds a Horror mood</small>',
+    '<small>「文」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Techniques marked T. When off, Randomize and Shuffle skip them</small>',
+    '<small>「キ」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small>': '<small>Techniques marked K. When off, Randomize and Shuffle skip them</small>',
+    '<small>「ホ」印の手法とスタイル。おまかせでは雰囲気が「ホラー」のときだけ使います</small>': '<small>Techniques and styles marked H. Randomize uses them only in the Horror mood</small>',
     'title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>': 'title="Randomize style, mood, effects and palette">Randomize</button>',
     'aria-controls="appMenu">メニュー</button>': 'aria-controls="appMenu">Menu</button>',
     'title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>': 'title="Phone layout (Randomize pinned at the top, lines folded)">Phone</button>',
@@ -149,6 +158,17 @@ BODY = {
 }
 
 UI = {
+    "'文字PV系の部品：使う'": "'Typographic parts: on'",
+    "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
+    "'キネティックの部品：使う'": "'Kinetic parts: on'",
+    "'キネティックの部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Kinetic parts: off (not picked by Randomize or Shuffle)'",
+    "'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）'": "'Horror effects: on (Randomize adds a Horror mood)'",
+    "'ホラーの演出：使わない'": "'Horror effects: off'",
+    "'（このセットがオフのため、おまかせでは選ばれません）'": "' (this set is off for automatic picks)'",
+    "'（このセットがオフのため、自動では選ばれません）'": "' (this set is off for automatic picks)'",
+    "{ name: 'ホラー', badge: 'ホ' }": "{ name: 'Horror', badge: 'H' }",
+    "{ name: '文字PV系', badge: '文' }": "{ name: 'Typographic', badge: 'T' }",
+    "{ name: 'キネティック', badge: 'キ' }": "{ name: 'Kinetic', badge: 'K' }",
     "'スマホの画面では 1080p で書き出します'": "'In the Phone layout the export is 1080p at most'",
     "`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`": "`The uploaded font (${[...new Set(lost)].join(', ')}) is not in this browser, so the export was stopped. Load the same file again under Fonts, or pick another font`",
     "`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`": "`The uploaded font (${missing.join(', ')}) is not in this browser. Load the same file again under Fonts (a similar font is used until then)`",
