@@ -14,7 +14,11 @@ function jzEventsArr(plan, type, t0, t1) {
 //   wrapper    ── scheme background + radial lift ─ paper ─ background graphic ─ ghost B ─ ghost A ─ content ─ "JZ Camera" null
 //   content    ── the layout's text / shape layers + decor (built by the registry entries)
 // Cut-to-cut transitions work on neighbouring wrapper layers in the main comp.
-function jzBuild(plan, opt) {
+// jzBuildStart returns a job that builds the comp step by step: job.step(ms) works for about ms milliseconds and returns,
+// so the CEP panel / ScriptUI can hand control back to After Effects between steps (long songs: no "not responding").
+// job.phase: 'cuts' -> 'trans' -> 'events' -> 'done'; job.done / job.total = cuts built; job.cancelled = true skips the rest and finishes what exists.
+function jzBuild(plan, opt) { var job = jzBuildStart(plan, opt); while (!job.finished) job.step(null); return job.comp; }
+function jzBuildStart(plan, opt) {
     opt = opt || {};
     JZLOG = []; JZ_FALLBACKS = 0; JZ_FALLBACK_KEYS = []; JZ_FONT_MISSING = {}; JZ_FONT_NOAPI = false;
     jzSetLang(plan.lang || (typeof jzDetectLang === 'function' ? jzDetectLang(plan) : 'ja'));   // 歌詞の言語 → faces
@@ -42,9 +46,9 @@ function jzBuild(plan, opt) {
 
     // ---------- cuts
     var lagA = 0.8 / 24, lagB = 1.6 / 24, wraps = [];
-    for (var ci = 0; ci < cuts.length; ci++) {
+    function buildCut(ci) {
         var cut = cuts[ci];
-        if (!(cut.end > cut.start)) continue;
+        if (!(cut.end > cut.start)) return;
         cut.dur = cut.end - cut.start;
         var sc = schemeOf(cut), label = jzPad(ci + 1, 3) + ' ' + String(cut.text || cut.layout).substr(0, 16);
         var cdur = Math.max(cut.dur, 1 / fps) + 1.0;
@@ -113,72 +117,88 @@ function jzBuild(plan, opt) {
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
         wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc });
     }
+    function finishTrans() {
+        // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
+        for (var wi = 1; wi < wraps.length; wi++) {
+            var B = wraps[wi], A = wraps[wi - 1], tk = B.cut.trans ? jzFallback('trans', B.cut.trans, null) : null;
+            if (!tk || Math.abs(A.cut.end - B.cut.start) > 0.06) continue;
+            var td = jzClamp(B.cut.transDur || jzMeta('trans', tk).dur || 0.35, 0.08, Math.max(0.1, B.cut.dur * 0.6));
+            A.layer.outPoint = B.cut.start + td;
+            var tctx = { comp: comp, W: W, H: H, u: u, A: A.layer, B: B.layer, t0: B.cut.start, dur: td, P: B.cut.transP || {}, sc: B.sc, scPrev: A.sc, st: st, fx: FXV, cut: B.cut, prev: A.cut, fps: fps };
+            try { JZ_REG.trans[tk].build(tctx); } catch (e5) { jzWarn('trans ' + tk + ': ' + e5.toString() + (e5.line ? ' (line ' + e5.line + ')' : '')); }
+        }
 
-    // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)
-    for (var wi = 1; wi < wraps.length; wi++) {
-        var B = wraps[wi], A = wraps[wi - 1], tk = B.cut.trans ? jzFallback('trans', B.cut.trans, null) : null;
-        if (!tk || Math.abs(A.cut.end - B.cut.start) > 0.06) continue;
-        var td = jzClamp(B.cut.transDur || jzMeta('trans', tk).dur || 0.35, 0.08, Math.max(0.1, B.cut.dur * 0.6));
-        A.layer.outPoint = B.cut.start + td;
-        var tctx = { comp: comp, W: W, H: H, u: u, A: A.layer, B: B.layer, t0: B.cut.start, dur: td, P: B.cut.transP || {}, sc: B.sc, scPrev: A.sc, st: st, fx: FXV, cut: B.cut, prev: A.cut, fps: fps };
-        try { JZ_REG.trans[tk].build(tctx); } catch (e5) { jzWarn('trans ' + tk + ': ' + e5.toString() + (e5.line ? ' (line ' + e5.line + ')' : '')); }
+        // ---------- HUD
+        if (plan.hud && opt.hud !== false) jzHUD(comp, plan, schemes[0], roles);
+
+        // ---------- global FX (top adjustment layer)
+        var fxL = comp.layers.addSolid([1, 1, 1], 'JZ FX', W, H, 1, D); fxL.adjustmentLayer = true;
+        if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
+        var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
+        jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
+        var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
+        jzEP(ww, 1, 2); jzEP(ww, 4, 0); jzEP(ww, 5, 0); jzEP(ww, 6, 1);
+        jzEX(ww, 2, 'var ev=' + jzEventsArr(plan, 'slice') + ';var h=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])h=Math.max(h,ev[i][1]);}posterizeTime(24);seedRandom(Math.floor(time*24),true);h>0?h*thisComp.width*0.05*random(0.4,1):0');
+        jzEX(ww, 3, 'posterizeTime(24);seedRandom(Math.floor(time*24)+7,true);random(thisComp.height*0.02,thisComp.height*0.12)');
+        jzEX(ww, 7, 'posterizeTime(24);seedRandom(Math.floor(time*24)+11,true);random(0,360)');
+        var rb = jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
+        jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
+        var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
+        jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
+        var glowAmt = (st.glow || 0.6) * FXV.texture;
+        if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
+        var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
+        if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
+
     }
-
-    // ---------- HUD
-    if (plan.hud && opt.hud !== false) jzHUD(comp, plan, schemes[0], roles);
-
-    // ---------- global FX (top adjustment layer)
-    var fxL = comp.layers.addSolid([1, 1, 1], 'JZ FX', W, H, 1, D); fxL.adjustmentLayer = true;
-    if (fx.onTwos !== false && (fx.koma == null || fx.koma > 0)) { var pt = jzEffect(fxL, 'ADBE Posterize Time', 'JZ Koma'); jzEP(pt, 1, fx.koma > 0 ? fx.koma : 12); }
-    var tr = jzEffect(fxL, 'ADBE Geometry2', 'JZ Shake');
-    jzEX(tr, 2, 'var ev=' + jzEventsArr(plan, 'shake') + ';var s=0;for(var i=0;i<ev.length;i++){var dt=(time-ev[i][0])*24;if(dt>=0&&dt<14)s+=ev[i][1]*Math.pow(0.62,dt);}seedRandom(Math.floor(time*12),true);[value[0]+random(-1,1)*s*16*' + jzN(u) + ',value[1]+random(-1,1)*s*11*' + jzN(u) + ']');
-    var ww = jzEffect(fxL, 'ADBE Wave Warp', 'JZ Slice Glitch');
-    jzEP(ww, 1, 2); jzEP(ww, 4, 0); jzEP(ww, 5, 0); jzEP(ww, 6, 1);
-    jzEX(ww, 2, 'var ev=' + jzEventsArr(plan, 'slice') + ';var h=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])h=Math.max(h,ev[i][1]);}posterizeTime(24);seedRandom(Math.floor(time*24),true);h>0?h*thisComp.width*0.05*random(0.4,1):0');
-    jzEX(ww, 3, 'posterizeTime(24);seedRandom(Math.floor(time*24)+7,true);random(thisComp.height*0.02,thisComp.height*0.12)');
-    jzEX(ww, 7, 'posterizeTime(24);seedRandom(Math.floor(time*24)+11,true);random(0,360)');
-    var rb = jzEffect(fxL, 'CC Radial Blur', 'JZ Zoom Hit');
-    jzEX(rb, 2, 'var ev=' + jzEventsArr(plan, 'zoom') + ';var a=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])a=Math.max(a,ev[i][1]*(1-dt/ev[i][2]));}a*30');
-    var iv = jzEffect(fxL, 'ADBE Invert', 'JZ Invert Hit');
-    jzEX(iv, 2, 'var ev=' + jzEventsArr(plan, 'invert') + ';var on=false;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])on=true;}on?0:100');
-    var glowAmt = (st.glow || 0.6) * FXV.texture;
-    if (glowAmt > 0.05) { var gl = jzEffect(fxL, 'ADBE Glo2', 'JZ Bloom'); jzEP(gl, 2, 70); jzEP(gl, 3, 60 * u); jzEP(gl, 4, 0.35 * glowAmt); }
-    var gr = (st.texture && st.texture.grain || 0) * FXV.texture;
-    if (gr > 0.02) { var nz = jzEffect(fxL, 'ADBE Noise', 'JZ Grain'); jzEP(nz, 1, 5 * gr); jzEP(nz, 2, 0); }
-
-    // ---------- effect events that have their own layers (above the koma / shake layer: they run at full frame rate, like the browser's post effects)
     var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps };
-    for (var ei = 0; ei < evs.length; ei++) {
+    function buildEvent(ei) {
         var ev = evs[ei], fk = jzFallback('fx', ev.type, null);
-        if (!fk || JZ_REG.fx[fk].builtin) continue;
+        if (!fk || JZ_REG.fx[fk].builtin) return;
         var e1 = { t: ev.t, type: fk, amp: ev.amp || 1, dur: Math.max(ev.dur || 0, 1 / 24), seed: jzHash(ev.t, ev.type) % 100000, sc: schemeOf(jzCutAtTime(cuts, ev.t) || cuts[0] || { scheme: 0 }) };
         try { JZ_REG.fx[fk].build(fctx, e1); } catch (e6) { jzWarn('fx ' + fk + ': ' + e6.toString() + (e6.line ? ' (line ' + e6.line + ')' : '')); }
     }
+    function finish() {
+        // ---------- flash + vignette
+        var fl = comp.layers.addSolid(jzHex(jzLum(schemes[0].bg) < 0.5 ? schemes[0].fg : '#ffffff'), 'JZ Flash', W, H, 1, D);
+        jzSetExpr(jzXf(fl, 'ADBE Opacity'), 'var ev=' + jzEventsArr(plan, 'flash') + ';var o=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])o=Math.max(o,Math.pow(1-dt/ev[i][2],1.5)*92);}o');
+        var vg = KEY ? null : comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
+        if (vg) try {
+            var m = vg.property('ADBE Mask Parade').addProperty('ADBE Mask Atom');
+            m.property('ADBE Mask Shape').setValue(jzCircleShape(W / 2, H / 2, Math.max(W, H) * 0.62));
+            m.inverted = true; m.property('ADBE Mask Feather').setValue([H * 0.5, H * 0.5]);
+            jzXf(vg, 'ADBE Scale').setValue([100, 100 * H / W * 1.6]);
+        } catch (e7) { jzWarn('vignette: ' + e7.toString()); }
+        if (vg) jzXf(vg, 'ADBE Opacity').setValue(32 * FXV.texture);
+        if (KEY) {
+            var km = comp.layers.addSolid([1, 1, 1], 'JZ Key Mono', W, H, 1, D); km.adjustmentLayer = true;
+            jzEffect(km, 'ADBE Tint', 'JZ Key Mono');
+            if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
+        }
 
-    // ---------- flash + vignette
-    var fl = comp.layers.addSolid(jzHex(jzLum(schemes[0].bg) < 0.5 ? schemes[0].fg : '#ffffff'), 'JZ Flash', W, H, 1, D);
-    jzSetExpr(jzXf(fl, 'ADBE Opacity'), 'var ev=' + jzEventsArr(plan, 'flash') + ';var o=0;for(var i=0;i<ev.length;i++){var dt=time-ev[i][0];if(dt>=0&&dt<ev[i][2])o=Math.max(o,Math.pow(1-dt/ev[i][2],1.5)*92);}o');
-    var vg = KEY ? null : comp.layers.addSolid([0, 0, 0], 'JZ Vignette', W, H, 1, D);
-    if (vg) try {
-        var m = vg.property('ADBE Mask Parade').addProperty('ADBE Mask Atom');
-        m.property('ADBE Mask Shape').setValue(jzCircleShape(W / 2, H / 2, Math.max(W, H) * 0.62));
-        m.inverted = true; m.property('ADBE Mask Feather').setValue([H * 0.5, H * 0.5]);
-        jzXf(vg, 'ADBE Scale').setValue([100, 100 * H / W * 1.6]);
-    } catch (e7) { jzWarn('vignette: ' + e7.toString()); }
-    if (vg) jzXf(vg, 'ADBE Opacity').setValue(32 * FXV.texture);
-    if (KEY) {
-        var km = comp.layers.addSolid([1, 1, 1], 'JZ Key Mono', W, H, 1, D); km.adjustmentLayer = true;
-        jzEffect(km, 'ADBE Tint', 'JZ Key Mono');
-        if (KEY === 'green') { var kg = comp.layers.addSolid([0, 1, 0], 'JZ Key Green', W, H, 1, D); kg.blendingMode = BlendingMode.SCREEN; }
+        // no hidden leftovers anywhere in what was built (track mattes stay: After Effects keeps a matte's own video off)
+        try { jzTidyTree(comp); } catch (et) { jzWarn('tidy: ' + et.toString()); }
+
+        // audio layer (optional)
+        if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
+        comp.openInViewer();
     }
-
-    // no hidden leftovers anywhere in what was built (track mattes stay: After Effects keeps a matte's own video off)
-    try { jzTidyTree(comp); } catch (et) { jzWarn('tidy: ' + et.toString()); }
-
-    // audio layer (optional)
-    if (opt.audioItem) { try { var au = comp.layers.add(opt.audioItem); au.startTime = opt.audioStart || 0; au.moveToEnd(); } catch (e8) { jzWarn('audio: ' + e8.toString()); } }
-    comp.openInViewer();
-    return comp;
+    var job = { comp: comp, total: cuts.length, done: 0, events: evs.length, eventsDone: 0, phase: 'cuts', cancelled: false, finished: false };
+    job.step = function (ms) {
+        var t0 = new Date().getTime();
+        function more() { return ms == null || new Date().getTime() - t0 < ms; }
+        if (job.phase === 'cuts') {
+            while (job.done < cuts.length && !job.cancelled) { buildCut(job.done); job.done++; if (!more()) return job; }
+            job.phase = 'trans';
+        }
+        if (job.phase === 'trans') { finishTrans(); job.phase = 'events'; if (!more()) return job; }
+        if (job.phase === 'events') {
+            while (job.eventsDone < evs.length && !job.cancelled) { buildEvent(job.eventsDone); job.eventsDone++; if (!more()) return job; }
+            finish(); job.phase = 'done'; job.finished = true;
+        }
+        return job;
+    };
+    return job;
 }
 function jzCutAtTime(cuts, t) { for (var i = cuts.length - 1; i >= 0; i--) if (t >= cuts[i].start - 1e-6 && t < cuts[i].end) return cuts[i]; return null; }
 // scheme background: radial "lift" like the browser (Gradient Ramp on the solid)

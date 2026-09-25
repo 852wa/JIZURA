@@ -133,7 +133,49 @@ function jzUI(thisObj) {
     t3.add('statictext', undefined, 'Noto Sans JP / Noto Serif JP / Dela Gothic One などが入っていれば自動で使います（AE 2024以降）。', undefined, { multiline: true });
 
     var status = win.add('statictext', undefined, '準備OK', { truncate: 'end' });
+    var gRun = win.add('group'); gRun.alignChildren = ['fill', 'center'];
+    var pbar = gRun.add('progressbar', undefined, 0, 100); pbar.alignment = ['fill', 'center']; pbar.preferredSize.height = 6;
+    var bStop = gRun.add('button', undefined, '中止'); bStop.enabled = false; bStop.helpTip = '作成を止めます（そこまでのカットでコンポを仕上げます）';
     tp.selection = t1;
+
+    // ---- build in short steps: After Effects gets control back between steps (app.scheduleTask), so long songs
+    //      don't freeze it into "not responding"; the bar shows progress and 中止 finishes with the cuts built so far
+    var RUN = null;
+    function setRunning(on) { bBuild.enabled = bOmk.enabled = bJson.enabled = !on; bStop.enabled = on; if (!on) pbar.value = 0; }
+    function runBuild(plan, bo, undoName, done) {
+        if (RUN) { alert('JIZURA：いま作成中です。終わるまで待つか「中止」を押してください'); return; }
+        var job = null;
+        app.beginUndoGroup(undoName);
+        try { job = jzBuildStart(plan, bo); }
+        catch (e) { alert('生成中にエラー: ' + e.toString() + (e.line ? ' (line ' + e.line + ')' : '')); }
+        finally { app.endUndoGroup(); }
+        if (!job) { done(null); return; }
+        RUN = { job: job, done: done, name: undoName, t0: new Date().getTime() };
+        setRunning(true);
+        $.global.__JZ_TICK = tick;
+        if (!schedule()) { while (RUN) tick(true); }          // no scheduleTask: plain loop (the old behaviour)
+    }
+    function schedule() { try { app.scheduleTask('if ($.global.__JZ_TICK) $.global.__JZ_TICK();', 20, false); return true; } catch (e) { return false; } }
+    function tick(sync) {
+        var R = RUN; if (!R) return;
+        var err = null, job = R.job;
+        app.beginUndoGroup(R.name);
+        try { job.step(sync ? 1e9 : 900); }
+        catch (e) { err = e.toString() + (e.line ? ' (line ' + e.line + ')' : ''); }
+        finally { app.endUndoGroup(); }
+        if (err || job.finished) {
+            RUN = null; $.global.__JZ_TICK = null; setRunning(false);
+            if (err) alert('生成中にエラー: ' + err);
+            R.done(err ? null : job.comp, job);
+            return;
+        }
+        var k = job.phase === 'cuts' ? job.done / Math.max(1, job.total) * 0.9 : 0.9 + 0.1 * job.eventsDone / Math.max(1, job.events);
+        pbar.value = Math.round(k * 100);
+        status.text = '生成中… ' + Math.round(k * 100) + '%（' + (job.phase === 'cuts' ? job.done + ' / ' + job.total + ' カット' : '効果を追加中') + '）';
+        try { if (win.update) win.update(); } catch (eu) {}
+        if (!sync && !schedule()) { while (RUN) tick(true); }
+    }
+    bStop.onClick = function () { if (RUN) { RUN.job.cancelled = true; status.text = '中止しています…（作成済みのカットで仕上げます）'; } };
 
     function roles() {
         jzPut('font_display', fDisplay.text); jzPut('font_serif', fSerif.text); jzPut('font_body', fBody.text); jzPut('font_mono', fMono.text); jzPut('forceFonts', cForce.value ? '1' : '0');
@@ -214,14 +256,12 @@ function jzUI(thisObj) {
         var keyI = ddKey.selection ? ddKey.selection.index : 0;
         if (keyI > 0) { plan.keyBg = keyI === 1 ? 'green' : 'black'; plan.style = jzKeyStyle(plan.style); }
         status.text = '生成中… (' + plan.cuts.length + ' cuts)';
-        app.beginUndoGroup('JIZURA build');
-        var comp = null;
-        try { comp = jzBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }); }
-        catch (e2) { alert('生成中にエラー: ' + e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : '')); }
-        finally { app.endUndoGroup(); }
-        if (comp) { lastComp = comp; lastPlan = plan; }
-        report(comp, t0, label);
+        runBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }, 'JIZURA build', function (comp, job) {
+            if (comp) { lastComp = comp; lastPlan = plan; }
+            report(comp, t0, jobLabel(label, job));
+        });
     }
+    function jobLabel(label, job) { return job && job.cancelled ? '中止（' + job.done + ' / ' + job.total + ' カット）' + (label ? ' ' + label : '') : label; }
     bBuild.onClick = function () { doBuild(''); };
 
     // おまかせ: roll every setting on the panel, show it, then build a fresh comp
@@ -247,19 +287,18 @@ function jzUI(thisObj) {
         if (plan.version !== 2 && !note) note = '';
         var au = audioSel(cAudio2.value);
         status.text = '生成中… (' + plan.cuts.length + ' cuts)';
-        app.beginUndoGroup('JIZURA build from JSON');
-        var comp = null;
-        try { comp = jzBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start : 0 }); }
-        catch (e2) { alert('生成中にエラー: ' + e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : '')); }
-        finally { app.endUndoGroup(); }
-        if (comp) { lastComp = comp; lastPlan = plan; }
-        if (JZ_FALLBACKS > 0) {
-            note = (note ? note + ' / ' : '') + 'このパネルに無い表現 ' + JZ_FALLBACKS + ' 箇所を、近い表現で作りました';
-            alert('JIZURA：この JSON には、このパネルが作れない表現が ' + JZ_FALLBACKS + ' 箇所あり、近い表現に置き換えました。\n\n' + JZ_FALLBACK_KEYS.slice(0, 12).join(', ') +
-                '\n\nブラウザ版より古いパネルを使っている可能性があります。最新の JIZURA_AE.jsx（v' + JZ_PANEL_VERSION + '・707 部品）に差し替えて、After Effects を再起動してください。');
-        }
-        report(comp, t0, note ? '置換あり' : '');
-        if (note) status.helpTip = note;
+        // a line-range JSON starts part-way into the song: slide the song layer left by the same amount
+        var off = +plan.audioOffset || 0;
+        runBuild(plan, { roles: roles(), audioItem: au ? au.item : null, audioStart: au ? au.start - off : 0 }, 'JIZURA build from JSON', function (comp, job) {
+            if (comp) { lastComp = comp; lastPlan = plan; }
+            if (JZ_FALLBACKS > 0) {
+                note = (note ? note + ' / ' : '') + 'このパネルに無い表現 ' + JZ_FALLBACKS + ' 箇所を、近い表現で作りました';
+                alert('JIZURA：この JSON には、このパネルが作れない表現が ' + JZ_FALLBACKS + ' 箇所あり、近い表現に置き換えました。\n\n' + JZ_FALLBACK_KEYS.slice(0, 12).join(', ') +
+                    '\n\nブラウザ版より古いパネルを使っている可能性があります。最新の JIZURA_AE.jsx（v' + JZ_PANEL_VERSION + '・707 部品）に差し替えて、After Effects を再起動してください。');
+            }
+            report(comp, t0, jobLabel(note ? '置換あり' : '', job));
+            if (note) status.helpTip = note;
+        });
     };
     bDiag.onClick = function () {
         if (!lastComp) { alert('先にコンポを作ってください（このパネルで最後に作ったコンポを調べます）'); return; }

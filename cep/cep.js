@@ -48,39 +48,63 @@ function connect() {
 }
 
 // ---------------- build the comp ----------------
-let building = false;
+// The host builds in short steps (JZCEP.step): After Effects gets control back between them, so long songs
+// no longer freeze it into "not responding", the panel shows progress, and the build can be stopped.
+let building = false, cancelReq = false;
+const STEP_MS = 1200;
 async function buildInAE() {
   if (building) return;
   if (!(await connect())) { toast('After Effects に接続できませんでした'); return; }
-  building = true; setBusy(true);
+  building = true; cancelReq = false; setBusy(true);
   try {
     UI.pause && UI.pause();
-    const plan = J.planForAE(S.plan, S.project), txt = JSON.stringify(plan);
+    const range = UI.exportRange ? UI.exportRange() : null, R = range && UI.exportRangeLines ? UI.exportRangeLines() : null;
+    const plan = J.planForAE(S.plan, S.project, range), txt = JSON.stringify(plan);
+    if (!plan.cuts.length) { status('選んだ範囲にカットがありません', true); return; }
     const useAudio = aeAudio && (!$('aeAudioIn') || $('aeAudioIn').checked);
     const aid = useAudio ? (aeAudio.id | 0) : 0;
-    status(`コンポを作成中…（${plan.cuts.length} カット）`);
-    await new Promise(r => setTimeout(r, 30));              // let the status paint before AE blocks
+    const what = R ? `${R.from + 1}${R.to > R.from ? '–' + (R.to + 1) : ''}行目・` : '';
+    status(`コンポを作成中…（${what}${plan.cuts.length} カット）`);
+    await new Promise(r => setTimeout(r, 30));              // let the status paint before AE starts
     let r;
     if (fs && os && pathM) {
       const p = pathM.join(os.tmpdir(), 'jizura_plan_' + Date.now() + '.json');
       fs.writeFileSync(p, txt, 'utf8');
-      r = parse(await ev('JZCEP.buildFromFile(' + JSON.stringify(p) + ',' + aid + ')'));
+      r = parse(await ev('JZCEP.startFromFile(' + JSON.stringify(p) + ',' + aid + ')'));
     } else {
-      r = parse(await ev('JZCEP.buildFromString(' + JSON.stringify(encodeURIComponent(txt)) + ',' + aid + ')'));
+      r = parse(await ev('JZCEP.startFromString(' + JSON.stringify(encodeURIComponent(txt)) + ',' + aid + ')'));
+    }
+    if (r.ok && !r.done && typeof r.total === 'number') {
+      // step until done; a short pause between steps lets After Effects redraw and answer the OS
+      const t0 = performance.now();
+      for (;;) {
+        if (cancelReq) { await ev('JZCEP.cancel()'); cancelReq = false; }
+        r = parse(await ev('JZCEP.step(' + STEP_MS + ')'));
+        if (!r.ok || r.done) break;
+        const k = r.phase === 'cuts' ? r.cuts / Math.max(1, r.total) * 0.9 : 0.9 + 0.1 * (r.eventsDone || 0) / Math.max(1, r.events || 1);
+        const el = (performance.now() - t0) / 1000, left = k > 0.03 ? el / k - el : null;
+        status(`コンポを作成中… ${Math.round(k * 100)}%（${r.phase === 'cuts' ? `${r.cuts} / ${r.total} カット` : '効果を追加中'}${left != null ? `・残り約 ${Math.max(1, Math.round(left))} 秒` : ''}）`);
+        progress(k);
+        await new Promise(res => setTimeout(res, 40));
+      }
     }
     if (r.ok) {
-      let m = `「${r.name}」を作成しました（${r.cuts} カット・${(+r.secs).toFixed(1)} 秒${r.audio ? '・曲入り' : ''}）`;
+      let m = r.cancelled ? `中止しました：「${r.name}」は ${r.cuts} / ${r.total} カットまでです` : `「${r.name}」を作成しました（${what}${r.cuts} カット・${(+r.secs).toFixed(1)} 秒${r.audio ? '・曲入り' : ''}）`;
       if (r.fallbacks > 0) m += ` / 近い表現で置換 ${r.fallbacks} 箇所`;
       if (r.notesTotal > 0) m += ` / 注意 ${r.notesTotal} 件`;
       if (r.missingFonts && r.missingFonts.length) m += ` / この PC に無い書体（${r.missingFonts.join('・')}）は近い書体で作りました。Google Fonts から入れて AE を再起動すると、同じ書体になります`;
       if (r.fontCheck === false) m += ' / この AE（2024 より前）では書体の有無を確認できないため、スクリプト版パネルの「フォント」タブの書体（未設定なら游ゴシック・游明朝）で作りました';
-      status(m); toast('After Effects にコンポを作成しました');
+      status(m); toast(r.cancelled ? '作成を中止しました' : 'After Effects にコンポを作成しました');
       if (r.notes && r.notes.length) console.warn('JIZURA AE notes', r.notes);
     } else { status('作成できませんでした: ' + r.error, true); toast('作成できませんでした'); }
   } catch (e) { status('作成できませんでした: ' + (e && e.message ? e.message : e), true); }
-  finally { building = false; setBusy(false); }
+  finally { building = false; setBusy(false); progress(null); }
 }
-function setBusy(b) { document.querySelectorAll('.ae-build').forEach(el => { el.disabled = b; }); }
+function cancelBuild() { if (building) { cancelReq = true; status('中止しています…（作成済みのカットで仕上げます）'); } }
+function progress(k) {
+  document.querySelectorAll('.ae-prog').forEach(el => { el.hidden = k == null; const b = el.querySelector('i'); if (b) b.style.width = Math.round((k || 0) * 100) + '%'; });
+}
+function setBusy(b) { document.querySelectorAll('.ae-build').forEach(el => { el.disabled = b; }); document.querySelectorAll('.ae-cancel').forEach(el => { el.hidden = !b; }); }
 async function diagnose() {
   if (!(await connect())) return;
   status('診断中…（数十秒かかることがあります）');
@@ -143,24 +167,25 @@ function inject() {
   if (eMP4) {
     eMP4.classList.remove('primary');
     const box = document.createElement('div'); box.className = 'ae-box';
-    box.innerHTML = '<div class="outbtns"></div><label class="row ae-audio-row" hidden><input type="checkbox" class="ae-audio-in" checked><span>曲（<span class="ae-audio-name"></span>）をコンポに入れる</span></label><p class="note ae-status">—</p>';
-    box.querySelector('.outbtns').append(btn('eAEBuild', 'After Effects にコンポを作る', 'primary ae-build', buildInAE));
+    box.innerHTML = '<div class="outbtns"></div><label class="row ae-audio-row" hidden><input type="checkbox" class="ae-audio-in" checked><span>曲（<span class="ae-audio-name"></span>）をコンポに入れる</span></label><div class="ae-prog" hidden><i></i></div><p class="note ae-status">—</p>';
+    box.querySelector('.outbtns').append(btn('eAEBuild', 'After Effects にコンポを作る', 'primary ae-build', buildInAE), btn('eAECancel', '中止', 'small ae-cancel', cancelBuild));
     eMP4.closest('.outbtns').before(box);
   }
   // pro mode: an After Effects block at the top of the output tab
   const pane = document.querySelector('[data-pane="out"]');
   if (pane) {
     const box = document.createElement('div'); box.className = 'ae-box';
-    box.innerHTML = '<h3>After Effects</h3><div class="outbtns"></div><label class="row ae-audio-row" hidden><input id="aeAudioIn" type="checkbox" class="ae-audio-in" checked><span>曲（<span class="ae-audio-name"></span>）をコンポに入れる</span></label><p class="note ae-status">—</p><h3>動画・画像</h3>';
-    box.querySelector('.outbtns').append(btn('aeBuild', 'AEでコンポを生成', 'primary ae-build', buildInAE), btn('aeDiag', '診断レポートを保存', 'small', diagnose));
+    box.innerHTML = '<h3>After Effects</h3><div class="outbtns"></div><label class="row ae-audio-row" hidden><input id="aeAudioIn" type="checkbox" class="ae-audio-in" checked><span>曲（<span class="ae-audio-name"></span>）をコンポに入れる</span></label><div class="ae-prog" hidden><i></i></div><p class="note ae-status">—</p><h3>動画・画像</h3>';
+    box.querySelector('.outbtns').append(btn('aeBuild', 'AEでコンポを生成', 'primary ae-build', buildInAE), btn('aeCancel', '中止', 'small ae-cancel', cancelBuild), btn('aeDiag', '診断レポートを保存', 'small', diagnose));
     box.querySelector('#aeDiag').title = '最後に作ったコンポを調べて JIZURA_report.txt を保存します（うまく作れないときに送ってください）';
     pane.prepend(box);
     const m = $('btnMP4'); m && m.classList.remove('primary');
   }
   // keep the two "include the song" checkboxes in step
+  document.querySelectorAll('.ae-cancel').forEach(el => { el.hidden = true; el.title = '作成を止めます（そこまでのカットでコンポを仕上げます）'; });
   document.querySelectorAll('.ae-audio-in').forEach(cb => cb.addEventListener('change', () => { document.querySelectorAll('.ae-audio-in').forEach(o => { o.checked = cb.checked; }); }));
   const style = document.createElement('style');
-  style.textContent = '.ae-row{margin-top:8px;gap:6px}.ae-box{margin-bottom:12px}.ae-box h3{margin:0 0 8px}.ae-status{margin-top:8px}.ae-status.bad{color:#ff8a80;border-left-color:#ff8a80}';
+  style.textContent = '.ae-row{margin-top:8px;gap:6px}.ae-box{margin-bottom:12px}.ae-box h3{margin:0 0 8px}.ae-status{margin-top:8px}.ae-status.bad{color:#ff8a80;border-left-color:#ff8a80}.ae-prog{height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin-top:8px;overflow:hidden}.ae-prog i{display:block;height:100%;width:0;background:var(--accent,#7cf);transition:width .3s}';
   document.head.appendChild(style);
 }
 
@@ -189,5 +214,5 @@ document.addEventListener('click', e => {
 // the app binds its own buttons on DOMContentLoaded — add ours after that
 const start = () => { inject(); connect(); };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(start, 0)); else setTimeout(start, 0);
-J.cep = { connect, buildInAE, useAEAudio, useAEMarkers, diagnose, ev };
+J.cep = { connect, buildInAE, cancelBuild, useAEAudio, useAEMarkers, diagnose, ev };
 })();

@@ -36,7 +36,7 @@ head = '''/*  JIZURA 字面 — lyric motion panel for Adobe After Effects  (v2.
 '''
 if a.core:
     head = '/*  JIZURA 字面 — After Effects build engine for the CEP panel (v2.0). Loaded by host.jsx. */\n'
-    api = ('$.global.JZ_CORE = { version: 2, build: jzBuild, makePlan: jzMakePlan, keyStyle: jzKeyStyle, parse: jzParseJSON, '
+    api = ('$.global.JZ_CORE = { version: 3, build: jzBuild, start: jzBuildStart, makePlan: jzMakePlan, keyStyle: jzKeyStyle, parse: jzParseJSON, '
            'log: function () { return JZLOG; }, fallbacks: function () { return JZ_FALLBACKS; }, missingFonts: jzMissingFonts, diagnose: jzDiagnose, saveReport: jzSaveReport, parts: jzPartsCount, panelVersion: JZ_PANEL_VERSION, fontCheckUnavailable: function () { return JZ_FONT_NOAPI; }, roleDefault: JZ_ROLE_DEFAULT, data: JZ_DATA };')
     src = head + '(function () {\nvar JZ_DATA = ' + json.dumps(data, ensure_ascii=True) + ';\n' + body + '\n' + api + '\n})();\n'
 else:

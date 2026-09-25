@@ -215,6 +215,12 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'中止'": "'Stop'",
+    "'作成を止めます（そこまでのカットでコンポを仕上げます）'": "'Stop building (the composition is finished with the cuts built so far)'",
+    "'JIZURA：いま作成中です。終わるまで待つか「中止」を押してください'": "'JIZURA: a build is running. Wait for it to finish or press Stop.'",
+    "' カット' : '効果を追加中'": "' cuts' : 'adding effects'",
+    "'中止しています…（作成済みのカットで仕上げます）'": "'Stopping… (finishing with the cuts built so far)'",
+    "'中止（' + job.done + ' / ' + job.total + ' カット）'": "'Stopped (' + job.done + ' / ' + job.total + ' cuts)'",
     '歌詞の言語': 'Lyrics language', "['自動判定', '日本語',": "['Auto-detect', '日本語',",
     '中国語（繁体字・簡体字）や韓国語の歌詞は、その文字を持つ書体で組みます（各スタイルの書体の雰囲気に近いものに置き換え）。自動判定はかな・ハングル・繁体字／簡体字に特有の字から判断します': 'Chinese (Traditional / Simplified) and Korean lyrics are set in fonts that have those characters, close in feel to each style. Auto-detect looks at kana, Hangul and the characters that differ between Traditional and Simplified Chinese.',
     "var JZ_SAMPLE = '夜明けの色を/覚えてる\\nほどけた声が遠くで鳴った\\nねえ、まだ間に合うかな\\n*透明*なままじゃ終われない!';": "var JZ_SAMPLE = 'I remember/the color of dawn\\nA voice faded into the distance\\nCan we still make it in time?\\n*Transparent* is not how this ends!';",
@@ -301,6 +307,15 @@ AE_UI = {
 }
 
 CEP = {
+    '選んだ範囲にカットがありません': 'No cuts in the selected range',
+    "`${R.from + 1}${R.to > R.from ? '–' + (R.to + 1) : ''}行目・`": "`lines ${R.from + 1}${R.to > R.from ? '–' + (R.to + 1) : ''} · `",
+    "'効果を追加中'": "'adding effects'",
+    '`・残り約 ${Math.max(1, Math.round(left))} 秒`': '` · about ${Math.max(1, Math.round(left))} s left`',
+    '`中止しました：「${r.name}」は ${r.cuts} / ${r.total} カットまでです`': '`Stopped: “${r.name}” has ${r.cuts} of ${r.total} cuts`',
+    "'作成を中止しました'": "'Build stopped'",
+    "'中止しています…（作成済みのカットで仕上げます）'": "'Stopping… (finishing with the cuts built so far)'",
+    "'中止'": "'Stop'",
+    "'作成を止めます（そこまでのカットでコンポを仕上げます）'": "'Stop building (the composition is finished with the cuts built so far)'",
     '「${r.name}」を作成しました': 'Created “${r.name}”',
     'AE の「${r.name}」で拍を合わせました': 'Synced beats to “${r.name}” in AE',
     '曲（<span class="ae-audio-name"></span>）をコンポに入れる': 'Include audio (<span class="ae-audio-name"></span>) in composition',
@@ -346,6 +361,7 @@ CEP = {
 }
 
 CEP_HOST = {
+    "'生成中のコンポがありません'": "'No composition is being built'",
     'JIZURA の構成データではありません': 'This is not JIZURA project data',
     'コンポを開いて、曲のレイヤーを選択してください': 'Open a composition and select an audio layer',
     '曲（音声ファイル）のレイヤーを選択してください': 'Select an audio file layer',
