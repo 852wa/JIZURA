@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hans">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JIZURA — Lyric Motion Video Maker</title>
-<meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<link rel="canonical" href="https://852wa.github.io/JIZURA/en/">
+<title>JIZURA — 歌词动态视频制作工具</title>
+<meta name="description" content="在浏览器中把歌词做成动态歌词视频，并导出 MP4。">
+<link rel="canonical" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="zh-Hans" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA — Lyric Motion Video Maker">
-<meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
-<meta property="og:url" content="https://852wa.github.io/JIZURA/en/">
+<meta property="og:title" content="JIZURA — 歌词动态视频制作工具">
+<meta property="og:description" content="在浏览器中把歌词做成动态歌词视频，并导出 MP4。">
+<meta property="og:url" content="https://852wa.github.io/JIZURA/zh-hans/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -342,231 +342,231 @@ button.small.primary { padding: 4px 12px; }
     <div class="tour-step mono muted"></div>
     <h3 id="tourTitle" class="tour-title"></h3>
     <p class="tour-text"></p>
-    <div class="tour-nav"><button class="tour-skip ghost small">Skip</button><span class="tour-sp"></span><button class="tour-prev ghost small">Back</button><button class="tour-next primary small">Next</button></div>
+    <div class="tour-nav"><button class="tour-skip ghost small">跳过</button><span class="tour-sp"></span><button class="tour-prev ghost small">上一步</button><button class="tour-next primary small">下一步</button></div>
   </div>
 </div>
 <div id="app">
   <header class="bar">
     <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="Song title (shown on title cards and HUD)" aria-label="Song title">
-      <input id="songArtist" type="text" placeholder="Artist" aria-label="Artist">
+      <input id="songTitle" type="text" placeholder="歌名（显示在标题卡和 HUD 上）" aria-label="歌名">
+      <input id="songArtist" type="text" placeholder="艺人" aria-label="艺人">
     </div>
-    <div class="modes" role="group" aria-label="Editor mode">
-      <button id="modeEasy" aria-pressed="false" title="A simple workspace focused on automatic creation">Simple</button>
-      <button id="modePro" aria-pressed="true" title="Show all settings">Advanced</button>
-      <button id="btnTour" class="ghost tour-btn" title="A short tour of the Simple mode" aria-label="Tour">？</button>
+    <div class="modes" role="group" aria-label="界面模式">
+      <button id="modeEasy" aria-pressed="false" title="以一键生成为主的简洁界面">简易</button>
+      <button id="modePro" aria-pressed="true" title="显示全部设置">详细</button>
+      <button id="btnTour" class="ghost tour-btn" title="简易模式使用导览" aria-label="使用导览">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en" selected>English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans" selected>简体中文</option><option value="../ko/index.html" lang="ko">한국어</option></select></label>
     <div class="acts">
-      <label class="file" title="Open a saved project (.json)">Open<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="Save project as .json">Save</button>
-      <button id="btnAE" title="Export project data for the After Effects panel">Export for AE</button>
-      <button id="btnTerms" class="ghost terms-open" title="Rights and licenses for your exports">About / rights</button>
+      <label class="file" title="打开已保存的项目（.json）">打开<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="将项目保存为 .json">保存</button>
+      <button id="btnAE" title="导出供 After Effects 面板使用的项目数据">导出到 AE</button>
+      <button id="btnTerms" class="ghost terms-open" title="输出物的权利与许可">使用说明</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="Lyrics and timing">
+    <section class="col col-left" aria-label="歌词与时间">
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
-        <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
+        <div class="sec-h"><h2>歌词</h2><button id="btnSyntax" class="ghost small" aria-expanded="false">语法</button></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌词（1 行 = 1 句）"></textarea>
+        <label class="lang-row">歌词语言<select id="lyricLang"><option value="auto">自动识别</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>One phrase per line. A blank line adds a short pause.</li>
-            <li><code>I remember/the dawn</code> … <code>/</code> marks a cut boundary</li>
-            <li><code>*transparent*</code> … emphasis (larger, stronger effects)</li>
-            <li>A trailing <code>!</code> … adds a flash and shake</li>
-            <li><code>lyrics|reading or note</code> … smaller text in annotation layouts</li>
-            <li><code>[01:23.45]Lyrics</code> … uses an LRC timestamp</li>
-            <li><code>[interlude 8]</code> … an 8-second instrumental part (no lyrics, background and decorations only). Without a number it lasts 4 seconds; tap sync or markers set its length</li>
-            <li><code>#</code> starts a comment (ignored)</li>
+            <li>1 行就是 1 句。空行会留出短暂停顿</li>
+            <li><code>我还记得/黎明的颜色</code> … <code>/</code> 标记镜头的切分点</li>
+            <li><code>*透明*</code> … 强调（更大、更有冲击力的效果）</li>
+            <li>行末的 <code>!</code> … 加入闪光和震动</li>
+            <li><code>歌词|注音或备注</code> … 注释布局中的小字</li>
+            <li><code>[01:23.45]歌词</code> … 直接使用 LRC 时间戳</li>
+            <li><code>[间奏 8]</code> … 8 秒的间奏（不显示歌词，只有背景和装饰）。省略秒数时为 4 秒，也可以用点击同步或标记调整长度</li>
+            <li><code>#</code> 开头的行 … 注释（忽略）</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Audio and timing</h2></div>
-        <div id="audioName" class="muted audio-name">No audio. Import a song to detect beats and align cuts.</div>
+        <div class="sec-h"><h2>音乐与时间</h2></div>
+        <div id="audioName" class="muted audio-name">未载入音乐（载入后会检测节拍并对齐镜头）</div>
         <div class="row">
-          <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
+          <label class="file" title="MP3、WAV、M4A 等">载入音乐<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnTap" title="边播放音乐边在每行开头轻点">轻点同步</button>
         </div>
         <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
-          <label class="field">Start (s)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">Line duration<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自动"></label>
+          <label class="field">开始（秒）<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">行时长<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Snap to beat</label>
-          <button id="btnResetTimes" class="ghost small">Clear manual timing</button>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 吸附节拍</label>
+          <button id="btnResetTimes" class="ghost small">清除手动时间</button>
         </div>
         <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.</div>
-          <div class="next">Next: <b id="tapLine">—</b></div>
+          <div class="hint">跟着音乐，在每行开始的瞬间按 <span class="kbd">Space</span> 键或下方按钮。按错了就按 <span class="kbd">Backspace</span> 或“撤销一次”。要从中间某行重来，请点行列表里的 ◎。</div>
+          <div class="next">下一行：<b id="tapLine">—</b></div>
           <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">Undo tap</button>
-          <button id="tapStop" class="ghost">Finish</button>
+          <button id="tapBack" class="ghost">撤销一次</button>
+          <button id="tapStop" class="ghost">结束</button>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Lines and cuts</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>行与镜头</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="Preview">
+    <section class="col col-stage" aria-label="预览">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Play">▶</button>
+        <button id="btnPlay" class="play" aria-label="播放">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position">
-        <button id="btnLoop" class="ghost small" aria-pressed="true">Loop</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Click to mute / unmute (preview only — exports keep the original level)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Preview volume"></span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="播放位置">
+        <button id="btnLoop" class="ghost small" aria-pressed="true">循环</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="点击静音／取消静音（仅限预览，不影响导出音量）">音量</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="预览音量"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="Previous variation" aria-label="Previous">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="Next variation" aria-label="Next">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="回到上一个方案" aria-label="上一个">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="前往下一个方案" aria-label="下一个">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
-        <button id="btnOmakase" class="primary" title="Randomize style, mood, effects and colors (R)">Randomize</button>
+        <button id="btnShuffle" class="accent" title="设置不变，只重新随机编排（锁定的行保持不变）">随机编排</button>
+        <button id="btnOmakase" class="primary" title="风格、氛围、特效、配色全部随机（快捷键 R）">一键随机</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">Drag the line markers (top) to move line starts. Hold <span class="kbd">Shift</span> to ignore beats</span>
+        <span class="tl-hint muted">拖动行分隔标记（上方刻度）可调整位置。按住 <span class="kbd">Shift</span> 则不吸附节拍</span>
         <span class="tl-btns">
-          <button id="btnUndoEdit" class="ghost small" title="Undo lyric and timing changes (Ctrl+Z)" disabled>Undo</button>
-          <button id="tlOut" class="ghost small icon-txt" title="Zoom out" aria-label="Zoom the timeline out">−</button>
-          <button id="tlIn" class="ghost small icon-txt" title="Zoom in (or scroll on the timeline)" aria-label="Zoom the timeline in">＋</button>
-          <button id="tlFit" class="ghost small" title="Show the whole song">Fit</button>
+          <button id="btnUndoEdit" class="ghost small" title="撤销歌词和时间的修改（Ctrl+Z）" disabled>撤销</button>
+          <button id="tlOut" class="ghost small icon-txt" title="缩小" aria-label="缩小时间轴">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="放大（也可在时间轴上滚动滚轮）" aria-label="放大时间轴">＋</button>
+          <button id="tlFit" class="ghost small" title="显示整首歌">全曲</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Timeline (click to seek, drag line markers to adjust)"></canvas>
+      <canvas id="timeline" aria-label="时间轴（点击跳转，拖动行分隔标记可调整）"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="Style and export">
+    <section class="col col-right" aria-label="风格与导出">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
-          <button id="btnOmakaseBig" class="omakase">Create a variation</button>
-          <p class="hint">Each click changes the style, mood, motion, colors and arrangement. Press <span class="kbd">R</span> to do the same.</p>
+          <button id="btnOmakaseBig" class="omakase">一键生成</button>
+          <p class="hint">每按一次，风格、氛围、动态、配色、编排都会整体改变。也可以按键盘上的 <span class="kbd">R</span> 键执行。</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ Previous</button>
+            <button id="btnPrev2" class="ghost">◀ 上一个</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">Next ▶</button>
+            <button id="btnNext2" class="ghost">下一个 ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include about 350 more effects, 12 styles and 6 fonts in random picks. Off uses the original set.</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include Japanese motifs such as lanterns, postcards, shoji, fans, family crests, waves and cherry blossoms in random picks.</small></span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>使用新增特效<small>首个公开版之后新增的约 350 种特效、12 套配色和 6 款字体也会成为一键生成和随机编排的候选（关闭时只用首个公开版的特效）</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>使用和风特效<small>灯笼、明信片、障子、折扇、家纹、青海波、樱花花瓣等和风图形。关闭后，一键生成和随机编排不会选用</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Current variation</h3>
+          <h3>当前方案</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>Change one thing</h3>
+          <h3>只换这一项</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="Change the style only">Style</button>
-            <button id="ePalette" title="Randomize accent and offset colors">Palette</button>
-            <button id="eMood" title="Change motion, glitch and technique mood">Mood</button>
-            <button id="eCut" title="Change the arrangement and motion only">Arrangement</button>
+            <button id="eStyle" title="只换风格">风格</button>
+            <button id="ePalette" title="随机强调色与错位色 A/B">配色</button>
+            <button id="eMood" title="只换动态、故障效果和手法的氛围">氛围</button>
+            <button id="eCut" title="只换布局与动态的组合">编排</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Export</h3>
+          <h3>导出</h3>
           <div class="fields">
-            <label class="field">Aspect ratio<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-            <label class="field">Resolution<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">画面比例<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 竖屏</option><option value="4:3">4:3</option><option value="3:4">3:4 竖屏</option><option value="1:1">1:1</option><option value="4:5">4:5 竖屏</option><option value="21:9">21:9</option></select></label>
+            <label class="field">分辨率<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">Background<select id="eKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+            <label class="field field-wide">背景<select id="eKey"><option value="off">常规（风格背景）</option><option value="green">绿幕（用于合成）</option><option value="black">黑底（用于合成）</option></select></label>
           </div>
-          <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button></div>
-          <button class="terms-open linkish">Rights to exported videos</button>
+          <div class="rng-row"><span class="rng-lab">导出范围</span><select class="rngFrom" aria-label="导出范围的第一行"></select><span class="muted">～</span><select class="rngTo" aria-label="导出范围的最后一行"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">导出 MP4</button></div>
+          <button class="terms-open linkish">关于导出视频的权利</button>
           <div class="exp-box" hidden>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">取消</button></div>
           </div>
         </div>
       </div>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="style" aria-selected="true">Style</button>
-        <button role="tab" data-tab="fx" aria-selected="false">Effects</button>
-        <button role="tab" data-tab="tech" aria-selected="false">Techniques</button>
-        <button role="tab" data-tab="out" aria-selected="false">Export</button>
+        <button role="tab" data-tab="style" aria-selected="true">风格</button>
+        <button role="tab" data-tab="fx" aria-selected="false">特效</button>
+        <button role="tab" data-tab="tech" aria-selected="false">手法</button>
+        <button role="tab" data-tab="out" aria-selected="false">导出</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
         <div id="styleGrid" class="style-grid"></div>
-        <h3>Font roles</h3>
+        <h3>字体用途</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="Installed font name (e.g. Arial)" style="flex:1">
-          <button id="btnAddFont">Add</button>
+          <input id="localFont" type="text" placeholder="本机字体名称（例：宋体）" style="flex:1">
+          <button id="btnAddFont">添加</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">Font file (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Accent and offset colors</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>Use custom colors<small>Applies to every scene. Brightness adapts to the background.</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">字体文件（.ttf/.otf）<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>强调色与错位色</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>使用自定义颜色<small>应用到所有场景。亮度会根据背景自动调整</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">Randomize palette</button>
+          <button id="btnRandPalette" class="accent">随机配色</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>Background and text colors</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>Use custom background and text colors</span></label>
+        <h3>背景与文字颜色</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>自定义主背景和文字颜色</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
-          <label class="row" style="gap:6px">Frame stepping <select id="fxKoma" title="Motion drawings per second (independent of export fps)"><option value="0">Full (export fps)</option><option value="12">On twos (12 drawings/s)</option><option value="8">On threes (8 drawings/s)</option></select></label>
+          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 闪光</label>
+          <label class="row" style="gap:6px">抽帧 <select id="fxKoma" title="动态每秒绘制几张（与输出 fps 无关）"><option value="0">全帧（同输出 fps）</option><option value="12">一拍二（12 张/秒）</option><option value="8">一拍三（8 张/秒）</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (by style)</option><option value="on">Always show</option><option value="off">Hide</option></select></label>
-          <label class="field">Seed<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">New seed</button></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">随风格</option><option value="on">始终显示</option><option value="off">不显示</option></select></label>
+          <label class="field">种子<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">新种子</button></label>
         </div>
-        <p class="note">The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.</p>
+        <p class="note">相同的种子会生成相同的编排。逐行“重新随机”和“锁定”请在左侧行列表中操作。</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include techniques, styles and fonts marked New in automatic picks.</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Include Japanese motifs<small>Include techniques and styles marked JP in automatic picks. Manual selections remain available.</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>使用新增特效<small>带“新增”标记的手法、风格和字体。关闭时，一键生成和随机编排只使用首个公开版的特效</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>使用和风特效<small>带“和”标记的手法和风格。关闭后，一键生成和随机编排不会选用（在新增内容的判断之后应用；逐行手动指定时仍可使用）</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter techniques by name" style="flex:1" aria-label="Filter techniques by name"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="按名称筛选手法" style="flex:1" aria-label="按名称筛选手法"><span id="techTotal" class="muted mono"></span></div>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">Aspect ratio<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
-          <label class="field">Resolution<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">画面比例<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 竖屏</option><option value="4:3">4:3</option><option value="3:4">3:4 竖屏</option><option value="1:1">1:1</option><option value="4:5">4:5 竖屏</option><option value="21:9">21:9</option></select></label>
+          <label class="field">分辨率<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">Quality<select id="outQuality"><option value="standard">Standard</option><option value="high">High</option><option value="max">Maximum</option></select></label>
-          <label class="field field-wide">Background<select id="outKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+          <label class="field">画质<select id="outQuality"><option value="standard">标准</option><option value="high">高</option><option value="max">最高</option></select></label>
+          <label class="field field-wide">背景<select id="outKey"><option value="off">常规（风格背景）</option><option value="green">绿幕（用于合成）</option><option value="black">黑底（用于合成）</option></select></label>
         </div>
-        <p class="note key-note">Green screen and black background render white text and effects over a solid color, without background patterns, paper texture, particles or vignette. The preview shows the export. Use a chroma key for green or Screen blending / a luma key for black to composite over footage.</p>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Include audio in video</label>
-        <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">选择绿幕／黑底时，只在纯色背景上绘制白色文字和特效（不含背景图案、纸张质感、粒子和暗角），预览也会同步显示。绿幕可用视频剪辑软件的色度键抠像，黑底可用“滤色”混合或亮度键抠像，再叠加到其他画面上。</p>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 在视频中包含音乐</label>
+        <div class="rng-row"><span class="rng-lab">导出范围</span><select class="rngFrom" aria-label="导出范围的第一行"></select><span class="muted">～</span><select class="rngTo" aria-label="导出范围的最后一行"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">Export MP4</button>
-          <button id="btnPNG">PNG sequence (ZIP)</button>
-          <button id="btnPNGA">Transparent PNG (ZIP)</button>
-          <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
+          <button id="btnMP4" class="primary">导出 MP4</button>
+          <button id="btnPNG">PNG 序列（ZIP）</button>
+          <button id="btnPNGA">透明 PNG（ZIP，无背景）</button>
+          <button id="btnPNGL" title="将后景（背景图形和歌词后方的装饰）与前景（歌词及其装饰、重影）分别导出为透明 PNG，放在两个文件夹（back / front）中。全屏效果会同时作用于两者，把前景叠在后景上即可还原正常画面">透明 PNG 前景／后景（ZIP）</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Cancel</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">取消</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">Rights and licenses for exported videos and images</button>
-        <p class="note" id="codecNote">Export runs in your browser (Chrome or Edge recommended).</p>
+        <button class="terms-open linkish" style="margin-top:10px">关于导出视频和图片的权利与许可</button>
+        <p class="note" id="codecNote">导出在此浏览器内完成（推荐 Chrome / Edge）。</p>
       </div>
     </section>
   </main>
@@ -574,18 +574,18 @@ button.small.primary { padding: 4px 12px; }
 
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">About / rights</h2>
+    <h2 id="termsTitle">使用说明</h2>
     <div class="terms-main">
-      <p class="terms-big">You own the <strong>videos and images you create</strong>.</p>
-      <p class="terms-sub">Lyrics and music remain the property of their respective rights holders.</p>
+      <p class="terms-big">使用本工具制作的<strong>视频和图片（输出物）的权利归制作者</strong>所有。</p>
+      <p class="terms-sub">※ 所用歌词和音乐的权利归各自的权利人所有。</p>
     </div>
-    <p>The tool is released under the <strong>MIT license</strong>. See the license at:</p>
+    <p>本工具以 <strong>MIT 许可证</strong> 发布。完整许可证见：</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">Your lyrics and audio are processed in this browser and are not sent to a server.</p>
-    <details class="terms-oss"><summary>Open source software</summary>
-      <p>MP4 export: mp4-muxer（MIT License）<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">你输入的歌词和音乐只在此浏览器中处理，不会发送到服务器。</p>
+    <details class="terms-oss"><summary>使用的开源软件</summary>
+      <p>MP4 导出：mp4-muxer（MIT License）<br>字体：Google Fonts 提供的各款字体（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Close</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>关闭</button></div>
   </form>
 </dialog>
 
@@ -4425,7 +4425,7 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const px = w * h * fps;
   const bitrate = Math.round(px * (quality === 'max' ? 0.42 : quality === 'high' ? 0.28 : 0.16));
   const vc = await J.pickVideoCodec(w, h, fps, bitrate);
-  if (!vc) throw new Error('Video encoding (WebCodecs) is unavailable. Open in the latest Chrome or Edge.');
+  if (!vc) throw new Error('此浏览器不支持视频编码（WebCodecs）。请用最新版 Chrome 或 Edge 打开。');
   let ac = null;
   if (audio && audio.buffer && project.includeAudio !== false) ac = await J.pickAudioCodec(48000, Math.min(2, audio.buffer.numberOfChannels));
   const target = new Mp4Muxer.ArrayBufferTarget();
@@ -4443,19 +4443,19 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   const prevRes = J.glyphs.maxRes; J.glyphs.maxRes = h >= 1000 ? 768 : 512;
   try {
   for (let i = 0; i < total; i++) {
-    if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('Canceled'); }
+    if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('已取消'); }
     if (err) throw err;
     R.frame(ctx, plan, span.t0 + i / fps, { scale });
     const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
     venc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
     vf.close();
     while (venc.encodeQueueSize > 4) await new Promise(r => setTimeout(r, 2));
-    if (i % 3 === 0) { onProgress && onProgress(i / total, `Frame ${i + 1}/${total}`); await new Promise(r => setTimeout(r, 0)); }
+    if (i % 3 === 0) { onProgress && onProgress(i / total, `帧 ${i + 1}/${total}`); await new Promise(r => setTimeout(r, 0)); }
   }
   } finally { J.glyphs.maxRes = prevRes; }
   await venc.flush(); venc.close();
   if (ac) {
-    onProgress && onProgress(0.99, 'Encoding audio');
+    onProgress && onProgress(0.99, '正在编码音频');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0;
@@ -4473,10 +4473,10 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
     await aenc.flush(); aenc.close();
     if (err) throw err;
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('Audio encoding stopped partway (' + aChunks + '). Please export again');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw new Error('音频编码中途停止了（' + aChunks + '）。请重新导出');
   }
   muxer.finalize();
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, '完成');
   return { blob: new Blob([target.buffer], { type: 'video/mp4' }), codec: vc.label, audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h };
 };
 
@@ -4519,7 +4519,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('Canceled');
+    if (signal && signal.aborted) throw new Error('已取消');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -4528,7 +4528,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, '完成');
   return zip.finish();
 };
 
@@ -29336,6 +29336,14 @@ J.randomOk = (project, g, k) => {
   J.SAMPLE_LYRICS = 'I remember/the color of dawn\nA voice faded into the distance\nCan we still make it in time?\n*Transparent* is not how this ends!';
 })();
 
+(() => {
+  const S = {"noir": ["黑白色差", "黑白基调，加上青色与琥珀色的色彩错位"], "crimson": ["深红信号", "深红色、单色文字与损坏的数据"], "caution": ["警示", "黄、红、蓝三色配仪表图形"], "magenta": ["波普洋红", "亮粉色、圆润粗体与引线标注"], "paper": ["纸与墨", "纸张质感、靛蓝与洋红，衬线体重影"], "hud": ["暗色 HUD", "炭灰色、细线框、橙色点缀与日食图形"], "mint": ["薄荷终端", "黑、青绿与青柠色，带扫描效果"], "specimen": ["字体样本", "墨色背景配衬线体注释"], "transit": ["交通标识", "橄榄绿与黄色，标识牌与网点"], "blueprint": ["蓝图", "蓝、白、黑的图形拼贴"], "rouge": ["胭脂渐变", "浅灰与红色渐变，配胶囊图形"], "mono": ["单色 RGB", "灰色空间、白色衬线体与强烈的 RGB 分离"], "sakura": ["樱花", "柔和的樱粉与梅紫，圆体与衬线体"], "ocean": ["深海", "藏青、发光的青色、气泡与细黑体"], "sunset": ["日落渐变", "橙到紫的渐变、粗衬线体与逆光"], "forest": ["森林笔记", "苔绿、自然纸张与铅笔手写字"], "vapor": ["蒸汽波", "粉彩粉与蓝，带 VHS 光晕"], "newsprint": ["新闻纸", "灰色纸张、黑与红，网点套印"], "synth80": ["80 年代合成器", "黑底配霓虹洋红、青色与扫描线"], "kraft": ["牛皮纸", "暖色纸张、红与靛蓝印章、纸胶带"], "candy": ["糖果", "薄荷与水果粉彩，文字弹跳"], "acid": ["酸性", "黑、酸性绿与洋红，做旧文字"], "sumi": ["墨与朱", "和纸、毛笔字与朱红印章"], "gold": ["金色之夜", "深黑、烫金、象牙色衬线体与闪光"]};
+  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
+  const M = {"glitch": "故障", "calm": "柔和", "pop": "波普", "graphic": "图形", "editorial": "杂志", "emotional": "感性", "chaos": "不拘一格"};
+  for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
+  J.SAMPLE_LYRICS = "我还记得/黎明的颜色\n远处响起渐渐散去的声音\n现在还来得及吗？\n不想就这样*透明*地结束!";
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -29379,7 +29387,7 @@ function initVolume() {
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muted' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '静音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '音量 ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
@@ -29403,7 +29411,7 @@ function mergeProject(p) {
   return o;
 }
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="Added after the original release">New</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Japanese motifs">JP</span>' : '');
+  return (d && d.extra ? '<span class="set-badge ex" title="首个公开版之后新增">新增</span>' : '') + (d && d.wa ? '<span class="set-badge" title="和风特效">和</span>' : '');
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
@@ -29422,7 +29430,7 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* Auto判定のとき、判定結果を言語欄の横に出す */
+/* 自动判定のとき、判定結果を言語欄の横に出す */
 function langNote() {
   const el = $('langNote'); if (!el) return;
   el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
@@ -29470,14 +29478,14 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length;
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('Loading fonts…');
+  showMsg('正在载入字体…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
 // style thumbnails need two glyphs of every style's display face — fetched only once the style grid is actually shown
 function loadThumbFonts() {
   if (thumbFonts || !$('styleGrid').offsetParent) return;
-  thumbFonts = J.ensureFonts('JIZURA', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
+  thumbFonts = J.ensureFonts('字面', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
 }
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
@@ -29524,11 +29532,11 @@ function updateTimeUI() {
 function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t);
   else S.t0 = performance.now() - S.t * 1000;
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Pause');
+  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '暂停');
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Play'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', '播放'); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -29593,7 +29601,7 @@ function drawTimeline() {
     x.fillStyle = on ? '#f5a50c' : man ? '#6fb7c8' : '#5d5a63'; x.fillRect(lx - (on ? dpr : 0), 0, on ? 2 * dpr : 1, top);
     // handle
     x.beginPath(); x.moveTo(lx - 5 * dpr, 0); x.lineTo(lx + 5 * dpr, 0); x.lineTo(lx, 7 * dpr); x.closePath(); x.fill();
-    x.fillStyle = on ? '#f5a50c' : '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' inst.' : ''), lx + 4 * dpr, 17 * dpr);
+    x.fillStyle = on ? '#f5a50c' : '#8e8a94'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' 间奏' : ''), lx + 4 * dpr, 17 * dpr);
   }
   if (TL.z > 1) {                                          // where the view sits in the whole song
     x.fillStyle = 'rgba(255,255,255,0.18)'; x.fillRect(0, h - 2 * dpr, w, 2 * dpr);
@@ -29640,17 +29648,17 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">No cut at this position</span>'; return; }
+  if (!cut) { el.innerHTML = '<span class="hint">此位置没有镜头</span>'; return; }
   const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
   const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
   el.innerHTML = [
     `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-    chip('l', 'Layout', n(J.LAYOUTS, cut.layout)), chip('e', 'Entrance', n(J.ENTER, cut.enter)), chip('h', 'Hold', n(J.HOLD, cut.hold)), chip('x', 'Exit', n(J.EXIT, cut.exit)),
-    cut.decor && cut.decor.length ? chip('', 'Decoration', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
-    cut.treat && cut.treat !== 'none' ? chip('t', 'Treatment', n(J.TREAT, cut.treat)) : '',
-    cut.bg && cut.bg !== 'none' ? chip('b', 'Background', n(J.BG, cut.bg)) : '',
-    cut.cam && cut.cam !== 'push' ? chip('c', 'Camera', n(J.CAMERA, cut.cam)) : '',
-    cut.trans ? chip('c', 'Transition', n(J.TRANS, cut.trans)) : '',
+    chip('l', '布局', n(J.LAYOUTS, cut.layout)), chip('e', '入场', n(J.ENTER, cut.enter)), chip('h', '保持', n(J.HOLD, cut.hold)), chip('x', '退场', n(J.EXIT, cut.exit)),
+    cut.decor && cut.decor.length ? chip('', '装饰', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
+    cut.treat && cut.treat !== 'none' ? chip('t', '文字处理', n(J.TREAT, cut.treat)) : '',
+    cut.bg && cut.bg !== 'none' ? chip('b', '背景', n(J.BG, cut.bg)) : '',
+    cut.cam && cut.cam !== 'push' ? chip('c', '运镜', n(J.CAMERA, cut.cam)) : '',
+    cut.trans ? chip('c', '转场', n(J.TRANS, cut.trans)) : '',
   ].join('');
 }
 
@@ -29658,25 +29666,25 @@ function updateCutInfo() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
-  const layoutOpts = '<option value="">Auto</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
-  const cutOpts = '<option value="">Cuts: auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cuts: ${n}</option>`).join('');
+  const layoutOpts = '<option value="">自动</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const cutOpts = '<option value="">镜头：自动</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">镜头：${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
-    const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]` : ln.text;
+    const label = ln.interlude ? `〔间奏${ln.secs ? ' ' + ln.secs + ' 秒' : ''}〕` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Start (s)${manual ? ' · manual' : ' · automatic'}" aria-label="Line ${i + 1} start time (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="开始（秒）${manual ? ' · 手动' : ' · 自动'}" aria-label="第 ${i + 1} 行的开始时间（秒）" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="Edit this line’s lyrics" aria-label="Edit the lyrics of line ${i + 1}">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="Number of cuts in line ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout">${layoutOpts}</select>`}
-        <button class="icon ghost tapfrom" title="Tap sync again from this line" aria-label="Tap sync from line ${i + 1}">${ICON.tap}</button>
-        <button class="icon ghost rng" title="Set as the export range (Shift+click extends it)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Export line ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Reroll this line">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Lock this line" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="修改这一行的歌词" aria-label="修改第 ${i + 1} 行的歌词">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="第 ${i + 1} 行的镜头数">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="指定布局">${layoutOpts}</select>`}
+        <button class="icon ghost tapfrom" title="从这一行重新轻点同步" aria-label="从第 ${i + 1} 行开始轻点">${ICON.tap}</button>
+        <button class="icon ghost rng" title="设为导出范围（Shift+点击可扩大范围）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="将第 ${i + 1} 行设为导出范围">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="重新随机这一行">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="锁定这一行的编排" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) q('.lay').value = o.layout || '';
@@ -29711,11 +29719,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length} lines / ${S.plan.cuts.length} cuts`;
+  $('linesInfo').textContent = `${S.plan.lines.length} 行 / ${S.plan.cuts.length} 个镜头`;
   syncRangeUI();
 }
 
-/* ---------------- line から歌詞を直す ---------------- */
+/* ---------------- 行から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -29723,8 +29731,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lyrics of line ${ln.index + 1}`);
-  inp.title = 'Lyric syntax works here too (/ cut, *emphasis*, final !, | note, [interlude 8]). Enter to apply, Esc to cancel';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `第 ${ln.index + 1} 行的歌词`);
+  inp.title = '这里同样可以使用歌词语法（/ 切分、*强调*、行末 !、| 注释、[间奏 8]）。Enter 确认，Esc 取消';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -29734,7 +29742,7 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`Line ${ln.index + 1} updated`);
+      replan(); flushSave(); toast(`已修改第 ${ln.index + 1} 行的歌词`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -29753,11 +29761,11 @@ function edGo(d) {
   const o = JSON.parse(from.pop());
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? 'Undone' : 'Redone');
+  toast(d < 0 ? '已撤销' : '已重做');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだline だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -29779,15 +29787,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `Export range: line ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Export range: whole song');
+  toast(R2 ? `导出范围：第 ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''} 行` : '导出范围：全曲');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
-  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Whole song'); el.value = R ? String(R.from) : '-1'; });
+  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '〔间奏〕' : ln.text).slice(0, 14))}</option>`).join('');
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, '全曲'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)}s)` : `Whole song (${S.plan.duration.toFixed(1)}s)`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)}（${(r.t1 - r.t0).toFixed(1)} 秒）` : `全曲（${S.plan.duration.toFixed(1)} 秒）`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -29825,35 +29833,35 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（新增内容已关闭，一键生成时不会选用）' : '（和风特效已关闭，一键生成时不会选用）') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
     x.font = J.fontCSS(f, 46); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillStyle = sc.ghostB; x.fillText('JIZURA', 96 - 3, 54 - 1);
-    x.fillStyle = sc.ghostA; x.fillText('JIZURA', 96 + 3, 54 + 2);
-    x.fillStyle = sc.fg; x.fillText('JIZURA', 96, 54);
+    x.fillStyle = sc.ghostB; x.fillText('字面', 96 - 3, 54 - 1);
+    x.fillStyle = sc.ghostA; x.fillText('字面', 96 + 3, 54 + 2);
+    x.fillStyle = sc.fg; x.fillText('字面', 96, 54);
     x.fillStyle = sc.accent; x.fillRect(12, 90, 30, 4);
     x.font = J.fontCSS('mono', 9); x.textAlign = 'left'; x.fillStyle = sc.sub; x.fillText(k.toUpperCase(), 48, 93);
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+  return '<option value="">风格默认</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${k}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', 'Display'], ['serif', 'Serif frame'], ['body', 'Small text']].forEach(([role, label]) => {
+  [['display', '标题'], ['serif', '衬线体'], ['body', '小字']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} font">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}字体">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', 'Background'], ['fg', 'Text'], ['sub', 'Secondary']];
-const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
+const BASE_KEYS = [['bg', '背景'], ['fg', '文字'], ['sub', '辅助']];
+const ACCENT_KEYS = [['accent', '强调色'], ['ghostA', '错位色A'], ['ghostB', '错位色B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -29892,7 +29900,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Palette: changed accent and offset colors', [p.accent, p.ghostA, p.ghostB]);
+  toast('配色：已更换强调色与错位色 A/B', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -29918,7 +29926,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} variation`);
+  toast(`方案 ${j + 1} / ${H.list.length}`);
   restartPreview();
 }
 function updateHist() {
@@ -29936,7 +29944,7 @@ function omakase() {
   const r = J.omakase(S.project);
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`Randomized: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast(`一键随机：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -29950,14 +29958,14 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `Style：${J.STYLES[P.style].name}`;
+    msg = `风格：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const r = J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
-    msg = `Mood：${J.MOODS[r.mood].name}`;
+    msg = `氛围：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = 'Arrangement: rerolled layout and motion';
+    msg = '编排：已重新随机布局与动态';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -29966,18 +29974,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Custom';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : '自定义';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? J.FONTS[fk].label : fk;
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('Style', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('Mood', escapeHtml(moodName))
-    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Random</span>' : ''}`)
-    + row('Display font', escapeHtml(fontName))
-    + row('Arrangement', `${cuts.length} cuts · Layout ${kinds} types`)
-    + row('Effects', `Treatment ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Background ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Camera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row('风格', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
+    + row('氛围', escapeHtml(moodName))
+    + row('配色', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">随机</span>' : ''}`)
+    + row('标题字体', escapeHtml(fontName))
+    + row('编排', `${cuts.length} 个镜头 · ${kinds} 种布局`)
+    + row('特效', `文字处理 ${cuts.filter(c => c.treat && c.treat !== 'none').length} · 背景 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} 种 · 运镜 ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -30002,7 +30010,7 @@ function setMode(m) {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Motion strength'], ['glitch', 'Glitch'], ['chroma', 'Color offset'], ['decor', 'Decoration amount'], ['density', 'Cut density'], ['texture', 'Texture'], ['bgSwitch', 'Background changes']];
+const FX = [['motion', '动态强度'], ['glitch', '故障效果'], ['chroma', '色彩错位'], ['decor', '装饰量'], ['density', '镜头密度'], ['texture', '质感'], ['bgSwitch', '背景切换']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -30020,7 +30028,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'Layout'], ['enter', 'Entrance'], ['hold', 'Hold'], ['exit', 'Exit'], ['decor', 'Decoration'], ['treat', 'Text treatments'], ['bg', 'Background'], ['cam', 'Camera'], ['fx', 'Screen effects'], ['trans', 'Transitions']];
+const GROUPS = [['layout', '布局'], ['enter', '入场'], ['hold', '保持'], ['exit', '退场'], ['decor', '装饰'], ['treat', '文字处理'], ['bg', '背景'], ['cam', '运镜'], ['fx', '画面效果'], ['trans', '镜头转场']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 function renderTech() {
@@ -30036,12 +30044,12 @@ function renderTech() {
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
     d.addEventListener('toggle', () => { if (d.open) openGroups.add(g); else openGroups.delete(g); });
-    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">All on</button><button class="ghost small" data-a="off">All off</button><button class="ghost small" data-a="flip">Invert</button></div>`;
+    d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span></summary><div class="tg-tools"><button class="ghost small" data-a="on">全部开启</button><button class="ghost small" data-a="off">全部关闭</button><button class="ghost small" data-a="flip">反选</button></div>`;
     const list = document.createElement('div'); list.className = 'checks';
     shown.forEach(k => {
       const l = document.createElement('label');
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : ' (Japanese motifs disabled for automatic picks)'; }
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（新增内容已关闭，不会被自动选用）' : '（和风特效已关闭，不会被自动选用）'; }
       l.innerHTML = `<input type="checkbox" ${en[k] !== false ? 'checked' : ''}> ${escapeHtml(tbl[k].name)}${setBadges(tbl[k])}`;
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
       list.appendChild(l);
@@ -30070,14 +30078,14 @@ function syncOut() {
   $('outKey').value = k; $('eKey').value = k;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Black background'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? '绿幕' : '黑底'}`;
 }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `This browser exports with ${vc.label} at (${w}×${h} / ${S.project.fps}fps). Keep this tab open during export.` : 'Video encoding (WebCodecs) is unavailable here. Try the latest Chrome or Edge, or export a PNG sequence.';
+  $('codecNote').textContent = vc ? `此浏览器将以 ${vc.label} 导出（${w}×${h} / ${S.project.fps}fps）。导出期间请不要关闭此标签页。` : '此浏览器不支持视频编码（WebCodecs）。请用最新版 Chrome / Edge 打开，或改用 PNG 序列。';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
+  if (!vc) $('eMP4').title = '此浏览器不支持导出 MP4（推荐 Chrome / Edge）';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {
@@ -30092,7 +30100,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('Preparing…');
+  setText('准备中…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -30101,21 +30109,21 @@ async function runExport(kind) {
     if (kind === 'mp4') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: S.project, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range });
-      txt.textContent = `Done: ${(r.blob.size / 1048576).toFixed(1)}MB · ${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
+      txt.textContent = `完成 ${(r.blob.size / 1048576).toFixed(1)}MB · ${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}秒`;
       const res = await J.saveFile(baseName() + rangeSuffix() + '.mp4', r.blob);
-      if (res === 'declined') txt.textContent += ' (save canceled)';
+      if (res === 'declined') txt.textContent += '（已取消保存）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '. This browser encodes audio as Opus, which iPhone, QuickTime and some players cannot play, so the audio was also saved as WAV' : '. This browser cannot encode audio, so the audio was saved separately as WAV (combine it in a video editor)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. No song is loaded, so the video has no audio (load the song again with “Load song”)';
+        txt.textContent += r.audio ? '。此浏览器会把音频编码为 Opus，在 iPhone、QuickTime 等上可能没有声音，因此另存了一份 WAV 音频' : '。此浏览器无法导出音频，因此已将音频单独保存为 WAV（请在视频剪辑软件中合并）';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。未载入音乐，所以视频没有声音（请通过“载入音乐”重新载入）';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: S.project, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `Done: ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
-    txt.textContent = 'Error: ' + (e && e.message ? e.message : e);
+    txt.textContent = '错误：' + (e && e.message ? e.message : e);
     console.error(e);
   } finally {
     S.exporting = null; S.need = true;
@@ -30137,7 +30145,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  if (from > 0) toast(`从第 ${from + 1} 行开始轻点同步（从 ${J.fmtTime(t0)} 开始播放）`);
 }
 function tapNow() {
   if (!S.tap) return;
@@ -30160,7 +30168,7 @@ function tapBack() {                    // 1つ戻る: undo the last tap and jum
 function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
 function updateTap() {
   const ln = S.plan.lines[S.tap.i];
-  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '[interlude]' : ln.text}` : '—';
+  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔间奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
 }
 
@@ -30169,7 +30177,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'None';
+  $('bpm').placeholder = S.audio ? `自动 ${S.audio.bpm}` : '无';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -30186,7 +30194,7 @@ function bind() {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? 'Lyrics language: auto-detect → ' : 'Lyrics language: ') + J.LANG_LABEL[l]);
+    toast((S.project.lang === 'auto' ? '歌词语言：自动识别 → ' : '歌词语言：') + J.LANG_LABEL[l]);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -30249,8 +30257,8 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, 'New effects: on', 'New effects: off (original set only)');
-  setSwitch('wa-toggle', 'wa', true, 'Japanese motifs: on', 'Japanese motifs: off for random picks');
+  setSwitch('extra-toggle', 'extra', true, '新增特效：使用', '新增特效：不使用（只用首个公开版的特效）');
+  setSwitch('wa-toggle', 'wa', true, '和风特效：使用', '和风特效：不使用（一键生成和随机编排时不会选用）');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -30268,15 +30276,15 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (installed)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installed)', family: name, weight }]);
+    J.addUserFont(key, name + '（本机）', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '（本机）', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { const key = await J.loadFontFile(f); S.project.fonts.display = key; fontKey = ''; renderFontRoles(); replan(); }
-    catch (err) { showMsg('Could not load the font'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('无法载入字体'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -30285,7 +30293,7 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `Background：${k === 'green' ? 'Green screen' : 'Black background'}（white text and effects only）` : 'Background：Style colors');
+    toast(k ? `背景：${k === 'green' ? '绿幕' : '黑底'}（仅白色文字和特效）` : '背景：常规（风格配色）');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
@@ -30315,7 +30323,7 @@ function bind() {
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); }
-    catch (err) { showMsg('Could not open the project'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('无法打开项目'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
   document.addEventListener('keydown', e => {
@@ -30338,27 +30346,27 @@ function bind() {
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 async function loadAudioFile(f, restored) {
-  $('audioName').textContent = 'Analyzing audio…';
+  $('audioName').textContent = '正在分析音频…';
   try {
     pause();
     S.audio = await J.analyzeAudio(f);
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · about ${S.audio.bpm}BPM）` + (restored ? ' · last song' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · 约 ${S.audio.bpm}BPM）` + (restored ? ' · 上次的音乐' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
     syncUI(); replan();
     return true;
-  } catch (err) { $('audioName').textContent = 'Could not load: ' + err.message; S.audio = null; return false; }
+  } catch (err) { $('audioName').textContent = '无法载入：' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. Enter lyrics', text: 'One line is one phrase. A blank line adds a short pause; [interlude 8] makes an 8-second instrumental part (background and decorations only).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Load the song', text: 'Load an mp3 or similar file: JIZURA finds the beats and times the cuts to them. It also works without a song. “Tap to sync” lets you mark where each line starts.' },
-  { t: () => $('btnOmakaseBig'), title: '3. Create a variation', text: 'Style, mood, motion, palette and arrangement are chosen for you. Each press makes a new variation; “◀ Previous” goes back.' },
-  { t: () => $('btnPlay'), title: '4. Play it', text: 'Play it back. On the timeline below you can drag the line markers (+ and − zoom).' },
-  { t: () => $('lineList'), title: '5. Fix single lines', text: 'For each line you can edit the lyrics (✎), set the number of cuts, redo tap sync from that line (◎) or reroll just that line (dice).' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Export', text: 'Choose the aspect ratio (such as vertical 9:16) and resolution, then export MP4. “Export range” exports only the lines you pick.' },
+  { t: () => $('lyrics'), title: '1. 输入歌词', text: '1 行就是 1 句。空行会留出短暂停顿；写 [间奏 8] 则生成 8 秒的间奏（只有背景和装饰）。' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 载入音乐', text: '载入 mp3 等文件后会检测节拍，让镜头切换踩在拍子上。没有音乐也能制作。还可以用“轻点同步”对齐每行的开头。' },
+  { t: () => $('btnOmakaseBig'), title: '3. 一键生成', text: '风格、氛围、动态、配色、编排一次全部决定。每按一次就换一个方案，按“◀ 上一个”可以返回。' },
+  { t: () => $('btnPlay'), title: '4. 播放查看', text: '播放看看效果吧。在下方时间轴上可以拖动行分隔标记（＋−缩放）。' },
+  { t: () => $('lineList'), title: '5. 只改不满意的行', text: '每一行都可以修改歌词（✎）、设定镜头数、从该行重新轻点（◎），或只重新生成这一行（骰子）。' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 导出', text: '选择画面比例（如竖屏 9:16）和分辨率，然后导出 MP4。也可以通过“导出范围”只导出选中的行。' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -30371,7 +30379,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Start' : 'Next';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? '开始' : '下一步';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();

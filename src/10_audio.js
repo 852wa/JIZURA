@@ -71,6 +71,52 @@ J.analyzeAudio = async (file) => {
   };
 };
 
+/* 16-bit PCM WAV of an AudioBuffer, cut / padded to `duration` seconds (the soundtrack next to an MP4 whose
+   audio track some players cannot play, or when the browser has no audio encoder) */
+J.audioWav = (buffer, duration, offset = 0) => {
+  const sr = buffer.sampleRate, chn = Math.min(2, buffer.numberOfChannels);
+  const n = Math.max(1, Math.round((duration > 0 ? duration : buffer.duration) * sr));
+  const bytes = n * chn * 2, ab = new ArrayBuffer(44 + bytes), v = new DataView(ab);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + bytes, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, chn, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * chn * 2, true); v.setUint16(32, chn * 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, bytes, true);
+  const ch = []; for (let c = 0; c < chn; c++) ch.push(buffer.getChannelData(c));
+  const L = buffer.length, i0 = Math.max(0, Math.round(offset * sr)); let o = 44;
+  for (let i = 0; i < n; i++) for (let c = 0; c < chn; c++) {
+    const j = i + i0, x = j < L ? Math.max(-1, Math.min(1, ch[c][j])) : 0;
+    v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7fff, true); o += 2;
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+};
+
+/* the last song, kept in this browser (IndexedDB) so a reload does not silently drop the audio from exports */
+const IDB = { db: null };
+IDB.open = () => IDB.db || (IDB.db = new Promise((res, rej) => {
+  if (typeof indexedDB === 'undefined') return rej(new Error('no IndexedDB'));
+  const r = indexedDB.open('jizura', 1);
+  r.onupgradeneeded = () => { r.result.createObjectStore('files'); };
+  r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+}));
+J.saveSong = async (file) => {
+  try {
+    const db = await IDB.open(), data = await file.arrayBuffer();
+    await new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put({ name: file.name, type: file.type, data }, 'song'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    return true;
+  } catch (e) { return false; }
+};
+J.loadSong = async () => {
+  try {
+    const db = await IDB.open();
+    const rec = await new Promise((res, rej) => { const tx = db.transaction('files', 'readonly'); const q = tx.objectStore('files').get('song'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+    if (!rec || !rec.data) return null;
+    return new File([rec.data], rec.name || 'song', { type: rec.type || '' });
+  } catch (e) { return null; }
+};
+J.forgetSong = async () => {
+  try { const db = await IDB.open(); await new Promise(res => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete('song'); tx.oncomplete = res; tx.onerror = res; }); } catch (e) {}
+};
+
 /* rebuild a beat grid from a user BPM + first-beat offset */
 J.beatGrid = (bpm, offset, duration) => {
   const out = []; if (!(bpm > 0)) return out;
