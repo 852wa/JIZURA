@@ -57,7 +57,7 @@ var JZCEP = (function () {
     // ---- building runs as a job in short steps (the panel calls step() again and again), so After Effects gets
     //      control back between steps and never shows "not responding" on long songs
     var job = null, jobT0 = 0, jobPlan = null, jobAudio = false;
-    function start(s, audioId) {
+    function start(s, audioId, light) {
         var C, plan;
         job = null; jobT0 = new Date().getTime();
         try { C = core(); } catch (e0) { return fail('engine: ' + e0.toString()); }
@@ -66,7 +66,7 @@ var JZCEP = (function () {
         if (!C.start) return fail('engine: jizura_core.jsx is too old — reinstall the panel');
         var au = audioId ? findItem(audioId) : null, err = null, off = +plan.audioOffset || 0;
         app.beginUndoGroup('JIZURA');
-        try { job = C.start(plan, { roles: roles(C), audioItem: au, audioStart: -off }); }
+        try { job = C.start(plan, { roles: roles(C), audioItem: au, audioStart: -off, light: !!light }); }
         catch (e2) { err = e2.toString() + (e2.line ? ' (line ' + e2.line + ')' : ''); job = null; }
         finally { app.endUndoGroup(); }
         if (!job) return fail(err || 'build');
@@ -144,8 +144,8 @@ var JZCEP = (function () {
         },
         buildFromFile: function (path, audioId) { var s = readTemp(path); return s == null ? fail('構成データの一時ファイルが見つかりません') : build(s, audioId); },
         buildFromString: function (enc, audioId) { return build(decodeURIComponent(enc), audioId); },
-        startFromFile: function (path, audioId) { var s = readTemp(path); return s == null ? fail('構成データの一時ファイルが見つかりません') : start(s, audioId); },
-        startFromString: function (enc, audioId) { return start(decodeURIComponent(enc), audioId); },
+        startFromFile: function (path, audioId, light) { var s = readTemp(path); return s == null ? fail('構成データの一時ファイルが見つかりません') : start(s, audioId, light); },
+        startFromString: function (enc, audioId, light) { return start(decodeURIComponent(enc), audioId, light); },
         step: function (ms) { return step(ms); },
         cancel: function () { if (job) job.cancelled = true; return str({ ok: true }); },
         // check the last built comp in this AE session: evaluates every expression and saves JIZURA_report.txt

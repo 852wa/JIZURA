@@ -150,9 +150,11 @@ class Renderer {
     for (const P of passes) {
       if (P.pass !== 'main' && !ghostOn) continue;
       const tp = Math.max(0, tq - P.lag);
-      const cut = P.lag ? J.cutAt(plan, tp) : mainCut;
-      if (!cut) continue;
-      if (morphOn && cut !== mainCut) continue;
+      const cut0 = P.lag ? J.cutAt(plan, tp) : mainCut;
+      if (!cut0) continue;
+      if (morphOn && cut0 !== mainCut) continue;
+      // 中央を空ける: the cut in its band, and its companion (echo / whole line / decorations) in the other band
+      for (const cut of plan.centerFree && cut0.companion ? [cut0, cut0.companion] : [cut0]) {
       const csc = st.schemes[cut.scheme % st.schemes.length] || st.schemes[0];
       const lt = tp - cut.start;
       const X = LX || ctx;
@@ -179,7 +181,8 @@ class Renderer {
       if (P.pass !== 'main') X.globalCompositeOperation = J.lum(csc.bg) > 0.55 ? 'multiply' : 'source-over';
       this.drawCut(env);
       X.restore();
-      if (P.pass === 'main') { mainEnv = env; }
+      if (P.pass === 'main' && cut === cut0) { mainEnv = env; }
+      }
     }
     if (LX) {
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';

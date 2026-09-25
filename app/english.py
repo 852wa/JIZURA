@@ -1,8 +1,8 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
-    '<span>統一感<small>パートごとに演出をそろえ、くり返す歌詞は同じ見せ方で戻ってきます。動きの方向を交互にし、強い動きはここぞという行に。「!」の行（なければくり返すパートの頭の行）を大きく見せる「キメ」、文字が溶けて変わる・同じ字が移動する「モーフ」、細字から太字へ育つ「太さ」も使います</small></span>': '<span>Unified look<small>Each part of the song keeps one set of layouts and motions, and a line that comes back is shown the same way again. Directions alternate and strong moves are saved for the lines that matter. The line ending in “!” (or, if none, the first line of a repeated part) becomes a big “hit”; lyrics can melt into the next or glide letter by letter (“morph”), and grow from thin to bold (“weight”)</small></span>',
-    '<span>文字整列<small>かなの字間を詰めて塊で読ませ、助詞を小さく・頭の字を大きく、英字は少し大きく日本語との間を少し空けます。文字は声より0.2秒先に出し、効果を重ねすぎないようにします</small></span>': '<span>Typesetting<small>Kana are set a little tighter so words read as blocks, particles are smaller and the first character larger, Latin letters are slightly larger with a small gap to Japanese. Lyrics appear 0.2 s before the voice, and effects are not piled up</small></span>',
+    '<span>統一感</span>': '<span>Unified look</span>',
+    '<span>文字整列</span>': '<span>Typesetting</span>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button>': 'title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button>',
     'title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">MP4（大きな動画用・ファイルに直接保存）</button>': 'title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">MP4 (large videos, save straight to a file)</button>',
     '<span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span>': '<span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span>',
@@ -241,6 +241,8 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'軽量（AE での再生を軽く）'": "'Lightweight (faster playback in AE)'",
+    "'色ズレの複製・紙の質感・グロー・粒子・一部の画面効果を省いて、After Effects での再生を軽くします（長い曲におすすめ）'": "'Leaves out the colour-shift copies, paper texture, bloom, grain and some screen effects so the composition plays back faster in After Effects (recommended for long songs)'",
     "'中央を空ける（キャラクター用：横長は左右・縦長は上下に配置）'": "'Keep the centre free (for a character: left / right on wide, top / bottom on tall frames)'",
     "'中央にキャラクターなどを重ねる前提で、文字と演出をカットごとの帯（横長の画面は左右、縦長は上下。行ごとに交互）に置きます。背景と画面効果は画面全体のままです'": "'For a character or other footage in the middle: each cut is laid out in a side band (left / right on wide frames, top / bottom on tall ones, alternating line by line). Backgrounds and screen effects still cover the whole frame.'",
     "'中止'": "'Stop'",
@@ -335,6 +337,7 @@ AE_UI = {
 }
 
 CEP = {
+    '<label class="row ae-light-row" title="色ズレの複製・紙の質感・グロー・粒子・一部の画面効果を省いて、After Effects での再生を軽くします（長い曲におすすめ）"><input type="checkbox" class="ae-light"><span>軽量（AE での再生を軽く）</span></label>': '<label class="row ae-light-row" title="Leaves out the colour-shift copies, paper texture, bloom, grain and some screen effects so the composition plays back faster in After Effects (recommended for long songs)"><input type="checkbox" class="ae-light"><span>Lightweight (faster playback in AE)</span></label>',
     '選んだ範囲にカットがありません': 'No cuts in the selected range',
     "`${R.from + 1}${R.to > R.from ? '–' + (R.to + 1) : ''}行目・`": "`lines ${R.from + 1}${R.to > R.from ? '–' + (R.to + 1) : ''} · `",
     "'効果を追加中'": "'adding effects'",

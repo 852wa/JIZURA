@@ -393,6 +393,7 @@ J.plan = (project, audio) => {
       if (weightGrow) cut.weightGrow = true;
       if (morph) cut.morph = morph;
       if (UU) UU.remember(li, k, txt, cut);
+      if (zones) cut.companion = companionOf(cut, { li, k, txt, line: ln.text, single: units.length === 1, kime, rng: J.rng(J.h(cutSeed, 77)), dur, zone: zoneOf(li + 1), st, en, fx, history });
       // 文字整列: effects don't pile up — one decoration, no text treatment on top of it
       if (plan.typeset) { cut.decor = cut.decor.slice(0, 1); if (cut.decor.length && cut.treat !== 'none') { cut.treat = 'none'; cut.treatP = {}; } }
       plan.cuts.push(cut);
@@ -544,6 +545,28 @@ function makeUnify(lines, C) {
         cam: cut.cam, camP: cut.camP, scheme: cut.scheme, seed: cut.seed, bg: cut.bg, bgP: cut.bgP, weightGrow: !!cut.weightGrow, morph: !!cut.morph };
     },
   };
+}
+
+/* 中央を空ける: the other band is never left empty. Its companion shows the whole line when the cut is a part of it,
+   an echo of the lyric in another layout, or (now and then) decorations only; a キメ echoes itself on both sides. */
+const COMP_LAYOUTS = ['type', 'labels', 'gloss', 'vcols', 'stack', 'condensed', 'lowerThird', 'dotMatrix', 'credits', 'ticker', 'marquee', 'tile', 'columnsBig', 'huge', 'center', 'mixed', 'typeSpecimen', 'halfVertical', 'quote'];
+function companionOf(cut, o) {
+  const { rng, zone, st, en, fx, history } = o;
+  const base = { line: cut.line, start: cut.start, end: cut.end, scheme: cut.scheme, seed: J.h(cut.seed, 78), zone, companion: true, bg: 'none', treat: 'none', treatP: {}, cam: 'push', camP: {} };
+  const quiet = () => makeCut(Object.assign(base, { text: '', lineText: '', layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3,
+    params: { variant: 'quiet', showTitle: false, titleText: '' }, decor: pickDecor(rng, st, en, Object.assign({}, fx, { decor: 1 }), 'interlude') }));
+  if (cut.kime) return makeCut(Object.assign(base, { text: cut.text, lineText: cut.lineText, layout: cut.layout, enter: cut.enter, exit: cut.exit, hold: cut.hold, inDur: cut.inDur, outDur: cut.outDur,
+    params: J.LAYOUTS[cut.layout].plan(rng, { text: cut.text, n: [...cut.text.replace(/\s+/g, '')].length, W: zone.w, H: zone.h, dur: o.dur }, st), decor: [], emph: true, weightGrow: cut.weightGrow }));
+  const text = !o.single && o.line && o.line !== o.txt ? o.line : o.txt;
+  if (!text || (o.single && rng.chance(0.3))) return quiet();
+  const n = [...text.replace(/\s+/g, '')].length;
+  const pool = COMP_LAYOUTS.filter(k => J.LAYOUTS[k] && en.layout[k] !== false && J.LAYOUTS[k].fits(n) && k !== cut.layout);
+  if (!pool.length) return quiet();
+  const layout = rng.pick(pool), LD = J.LAYOUTS[layout];
+  const enter = pickEnter(rng, st, en, layout, o.dur, history, false, n), exit = pickExit(rng, st, en, layout, o.dur, true, history);
+  const inDur = J.clamp(o.dur * 0.36, 0.12, 0.6), outDur = J.clamp(o.dur * 0.3, 0.14, 0.55);
+  return makeCut(Object.assign(base, { text, lineText: o.line, layout, enter: enter === 'type' ? 'blur' : enter, exit, hold: pickHold(rng, en, fx, history), inDur: Math.min(inDur, o.dur * 0.45), outDur: Math.min(outDur, o.dur * 0.4),
+    params: LD.plan(rng, { text, n, W: zone.w, H: zone.h, dur: o.dur }, st), decor: rng.chance(0.5) ? pickDecor(rng, st, en, fx, layout, []) : [], words: J.chunkText(text), stagger: 0.04 }));
 }
 
 /* side bands for 中央を空ける: [a, b] in design pixels. Wide frames: left / right thirds (a little narrower on 21:9);
