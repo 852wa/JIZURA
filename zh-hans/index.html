@@ -30003,6 +30003,20 @@ function updateCutInfo() {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
     el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
   }
+  followCutPick(cut, k);
+}
+function followCutPick(cut, k) {
+  if (!cutPick.g) return;
+  const p = $('cutPick');
+  if (!cut || k < 0) {
+    cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
+    if (p) p.hidden = true;
+    return;
+  }
+  cutPick.line = cut.line;
+  cutPick.k = k;
+  if (p) p.hidden = false;
+  fillCutPick();
 }
 function closeCutPick() {
   cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
@@ -30020,8 +30034,8 @@ function fillCutPick() {
   const g = cutPick.g, grid = $('cutPickGrid');
   if (!g || !grid) return;
   const meta = CHIP_GROUPS.find(x => x[0] === g);
-  $('cutPickTitle').textContent = meta ? meta[2] : g;
   const cut = J.cutAt(S.plan, S.t);
+  $('cutPickTitle').textContent = (meta ? meta[2] : g) + (cut ? ' · #' + String(cut.index + 1).padStart(2, '0') : '');
   const cur = cut ? cutGroupVal(cut, g) : '';
   const forced = cutTechSlot(cutPick.line, cutPick.k)[g];
   const onKey = forced || cur;
