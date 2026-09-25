@@ -448,6 +448,21 @@ function updateCutInfo() {
   lastCutIdx = idx;
   const el = $('cutInfo');
   if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
+  if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
+    closeCutPick();
+    const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
+    const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
+    el.innerHTML = [
+      `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
+      chip('l', 'レイアウト', n(J.LAYOUTS, cut.layout)), chip('e', '登場', n(J.ENTER, cut.enter)), chip('h', '保持', n(J.HOLD, cut.hold)), chip('x', '退場', n(J.EXIT, cut.exit)),
+      cut.decor && cut.decor.length ? chip('', '装飾', cut.decor.map(d => n(J.DECOR, d.id)).join('・')) : '',
+      cut.treat && cut.treat !== 'none' ? chip('t', '加工', n(J.TREAT, cut.treat)) : '',
+      cut.bg && cut.bg !== 'none' ? chip('b', '背景', n(J.BG, cut.bg)) : '',
+      cut.cam && cut.cam !== 'push' ? chip('c', 'カメラ', n(J.CAMERA, cut.cam)) : '',
+      cut.trans ? chip('c', 'つなぎ', n(J.TRANS, cut.trans)) : '',
+    ].join('');
+    return;
+  }
   const k = lyricCutK(cut);
   const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
   const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
@@ -466,7 +481,7 @@ function updateCutInfo() {
   followCutPick(cut, k);
 }
 function followCutPick(cut, k) {
-  if (!cutPick.g) return;
+  if (S.mode !== 'pro' || !cutPick.g) return;
   const p = $('cutPick');
   if (!cut || k < 0) {
     cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
@@ -484,6 +499,7 @@ function closeCutPick() {
   lastCutIdx = -2;
 }
 function toggleCutPick(g, cut, k) {
+  if (S.mode !== 'pro') return;
   if (cutPick.g === g && cutPick.line === cut.line && cutPick.k === k) { closeCutPick(); updateCutInfo(); return; }
   cutPick.g = g; cutPick.line = cut.line; cutPick.k = k;
   $('cutPick').hidden = false;
@@ -575,19 +591,19 @@ function renderLines() {
       else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
       replan();
     });
-      const cutsEl = q('.cuts');
-      S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
-        const forced = o.cutLayouts && o.cutLayouts[k];
-        const sel = document.createElement('select');
-        sel.className = 'cut-lay' + (forced ? ' is-forced' : '');
-        sel.innerHTML = layoutOpts;
-        sel.value = forced || c.layout;
-        sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-        sel.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}のレイアウト`);
-        sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
-        sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
-        sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
-        cutsEl.appendChild(sel);
+    const cutsEl = q('.cuts');
+    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
+      const forced = o.cutLayouts && o.cutLayouts[k];
+      const sel = document.createElement('select');
+      sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
+      sel.innerHTML = layoutOpts;
+      sel.value = forced || c.layout;
+      sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
+      sel.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}のレイアウト`);
+      sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
+      sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
+      sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
+      cutsEl.appendChild(sel);
     });
     // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
     if (S.openLine === i) li.classList.add('open');
@@ -946,6 +962,8 @@ function setMode(m) {
   try { localStorage.setItem('jizura.mode', S.mode); } catch (e) {}
   if (mobile) mobileInit();
   if (easy) { showNow(); syncOut(); codecNote(); }
+  if (easy) closeCutPick();
+  if (S.plan && S.lineEls && S.lineEls.length) { lastCutIdx = -2; updateCutInfo(); }
   sizeViewport(); drawTimeline(); loadThumbFonts();
 }
 
