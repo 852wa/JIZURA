@@ -291,6 +291,12 @@ UI = {
     '解析中…': 'Menganalisis audio…', '読み込めませんでした: ': 'Tidak dapat memuat: ',
     '約': 'sekitar ', '（PC）': ' (terpasang)',
     '字面': 'JIZURA', '追加': 'Baru', '和': 'JP',
+    # ロック（スライダー／手法の組／部品セット）
+    "'おまかせでON／OFFを変えないようにロック'": "'Kunci agar Acak tidak mengubah pilihan ON/OFF grup ini'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Kunci agar Acak / Kocok tidak mengubahnya'",
+    "'ロック中。クリックで解除'": "'Terkunci — klik untuk membuka'",
+    "'ロック：'": "'Terkunci: '",
+    "'ロック解除：'": "'Kunci dibuka: '",
 }
 
 EXPORT = {

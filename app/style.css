@@ -46,7 +46,7 @@ html[lang=en] { --ui: system-ui, -apple-system, "Segoe UI", sans-serif; --brand:
 html[lang=zh-Hant] { --ui: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
 html[lang=ko] { --ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; --brand: "Noto Serif KR", "AppleMyungjo", "Batang", serif; }
 html[lang=en] .work { grid-template-columns: minmax(315px, 365px) minmax(0, 1fr) minmax(350px, 395px); }
-html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px; }
+html[lang=en] .slider { grid-template-columns: 124px minmax(0, 1fr) 36px 30px; }
 html[lang=en] .now-row { grid-template-columns: 105px minmax(0, 1fr); }
 html[lang=en] .font-row { grid-template-columns: 95px minmax(0, 1fr); }
 html[lang=en] .ln .tools select { max-width: 130px; }
@@ -172,7 +172,7 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .stile canvas { width: 100%; aspect-ratio: 16 / 9; display: block; }
 .stile span { font-size: 11px; padding: 0 7px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stile[aria-pressed=true] { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); color: var(--text); }
-.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px 30px; gap: 8px; align-items: center; margin-bottom: 8px; }
 .slider input { width: 100%; accent-color: var(--amber); }
 .slider output { font: 500 11px var(--mono); color: var(--muted); text-align: right; }
 .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 10px; }
@@ -194,6 +194,9 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .tgroup[open] summary::before { transform: rotate(90deg); }
 .tgroup .tg-name { flex: 1; font-weight: 600; }
 .tgroup .tg-cnt { color: var(--muted); font-size: 11px; }
+/* locks: same look as the per-line lock button (icon ghost + SVG, accent colour while pressed) */
+.tgroup summary .lk { flex: none; margin-left: 6px; }
+.lk[aria-pressed="true"] { color: var(--amber); }
 .tgroup .tg-tools { display: flex; gap: 6px; padding: 0 10px 8px; }
 .tgroup .checks { padding: 0 10px 10px; }
 .chip.t { border-color: rgba(180,140,255,0.6); }

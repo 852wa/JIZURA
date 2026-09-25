@@ -251,6 +251,12 @@ UI = {
     '解析中…': 'Analyzing audio…', '読み込めませんでした: ': 'Could not load: ',
     '約': 'about ', '（PC）': ' (installed)',
     '字面': 'JIZURA', '追加': 'New', '和': 'JP',
+    # ロック（スライダー／手法の組／部品セット）
+    "'おまかせでON／OFFを変えないようにロック'": "'Lock so Randomize keeps this group’s ON/OFF selection'",
+    "'おまかせ／シャッフルで変えないようにロック'": "'Lock so Randomize / Shuffle leave this alone'",
+    "'ロック中。クリックで解除'": "'Locked — click to unlock'",
+    "'ロック：'": "'Locked: '",
+    "'ロック解除：'": "'Unlocked: '",
 }
 
 EXPORT = {
