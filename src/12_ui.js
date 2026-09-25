@@ -203,6 +203,7 @@ function tick(now) {
       else { pause(); t = S.plan.duration - 1e-3; if (S.tap) stopTap(); }
     }
     S.t = t; S.need = true;
+    followTlPlayhead();
   }
   if (S.need) { S.need = false; draw(); }
 }
@@ -357,6 +358,21 @@ function lyricCutK(cut) {
   }
   return -1;
 }
+function cutQuietSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutQuiet && (o.cutQuiet[k] || o.cutQuiet[String(k)])) || {};
+}
+function markCutQuiet(i, k, groups, on) {
+  if (i == null || i < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[i] || {});
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  groups.forEach(g => { if (on) q[g] = true; else delete q[g]; });
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
+  if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
+}
 function cutTechSlot(line, k) {
   const o = (S.project.overrides || {})[line] || {};
   const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
@@ -380,6 +396,49 @@ function groupName(g, k) {
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
+function pickEnabledTech(g, opts) {
+  opts = opts || {};
+  const tbl = J.registry(g) || {};
+  const en = (S.project.enabled || {})[g] || {};
+  let keys = J.order(g).filter(key => {
+    const def = tbl[key];
+    if (!def || def.special) return false;
+    if (en[key] === false) return false;
+    return !J.randomOk || J.randomOk(S.project, g, key);
+  });
+  if (!keys.length) keys = J.order(g).filter(key => tbl[key] && !tbl[key].special && en[key] !== false);
+  if (g === 'layout' && opts.n != null) {
+    const fit = keys.filter(key => !J.LAYOUTS[key].fits || J.LAYOUTS[key].fits(opts.n));
+    if (fit.length) keys = fit;
+  }
+  if (opts.allowNone && !keys.includes('none')) keys = ['none'].concat(keys);
+  if (opts.avoid && keys.length > 1) keys = keys.filter(key => key !== opts.avoid);
+  if (!keys.length) return '';
+  return keys[(Math.random() * keys.length) | 0];
+}
+function rerollCurrentCut(kind) {
+  if (S.exporting || S.tap) return;
+  const cut = J.cutAt(S.plan, S.t);
+  const k = lyricCutK(cut);
+  if (!cut || k < 0) { toast('この位置のカットは抽選できません'); return; }
+  remember();
+  const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
+  const groups = kind === 'omakase'
+    ? CHIP_GROUPS.map(x => x[0])
+    : ['layout', 'enter', 'hold', 'exit', 'cam', 'trans'];
+  const t0 = S.t;
+  groups.forEach(g => {
+    const allowNone = g === 'decor' || g === 'trans';
+    const key = pickEnabledTech(g, { avoid: kind === 'omakase' ? cutGroupVal(cut, g) : null, allowNone, n });
+    if (key) setCutTech(cut.line, k, g, key);
+  });
+  markCutQuiet(cut.line, k, groups, true);
+  closeCutPick();
+  replan();
+  commit();
+  seek(t0);
+  toast(kind === 'omakase' ? 'このカットをおまかせ' : 'このカットをシャッフル');
+}
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
   const idx = cut ? cut.index : -1;
@@ -391,13 +450,19 @@ function updateCutInfo() {
   if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
   const k = lyricCutK(cut);
   const slot = k >= 0 ? cutTechSlot(cut.line, k) : {};
+  const quiet = k >= 0 ? cutQuietSlot(cut.line, k) : {};
   const bits = [`<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`];
   CHIP_GROUPS.forEach(([g, cls, label]) => {
-    const forced = slot[g] != null && slot[g] !== '';
+    const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このカットだけ手法をランダムに">おまかせ</button>`);
   el.innerHTML = bits.join('');
-  if (k >= 0) el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
+  if (k >= 0) {
+    el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
+    el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+  }
 }
 function closeCutPick() {
   cutPick.g = null; cutPick.line = -1; cutPick.k = -1;
@@ -654,9 +719,15 @@ function setCutTech(i, k, group, key) {
   delete cutTech[String(k)];
   if (!key) delete slot[group];
   else slot[group] = key;
-  if (!Object.keys(slot).length) delete cutTech[k];
-  else cutTech[k] = slot;
+  if (Object.keys(slot).length) cutTech[k] = slot;
+  else delete cutTech[k];
   if (Object.keys(cutTech).length) cur.cutTech = cutTech; else delete cur.cutTech;
+  const cutQuiet = Object.assign({}, cur.cutQuiet || {});
+  const q = Object.assign({}, cutQuiet[k] || cutQuiet[String(k)] || {});
+  delete cutQuiet[String(k)];
+  delete q[group];
+  if (Object.keys(q).length) cutQuiet[k] = q; else delete cutQuiet[k];
+  if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
   if (group === 'layout') {
     const cutLayouts = Object.assign({}, cur.cutLayouts || {});
     if (!key) delete cutLayouts[k]; else cutLayouts[k] = key;
