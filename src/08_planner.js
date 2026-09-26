@@ -98,6 +98,9 @@ const segmenterOf = () => {
   if (!(loc in segmenters)) { try { segmenters[loc] = new Intl.Segmenter(loc, { granularity: 'word' }); } catch (e) { segmenters[loc] = null; } }
   return segmenters[loc];
 };
+const SPACED = /[A-Za-z\u00c0-\u024f\uac00-\ud7a3]/;   // scripts that put spaces between words (Latin, Korean hangul)
+// rejoin spaced words: a word ending in a dash was split out of "menu\u2014different", so no space goes after it
+const joinWords = ws => ws.reduce((s, w) => s + (s && !/[\u2013\u2014]$/.test(s) ? ' ' : '') + w, '');
 const segType = s => {
   if (/^\s+$/.test(s)) return 'S';
   if ([...s].every(c => J.isPunct(c))) return 'P';
@@ -126,6 +129,7 @@ J.chunkText = (text) => {
   for (const sg of segs) {
     const t = segType(sg);
     if (t === 'S') { close(); continue; }
+    if (t === 'P' && !cur && /^['’]$/.test(sg)) { cur = { s: sg, k: 'L', hasH: false }; continue; }   // a leading apostrophe ('em, 'cause) belongs to the next word
     if (t === 'P') { if (cur) cur.s += sg; else if (chunks.length) chunks[chunks.length - 1] += sg; else cur = { s: sg, k: 'P', hasH: false }; continue; }
     if (!cur) { cur = { s: sg, k: t, hasH: t === 'H' }; continue; }
     if (t === 'H') {
@@ -139,15 +143,21 @@ J.chunkText = (text) => {
     close(); cur = { s: sg, k: t, hasH: t === 'H' };
   }
   close();
-  // split very long chunks, merge lonely single kana
+  // split very long chunks (but never inside one Latin word — "unforge ttable"), merge lonely single kana
   const out = [];
-  for (const c of chunks) {
-    const n = [...c].length;
-    if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
-    else out.push(c);
+  const LATIN_WORD = /^[\x21-\x7e\u00c0-\u024f\u2013\u2014\u2018\u2019\u201c\u201d]+$/;
+  for (const c0 of chunks) {
+    // Latin words joined by a dash ("paintbrush\u2014we") break after the dash first
+    const parts = SPACED.test(c0) && /[\u2013\u2014]./.test(c0) ? c0.split(/(?<=[\u2013\u2014])/) : [c0];
+    for (const c of parts) {
+      const n = [...c].length;
+      if (n > 10 && !LATIN_WORD.test(c)) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
+      else out.push(c);
+    }
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
+    // a lone Latin letter / hangul syllable after a Latin / hangul chunk is a word of its own (a, 나, 가 …) — keep the space
+    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (SPACED.test(out[i]) && SPACED.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
 };
@@ -155,7 +165,7 @@ J.chunkText = (text) => {
 /* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
 J.phraseChunks = (words) => {
   const out = []; let cur = [], letters = 0;
-  const flush = () => { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; };
+  const flush = () => { if (cur.length) out.push(joinWords(cur)); cur = []; letters = 0; };
   for (const w of words) {
     const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
     cur.push(w); letters += n;
@@ -163,7 +173,7 @@ J.phraseChunks = (words) => {
   }
   flush();
   // a lone short word at the end joins the previous phrase
-  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] += ' ' + last; }
+  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] = joinWords([out[out.length - 1], last]); }
   return out.length ? out : words;
 };
 
@@ -311,7 +321,7 @@ J.plan = (project, audio) => {
     let groups;
     const nG = Math.min(nC, chunks2.length);
     if (nG <= 1) groups = [ln.text];
-    else groups = partition(chunks2, nG).map(g => g.join(/[A-Za-z]/.test(g.join('')) ? ' ' : ''));
+    else groups = partition(chunks2, nG).map(g => SPACED.test(g.join('')) ? joinWords(g) : g.join(''));
     const recap = !fixedN && nC > groups.length && groups.length >= 2;
     let units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
     if (recap) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
