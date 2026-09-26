@@ -58,6 +58,15 @@ try {
   })()`);
   assert.equal(auto.value, 10);
   assert.deepEqual(auto.starts.map(x => +x.toFixed(3)), [10, 11.65]);
+  const compressed = await evaluate(`(() => {
+    const p = J.defaultProject(); p.lyrics = 'first\\nsecond\\nthird'; p.timing.bpm = 0;
+    J.ui.project = p; J.uiApi.syncUI(); J.uiApi.replan();
+    const input = document.querySelectorAll('#lineList .time')[2];
+    input.value = '1'; input.dispatchEvent(new Event('change'));
+    return { value: p.timing.lineTimes[2], starts: J.ui.plan.lines.map(l => l.start) };
+  })()`);
+  assert.equal(compressed.value, 1);
+  assert.deepEqual(compressed.starts.map(x => +x.toFixed(3)), [0.4, 0.7, 1]);
   const fixed = await evaluate(`(() => {
     const p = J.defaultProject(); p.lyrics = '[00:10.00]first\\n[00:20.00]second';
     J.ui.project = p; J.uiApi.syncUI(); J.uiApi.replan();
@@ -67,6 +76,15 @@ try {
   })()`);
   assert.equal(fixed.value, 19.8);
   assert.deepEqual(fixed.starts, [19.8, 20]);
+  const narrow = await evaluate(`(() => {
+    const p = J.defaultProject(); p.lyrics = '[00:00.00]A\\n[00:00.02]B\\n[00:00.10]C';
+    J.ui.project = p; J.uiApi.syncUI(); J.uiApi.replan();
+    const input = document.querySelectorAll('#lineList .time')[1];
+    input.value = '1'; input.dispatchEvent(new Event('change'));
+    return { value: p.timing.lineTimes[1], starts: J.ui.plan.lines.map(l => l.start) };
+  })()`);
+  assert.equal(narrow.value, 0.05);
+  assert.deepEqual(narrow.starts, [0, 0.05, 0.1]);
   console.log('line_times_ui_test: passed');
 } finally {
   socket?.close();

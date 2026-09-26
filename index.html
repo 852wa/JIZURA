@@ -36313,17 +36313,21 @@ function renderLines() {
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
       if (isFinite(v)) {
         const L = S.plan.lines;
-        const lo = i ? L[i - 1].start + 0.2 : 0;
         const parsed = J.parseLyrics(S.project.lyrics).lines;
-        let hi = Infinity;
-        // An automatic next line moves with this one. Only a hand-set time or
-        // LRC tag is a fixed boundary that the typed time must stay before.
-        for (let j = i + 1; j < L.length; j++) {
+        const fixed = j => {
           const manual = S.project.timing.lineTimes[j] != null ? +S.project.timing.lineTimes[j] : null;
-          if (manual != null && isFinite(manual) || parsed[j] && parsed[j].lrc != null)
-            hi = Math.min(hi, L[j].start - 0.2);
+          return manual != null && isFinite(manual) || parsed[j] && parsed[j].lrc != null;
+        };
+        // Automatic lines between anchors can move to fit the typed time.
+        let prev = i ? L[0].start : 0;
+        for (let j = i - 1; j >= 0; j--) if (fixed(j)) { prev = L[j].start; break; }
+        let next = Infinity;
+        for (let j = i + 1; j < L.length; j++) {
+          if (fixed(j)) next = Math.min(next, L[j].start);
         }
-        hi = Math.max(lo, hi);
+        const gap = isFinite(next) ? Math.min(0.2, Math.max(0, (next - prev) / 2)) : 0.2;
+        const lo = i ? prev + gap : 0;
+        const hi = isFinite(next) ? Math.max(lo, next - gap) : Infinity;
         S.project.timing.lineTimes[i] = +J.clamp(v, lo, hi).toFixed(3);
       } else delete S.project.timing.lineTimes[i];
       replan();
