@@ -174,6 +174,11 @@ J.computeTiming = (project, parsed, audio) => {
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
   const allLrc = lines.length && lines.every(l => l.lrc != null);
+  const manualAt = i => {
+    const value = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
+    return value != null && isFinite(value);
+  };
+  const hasManual = lines.some((_, i) => manualAt(i));
   const nextFixed = new Array(lines.length);
   let next = null;
   for (let i = lines.length - 1; i >= 0; i--) {
@@ -181,16 +186,31 @@ J.computeTiming = (project, parsed, audio) => {
     const manual = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     if (!(manual != null && isFinite(manual)) && lines[i].lrc != null) next = lines[i].lrc;
   }
-  let t = T.offset ?? 0.4;
+  const t = T.offset ?? 0.4;
+  let lastAnchor = -1;
+  const compressed = [];
+  const spreadMissing = (left, right) => {
+    if (left < 0 || right - left < 2 || starts[right] <= starts[left]) return;
+    if (starts[right - 1] < starts[right] - 0.35) return;
+    for (let i = left + 1; i < right; i++) {
+      starts[i] = starts[left] + (starts[right] - starts[left]) * (i - left) / (right - left);
+      compressed[i] = true;
+    }
+    compressed[left] = true;
+  };
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
     if (man != null && isFinite(man)) {
       // Keep an imported hand-set time within its neighbours without changing
       // the project or moving a genuine LRC anchor (including repeated tags).
-      const lo = i ? starts[i - 1] + 0.2 : 0;
-      const hi = nextFixed[i] == null ? Infinity : Math.max(lo, nextFixed[i] - 0.2);
-      s = J.clamp(man, lo, hi);
+      const left = lastAnchor >= 0 ? lastAnchor : i ? 0 : -1;
+      const prev = left >= 0 ? starts[left] : 0;
+      const fixed = nextFixed[i];
+      const gap = fixed == null ? 0.2 : Math.min(0.2, Math.max(0, (fixed - prev) / 2));
+      const lo = i ? prev + gap : 0;
+      const hi = fixed == null ? Infinity : fixed - gap;
+      s = hi >= lo ? J.clamp(man, lo, hi) : prev;
     }
     else if (allLrc) s = l.lrc;
     else {
@@ -202,9 +222,17 @@ J.computeTiming = (project, parsed, audio) => {
       } else s = t;
     }
     starts.push(s);
+    if (hasManual && (manualAt(i) || allLrc && l.lrc != null)) {
+      const left = lastAnchor >= 0 ? lastAnchor : i > 0 ? 0 : -1;
+      spreadMissing(left, i);
+      lastAnchor = i;
+    }
   });
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    if (i < starts.length - 1) {
+      if ((manualAt(i) || manualAt(i + 1) || compressed[i] || compressed[i + 1]) && starts[i + 1] > s) return starts[i + 1];
+      return Math.max(s + 0.35, starts[i + 1]);
+    }
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;

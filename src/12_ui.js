@@ -648,7 +648,16 @@ function renderLines() {
       if (isFinite(v)) {
         const L = S.plan.lines;
         const lo = i ? L[i - 1].start + 0.2 : 0;
-        const hi = i < L.length - 1 ? Math.max(lo, L[i + 1].start - 0.2) : Infinity;
+        const parsed = J.parseLyrics(S.project.lyrics).lines;
+        let hi = Infinity;
+        // An automatic next line moves with this one. Only a hand-set time or
+        // LRC tag is a fixed boundary that the typed time must stay before.
+        for (let j = i + 1; j < L.length; j++) {
+          const manual = S.project.timing.lineTimes[j] != null ? +S.project.timing.lineTimes[j] : null;
+          if (manual != null && isFinite(manual) || parsed[j] && parsed[j].lrc != null)
+            hi = Math.min(hi, L[j].start - 0.2);
+        }
+        hi = Math.max(lo, hi);
         S.project.timing.lineTimes[i] = +J.clamp(v, lo, hi).toFixed(3);
       } else delete S.project.timing.lineTimes[i];
       replan();
