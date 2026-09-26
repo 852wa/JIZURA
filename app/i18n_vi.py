@@ -42,6 +42,10 @@ STYLES = {
 }
 
 BODY = {
+    "通し番号": "Số thứ tự",
+    "時刻": "Mốc thời gian",
+    "全カットで表示／非表示": "hiện / ẩn ở mọi cut",
+    "全カットで表示／非表示（HUD を含む）": "hiện / ẩn ở mọi cut (kể cả HUD)",
     "元に戻す": "Hoàn tác",
     "レイアウト文字": "Chữ layout",
     "このカットが画面に出す文字": "chữ mà cut này hiển thị",
@@ -254,6 +258,10 @@ BODY = {
 }
 
 UI = {
+    "通し番号：表示": "Số thứ tự: hiện",
+    "通し番号：非表示": "Số thứ tự: ẩn",
+    "時刻：表示": "Mốc thời gian: hiện",
+    "時刻：非表示": "Mốc thời gian: ẩn",
     "行の残り（前後の語）": "Phần còn lại của dòng (từ kề bên)",
     "その他（レイアウト独自の文字）": "Khác (chữ riêng của layout)",
     "時刻": "Mốc thời gian",

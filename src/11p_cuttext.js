@@ -87,40 +87,52 @@ J.txSlotOf = (cut, str, env) => {
 /* apply a cut's override to one drawn item (null = do not draw) */
 J.txApply = (env, it) => {
   const cut = env.cut, o = cut && cut.tx;
-  if (!o || !it || it.text == null) return it;
+  const g = env.fx || {};
+  if (!it || it.text == null) return it;
+  if (!o && !g.hideNo && !g.hideTime) return it;      // nothing switched on anywhere
   const s = String(it.text);
   const slot = J.txSlotOf(cut, s, env);
   if (!slot) return it;
   const hit = k => slot === k || slot.split('+').includes(k);
-  if (slot === 'no+time') {
-    if (o.hideTime) return null;
-    if (!o.hideNo) return it;
-    const tag = pad2((cut.line | 0) + 1);
-    const t = s
-      .replace(new RegExp('(#|No\\.)\\s*' + tag, 'g'), '')
-      .replace(new RegExp('^\\s*' + tag + '\\s*[／/]\\s*'), '')
-      .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
-    return t ? Object.assign({}, it, { text: t }) : null;
+  const off = k => !!(o && o[k]);                     // per-cut flag, safe when the cut has no overrides
+  // serial number / timecode: the per-cut boxes and the project-wide switches both count
+  if (hit('no') || hit('time')) {
+    const hNo = (o && o.hideNo) || !!g.hideNo, hTm = (o && o.hideTime) || !!g.hideTime;
+    if (hit('no') && hit('time') && hNo && hTm) return null;
+    if (slot === 'no+time') {
+      if (hTm) {                                       // keep the serial number, drop only the timecode
+        const t = s.replace(/\d{1,2}:\d{2}\.\d{2}/g, '').replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+        return t ? Object.assign({}, it, { text: t }) : null;
+      }
+      if (!hNo) return it;
+      const t = s
+        .replace(new RegExp('(#|No\\.)\\s*' + pad2((cut.line | 0) + 1), 'g'), '')
+        .replace(new RegExp('^\\s*' + pad2((cut.line | 0) + 1) + '\\s*[／/]\\s*'), '')
+        .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+      return t ? Object.assign({}, it, { text: t }) : null;
+    }
+    if (hit('no')) return hNo ? null : it;
+    if (hit('time')) return hTm ? null : it;
   }
   if (hit('main')) {
-    if (o.hideMain) return null;
-    if (o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
+    if (off('hideMain')) return null;
+    if (o && o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
   } else if (hit('line')) {
-    if (o.hideLine) return null;
+    if (off('hideLine')) return null;
   } else if (hit('note')) {
-    if (o.hideNote) return null;
-    if (o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
+    if (off('hideNote')) return null;
+    if (o && o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
   } else if (hit('romaji')) {
-    if (o.hideRomaji) return null;
+    if (off('hideRomaji')) return null;
   } else if (hit('no')) {
-    if (o.hideNo) return null;
+    if (off('hideNo')) return null;
   } else if (hit('time')) {
-    if (o.hideTime) return null;
+    if (off('hideTime')) return null;
   } else if (hit('title')) {
-    if (o.hideTitle) return null;
-    if (o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
+    if (off('hideTitle')) return null;
+    if (o && o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
   } else if (hit('other')) {
-    if (o.hideOther) return null;
+    if (off('hideOther')) return null;
   }
   return it;
 };
@@ -161,7 +173,7 @@ J.drawItem = (env, it) => {
     if (t != null && String(t)) env.__rec.push(String(t));
     if (env.__probe) return null;                       // probe: report only, never paint
   }
-  if (env.__ly) { it = J.txApply(env, it); if (!it) return null; }
+  if (env.__ly) { try { it = J.txApply(env, it); } catch (e) { /* never drop a frame for a label */ } if (!it) return null; }
   return drawItem(env, it);
 };
 
