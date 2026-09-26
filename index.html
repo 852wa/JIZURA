@@ -3461,9 +3461,10 @@ J.parseLyrics = (raw) => {
     lastTag = line.lrc;
   }
   // Preserve source order only when the tagged rows already run forward in
-  // time. Out-of-order LRC (including repeated tags on one row) keeps the old
-  // chronological sort; the untimed rows remain at the end in that case.
-  const sourceOrder = mixedLrc && ascendingTags;
+  // time. With untimed rows before a tag at zero there is no positive interval
+  // to place them in. Both cases keep the old chronological sort instead.
+  const firstTagged = lines.findIndex(l => l.lrc != null);
+  const sourceOrder = mixedLrc && ascendingTags && !(firstTagged > 0 && lines[firstTagged].lrc <= 0);
   if (hasLrc && !sourceOrder) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
   return { lines, meta, mixedLrc, sourceOrder };
 };
@@ -3622,7 +3623,8 @@ J.computeTiming = (project, parsed, audio) => {
     for (let right = 0; right < lines.length; right++) {
       const manual = T.lineTimes && T.lineTimes[right] != null ? +T.lineTimes[right] : null;
       if (!(manual != null && isFinite(manual)) && lines[right].lrc == null) continue;
-      const first = left + 1, leftTime = left < 0 ? t : starts[left], rightTime = starts[right];
+      const first = left + 1, rightTime = starts[right];
+      const leftTime = left < 0 ? (rightTime <= t ? 0 : t) : starts[left];
       if (first < right && rightTime > leftTime) {
         let crowded = left >= 0 && starts[first] <= leftTime;
         for (let i = first + 1; i < right; i++) if (starts[i] <= starts[i - 1]) crowded = true;
