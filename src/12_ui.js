@@ -1635,7 +1635,11 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try {
+      S.project = mergeProject(JSON.parse(await f.text()));
+      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+      syncUI(); replan(); commit(); updateEditBtns(); restoreFonts();
+    }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
