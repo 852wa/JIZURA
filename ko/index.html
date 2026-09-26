@@ -445,6 +445,18 @@ button.small.primary { padding: 4px 12px; }
 #app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
 #app.is-mobile button.play { flex: none; width: 44px; }
 
+/* レイアウト文字 (per-cut text control) */
+.tx-rows { display: flex; flex-direction: column; gap: 6px; }
+.tx-row { display: grid; grid-template-columns: minmax(120px, 30%) 1fr; gap: 6px 10px; align-items: center; padding: 6px 2px; border-top: 1px solid var(--line); }
+.tx-row:first-child { border-top: 0; }
+.tx-lab { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.tx-lab input { accent-color: var(--amber); }
+.tx-in { width: 100%; font-size: 12px; padding: 4px 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+.tx-in::placeholder { color: var(--muted); opacity: .7; }
+.tx-row.is-off .tx-lab span, .tx-row.is-off .tx-in { opacity: .45; }
+.tx-hint { grid-column: 1 / -1; font-size: 11px; }
+.tx-none { font-size: 12px; padding: 8px 2px; }
+
 </style>
 </head>
 <body>
@@ -570,6 +582,15 @@ button.small.primary { padding: 4px 12px; }
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
+      <div id="cutTx" class="cut-pick pro-only" hidden>
+        <div class="cut-pick-h">
+          <strong id="cutTxTitle">레이아웃 문자 제어</strong>
+          <span class="muted" id="cutTxHint">이 컷이 화면에 내보내는 문자</span>
+          <button type="button" id="cutTxAuto" class="ghost small">되돌리기</button>
+          <button type="button" id="cutTxClose" class="ghost small" aria-label="닫기">✕</button>
+        </div>
+        <div id="cutTxBody" class="tx-rows"></div>
+      </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
@@ -604,6 +625,13 @@ button.small.primary { padding: 4px 12px; }
             <button id="ePalette" title="강조색·오프셋 색 A/B를 랜덤 변경">배색</button>
             <button id="eMood" title="움직임·글리치·사용 기법의 분위기만 변경">분위기</button>
             <button id="eCut" title="레이아웃과 움직임 조합만 변경">구성</button>
+          </div>
+        </div>
+        <div class="easy-sec">
+          <h3>레이아웃 문자 제어</h3>
+          <div class="pick-sets">
+            <label class="check"><input class="txno-toggle" type="checkbox" checked><span>일련번호<small>모든 컷에서 표시/숨김</small></span></label>
+            <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>시각<small>모든 컷에서 표시/숨김(HUD 포함)</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -664,6 +692,9 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 플래시</label>
           <label class="row" style="gap:6px">프레임 홀드 <select id="fxKoma" title="움직임을 초당 몇 장으로 그릴지 설정 (출력 fps와 별개)"><option value="0">전체 (출력 fps 그대로)</option><option value="12">2프레임 홀드 (초당 12장)</option><option value="8">3프레임 홀드 (초당 8장)</option></select></label>
         </div>
+        <h3>레이아웃 문자 제어</h3>
+        <label class="check"><input class="txno-toggle" type="checkbox" checked><span>일련번호<small>모든 컷에서 표시/숨김</small></span></label>
+        <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>시각<small>모든 컷에서 표시/숨김(HUD 포함)</small></span></label>
         <div class="fields" style="margin-top:12px">
           <label class="field">HUD<select id="fxHud"><option value="auto">스타일에 따라</option><option value="on">항상 표시</option><option value="off">표시 안 함</option></select></label>
           <label class="field">시드<input id="seed" type="number" step="1"></label>
@@ -3394,7 +3425,9 @@ J.defaultProject = () => ({
   centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
-  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
+  //                                                                                 hideNo / hideTime: レイアウト文字 —
+  // one project-wide switch pair (the 演出 panel writes them): when set, no layout and no HUD prints the serial number / the timecode
+  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
@@ -3666,7 +3699,7 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet', 'cutText'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -3905,6 +3938,18 @@ J.plan = (project, audio) => {
     if (c.layout === 'interlude') { c.params = Object.assign({}, c.params, { showTitle: false }); return; }   // no lyric: the whole frame
     c.zone = zoneOf(c.line);
   });
+  // レイアウト文字: per-cut text override, keyed like cutTech (the cut's index within its line)
+  {
+    const kof = {};
+    for (const c of plan.cuts) {
+      const LD = J.LAYOUTS[c.layout];
+      if (c.line < 0 || !LD || LD.special) continue;
+      const k = kof[c.line] || 0; kof[c.line] = k + 1;
+      const o = (project.overrides || {})[c.line] || {};
+      const tx = o.cutText && (o.cutText[k] || o.cutText[String(k)]);
+      if (tx) c.tx = tx;
+    }
+  }
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
@@ -4666,7 +4711,8 @@ class Renderer {
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
-      J.drawHUD(env, plan);
+      env.__ly = true;                       // レイアウト文字: the HUD timecode / line info obey the same switches
+      try { J.drawHUD(env, plan); } finally { env.__ly = false; }
     }
     ctx.restore();
     // ---------- post ----------
@@ -4828,7 +4874,8 @@ class Renderer {
     if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
     if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
-    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
+    env.__ly = true;                                    // レイアウト文字: this pass may hide / replace texts
+    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); } finally { env.__ly = false; }
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
   }
@@ -6688,6 +6735,187 @@ reg('cam', 'jelly', { name: 'ぷるん', tags: ['pop', 'graphic'], w: 0.7,
     const A = (P.a || 0.055) * K;
     return { sx: 1 + A * w, sy: 1 - A * w * 0.9, y: env.H * 0.008 * K * w, s: 1.01 };
   } });
+})();
+
+/* JIZURA pack: レイアウト文字 — per-cut control of every text a layout draws.
+
+   Every layout (186 of them, incl. the packs upstream keeps adding) paints its text through
+   J.drawItem(), so one wrapper covers all of them and does both halves of the feature:
+
+     · probe  — report which strings this cut's layout really draws, so the panel lists
+                exactly those rows (a layout that never prints a number shows no number row)
+     · apply  — hide / replace them, again without touching any layout's render code
+
+   A drawn string is matched to a slot by comparing *normalised* forms, because layouts
+   rewrite what they are handed: they strip spaces, wrap lines with \n, split the line into
+   words, uppercase romaji, or glue the serial number and the timecode together
+   ("No.01 00:00.40"). Anything matching nothing is reported as "other", so a layout that
+   letterpresses its own station code ("LY", "33", "← LY32") is still the user's to hide. */
+(() => {
+'use strict';
+
+const RX_SP = /[\s\u3000]+/g;
+const norm = s => String(s == null ? '' : s).replace(RX_SP, '');
+const pad2 = n => String(Math.max(0, n | 0)).padStart(2, '0');
+
+/* every spelling of this line's romaji a pack may print: plain / upper / Capitalised,
+   with or without spaces (packs build them with J.romaji + toUpperCase + slice) */
+const romajiSet = cut => {
+  if (cut.__romajiSet) return cut.__romajiSet;
+  const s = new Set();
+  for (const t of [String(cut.text || ''), norm(cut.text), String(cut.lineText || '')]) {
+    if (!t) continue;
+    const r = J.romaji(t);
+    if (!r) continue;
+    for (const v of [r, norm(r)]) {
+      s.add(v);
+      s.add(v.toUpperCase());
+      s.add(v.charAt(0).toUpperCase() + v.slice(1).toLowerCase());
+    }
+  }
+  return (cut.__romajiSet = s);
+};
+const isRomajiExact = (cut, n) => romajiSet(cut).has(n);
+const isRomajiPiece = (cut, n) => {
+  if ([...n].length < 3) return false;
+  for (const r of romajiSet(cut)) if (r.length >= 3 && r.includes(n)) return true;
+  return false;
+};
+
+/* which controllable slot a drawn string belongs to */
+J.txSlotOf = (cut, str, env) => {
+  if (!cut || str == null) return null;
+  const s = String(str);
+  if (!s.trim()) return null;
+  const n = norm(s);
+  if (!n) return null;
+  const main = norm(cut.text), note = norm(cut.note), line = norm(cut.lineText || cut.text);
+  const tag = pad2((cut.line | 0) + 1);
+  const noS = 'No.' + tag, hashS = '#' + tag;
+  const tm = J.fmtTime(cut.start), live = env ? J.fmtTime(env.t) : '';
+  // serial number / timecode, alone or glued together — one drawing, so the panel shows a
+  // single row for the pair and strips whichever half was switched off
+  const hasNo = n.includes(noS) || n.includes(hashS);
+  const hasTm = (!!tm && n.includes(norm(tm))) || (!!live && n.includes(norm(live)));
+  if (hasNo || hasTm) {
+    if (n === noS || n === hashS) return hasTm ? 'no+time' : 'no';
+    if ((tm && n === norm(tm)) || (live && n === norm(live))) return hasNo ? 'no+time' : 'time';
+    // a glued "No.01 00:00.40" is recognised by shape, not only against the current time,
+    // so the strip path works during the probe too (where there is no playhead)
+    if (hasNo && (hasTm || /\d{1,2}:\d{2}\.\d{2}/.test(n)) && n.length <= noS.length + 14) return 'no+time';
+  }
+  if (note && n === note) return 'note';
+  if (isRomajiExact(cut, n)) return 'romaji';
+  const tt = cut.params && cut.params.titleText;
+  if (tt && n === norm(tt)) return 'title';
+  if (main && n === main) return 'main';
+  if (main && [...n].length === 1 && main.includes(n)) return 'main:split';
+  // a decoration built by repeating the lyric ("nee, mada . nee, mada . ...") is still the lyric
+  const SEP = /[・･／/、,،+\-]/g;
+  if (main) {
+    const fm = main.replace(SEP, '');
+    const flat = n.replace(SEP, '');
+    if (fm && flat.length >= fm.length * 2 && flat.length % fm.length === 0 && flat === fm.repeat(flat.length / fm.length)) return 'main';
+  }
+  if (isRomajiPiece(cut, n)) return 'romaji';
+  if (line && n === line) return 'line';
+  if (line && [...n].length >= 2 && (line.includes(n) || n.includes(line))) return 'line';
+  return 'other';
+};
+
+/* apply a cut's override to one drawn item (null = do not draw) */
+J.txApply = (env, it) => {
+  const cut = env.cut, o = cut && cut.tx;
+  const g = env.fx || {};
+  if (!it || it.text == null) return it;
+  if (!o && !g.hideNo && !g.hideTime) return it;      // nothing switched on anywhere
+  const s = String(it.text);
+  const slot = J.txSlotOf(cut, s, env);
+  if (!slot) return it;
+  const hit = k => slot === k || slot.split('+').includes(k);
+  const off = k => !!(o && o[k]);                     // per-cut flag, safe when the cut has no overrides
+  // serial number / timecode: the per-cut boxes and the project-wide switches both count
+  if (hit('no') || hit('time')) {
+    const hNo = (o && o.hideNo) || !!g.hideNo, hTm = (o && o.hideTime) || !!g.hideTime;
+    if (hit('no') && hit('time') && hNo && hTm) return null;
+    if (slot === 'no+time') {
+      if (hTm) {                                       // keep the serial number, drop only the timecode
+        const t = s.replace(/\d{1,2}:\d{2}\.\d{2}/g, '').replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+        return t ? Object.assign({}, it, { text: t }) : null;
+      }
+      if (!hNo) return it;
+      const t = s
+        .replace(new RegExp('(#|No\\.)\\s*' + pad2((cut.line | 0) + 1), 'g'), '')
+        .replace(new RegExp('^\\s*' + pad2((cut.line | 0) + 1) + '\\s*[／/]\\s*'), '')
+        .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+      return t ? Object.assign({}, it, { text: t }) : null;
+    }
+    if (hit('no')) return hNo ? null : it;
+    if (hit('time')) return hTm ? null : it;
+  }
+  if (hit('main')) {
+    if (off('hideMain')) return null;
+    if (o && o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
+  } else if (hit('line')) {
+    if (off('hideLine')) return null;
+  } else if (hit('note')) {
+    if (off('hideNote')) return null;
+    if (o && o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
+  } else if (hit('romaji')) {
+    if (off('hideRomaji')) return null;
+  } else if (hit('no')) {
+    if (off('hideNo')) return null;
+  } else if (hit('time')) {
+    if (off('hideTime')) return null;
+  } else if (hit('title')) {
+    if (off('hideTitle')) return null;
+    if (o && o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
+  } else if (hit('other')) {
+    if (off('hideOther')) return null;
+  }
+  return it;
+};
+
+/* the row list for the panel: what this cut's layout really draws.
+   Sampling five instants covers layouts that reveal their text over time. */
+J.txProbe = (cut, plan) => {
+  const seen = [];
+  const R = new J.Renderer();
+  const st = plan.style, sch = st.schemes || [];
+  const sc = sch[cut.scheme % sch.length] || sch[0] || {};
+  const cv = document.createElement('canvas'); cv.width = cv.height = 8;
+  const ctx = cv.getContext('2d');
+  const td = Math.max(0.05, cut.dur || 0);
+  let probeEnv = null;
+  for (const k of [0.2, 0.35, 0.5, 0.65, 0.8]) {
+    const lt = td * k;
+    const env = R.makeEnv(ctx, plan, cut, sc, { pass: 'main', layer: 'front', t: cut.start + lt, lt, ltb: lt, step: 1, scale: 1, allowFilter: false, energy: 0, bgOnly: false, zone: null });
+    env.__rec = seen; env.__probe = true; env.__ly = true;
+    probeEnv = env;
+    try { (J.LAYOUTS[cut.layout] || J.LAYOUTS.center).render(env); } catch (e) { /* keep what we have */ }
+  }
+  const order = ['main', 'main:split', 'line', 'note', 'romaji', 'no', 'time', 'title', 'other'];
+  const have = new Set();
+  for (const s of seen) {
+    const slot = J.txSlotOf(cut, s, probeEnv);
+    if (slot) slot.split('+').forEach(x => have.add(x));
+  }
+  return order.filter(x => have.has(x));
+};
+
+/* one wrapper over the text primitive — the single place every layout goes through */
+const drawItem = J.drawItem;
+J.drawItem = (env, it) => {
+  if (!env) return drawItem(env, it);
+  if (env.__rec) {
+    const t = it && it.text;
+    if (t != null && String(t)) env.__rec.push(String(t));
+    if (env.__probe) return null;                       // probe: report only, never paint
+  }
+  if (env.__ly) { try { it = J.txApply(env, it); } catch (e) { /* never drop a frame for a label */ } if (!it) return null; }
+  return drawItem(env, it);
+};
+
 })();
 
 /* JIZURA pack: decor — 45 refined graphic accents: HUD / measuring marks, geometry, particles & light, hand-drawn marks, type ornaments */
@@ -36591,6 +36819,28 @@ function markCutQuiet(i, k, groups, on) {
   if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
+/* 레이아웃 문자: per-cut override of the texts the layout puts on screen.
+   Same key as cutTech (the cut's index inside its line); an entry is what the user
+   actually changed, so an empty object = no override. */
+function cutTextSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutText && (o.cutText[k] || o.cutText[String(k)])) || {};
+}
+function setCutText(line, k, patch) {
+  if (line == null || line < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[line] || {});
+  const all = Object.assign({}, cur.cutText || {});
+  let slot = patch === null ? {} : Object.assign({}, all[k] || all[String(k)] || {}, patch);
+  delete all[String(k)];
+  Object.keys(slot).forEach(key => { if (slot[key] == null || slot[key] === false || slot[key] === '') delete slot[key]; });
+  if (Object.keys(slot).length) all[k] = slot; else delete all[k];
+  if (Object.keys(all).length) cur.cutText = all; else delete cur.cutText;
+  if (Object.keys(cur).length) S.project.overrides[line] = cur; else delete S.project.overrides[line];
+}
+function cutTextOn(cut, k) {
+  return k >= 0 && cut && Object.keys(cutTextSlot(cut.line, k)).length > 0;
+}
+
 function cutTechSlot(line, k) {
   const o = (S.project.overrides || {})[line] || {};
   const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
@@ -36665,9 +36915,10 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">이 위치에는 컷이 없습니다</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">이 위치에는 컷이 없습니다</span>'; closeCutPick(); closeCutTx(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
+    closeCutTx();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
     const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
     el.innerHTML = [
@@ -36688,6 +36939,11 @@ function updateCutInfo() {
   CHIP_GROUPS.forEach(([g, cls, label]) => {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
+    if (g === 'layout') {
+      const on = cutTextOn(cut, k);
+      const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="이 컷 레이아웃이 표시하는 문자 조정"><b>레이아웃 문자 제어</b>${on ? '조정 중' : ''}</button>`);
+    }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="이 컷만 구성을 다시 추첨">셔플</button>`);
   bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="이 컷만 기법을 무작위로">자동 생성</button>`);
@@ -36695,6 +36951,13 @@ function updateCutInfo() {
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
     el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+    const tb = el.querySelector('button.chip[data-tx]');
+    if (tb) tb.addEventListener('click', () => toggleCutTx(cut, k));
+    // the panel follows the playhead, exactly like the 手法 picker does
+    if (cutTx.open && (cutTx.line !== cut.line || cutTx.k !== k)) {
+      cutTx.line = cut.line; cutTx.k = k;
+      fillCutTx(cut, k);
+    }
   }
   followCutPick(cut, k);
 }
@@ -36760,6 +37023,97 @@ function fillCutPick() {
   });
   queueThumbs(grid);
 }
+/* ---------------- 레이아웃 문자: what this cut's layout actually writes on screen -------------
+   The rows come from J.txProbe(), which runs the layout once with the recorder in place, so the
+   panel lists exactly the texts this layout draws (a layout that never draws a serial number
+   simply shows no row for it). */
+const cutTx = { open: false, line: -1, k: -1 };
+const TX_ROWS = {
+  'main':       '본문',
+  'main:split': '본문(한 글자씩 배치)',
+  'line':       '줄의 나머지(앞뒤 단어)',
+  'note':       '주석',
+  'romaji':     '자동 로마자',
+  'no':         '일련번호',
+  'time':       '시각',
+  'title':      '곡 제목',
+  'other':      '기타(레이아웃 고유 문자)',
+};
+const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', line: 'hideLine', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle', other: 'hideOther' };
+const TX_EDIT = { 'main': 'main', note: 'note', title: 'title', 'main:split': 'main' };
+
+function closeCutTx() {
+  cutTx.open = false; cutTx.line = -1; cutTx.k = -1;
+  const p = $('cutTx'); if (p) p.hidden = true;
+}
+function toggleCutTx(cut, k) {
+  if (S.mode !== 'pro' || !cut || k < 0) return;
+  if (cutTx.open && cutTx.line === cut.line && cutTx.k === k) { closeCutTx(); lastCutIdx = -2; updateCutInfo(); return; }
+  closeCutPick();
+  cutTx.open = true; cutTx.line = cut.line; cutTx.k = k;
+  const p = $('cutTx'); if (p) p.hidden = false;
+  fillCutTx(cut, k);
+  lastCutIdx = -2; updateCutInfo();
+}
+function refreshCutTx() {
+  if (!cutTx.open) return;
+  const cut = S.plan && S.plan.cuts.find(c => c.line === cutTx.line && lyricCutK(c) === cutTx.k);
+  if (cut) fillCutTx(cut, cutTx.k); else closeCutTx();
+}
+function fillCutTx(cut, k) {
+  const body = $('cutTxBody'); if (!body) return;
+  const ttl = $('cutTxTitle');
+  if (ttl) ttl.textContent = '레이아웃 문자 제어 · #' + String(cut.index + 1).padStart(2, '0');
+  const slot = cutTextSlot(cut.line, k);
+  const rows = J.txProbe(cut, S.plan);
+  body.innerHTML = '';
+  if (!rows.length) {
+    const p = document.createElement('p');
+    p.className = 'muted tx-none';
+    p.textContent = '이 레이아웃은 화면에 문자를 표시하지 않습니다.';
+    body.appendChild(p);
+    return;
+  }
+  rows.forEach(tok => {
+    const name = TX_ROWS[tok]; if (!name) return;
+    const hideKey = TX_HIDE[tok], editKey = TX_EDIT[tok];
+    const base = tok === 'note' ? String(cut.note || '')
+      : tok === 'title' ? String((cut.params || {}).titleText || '')
+      : String(cut.text || '');
+    const row = document.createElement('div');
+    row.className = 'tx-row' + (slot[hideKey] ? ' is-off' : '');
+    const lab = document.createElement('label');
+    lab.className = 'tx-lab';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.checked = !slot[hideKey];
+    chk.addEventListener('change', () => {
+      setCutText(cutTx.line, cutTx.k, { [hideKey]: chk.checked ? null : true });
+      replan(); refreshCutTx();
+    });
+    lab.appendChild(chk);
+    const nm = document.createElement('span'); nm.textContent = name; lab.appendChild(nm);
+    row.appendChild(lab);
+    if (editKey && tok !== 'main:split') {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.className = 'tx-in';
+      inp.value = slot[editKey] != null ? String(slot[editKey]) : base;
+      inp.placeholder = base;
+      inp.addEventListener('change', () => {
+        const v = inp.value;
+        setCutText(cutTx.line, cutTx.k, { [editKey]: (v === base || v.trim() === '') ? null : v });
+        replan(); refreshCutTx();
+      });
+      row.appendChild(inp);
+    } else if (tok === 'main:split') {
+      const h = document.createElement('span');
+      h.className = 'muted tx-hint';
+      h.textContent = '이 레이아웃은 한 글자씩 배치하므로 문자를 바꿀 수 없습니다(표시/숨김만).';
+      row.appendChild(h);
+    }
+    body.appendChild(row);
+  });
+}
+
 
 /* ---------------- line list ---------------- */
 function renderLines() {
@@ -36897,7 +37251,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  S.project = mergeProject(null); S.project.lyrics = '';
+  S.project = mergeProject(null); S.project.lyrics = ''; if (typeof refreshCutTx === 'function') refreshCutTx();
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
@@ -37598,6 +37952,8 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.txno-toggle').forEach(el => { el.checked = S.project.fx.hideNo !== true; });
+  document.querySelectorAll('.txtime-toggle').forEach(el => { el.checked = S.project.fx.hideTime !== true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
@@ -37625,6 +37981,12 @@ function bind() {
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  const cutTxAuto = $('cutTxAuto'), cutTxClose = $('cutTxClose');
+  if (cutTxClose) cutTxClose.addEventListener('click', () => { closeCutTx(); lastCutIdx = -2; updateCutInfo(); });
+  if (cutTxAuto) cutTxAuto.addEventListener('click', () => {
+    setCutText(cutTx.line, cutTx.k, null);
+    replan(); refreshCutTx();
+  });
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
   if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
   if (cutPickAuto) cutPickAuto.addEventListener('click', () => {
@@ -37692,6 +38054,16 @@ function bind() {
   setSwitch('horror-toggle', 'horror', true, '호러 연출: 사용(자동 생성 분위기에 「호러」 추가)', '호러 연출: 사용 안 함');
   setSwitch('unify-toggle', 'unify', true, '통일감: 켬(파트별로 맞추고 킬링 파트·모프·굵기도 사용)', '통일감: 끔');
   setSwitch('typeset-toggle', 'typeset', true, '문자 정렬: 켬(자간·조사·영문·0.2초 먼저·효과 절제)', '문자 정렬: 끔');
+  // 레이아웃 문자: 일련번호 / 시각 — one project-wide pair, shared by the 연출 tab and the かんたん panel
+  const txSwitch = (cls, key, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+    remember();
+    S.project.fx[key] = !e.target.checked;
+    document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
+    replan(); commit(); flushSave();
+    toast(e.target.checked ? msgOn : msgOff);
+  }));
+  txSwitch('txno-toggle', 'hideNo', '일련번호: 표시', '일련번호: 숨김');
+  txSwitch('txtime-toggle', 'hideTime', '시각: 표시', '시각: 숨김');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -37782,7 +38154,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); refreshCutTx(); restoreFonts(); }
     catch (err) { showMsg('프로젝트를 열지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });

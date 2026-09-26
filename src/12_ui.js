@@ -444,6 +444,28 @@ function markCutQuiet(i, k, groups, on) {
   if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
+/* レイアウト文字: per-cut override of the texts the layout puts on screen.
+   Same key as cutTech (the cut's index inside its line); an entry is what the user
+   actually changed, so an empty object = no override. */
+function cutTextSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutText && (o.cutText[k] || o.cutText[String(k)])) || {};
+}
+function setCutText(line, k, patch) {
+  if (line == null || line < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[line] || {});
+  const all = Object.assign({}, cur.cutText || {});
+  let slot = patch === null ? {} : Object.assign({}, all[k] || all[String(k)] || {}, patch);
+  delete all[String(k)];
+  Object.keys(slot).forEach(key => { if (slot[key] == null || slot[key] === false || slot[key] === '') delete slot[key]; });
+  if (Object.keys(slot).length) all[k] = slot; else delete all[k];
+  if (Object.keys(all).length) cur.cutText = all; else delete cur.cutText;
+  if (Object.keys(cur).length) S.project.overrides[line] = cur; else delete S.project.overrides[line];
+}
+function cutTextOn(cut, k) {
+  return k >= 0 && cut && Object.keys(cutTextSlot(cut.line, k)).length > 0;
+}
+
 function cutTechSlot(line, k) {
   const o = (S.project.overrides || {})[line] || {};
   const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
@@ -518,9 +540,10 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); closeCutTx(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
+    closeCutTx();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
     const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
     el.innerHTML = [
@@ -541,6 +564,11 @@ function updateCutInfo() {
   CHIP_GROUPS.forEach(([g, cls, label]) => {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
+    if (g === 'layout') {
+      const on = cutTextOn(cut, k);
+      const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="このカットのレイアウトが出す文字を調整"><b>レイアウトの文字制御</b>${on ? '調整中' : ''}</button>`);
+    }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
   bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このカットだけ手法をランダムに">おまかせ</button>`);
@@ -548,6 +576,13 @@ function updateCutInfo() {
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
     el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+    const tb = el.querySelector('button.chip[data-tx]');
+    if (tb) tb.addEventListener('click', () => toggleCutTx(cut, k));
+    // the panel follows the playhead, exactly like the 手法 picker does
+    if (cutTx.open && (cutTx.line !== cut.line || cutTx.k !== k)) {
+      cutTx.line = cut.line; cutTx.k = k;
+      fillCutTx(cut, k);
+    }
   }
   followCutPick(cut, k);
 }
@@ -613,6 +648,97 @@ function fillCutPick() {
   });
   queueThumbs(grid);
 }
+/* ---------------- レイアウト文字: what this cut's layout actually writes on screen -------------
+   The rows come from J.txProbe(), which runs the layout once with the recorder in place, so the
+   panel lists exactly the texts this layout draws (a layout that never draws a serial number
+   simply shows no row for it). */
+const cutTx = { open: false, line: -1, k: -1 };
+const TX_ROWS = {
+  'main':       '本文',
+  'main:split': '本文（1文字ずつ配置）',
+  'line':       '行の残り（前後の語）',
+  'note':       '注釈',
+  'romaji':     '自動ローマ字',
+  'no':         '通し番号',
+  'time':       '時刻',
+  'title':      '曲名',
+  'other':      'その他（レイアウト独自の文字）',
+};
+const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', line: 'hideLine', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle', other: 'hideOther' };
+const TX_EDIT = { 'main': 'main', note: 'note', title: 'title', 'main:split': 'main' };
+
+function closeCutTx() {
+  cutTx.open = false; cutTx.line = -1; cutTx.k = -1;
+  const p = $('cutTx'); if (p) p.hidden = true;
+}
+function toggleCutTx(cut, k) {
+  if (S.mode !== 'pro' || !cut || k < 0) return;
+  if (cutTx.open && cutTx.line === cut.line && cutTx.k === k) { closeCutTx(); lastCutIdx = -2; updateCutInfo(); return; }
+  closeCutPick();
+  cutTx.open = true; cutTx.line = cut.line; cutTx.k = k;
+  const p = $('cutTx'); if (p) p.hidden = false;
+  fillCutTx(cut, k);
+  lastCutIdx = -2; updateCutInfo();
+}
+function refreshCutTx() {
+  if (!cutTx.open) return;
+  const cut = S.plan && S.plan.cuts.find(c => c.line === cutTx.line && lyricCutK(c) === cutTx.k);
+  if (cut) fillCutTx(cut, cutTx.k); else closeCutTx();
+}
+function fillCutTx(cut, k) {
+  const body = $('cutTxBody'); if (!body) return;
+  const ttl = $('cutTxTitle');
+  if (ttl) ttl.textContent = 'レイアウトの文字制御 · #' + String(cut.index + 1).padStart(2, '0');
+  const slot = cutTextSlot(cut.line, k);
+  const rows = J.txProbe(cut, S.plan);
+  body.innerHTML = '';
+  if (!rows.length) {
+    const p = document.createElement('p');
+    p.className = 'muted tx-none';
+    p.textContent = 'このレイアウトは画面に文字を出しません。';
+    body.appendChild(p);
+    return;
+  }
+  rows.forEach(tok => {
+    const name = TX_ROWS[tok]; if (!name) return;
+    const hideKey = TX_HIDE[tok], editKey = TX_EDIT[tok];
+    const base = tok === 'note' ? String(cut.note || '')
+      : tok === 'title' ? String((cut.params || {}).titleText || '')
+      : String(cut.text || '');
+    const row = document.createElement('div');
+    row.className = 'tx-row' + (slot[hideKey] ? ' is-off' : '');
+    const lab = document.createElement('label');
+    lab.className = 'tx-lab';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.checked = !slot[hideKey];
+    chk.addEventListener('change', () => {
+      setCutText(cutTx.line, cutTx.k, { [hideKey]: chk.checked ? null : true });
+      replan(); refreshCutTx();
+    });
+    lab.appendChild(chk);
+    const nm = document.createElement('span'); nm.textContent = name; lab.appendChild(nm);
+    row.appendChild(lab);
+    if (editKey && tok !== 'main:split') {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.className = 'tx-in';
+      inp.value = slot[editKey] != null ? String(slot[editKey]) : base;
+      inp.placeholder = base;
+      inp.addEventListener('change', () => {
+        const v = inp.value;
+        setCutText(cutTx.line, cutTx.k, { [editKey]: (v === base || v.trim() === '') ? null : v });
+        replan(); refreshCutTx();
+      });
+      row.appendChild(inp);
+    } else if (tok === 'main:split') {
+      const h = document.createElement('span');
+      h.className = 'muted tx-hint';
+      h.textContent = 'このレイアウトは1文字ずつ並べるので、差し替えはできません（表示／非表示だけ）。';
+      row.appendChild(h);
+    }
+    body.appendChild(row);
+  });
+}
+
 
 /* ---------------- line list ---------------- */
 function renderLines() {
@@ -750,7 +876,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  S.project = mergeProject(null); S.project.lyrics = '';
+  S.project = mergeProject(null); S.project.lyrics = ''; if (typeof refreshCutTx === 'function') refreshCutTx();
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
@@ -1451,6 +1577,8 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.txno-toggle').forEach(el => { el.checked = S.project.fx.hideNo !== true; });
+  document.querySelectorAll('.txtime-toggle').forEach(el => { el.checked = S.project.fx.hideTime !== true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
@@ -1478,6 +1606,12 @@ function bind() {
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  const cutTxAuto = $('cutTxAuto'), cutTxClose = $('cutTxClose');
+  if (cutTxClose) cutTxClose.addEventListener('click', () => { closeCutTx(); lastCutIdx = -2; updateCutInfo(); });
+  if (cutTxAuto) cutTxAuto.addEventListener('click', () => {
+    setCutText(cutTx.line, cutTx.k, null);
+    replan(); refreshCutTx();
+  });
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
   if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
   if (cutPickAuto) cutPickAuto.addEventListener('click', () => {
@@ -1545,6 +1679,16 @@ function bind() {
   setSwitch('horror-toggle', 'horror', true, 'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）', 'ホラーの演出：使わない');
   setSwitch('unify-toggle', 'unify', true, '統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）', '統一感：オフ');
   setSwitch('typeset-toggle', 'typeset', true, '文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）', '文字整列：オフ');
+  // レイアウト文字: 通し番号 / 時刻 — one project-wide pair, shared by the 演出 tab and the かんたん panel
+  const txSwitch = (cls, key, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+    remember();
+    S.project.fx[key] = !e.target.checked;
+    document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
+    replan(); commit(); flushSave();
+    toast(e.target.checked ? msgOn : msgOff);
+  }));
+  txSwitch('txno-toggle', 'hideNo', '通し番号：表示', '通し番号：非表示');
+  txSwitch('txtime-toggle', 'hideTime', '時刻：表示', '時刻：非表示');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -1635,7 +1779,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); refreshCutTx(); restoreFonts(); }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });

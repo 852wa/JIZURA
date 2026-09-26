@@ -41,6 +41,14 @@ STYLES = {
 }
 
 BODY = {
+    "レイアウトの文字制御": "Kontrol teks layout",
+    "通し番号": "Nomor urut",
+    "時刻": "Timecode",
+    "全カットで表示／非表示": "tampil / sembunyi di semua cut",
+    "全カットで表示／非表示（HUD を含む）": "tampil / sembunyi di semua cut (termasuk HUD)",
+    "元に戻す": "Kembalikan",
+    "レイアウト文字": "Teks layout",
+    "このカットが画面に出す文字": "teks yang ditampilkan cut ini",
     '文字PV系の部品を使う': 'Pakai bagian tipografi',
     'キネティックの部品を使う': 'Pakai bagian kinetik',
     'ホラーの演出も使う': 'Sertakan efek horor',
@@ -193,6 +201,26 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Kontrol teks layout",
+    "通し番号：表示": "Nomor urut: tampil",
+    "通し番号：非表示": "Nomor urut: sembunyi",
+    "時刻：表示": "Timecode: tampil",
+    "時刻：非表示": "Timecode: sembunyi",
+    "行の残り（前後の語）": "Sisa baris (kata sebelum/sesudah)",
+    "その他（レイアウト独自の文字）": "Lainnya (teks milik layout)",
+    "時刻": "Timecode",
+    "曲名": "Judul lagu",
+    "レイアウト文字": "Teks layout",
+    "レイアウトの文字": "Teks layout",
+    "調整中": "disesuaikan",
+    "本文": "Teks utama",
+    "本文（1文字ずつ配置）": "Teks utama (per huruf)",
+    "注釈": "Catatan",
+    "自動ローマ字": "Romaji otomatis",
+    "通し番号": "Nomor urut",
+    "このカットのレイアウトが出す文字を調整": "Atur teks yang ditampilkan layout cut ini",
+    "このレイアウトは画面に文字を出しません。": "Layout ini tidak menampilkan teks.",
+    "このレイアウトは1文字ずつ並べるので、差し替えはできません（表示／非表示だけ）。": "Layout ini menempatkan satu huruf sekaligus, jadi teks tidak bisa diganti (hanya tampil/sembunyi).",
     "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
     "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",

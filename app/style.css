@@ -421,3 +421,15 @@ button.small.primary { padding: 4px 12px; }
 #app.is-mobile .transport input[type=range] { flex: 1 1 40px; min-width: 0; }
 #app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
 #app.is-mobile button.play { flex: none; width: 44px; }
+
+/* レイアウト文字 (per-cut text control) */
+.tx-rows { display: flex; flex-direction: column; gap: 6px; }
+.tx-row { display: grid; grid-template-columns: minmax(120px, 30%) 1fr; gap: 6px 10px; align-items: center; padding: 6px 2px; border-top: 1px solid var(--line); }
+.tx-row:first-child { border-top: 0; }
+.tx-lab { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.tx-lab input { accent-color: var(--amber); }
+.tx-in { width: 100%; font-size: 12px; padding: 4px 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+.tx-in::placeholder { color: var(--muted); opacity: .7; }
+.tx-row.is-off .tx-lab span, .tx-row.is-off .tx-in { opacity: .45; }
+.tx-hint { grid-column: 1 / -1; font-size: 11px; }
+.tx-none { font-size: 12px; padding: 8px 2px; }

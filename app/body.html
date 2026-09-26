@@ -119,6 +119,15 @@
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
+      <div id="cutTx" class="cut-pick pro-only" hidden>
+        <div class="cut-pick-h">
+          <strong id="cutTxTitle">レイアウトの文字制御</strong>
+          <span class="muted" id="cutTxHint">このカットが画面に出す文字</span>
+          <button type="button" id="cutTxAuto" class="ghost small">元に戻す</button>
+          <button type="button" id="cutTxClose" class="ghost small" aria-label="閉じる">✕</button>
+        </div>
+        <div id="cutTxBody" class="tx-rows"></div>
+      </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
@@ -153,6 +162,13 @@
             <button id="ePalette" title="アクセント・ズレ色A/Bをランダムに">配色</button>
             <button id="eMood" title="動き・グリッチ・使う手法の雰囲気だけ">雰囲気</button>
             <button id="eCut" title="レイアウトと動きの組み合わせだけ">構成</button>
+          </div>
+        </div>
+        <div class="easy-sec">
+          <h3>レイアウトの文字制御</h3>
+          <div class="pick-sets">
+            <label class="check"><input class="txno-toggle" type="checkbox" checked><span>通し番号<small>全カットで表示／非表示</small></span></label>
+            <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>時刻<small>全カットで表示／非表示（HUD を含む）</small></span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -213,6 +229,9 @@
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> フラッシュ</label>
           <label class="row" style="gap:6px">コマ打ち <select id="fxKoma" title="動きを何枚/秒で描くか（出力fpsとは別）"><option value="0">フル（出力fpsのまま）</option><option value="12">2コマ打ち（12枚/秒）</option><option value="8">3コマ打ち（8枚/秒）</option></select></label>
         </div>
+        <h3>レイアウトの文字制御</h3>
+        <label class="check"><input class="txno-toggle" type="checkbox" checked><span>通し番号<small>全カットで表示／非表示</small></span></label>
+        <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>時刻<small>全カットで表示／非表示（HUD を含む）</small></span></label>
         <div class="fields" style="margin-top:12px">
           <label class="field">HUD<select id="fxHud"><option value="auto">スタイル次第</option><option value="on">常に表示</option><option value="off">表示しない</option></select></label>
           <label class="field">シード<input id="seed" type="number" step="1"></label>
