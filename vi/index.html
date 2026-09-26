@@ -628,7 +628,7 @@ button.small.primary { padding: 4px 12px; }
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Chữ layout</h3>
+          <h3>Điều khiển chữ layout</h3>
           <div class="pick-sets">
             <label class="check"><input class="txno-toggle" type="checkbox" checked><span>Số thứ tự<small>hiện / ẩn ở mọi cut</small></span></label>
             <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>Mốc thời gian<small>hiện / ẩn ở mọi cut (kể cả HUD)</small></span></label>
@@ -692,7 +692,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Hiệu ứng nhấp nháy</label>
           <label class="row" style="gap:6px">Thời điểm thay đổi hiệu ứng <select id="fxKoma" title="Số lượng hình ảnh chuyển động mỗi giây (tách biệt với khung hình xuất bản)"><option value="0">Đầy đủ (theo khung hình xuất bản)</option><option value="12">Cứ 2 khung hình (12 hình/giây)</option><option value="8">Cứ sau 3 khung hình (8 hình/giây)</option></select></label>
         </div>
-        <h3>Chữ layout</h3>
+        <h3>Điều khiển chữ layout</h3>
         <label class="check"><input class="txno-toggle" type="checkbox" checked><span>Số thứ tự<small>hiện / ẩn ở mọi cut</small></span></label>
         <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>Mốc thời gian<small>hiện / ẩn ở mọi cut (kể cả HUD)</small></span></label>
         <div class="fields" style="margin-top:12px">
@@ -36980,7 +36980,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  S.project = mergeProject(null); S.project.lyrics = '';
+  S.project = mergeProject(null); S.project.lyrics = ''; if (typeof refreshCutTx === 'function') refreshCutTx();
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
@@ -37883,7 +37883,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); refreshCutTx(); restoreFonts(); }
     catch (err) { showMsg('Dự án không mở được'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
