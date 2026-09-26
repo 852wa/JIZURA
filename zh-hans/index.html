@@ -36812,6 +36812,7 @@ function clearLyrics() {
 let audioNameDefault = '';
 async function resetAll() {
   if (S.exporting) return;
+  audioSeq++;                       // a pending analysis must not restore the song after reset starts
   if (S.tap) stopTap();
   pause();
   S.project = mergeProject(null); S.project.lyrics = '';
