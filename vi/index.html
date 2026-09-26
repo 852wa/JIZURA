@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JIZURA — Trình tạo video lời bài hát chuyển động</title>
-<meta name="description" content="Tạo video lời bài hát chuyển động từ lời trong trình duyệt, rồi xuất MP4.">
+<title>JIZURA — Trình tạo video lời bài hát với hiệu ứng</title>
+<meta name="description" content="Tạo video lời bài hát có hiệu ứng chuyển động ngay trong trình duyệt, từ lời bài hát bạn nhập, rồi xuất ra MP4.">
 <link rel="canonical" href="https://852wa.github.io/JIZURA/vi/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
@@ -14,8 +14,8 @@
 <link rel="alternate" hreflang="id-ID" href="https://852wa.github.io/JIZURA/id/">
 <link rel="alternate" hreflang="vi" href="https://852wa.github.io/JIZURA/vi/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="JIZURA — Trình tạo video lời bài hát chuyển động">
-<meta property="og:description" content="Tạo video lời bài hát chuyển động từ lời trong trình duyệt, rồi xuất MP4.">
+<meta property="og:title" content="JIZURA — Trình tạo video lời bài hát với hiệu ứng">
+<meta property="og:description" content="Tạo video lời bài hát có hiệu ứng chuyển động ngay trong trình duyệt, từ lời bài hát bạn nhập, rồi xuất ra MP4.">
 <meta property="og:url" content="https://852wa.github.io/JIZURA/vi/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -468,7 +468,7 @@ button.small.primary { padding: 4px 12px; }
     <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">Menu</button>
     <div class="modes" role="group" aria-label="Chế độ soạn thảo">
       <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="Giao diện cho điện thoại (nút Ngẫu nhiên cố định ở trên, các dòng được thu gọn)">Điện thoại</button>
-      <button id="modeEasy" aria-pressed="false" title="Giao diện đơn giản tập trung vào việc tạo tự động">Cơ bản</button>
+      <button id="modeEasy" aria-pressed="false" title="Giao diện Cơ bản, tập trung vào tạo Ngẫu nhiên">Cơ bản</button>
       <button id="modePro" aria-pressed="true" title="Hiển thị tất cả cài đặt">Nâng cao</button>
       <button id="btnTour" class="ghost tour-btn" title="Hướng dẫn nhanh về chế độ đơn giản" aria-label="Hướng dẫn sử dụng">？</button>
     </div>
@@ -493,18 +493,18 @@ button.small.primary { padding: 4px 12px; }
           <button id="tapStop" class="ghost">Hoàn thành</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lời bài hát</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Xóa lời bài hát cùng với câu và cắt cảnh, cài đặt trên mỗi câu và phạm vi xuất (có thể được khôi phục bằng Hoàn tác hoặc Ctrl+Z)">Xóa</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Cú pháp</button></span></div>
+        <div class="sec-h"><h2>Lời bài hát</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Xóa lời bài hát, cùng với cài đặt thời gian, cài đặt riêng của từng câu và phạm vi xuất (có thể khôi phục bằng Hoàn tác hoặc Ctrl+Z)">Xóa</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Cú pháp</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lời bài hát (mỗi câu một dòng)"></textarea>
         <label class="lang-row">Ngôn ngữ lời bài hát<select id="lyricLang"><option value="auto">Tự động</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>Một câu trên mỗi dòng. Dòng trống sẽ tạo khoảng dừng ngắn.</li>
-            <li><code>Tôi nhớ/màu của bình minh</code> … <code>/</code> đánh dấu điểm ngắt câu</li>
+            <li><code>Nắng rơi trên vai/những chiều xa</code> … <code>/</code> đánh dấu điểm ngắt câu</li>
             <li><code>*nhấn mạnh*</code> …nhấn mạnh (hiệu ứng lớn hơn, mạnh hơn)</li>
             <li>Ở cuối dòng: <code>!</code> …thêm đèn flash và rung</li>
             <li><code>lời bài hát|ghi chú</code> …văn bản nhỏ trong bố cục</li>
             <li><code>[01:23.45]Lời bài hát</code> …sử dụng dấu thời gian LRC như hiện tại</li>
-            <li><code>[interlude 8]</code> … đoạn nhạc nền 8 giây (không hiện lời, chỉ nền và hiệu ứng). Không số thì mặc định 4 giây; Đặt điểm chuyển cảnh hoặc thanh neo để chỉnh độ dài</li>
+            <li><code>[interlude 8]</code> … đoạn nhạc nền 8 giây (không hiện lời, chỉ nền và hiệu ứng). Không số thì mặc định 4 giây; Đồng bộ bằng cách nhấn hoặc thanh neo để chỉnh độ dài</li>
             <li><code>#</code> Đánh dấu ghi chú (bỏ qua)</li>
           </ul>
         </div>
@@ -512,10 +512,10 @@ button.small.primary { padding: 4px 12px; }
 
       <div class="sec">
         <div class="sec-h"><h2>Âm thanh và thời gian</h2></div>
-        <div id="audioName" class="muted audio-name">Không có âm thanh. Chọn một tệp để phát hiện nhịp và điều chỉnh các đoạn chuyển cảnh.</div>
+        <div id="audioName" class="muted audio-name">Chưa có âm thanh. Chọn một tệp để tự phát hiện nhịp và điều chỉnh các đoạn chuyển cảnh.</div>
         <div class="row">
           <label class="file" title="MP3, WAV, M4A, v.v...">Chọn tệp<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnTap" title="Nhấn vào đầu mỗi dòng trong khi bài hát đang phát">Đặt điểm chuyển cảnh</button>
+          <button id="btnTap" title="Nhấn theo nhịp ở đầu mỗi câu, trong khi bài hát đang phát">Đồng bộ thủ công</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Tự động"></label>
@@ -523,7 +523,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="field">Thời lượng<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Bám theo nhịp</label>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Bắt theo nhịp (Snap)</label>
           <button id="btnResetTimes" class="ghost small">Xóa thời gian thủ công</button>
         </div>
       </div>
@@ -559,12 +559,12 @@ button.small.primary { padding: 4px 12px; }
           <button id="tlFit" class="ghost small" title="Hiển thị tất cả bài hát">Tất cả</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Dòng thời gian (bấm để di chuyển, kéo điểm đánh dấu hàng để điều chỉnh)"></canvas>
+      <canvas id="timeline" aria-label="Dòng thời gian (bấm để di chuyển, kéo thanh neo để điều chỉnh)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
           <strong id="cutPickTitle">Kỹ thuật</strong>
-          <span class="muted" id="cutPickHint">Chỉ thay cảnh này</span>
+          <span class="muted" id="cutPickHint">Thay thế cảnh này</span>
           <button type="button" id="cutPickAuto" class="ghost small">Tự động</button>
           <button type="button" id="cutPickClose" class="ghost small" aria-label="Đóng">✕</button>
         </div>
@@ -586,11 +586,11 @@ button.small.primary { padding: 4px 12px; }
           <div class="pick-sets">
             <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Sử dụng các hiệu ứng mới<small>Bao gồm khoảng 350 hiệu ứng bổ sung, 12 kiểu màu và 6 phông chữ mới trong một lựa chọn ngẫu nhiên. Nếu tắt, chỉ cài đặt ban đầu được sử dụng.</small></span></label>
             <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Sử dụng các họa tiết Nhật Bản<small>Bao gồm họa tiết lấy cảm hứng từ Nhật Bản như đèn lồng, bưu thiếp, shoji, quạt, gia huy, sóng và cánh hoa anh đào trong một lựa chọn ngẫu nhiên.</small></span></label>
-            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Dùng các thành phần kiểu chữ<small>Khoảng 50 thành phần chỉ dùng đường kẻ, con số và cách sắp chữ, đúng chất video lời bài hát</small></span></label>
-            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Dùng các thành phần chuyển động chữ<small>Khoảng 50 thành phần chú trọng chuyển động: từng từ di chuyển, nảy lên và xếp chồng</small></span></label>
-            <label class="check"><input class="horror-toggle" type="checkbox"><span>Dùng cả hiệu ứng kinh dị<small>Khoảng 50 thành phần mang không khí rùng rợn và 3 bộ màu. Khi bật, chế độ Ngẫu nhiên có thêm bầu không khí «Kinh dị»</small></span></label>
+            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Dùng các thành phần Lyric Video<small>Khoảng 50 thành phần chỉ dùng đường kẻ, con số và cách sắp chữ, đúng chất video lời bài hát</small></span></label>
+            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Dùng các thành phần Kinetic (Chuyển động chữ)<small>Khoảng 50 thành phần chú trọng chuyển động: từng từ di chuyển, nảy lên và xếp chồng</small></span></label>
+            <label class="check"><input class="horror-toggle" type="checkbox"><span>Dùng các hiệu ứng kinh dị<small>Khoảng 50 thành phần mang không khí rùng rợn và 3 bộ màu. Khi bật, chế độ Ngẫu nhiên có thêm bầu không khí «Kinh dị»</small></span></label>
             <label class="check"><input class="unify-toggle" type="checkbox"><span>Sử dụng hiệu ứng đồng nhất</span></label>
-            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Tạo kiểu cho văn bản</span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Căn chỉnh chữ</span></label>
           </div>
         </div>
         <div class="easy-sec">
@@ -601,7 +601,7 @@ button.small.primary { padding: 4px 12px; }
           <h3>Thay đổi một điều</h3>
           <div class="easy-grid">
             <button id="eStyle" title="Chỉ cần thay đổi phong cách">Phong cách</button>
-            <button id="ePalette" title="Chọn ngẫu nhiên màu nhấn và màu bù">Bảng màu</button>
+            <button id="ePalette" title="Chọn ngẫu nhiên màu nhấn và màu lệch">Bảng màu</button>
             <button id="eMood" title="Chỉ cần thay đổi các bước di chuyển, trục trặc và cảm nhận về kỹ thuật">Bầu không khí</button>
             <button id="eCut" title="Chỉ cần thay đổi cách sắp xếp và chuyển động">Sắp xếp</button>
           </div>
@@ -614,10 +614,10 @@ button.small.primary { padding: 4px 12px; }
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
             <label class="field field-wide">Nền<select id="eKey"><option value="off">Nền phong cách</option><option value="green">Màn hình xanh (tổng hợp)</option><option value="black">Nền đen (tổng hợp)</option></select></label>
           </div>
-          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Để trống giữa (cho nhân vật)<small>Để đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng đặt trái / phải trên khung ngang và trên / dưới trên khung dọc, xen kẽ từng dòng. Nền và hiệu ứng màn hình vẫn phủ toàn khung (xem trước đánh dấu vùng trống bằng nét đứt)</small></span></label>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Để trống ở giữa (cho nhân vật)<small>Dành cho việc đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng sẽ xuất hiện ở trái / phải (khung ngang) hoặc trên / dưới (khung dọc), xen kẽ theo từng câu. Nền và hiệu ứng màn hình vẫn phủ toàn khung (vùng để trống được đánh dấu bằng đường nét đứt ở bản xem trước)</small></span></label>
           <label class="row center-dir" hidden>Khi khung dọc<select class="centerDirSel" aria-label="Cách chia trên khung dọc"><option value="tb">Trên / dưới</option><option value="lr">Trái / phải</option></select></label>
           <div class="rng-row"><span class="rng-lab">Xuất phạm vi</span><select class="rngFrom" aria-label="Hàng đầu tiên của phạm vi xuất"></select><span class="muted">〜</span><select class="rngTo" aria-label="Hàng cuối cùng của phạm vi xuất"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Xuất MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">Đối với video lớn (lưu trực tiếp vào tệp)</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Xuất MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Chọn tệp đích trước, video sẽ được ghi trực tiếp vào tệp đó. Dùng khi xuất video dài hoặc từ 1080p trở lên bị lỗi do trình duyệt không đủ bộ nhớ (Chrome / Edge)">Đối với video lớn (lưu trực tiếp vào tệp)</button></div>
           <button class="terms-open linkish">Về quyền đối với video đã xuất</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Chia sẻ / lưu</button>
@@ -642,7 +642,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnAddFont">Thêm</button>
         </div>
         <div class="row" style="margin-top:8px"><label class="file">Tệp phông chữ (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Màu nhấn và màu bù</h3>
+        <h3>Màu nhấn và màu lệch</h3>
         <label class="check"><input id="accentOn" type="checkbox"><span>Sử dụng màu sắc tùy chỉnh<small>Áp dụng cho tất cả các cảnh. Độ sáng sẽ tự động điều chỉnh nền.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
@@ -657,30 +657,30 @@ button.small.primary { padding: 4px 12px; }
       <div class="tabpane" data-pane="fx" hidden>
         <div class="unify-box">
           <label class="check"><input class="unify-toggle" type="checkbox"><span>Sử dụng hiệu ứng đồng nhất</span></label>
-          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Tạo kiểu cho văn bản</span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Căn chỉnh chữ</span></label>
         </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Hiệu ứng nhấp nháy</label>
-          <label class="row" style="gap:6px">Thời điểm thay đổi hiệu ứng <select id="fxKoma" title="Số lượng hình ảnh chuyển động mỗi giây (tách biệt với khung hình xuất bản)"><option value="0">Đầy đủ (theo khung hình xuất bản)</option><option value="12">Cứ 2 khung hình (12 hình/giây)</option><option value="8">Cứ sau 3 khung hình (8 hình/giây)</option></select></label>
+          <label class="row" style="gap:6px">Tốc độ khung hình (Frame step) <select id="fxKoma" title="Số lượng hình ảnh chuyển động mỗi giây (tách biệt với khung hình xuất bản)"><option value="0">Đầy đủ (Như cài đặt xuất file)</option><option value="12">Chạy 2 frame (12 hình/giây)</option><option value="8">Cứ sau 3 khung hình (8 hình/giây)</option></select></label>
         </div>
         <div class="fields" style="margin-top:12px">
           <label class="field">HUD<select id="fxHud"><option value="auto">Tự động (theo phong cách)</option><option value="on">Luôn hiển thị</option><option value="off">Ẩn</option></select></label>
-          <label class="field">Hạt giống<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Hạt giống mới</button></label>
+          <label class="field">Seed (Mã ngẫu nhiên)<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Seed mới</button></label>
         </div>
-        <p class="note">Cùng một hạt giống sẽ tạo ra thứ tự hiệu ứng giống nhau. Sắp xếp lại hoặc khóa từng câu từ danh sách bên trái.</p>
+        <p class="note">Cùng một seed (Mã ngẫu nhiên) sẽ tạo ra thứ tự hiệu ứng giống nhau. Sắp xếp lại hoặc khóa từng câu từ danh sách bên trái.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
           <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Sử dụng các hiệu ứng mới<small>Bao gồm các kỹ thuật, kiểu và phông chữ được đánh dấu Mới trong lựa chọn tự động.</small></span></label>
           <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Sử dụng các họa tiết Nhật Bản<small>Bao gồm các kỹ thuật và phong cách được đánh dấu JP trong lựa chọn tự động. Tùy chọn thủ công trên mỗi dòng vẫn có thể được sử dụng.</small></span></label>
-          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Dùng các thành phần kiểu chữ<small>Các kỹ thuật có dấu T. Khi tắt, Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn chúng</small></span></label>
-          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Dùng các thành phần chuyển động chữ<small>Các kỹ thuật có dấu K. Khi tắt, Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn chúng</small></span></label>
-          <label class="check"><input class="horror-toggle" type="checkbox"><span>Dùng cả hiệu ứng kinh dị<small>Các kỹ thuật và phong cách có dấu H. Ngẫu nhiên chỉ dùng chúng khi bầu không khí là «Kinh dị»</small></span></label>
+          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Dùng các thành phần Lyric Video<small>Các kỹ thuật có dấu T. Khi tắt, Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn chúng</small></span></label>
+          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Dùng các thành phần Kinetic (Chuyển động chữ)<small>Các kỹ thuật có dấu K. Khi tắt, Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn chúng</small></span></label>
+          <label class="check"><input class="horror-toggle" type="checkbox"><span>Dùng các hiệu ứng kinh dị<small>Các kỹ thuật và phong cách có dấu H. Ngẫu nhiên chỉ dùng chúng khi bầu không khí là «Kinh dị»</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Kỹ thuật lọc theo tên" style="flex:1" aria-label="Kỹ thuật lọc theo tên"><span id="techTotal" class="muted mono"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Lọc kỹ thuật theo tên" style="flex:1" aria-label="Lọc kỹ thuật theo tên"><span id="techTotal" class="muted mono"></span></div>
         <p class="note">Các bản xem trước đang hiển thị sẽ tự động lặp lại.</p>
         <div id="techLists"></div>
       </div>
@@ -694,16 +694,16 @@ button.small.primary { padding: 4px 12px; }
           <label class="field field-wide">Nền<select id="outKey"><option value="off">Nền phong cách</option><option value="green">Màn hình xanh (tổng hợp)</option><option value="black">Nền đen (tổng hợp)</option></select></label>
         </div>
         <p class="note key-note">Màn hình màu xanh lá cây và nền đen chỉ hiển thị văn bản và hiệu ứng màu trắng trên nền màu đồng nhất, không có mẫu nền, họa tiết giấy, hạt hoặc họa tiết. Xem trước cũng tuân theo cài đặt này. Sử dụng khóa màu (chroma key) cho màn hình xanh hoặc chế độ kết hợp khóa Màn hình / luma cho nền đen để có thể xếp lớp lên trên các video khác.</p>
-        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Để trống giữa (cho nhân vật)<small>Để đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng đặt trái / phải trên khung ngang và trên / dưới trên khung dọc, xen kẽ từng dòng. Nền và hiệu ứng màn hình vẫn phủ toàn khung (xem trước đánh dấu vùng trống bằng nét đứt)</small></span></label>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Để trống ở giữa (cho nhân vật)<small>Dành cho việc đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng sẽ xuất hiện ở trái / phải (khung ngang) hoặc trên / dưới (khung dọc), xen kẽ theo từng câu. Nền và hiệu ứng màn hình vẫn phủ toàn khung (vùng để trống được đánh dấu bằng đường nét đứt ở bản xem trước)</small></span></label>
           <label class="row center-dir" hidden>Khi khung dọc<select class="centerDirSel" aria-label="Cách chia trên khung dọc"><option value="tb">Trên / dưới</option><option value="lr">Trái / phải</option></select></label>
         <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Đưa âm thanh vào video</label>
         <div class="rng-row"><span class="rng-lab">Xuất phạm vi</span><select class="rngFrom" aria-label="Hàng đầu tiên của phạm vi xuất"></select><span class="muted">〜</span><select class="rngTo" aria-label="Hàng cuối cùng của phạm vi xuất"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
           <button id="btnMP4" class="primary">Xuất MP4</button>
-          <button id="btnMP4File" class="mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">MP4 (video lớn, lưu trực tiếp vào tệp)</button>
+          <button id="btnMP4File" class="mp4file" hidden Chọn tệp đích trước, video sẽ được ghi trực tiếp vào tệp đó. Dùng khi xuất video dài hoặc từ 1080p trở lên bị lỗi do trình duyệt không đủ bộ nhớ (Chrome / Edge)">MP4 (video lớn, lưu trực tiếp vào tệp)</button>
           <button id="btnPNG">PNG theo thứ tự(ZIP)</button>
           <button id="btnPNGA">PNG trong suốt (ZIP, không có nền)</button>
-          <button id="btnPNGL" title="Xuất PNG trong suốt sang hai thư mục: back/ (đồ họa, nền và trang trí phía sau lời bài hát) và front/ (lời bài hát, trang trí và hiệu ứng). Hiệu ứng màn hình được áp dụng cho cả hai, vì vậy hãy xếp chồng mặt trước lên trên mặt sau để có giao diện bình thường.">Lớp PNG trong suốt (trước/sau, ZIP)</button>
+          <button id="btnPNGL" title="Xuất PNG trong suốt sang hai thư mục: back/ (đồ họa, nền và trang trí phía sau lời bài hát) và front/ (lời bài hát, trang trí và hiệu ứng). Hiệu ứng màn hình được áp dụng cho cả hai, vì vậy hãy xếp chồng mặt trước lên trên mặt sau để có hiệu ứng bình thường.">Lớp PNG trong suốt (tiền cảnh/hậu cảnh, ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>Chia sẻ / lưu</button>
@@ -726,7 +726,7 @@ button.small.primary { padding: 4px 12px; }
       <li>Các bài hát đã tải (bao gồm các bản sao được lưu trong trình duyệt này)</li>
       <li>Cài đặt thời gian, hàng và phạm vi xuất</li>
       <li>Phong cách, hiệu ứng, bảng màu, phông chữ và các cài đặt khác</li>
-      <li>Lịch sử đa dạng (◀ ▶) và lịch sử Hoàn tác lời bài hát/thời gian</li>
+      <li>Lịch sử các biến thể (◀ ▶) và lịch sử Hoàn tác lời bài hát / thời gian</li>
     </ul>
     <p class="terms-sub">Chế độ soạn thảo (Đơn giản / Nâng cao), âm lượng xem trước và ngôn ngữ giao diện không thay đổi. Các tệp dự án đã lưu (.json) cũng không bị xóa.</p>
     <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Hủy</button><button value="reset" class="danger">Đặt lại</button></span></div>
@@ -5266,7 +5266,7 @@ J.exportMP4 = async (o) => {
       console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
     }
   }
-  const err = new Error('MP4 không thể xuất được:' + (file ? '' : 'sử dụng “Đối với video lớn (lưu trực tiếp vào tệp)” hoặc ') + 'thử độ phân giải, khung hình/giây hoặc chất lượng thấp hơn. Chi tiết: ' + tried.join(' ／ '));
+  const err = new Error('Không xuất được MP4:' + (file ? '' : 'sử dụng “Đối với video lớn (lưu trực tiếp vào tệp)” hoặc ') + 'thử độ giảm phân giải, khung hình/giây hoặc chất lượng thấp hơn. Chi tiết: ' + tried.join(' ／ '));
   err.detail = tried; throw err;
 };
 async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
@@ -5303,7 +5303,7 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
       while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('Bộ mã hóa không phản hồi'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
       if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('Bộ mã hóa không tạo ra kết quả'); }
-      if (i % 3 === 0) { onProgress && onProgress(i / total, `Khung${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
+      if (i % 3 === 0) { onProgress && onProgress(i / total, `Khung hình${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
     }
     await venc.flush();
     if (err) throw err;
@@ -5334,12 +5334,12 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
     if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Mã hóa âm thanh dừng ở giữa (' + aChunks + '). Vui lòng xuất lại');
   }
-  onProgress && onProgress(0.995, 'Hoàn thành tập tin');
+  onProgress && onProgress(0.995, 'Đang hoàn tất');
   muxer.finalize();
   if (file) await file.close();
   onProgress && onProgress(1, 'Hoàn thành');
   const size = file ? null : store.end;
-  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (phần mềm)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (Software Encoding)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
 }
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
@@ -35867,11 +35867,11 @@ J.randomOk = (project, g, k) => {
 })();
 
 (() => {
-  const S = {"hrRuin": ["Phế tích", "Xanh xám bạc màu, đỏ gỉ sét và chữ có chân vang vọng"], "hrNightRec": ["Băng ghi hình nửa đêm", "Màn hình đen kịt, trắng và đỏ của camera giám sát, nhiễu sóng"], "hrCurse": ["Bức thư nguyền rủa", "Giấy ố vàng, mực phai và nét chữ đỏ sẫm"], "noir": ["Noir sắc màu", "Đen trắng với bù màu xanh lơ và hổ phách"], "crimson": ["Tín hiệu đỏ thẫm", "Màu đỏ thẫm, chữ đơn sắc và dữ liệu hỏng"], "caution": ["Cảnh báo", "Vàng, đỏ, xanh và đồ họa bảng điều khiển"], "magenta": ["Pop magenta", "Hồng sáng, chữ tròn đậm và đường chỉ dẫn"], "paper": ["Giấy và mực", "Kết cấu giấy, chàm, magenta và bóng serif"], "hud": ["HUD tối", "Than, khung mỏng, điểm nhấn cam và nhật thực"], "mint": ["Terminal mint", "Đen, teal, chanh và hiệu ứng quét"], "specimen": ["Mẫu chữ", "Nền mực với chú thích serif"], "transit": ["Giao thông", "Ô liu và vàng, biển báo và halftone"], "blueprint": ["Bản vẽ", "Collage đồ họa xanh, trắng và đen"], "rouge": ["Gradient đỏ", "Gradient xám nhạt và đỏ với hình viên nang"], "mono": ["Mono RGB", "Không gian xám, serif trắng và tách RGB mạnh"], "sakura": ["Sakura", "Hồng sakura dịu và mận tím, chữ tròn và serif"], "ocean": ["Biển sâu", "Navy, cyan phát sáng, bong bóng và sans mảnh"], "sunset": ["Gradient hoàng hôn", "Gradient cam sang tím, serif đậm và ánh sáng sau"], "forest": ["Ghi chú rừng", "Xanh rêu, giấy tự nhiên và chữ bút chì"], "vapor": ["Vaporwave", "Hồng và xanh pastel với quầng VHS"], "newsprint": ["Giấy báo", "Giấy xám, đen và đỏ, halftone và lệch in"], "synth80": ["Synth thập niên 80", "Nền đen với magenta và cyan neon cùng vạch quét"], "kraft": ["Giấy kraft", "Giấy ấm, con dấu đỏ và chàm, băng dính giấy"], "candy": ["Kẹo", "Mint và pastel trái cây với chữ nảy"], "acid": ["Acid", "Đen, xanh acid và magenta với chữ thô"], "sumi": ["Mực và đỏ", "Giấy Nhật, thư pháp và con dấu đỏ"], "gold": ["Đêm vàng", "Đen sâu, foil vàng, serif ngà và lấp lánh"]};
+  const S = {"hrRuin": ["Phế tích", "Xanh xám bạc màu, đỏ gỉ sét và chữ có chân (Serif) kèm hiệu ứng tiếng vọng"], "hrNightRec": ["Băng ghi hình nửa đêm", "Màn hình đen kịt, trắng và đỏ của camera giám sát, nhiễu sóng"], "hrCurse": ["Bức thư nguyền rủa", "Giấy ố vàng, mực phai và nét chữ đỏ sẫm"], "noir": ["Noir sắc màu", "Đen trắng với lệch màu xanh lơ và hổ phách"], "crimson": ["Tín hiệu đỏ thẫm", "Màu đỏ thẫm, chữ đơn sắc và dữ liệu hỏng"], "caution": ["Cảnh báo", "Vàng, đỏ, xanh và đồ họa bảng điều khiển"], "magenta": ["Pop magenta", "Hồng sáng, chữ tròn đậm và đường chỉ dẫn"], "paper": ["Giấy và mực", "Kết cấu giấy, chàm, magenta và bóng serif"], "hud": ["HUD tối", "Than, khung mỏng, điểm nhấn cam và nhật thực"], "mint": ["Terminal mint", "Đen, teal, chanh và hiệu ứng quét"], "specimen": ["Mẫu chữ", "Nền mực với chú thích serif"], "transit": ["Giao thông", "Ô liu và vàng, biển báo và halftone"], "blueprint": ["Bản vẽ", "Collage đồ họa xanh, trắng và đen"], "rouge": ["Gradient đỏ", "Gradient xám nhạt và đỏ với hình viên nang"], "mono": ["Mono RGB", "Không gian xám, serif trắng và tách RGB mạnh"], "sakura": ["Sakura", "Hồng sakura dịu và mận tím, chữ tròn và serif"], "ocean": ["Biển sâu", "Navy, cyan phát sáng, bong bóng và sans mảnh"], "sunset": ["Gradient hoàng hôn", "Gradient cam sang tím, serif đậm và ánh sáng sau"], "forest": ["Ghi chú rừng", "Xanh rêu, giấy tự nhiên và chữ bút chì"], "vapor": ["Vaporwave", "Hồng và xanh pastel với quầng VHS"], "newsprint": ["Giấy báo", "Giấy xám, đen và đỏ, halftone và lệch in"], "synth80": ["Synth thập niên 80", "Nền đen với magenta và cyan neon cùng vạch quét"], "kraft": ["Giấy kraft", "Giấy ấm, con dấu đỏ và chàm, băng dính giấy"], "candy": ["Kẹo", "Mint và pastel trái cây với chữ nảy"], "acid": ["Acid", "Đen, xanh acid và magenta với chữ thô ráp"], "sumi": ["Mực và đỏ", "Giấy Nhật, thư pháp và con dấu đỏ"], "gold": ["Đêm vàng", "Đen sâu, foil vàng, serif ngà và lấp lánh"]};
   for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
   const M = {"horror": "Kinh dị", "glitch": "Glitch", "calm": "Êm dịu", "pop": "Pop", "graphic": "Đồ họa", "editorial": "Biên tập", "emotional": "Cảm xúc", "chaos": "Hỗn loạn"};
   for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
-  J.SAMPLE_LYRICS = "Tôi vẫn nhớ/màu bình minh\nTiếng nói tan dần vang xa\nNày, còn kịp không?\nKhông thể kết thúc trong trạng thái *trong suốt*!";
+  J.SAMPLE_LYRICS = "Nắng rơi trên vai/những chiều xa\nTiếng em gọi tan vào cơn gió\nNày, còn kịp không?\nĐừng để lại *khoảng lặng* này!";
 })();
 
 /* ============================================================
@@ -36003,7 +36003,7 @@ function mergeProject(p) {
   for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
   return o;
 }
-const SET_UI = { horror: { name: 'Kinh dị', badge: 'H' }, typo: { name: 'Kiểu chữ', badge: 'T' }, kinetic: { name: 'Chuyển động chữ', badge: 'K' } };
+const SET_UI = { horror: { name: 'Kinh dị', badge: 'H' }, typo: { name: 'Kiểu chữ', badge: 'T' }, kinetic: { name: 'Kinetic (Chuyển động chữ)', badge: 'K' } };
 function setBadges(d) {
   return (d && d.extra ? '<span class="set-badge ex" title="Đã thêm sau khi phát hành lần đầu">Mới</span>' : '') + (d && d.wa ? '<span class="set-badge" title="họa tiết nhật bản">JP</span>' : '')
     + (d && d.set && SET_UI[d.set] ? `<span class="set-badge set-${d.set}" title="${SET_UI[d.set].name}">${SET_UI[d.set].badge}</span>` : '');
@@ -36394,7 +36394,7 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">Không có cắt cảnh ở vị trí này</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">Không có cảnh nào ở vị trí này</span>'; closeCutPick(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
@@ -36759,7 +36759,7 @@ function renderFontRoles() {
   });
 }
 const BASE_KEYS = [['bg', 'Nền'], ['fg', 'Chữ'], ['sub', 'Phụ']];
-const ACCENT_KEYS = [['accent', 'Màu nhấn'], ['ghostA', 'Màu bù A'], ['ghostB', 'Màu bù B']];
+const ACCENT_KEYS = [['accent', 'Màu nhấn'], ['ghostA', 'Màu lệch A'], ['ghostB', 'Màu lệch B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -36798,7 +36798,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Bảng màu: màu nhấn và màu bù đã thay đổi', [p.accent, p.ghostA, p.ghostB]);
+  toast('Bảng màu: màu nhấn và màu lệch đã thay đổi', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -37006,7 +37006,7 @@ function mobileInit() {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Cường độ chuyển động'], ['glitch', 'Glitch'], ['chroma', 'Màu bù'], ['decor', 'Số lượng đồ trang trí'], ['density', 'Mật độ cắt'], ['texture', 'Kết cấu'], ['bgSwitch', 'Thay đổi nền']];
+const FX = [['motion', 'Cường độ chuyển động'], ['glitch', 'Glitch'], ['chroma', 'Màu lệch'], ['decor', 'Số lượng đồ trang trí'], ['density', 'Mật độ cắt'], ['texture', 'Kết cấu'], ['bgSwitch', 'Thay đổi nền']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -37417,10 +37417,10 @@ function bind() {
   setSwitch('extra-toggle', 'extra', true, 'Hiệu ứng mới: kích hoạt', 'Hiệu ứng mới: tắt (chỉ cài đặt ban đầu)');
   setSwitch('wa-toggle', 'wa', true, 'Họa tiết Nhật Bản: bật', 'Họa tiết Nhật Bản: tắt (không được chọn khi tự động/ngẫu nhiên)');
   setSwitch('typo-toggle', 'typo', true, 'Thành phần kiểu chữ: bật', 'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)');
-  setSwitch('kinetic-toggle', 'kinetic', true, 'Thành phần chuyển động chữ: bật', 'Thành phần chuyển động chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)');
+  setSwitch('kinetic-toggle', 'kinetic', true, 'Thành phần Kinetic (Chuyển động chữ): bật', 'Thành phần Kinetic (Chuyển động chữ): tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)');
   setSwitch('horror-toggle', 'horror', true, 'Hiệu ứng kinh dị: bật (Ngẫu nhiên có thêm bầu không khí «Kinh dị»)', 'Hiệu ứng kinh dị: tắt');
-  setSwitch('unify-toggle', 'unify', true, 'Sử dụng hiệu ứng đồng nhất: bật (các hiệu ứng đồng nhất; cao trào, hình thái và độ dày cũng áp dụng)', 'Sử dụng hiệu ứng đồng nhất: tắt');
-  setSwitch('typeset-toggle', 'typeset', true, 'Tạo kiểu cho văn bản: bật (khoảng cách, các phần tử, tiếng Latin, sớm hơn 0,2 giây, hiệu ứng theo sở thích)', 'Tạo kiểu cho văn bản: tắt');
+  setSwitch('unify-toggle', 'unify', true, 'Sử dụng hiệu ứng đồng nhất: bật (đồng bộ theo từng đoạn; áp dụng cả hiệu ứng cao trào, biến hình và độ đậm)', 'Sử dụng hiệu ứng đồng nhất: tắt');
+  setSwitch('typeset-toggle', 'typeset', true, 'Căn chỉnh chữ: bật (khoảng cách, các phần tử, tiếng Latin, sớm hơn 0,2 giây, hiệu ứng theo sở thích)', 'Căn chỉnh chữ: tắt');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
@@ -37469,7 +37469,7 @@ function bind() {
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
     const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
-    toast(e.target.checked ? `Phần giữa được để trống: văn bản và hiệu ứng được đặt trong ${tall ? 'trên / dưới' : 'trái / phải'}` : 'Phần giữa không còn trống nữa');
+    toast(e.target.checked ? `Đã để trống phần giữa: chữ và hiệu ứng đặt ở ${tall ? 'trên / dưới' : 'trái / phải'}` : 'Phần giữa không còn trống nữa');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
@@ -37556,7 +37556,7 @@ async function loadAudioFile(f, restored) {
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
   { t: () => $('lyrics'), title: '1. Nhập lời bài hát', text: 'Mỗi dòng là một câu. Dòng trống tạo khoảng dừng ngắn; [interlude 8] sẽ tạo đoạn nhạc nền 8 giây (chỉ hình nền và hiệu ứng).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Chọn tệp âm thanh', text: 'Chọn tệp mp3 hoặc tệp tương tự: JIZURA nhận diện nhịp và căn chỉnh chuyển cảnh. Có thể làm không cần bài hát. “Đặt điểm chuyển cảnh” để đánh dấu bắt đầu của mỗi câu.' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Chọn tệp âm thanh', text: 'Chọn tệp mp3 hoặc tệp tương tự: JIZURA nhận diện nhịp và căn chỉnh chuyển cảnh. Có thể làm không cần bài hát. “Đồng bộ thủ công” để đánh dấu bắt đầu của mỗi câu.' },
   { t: () => $('btnOmakaseBig'), title: '3. Tạo ngẫu nhiên', text: 'Phong cách, bầu không khí, chuyển động, bảng màu và bố cục được chọn tự động. Mỗi lần bấm tạo biến thể mới; “◀ Biến thể trước” để quay lại.' },
   { t: () => $('btnPlay'), title: '4. Phát thử', text: 'Phát để xem trước. Trên dòng thời gian phía dưới, kéo thanh neo để chỉnh (＋− để phóng to).' },
   { t: () => $('lineList'), title: '5. Sửa từng câu', text: 'Mỗi câu: sửa lời (✎), đặt vị trí chuyển cảnh, đặt lại vị trí chuyển cảnh cho câu này (◎), hoặc tạo lại cho riêng câu này (ngẫu nhiên).' },
