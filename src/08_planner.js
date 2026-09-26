@@ -88,10 +88,17 @@ J.parseLyrics = (raw) => {
   }
   const hasLrc = lines.some(l => l.lrc != null);
   const mixedLrc = hasLrc && lines.some(l => l.lrc == null);
-  // Fully timed LRC files have always played in timestamp order. In a mixed file,
-  // moving untimed rows to the end loses their position between timed lyrics.
-  if (hasLrc && !mixedLrc) lines.sort((a, b) => a.lrc - b.lrc);
-  return { lines, meta, mixedLrc };
+  let lastTag = -Infinity, ascendingTags = true;
+  for (const line of lines) if (line.lrc != null) {
+    if (line.lrc < lastTag) ascendingTags = false;
+    lastTag = line.lrc;
+  }
+  // Preserve source order only when the tagged rows already run forward in
+  // time. Out-of-order LRC (including repeated tags on one row) keeps the old
+  // chronological sort; the untimed rows remain at the end in that case.
+  const sourceOrder = mixedLrc && ascendingTags;
+  if (hasLrc && !sourceOrder) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
+  return { lines, meta, mixedLrc, sourceOrder };
 };
 
 // Older mixed-LRC projects stored line-indexed edits after untimed rows had
@@ -240,8 +247,30 @@ J.computeTiming = (project, parsed, audio) => {
     }
     starts.push(s);
   });
+  // When several untimed rows are squeezed between increasing anchors, the
+  // greedy estimate can pin them all at the same time. Spread only such a run;
+  // ordinary gaps keep their natural, length-based timing.
+  if (parsed.sourceOrder) {
+    let left = -1;
+    for (let right = 0; right < lines.length; right++) {
+      const manual = T.lineTimes && T.lineTimes[right] != null ? +T.lineTimes[right] : null;
+      if (!(manual != null && isFinite(manual)) && lines[right].lrc == null) continue;
+      const first = left + 1, leftTime = left < 0 ? t : starts[left], rightTime = starts[right];
+      if (first < right && rightTime > leftTime) {
+        let crowded = left >= 0 && starts[first] <= leftTime;
+        for (let i = first + 1; i < right; i++) if (starts[i] <= starts[i - 1]) crowded = true;
+        if (crowded) {
+          const steps = right - left;
+          for (let i = first; i < right; i++) starts[i] = left < 0
+            ? leftTime + (rightTime - leftTime) * i / right
+            : leftTime + (rightTime - leftTime) * (i - left) / steps;
+        }
+      }
+      left = right;
+    }
+  }
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    if (i < starts.length - 1) return parsed.sourceOrder && starts[i + 1] >= s ? starts[i + 1] : Math.max(s + 0.35, starts[i + 1]);
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
