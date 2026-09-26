@@ -334,6 +334,7 @@ UI = {
 }
 
 EXPORT = {
+    "'PNG ZIP の上限を超えました。書き出す範囲を短くするか、解像度・fpsを下げてください。'": "'PNG ZIP melebihi batas format. Ekspor rentang yang lebih pendek atau turunkan resolusi atau fps.'",
     "'エンコーダーが出力を返しません'": "'Encoder tidak mengeluarkan hasil'",
     "'（ソフトウェア）'": "' (perangkat lunak)'",
     "'ファイルを仕上げ中'": "'Menyelesaikan file'",

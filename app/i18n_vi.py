@@ -435,6 +435,7 @@ UI = {
 }
 
 EXPORT = {
+    "'PNG ZIP の上限を超えました。書き出す範囲を短くするか、解像度・fpsを下げてください。'": "'PNG ZIP vượt quá giới hạn định dạng. Hãy xuất đoạn ngắn hơn hoặc giảm độ phân giải hay fps.'",
     "'エンコーダーが出力を返しません'": "'Bộ mã hóa không tạo ra kết quả'",
     "'（ソフトウェア）'": "' (phần mềm)'",
     "'ファイルを仕上げ中'": "'Hoàn thành tập tin'",

@@ -5345,10 +5345,21 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+// All-ones ZIP32 fields are reserved for ZIP64, which this writer does not emit.
+const ZIP16_LIMIT = 0xffff, ZIP32_LIMIT = 0xffffffff;
+const zipLimitError = () => new RangeError('PNG ZIP melebihi batas format. Ekspor rentang yang lebih pendek atau turunkan resolusi atau fps.');
+const zip32 = n => Number.isSafeInteger(n) && n >= 0 && n < ZIP32_LIMIT;
 class ZipWriter {
-  constructor() { this.parts = []; this.central = []; this.offset = 0; }
+  constructor() { this.parts = []; this.central = []; this.offset = 0; this.centralSize = 0; }
   add(name, u8) {
-    const nb = new TextEncoder().encode(name), crc = crc32(u8);
+    const nb = new TextEncoder().encode(name);
+    const count = this.central.length / 2 + 1;
+    const nextOffset = this.offset + 30 + nb.length + u8.length;
+    const nextCentralSize = this.centralSize + 46 + nb.length;
+    if (!Number.isSafeInteger(count) || count >= ZIP16_LIMIT || nb.length > ZIP16_LIMIT ||
+        !zip32(u8.length) || !zip32(this.offset) || !zip32(nextOffset) || !zip32(nextCentralSize) ||
+        !zip32(nextOffset + nextCentralSize + 22)) throw zipLimitError();
+    const crc = crc32(u8);
     const lh = new DataView(new ArrayBuffer(30));
     lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
     lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, u8.length, true); lh.setUint32(22, u8.length, true);
@@ -5359,11 +5370,13 @@ class ZipWriter {
     ch.setUint16(12, 0, true); ch.setUint16(14, 0x21, true); ch.setUint32(16, crc, true); ch.setUint32(20, u8.length, true); ch.setUint32(24, u8.length, true);
     ch.setUint16(28, nb.length, true); ch.setUint32(42, this.offset, true);
     this.central.push(ch.buffer, nb);
-    this.offset += 30 + nb.length + u8.length;
+    this.offset = nextOffset; this.centralSize = nextCentralSize;
   }
   finish() {
-    const cdSize = this.central.reduce((s, p) => s + (p.byteLength ?? p.length), 0);
     const n = this.central.length / 2;
+    const cdSize = this.centralSize;
+    if (!Number.isSafeInteger(n) || n >= ZIP16_LIMIT || !zip32(this.offset) || !zip32(cdSize) ||
+        !zip32(this.offset + cdSize + 22)) throw zipLimitError();
     const end = new DataView(new ArrayBuffer(22));
     end.setUint32(0, 0x06054b50, true); end.setUint16(8, n, true); end.setUint16(10, n, true); end.setUint32(12, cdSize, true); end.setUint32(16, this.offset, true);
     return new Blob([...this.parts, ...this.central, end.buffer], { type: 'application/zip' });
@@ -5373,11 +5386,13 @@ class ZipWriter {
    (lyrics, their decorations, ghosts, HUD). Screen effects are applied to both, so stacking front over back matches. */
 J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal, every = 1, range }) => {
   const span = J.exportSpan(plan, range);
+  const fps = plan.fps, total = Math.max(1, Math.round(span.dur * fps));
+  if (!Number.isSafeInteger(every) || every < 1 || !Number.isSafeInteger(total) ||
+      Math.ceil(total / every) * (layers ? 2 : 1) >= ZIP16_LIMIT) throw zipLimitError();
   const [w, h] = J.outputSize(project);
   const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   const R = new J.Renderer();
-  const fps = plan.fps, total = Math.max(1, Math.round(span.dur * fps));
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
@@ -5390,8 +5405,9 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
+  const result = zip.finish();
   onProgress && onProgress(1, 'Selesai');
-  return zip.finish();
+  return result;
 };
 
 /* ---------- plan JSON for the After Effects panel ---------- */
