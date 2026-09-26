@@ -3396,7 +3396,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1, lineOrder: 'source' },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
   colors: { enabled: false },
@@ -3453,8 +3453,43 @@ J.parseLyrics = (raw) => {
     if (times.length) times.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
     else lines.push(Object.assign({}, base, { lrc: null }));
   }
-  if (lines.some(l => l.lrc != null)) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
-  return { lines, meta };
+  const hasLrc = lines.some(l => l.lrc != null);
+  const mixedLrc = hasLrc && lines.some(l => l.lrc == null);
+  // Fully timed LRC files have always played in timestamp order. In a mixed file,
+  // moving untimed rows to the end loses their position between timed lyrics.
+  if (hasLrc && !mixedLrc) lines.sort((a, b) => a.lrc - b.lrc);
+  return { lines, meta, mixedLrc };
+};
+
+// Older mixed-LRC projects stored line-indexed edits after untimed rows had
+// been moved to the end. Translate those indices once when loading the project;
+// leave the file on disk untouched until the user explicitly saves it.
+J.migrateMixedLineOrder = (project) => {
+  const T = project.timing || (project.timing = {});
+  if (T.lineOrder === 'source') return project;
+  const parsed = J.parseLyrics(project.lyrics);
+  if (parsed.mixedLrc) {
+    const oldToNew = parsed.lines.map((_, i) => i).sort((a, b) =>
+      (parsed.lines[a].lrc ?? 1e9) - (parsed.lines[b].lrc ?? 1e9) || a - b);
+    const remap = obj => {
+      const next = {};
+      for (const [key, value] of Object.entries(obj || {})) {
+        const i = Number(key);
+        const target = Number.isInteger(i) && i >= 0 && i < oldToNew.length ? oldToNew[i] : key;
+        next[target] = value;
+      }
+      return next;
+    };
+    T.lineTimes = remap(T.lineTimes);
+    project.overrides = remap(project.overrides);
+    const range = project.exportRange;
+    if (range && Number.isInteger(range.from) && Number.isInteger(range.to)) {
+      const selected = oldToNew.slice(Math.max(0, range.from), Math.min(oldToNew.length, range.to + 1));
+      if (selected.length) project.exportRange = { from: Math.min(...selected), to: Math.max(...selected) };
+    }
+  }
+  T.lineOrder = 'source';
+  return project;
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
@@ -3540,13 +3575,22 @@ J.computeTiming = (project, parsed, audio) => {
   const lines = parsed.lines;
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
-  const allLrc = lines.length && lines.every(l => l.lrc != null);
-  let t = T.offset ?? 0.4;
+  const nextExplicit = new Array(lines.length);
+  if (parsed.mixedLrc) {
+    let next = null;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      nextExplicit[i] = next;
+      const manual = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
+      if (manual != null && isFinite(manual)) next = manual;
+      else if (lines[i].lrc != null) next = lines[i].lrc;
+    }
+  }
+  const t = T.offset ?? 0.4;
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
     if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
-    else if (allLrc) s = l.lrc;
+    else if (l.lrc != null) s = l.lrc;
     else {
       if (i > 0) {
         const n = [...lines[i - 1].text].length, pl = lines[i - 1];
@@ -3554,6 +3598,12 @@ J.computeTiming = (project, parsed, audio) => {
         if (beat && !(pl.interlude && pl.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
         s = starts[i - 1] + d + (l.gapBefore ? (beat ? beat * 2 : 0.8) : 0);
       } else s = t;
+      // A missing timestamp may be estimated, but must not displace the next
+      // explicit time when the lines are a mixture of timed and untimed rows.
+      if (parsed.mixedLrc && nextExplicit[i] != null) {
+        const lo = i ? starts[i - 1] : 0;
+        s = Math.min(s, Math.max(lo, nextExplicit[i] - 0.35));
+      }
     }
     starts.push(s);
   });
@@ -35729,6 +35779,7 @@ function mergeProject(p) {
   const o = Object.assign(d, p || {});
   o.fx = Object.assign(J.defaultProject().fx, (p && p.fx) || {});
   o.timing = Object.assign(J.defaultProject().timing, (p && p.timing) || {});
+  if (p && (!p.timing || p.timing.lineOrder !== 'source')) delete o.timing.lineOrder;
   const en = J.defaultProject().enabled;
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
@@ -35750,7 +35801,7 @@ function mergeProject(p) {
   for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight);
   o.fonts = {};
   for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
-  return o;
+  return J.migrateMixedLineOrder(o);
 }
 const SET_UI = { horror: { name: 'ホラー', badge: 'ホ' }, typo: { name: '文字PV系', badge: '文' }, kinetic: { name: 'キネティック', badge: 'キ' } };
 function setBadges(d) {
