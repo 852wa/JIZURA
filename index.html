@@ -3571,6 +3571,8 @@ J.computeTiming = (project, parsed, audio) => {
 
 /* ---------------- planning ---------------- */
 const wkey = (obj, k, d = 1) => (obj && obj[k] != null ? obj[k] : d);
+// Keep effect ownership without adding editor-only metadata to exported plans.
+const eventCuts = new WeakMap();
 
 function cutTechOf(ov, k) {
   const t = (ov.cutTech && (ov.cutTech[k] || ov.cutTech[String(k)])) || {};
@@ -3890,6 +3892,7 @@ J.plan = (project, audio) => {
         let extra = 0;
         for (const e of mine) if (e.type === 'chroma' || e.type === 'shake' && emph || extra++ < 1) plan.events.push(e);
       }
+      for (let i = evMark; i < plan.events.length; i++) eventCuts.set(plan.events[i], cut);
     });
     // interlude in long gaps
     const nextStart = li < parsed.lines.length - 1 ? tm.starts[li + 1] : null;
@@ -4060,9 +4063,11 @@ J.lineSnapshot = (plan, li) => {
     trans: c.trans, transP: c.transP, transDur: c.transDur, morph: c.morph || null, weightGrow: !!c.weightGrow, kime: !!c.kime, recap: !!c.recap, twinParams: c.companion ? c.companion.params : null, events: [] }))));
   // each accent belongs to the cut it plays in (the ones just before a cut start belong to that cut)
   for (const e of plan.events) {
-    let k = -1;
+    const owner = eventCuts.get(e);
+    let k = owner ? cuts.indexOf(owner) : -1;
     // [start − 0.25, next start − 0.25): an accent just before the following cut belongs to that cut
-    for (let j = 0; j < cuts.length; j++) { const until = j < cuts.length - 1 ? cuts[j + 1].start - 0.25 : cuts[j].end - 0.3; if (e.t >= cuts[j].start - 0.25 && e.t < until) k = j; }
+    // Only use the old timing heuristic for plans that were not generated in this session.
+    if (!owner) for (let j = 0; j < cuts.length; j++) { const until = j < cuts.length - 1 ? cuts[j + 1].start - 0.25 : cuts[j].end - 0.3; if (e.t >= cuts[j].start - 0.25 && e.t < until) k = j; }
     if (k >= 0) S[k].events.push({ dt: +(e.t - cuts[k].start).toFixed(4), type: e.type, amp: e.amp, dur: e.dur });
   }
   return S;
