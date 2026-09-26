@@ -29,7 +29,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1, lineOrder: 'source' },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
   colors: { enabled: false },
@@ -86,8 +86,51 @@ J.parseLyrics = (raw) => {
     if (times.length) times.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
     else lines.push(Object.assign({}, base, { lrc: null }));
   }
-  if (lines.some(l => l.lrc != null)) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
-  return { lines, meta };
+  const hasLrc = lines.some(l => l.lrc != null);
+  const mixedLrc = hasLrc && lines.some(l => l.lrc == null);
+  let lastTag = -Infinity, ascendingTags = true;
+  for (const line of lines) if (line.lrc != null) {
+    if (line.lrc < lastTag) ascendingTags = false;
+    lastTag = line.lrc;
+  }
+  // Preserve source order only when the tagged rows already run forward in
+  // time. With untimed rows before a tag at zero there is no positive interval
+  // to place them in. Both cases keep the old chronological sort instead.
+  const firstTagged = lines.findIndex(l => l.lrc != null);
+  const sourceOrder = mixedLrc && ascendingTags && !(firstTagged > 0 && lines[firstTagged].lrc <= 0);
+  if (hasLrc && !sourceOrder) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
+  return { lines, meta, mixedLrc, sourceOrder };
+};
+
+// Older mixed-LRC projects stored line-indexed edits after untimed rows had
+// been moved to the end. Translate those indices once when loading the project;
+// leave the file on disk untouched until the user explicitly saves it.
+J.migrateMixedLineOrder = (project) => {
+  const T = project.timing || (project.timing = {});
+  if (T.lineOrder === 'source') return project;
+  const parsed = J.parseLyrics(project.lyrics);
+  if (parsed.mixedLrc) {
+    const oldToNew = parsed.lines.map((_, i) => i).sort((a, b) =>
+      (parsed.lines[a].lrc ?? 1e9) - (parsed.lines[b].lrc ?? 1e9) || a - b);
+    const remap = obj => {
+      const next = {};
+      for (const [key, value] of Object.entries(obj || {})) {
+        const i = Number(key);
+        const target = Number.isInteger(i) && i >= 0 && i < oldToNew.length ? oldToNew[i] : key;
+        next[target] = value;
+      }
+      return next;
+    };
+    T.lineTimes = remap(T.lineTimes);
+    project.overrides = remap(project.overrides);
+    const range = project.exportRange;
+    if (range && Number.isInteger(range.from) && Number.isInteger(range.to)) {
+      const selected = oldToNew.slice(Math.max(0, range.from), Math.min(oldToNew.length, range.to + 1));
+      if (selected.length) project.exportRange = { from: Math.min(...selected), to: Math.max(...selected) };
+    }
+  }
+  T.lineOrder = 'source';
+  return project;
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
@@ -173,13 +216,22 @@ J.computeTiming = (project, parsed, audio) => {
   const lines = parsed.lines;
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
-  const allLrc = lines.length && lines.every(l => l.lrc != null);
-  let t = T.offset ?? 0.4;
+  const nextExplicit = new Array(lines.length);
+  if (parsed.mixedLrc) {
+    let next = null;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      nextExplicit[i] = next;
+      const manual = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
+      if (manual != null && isFinite(manual)) next = manual;
+      else if (lines[i].lrc != null) next = lines[i].lrc;
+    }
+  }
+  const t = T.offset ?? 0.4;
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
     if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
-    else if (allLrc) s = l.lrc;
+    else if (l.lrc != null) s = l.lrc;
     else {
       if (i > 0) {
         const n = [...lines[i - 1].text].length, pl = lines[i - 1];
@@ -187,11 +239,40 @@ J.computeTiming = (project, parsed, audio) => {
         if (beat && !(pl.interlude && pl.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
         s = starts[i - 1] + d + (l.gapBefore ? (beat ? beat * 2 : 0.8) : 0);
       } else s = t;
+      // A missing timestamp may be estimated, but must not displace the next
+      // explicit time when the lines are a mixture of timed and untimed rows.
+      if (parsed.mixedLrc && nextExplicit[i] != null) {
+        const lo = i ? starts[i - 1] : 0;
+        s = Math.min(s, Math.max(lo, nextExplicit[i] - 0.35));
+      }
     }
     starts.push(s);
   });
+  // When several untimed rows are squeezed between increasing anchors, the
+  // greedy estimate can pin them all at the same time. Spread only such a run;
+  // ordinary gaps keep their natural, length-based timing.
+  if (parsed.sourceOrder) {
+    let left = -1;
+    for (let right = 0; right < lines.length; right++) {
+      const manual = T.lineTimes && T.lineTimes[right] != null ? +T.lineTimes[right] : null;
+      if (!(manual != null && isFinite(manual)) && lines[right].lrc == null) continue;
+      const first = left + 1, rightTime = starts[right];
+      const leftTime = left < 0 ? (rightTime <= t ? 0 : t) : starts[left];
+      if (first < right && rightTime > leftTime) {
+        let crowded = left >= 0 && starts[first] <= leftTime;
+        for (let i = first + 1; i < right; i++) if (starts[i] <= starts[i - 1]) crowded = true;
+        if (crowded) {
+          const steps = right - left;
+          for (let i = first; i < right; i++) starts[i] = left < 0
+            ? leftTime + (rightTime - leftTime) * i / right
+            : leftTime + (rightTime - leftTime) * (i - left) / steps;
+        }
+      }
+      left = right;
+    }
+  }
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    if (i < starts.length - 1) return parsed.sourceOrder && starts[i + 1] >= s ? starts[i + 1] : Math.max(s + 0.35, starts[i + 1]);
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
