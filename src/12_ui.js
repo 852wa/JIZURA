@@ -645,7 +645,25 @@ function renderLines() {
       const v = parseFloat(e.target.value);
       pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-      if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
+      if (isFinite(v)) {
+        const L = S.plan.lines;
+        const parsed = J.parseLyrics(S.project.lyrics).lines;
+        const fixed = j => {
+          const manual = S.project.timing.lineTimes[j] != null ? +S.project.timing.lineTimes[j] : null;
+          return manual != null && isFinite(manual) || parsed[j] && parsed[j].lrc != null;
+        };
+        // Automatic lines between anchors can move to fit the typed time.
+        let prev = i ? L[0].start : 0;
+        for (let j = i - 1; j >= 0; j--) if (fixed(j)) { prev = L[j].start; break; }
+        let next = Infinity;
+        for (let j = i + 1; j < L.length; j++) {
+          if (fixed(j)) next = Math.min(next, L[j].start);
+        }
+        const gap = isFinite(next) ? Math.min(0.2, Math.max(0, (next - prev) / 2)) : 0.2;
+        const lo = i ? prev + gap : 0;
+        const hi = isFinite(next) ? Math.max(lo, next - gap) : Infinity;
+        S.project.timing.lineTimes[i] = +J.clamp(v, lo, hi).toFixed(3);
+      } else delete S.project.timing.lineTimes[i];
       replan();
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
