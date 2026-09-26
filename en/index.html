@@ -121,6 +121,20 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
 .field input, .field select { width: 100%; }
+.whisper-box { display: grid; gap: 9px; padding: 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--raised); }
+.whisper-title { margin: 0; color: var(--text); letter-spacing: .08em; }
+.whisper-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.whisper-note, .whisper-privacy { margin: 0; font-size: 11px; line-height: 1.5; }
+.whisper-privacy { color: var(--muted); border-left: 2px solid var(--cyan); padding-left: 8px; }
+.whisper-actions { display: grid; gap: 7px; }
+.whisper-progress { display: grid; gap: 5px; }
+.whisper-progress[hidden] { display: none; }
+.whisper-status-row { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+.whisper-progress.indeterminate .progress i { width: 38% !important; animation: whisper-progress 1.1s ease-in-out infinite alternate; }
+.whisper-result { display: grid; gap: 8px; }
+.whisper-result[hidden] { display: none; }
+#whisperPreview { min-height: 118px; font: 12px/1.6 var(--mono); }
+@keyframes whisper-progress { from { transform: translateX(-15%); } to { transform: translateX(180%); } }
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
@@ -517,6 +531,33 @@ button.small.primary { padding: 4px 12px; }
           <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
           <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
         </div>
+        <div id="whisperBox" class="whisper-box">
+          <div class="sec-h"><h3 class="whisper-title">AI transcription</h3><span id="whisperDevice" class="muted mono"></span></div>
+          <div class="whisper-fields">
+            <label class="field">Language
+              <select id="whisperLang"><option value="auto">Auto-detect</option><option value="japanese">Japanese</option><option value="english">English</option></select>
+            </label>
+            <label class="field">Model
+              <select id="whisperModel"><option value="base">Accurate Base (recommended)</option><option value="tiny">Fast Tiny</option></select>
+            </label>
+          </div>
+          <div class="whisper-actions">
+            <button id="btnWhisper" class="accent">Transcribe lyrics with AI</button>
+          </div>
+          <p id="whisperFirstNote" class="whisper-note muted">The original mix is analyzed directly and adjusted automatically to make vocals easier to detect. Accurate Base uses more time and memory than Tiny.</p>
+          <p class="whisper-note muted">The selected AI model is loaded on first use and then cached in this browser.</p>
+          <div id="whisperProgressBox" class="whisper-progress" hidden>
+            <div class="progress" role="progressbar" aria-label="AI transcription progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="whisperBar"></i></div>
+            <div class="whisper-status-row"><span id="whisperStatus" role="status" aria-live="polite">Preparing</span><span id="whisperPercent" class="mono">0%</span></div>
+          </div>
+          <div id="whisperResult" class="whisper-result" hidden>
+            <label class="field">Transcription result (you can edit it before applying)
+              <textarea id="whisperPreview" rows="7" spellcheck="false" aria-label="AI transcription result"></textarea>
+            </label>
+            <button id="btnApplyWhisper" class="primary">Apply to lyrics</button>
+          </div>
+          <p class="whisper-privacy">Transcription and audio adjustment run in your browser. Your audio file is not sent to a transcription API.</p>
+        </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
           <label class="field">Start (s)<input id="offset" type="number" min="0" step="0.05"></label>
@@ -743,7 +784,7 @@ button.small.primary { padding: 4px 12px; }
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
     <p class="muted terms-note">Your lyrics and audio are processed in this browser and are not sent to a server.</p>
     <details class="terms-oss"><summary>Open source software</summary>
-      <p>MP4 export: mp4-muxer（MIT License）<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
+      <p>MP4 export: mp4-muxer（MIT License）<br>AI transcription: Transformers.js / Whisper Tiny and Base (Apache License 2.0)<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
     </details>
     <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Close</button></div>
   </form>
@@ -5126,6 +5167,219 @@ J.beatGrid = (bpm, offset, duration) => {
   for (let t = offset; t < duration + 0.01; t += p) if (t >= 0) out.push(+t.toFixed(4));
   return out;
 };
+})();
+
+/* ============================================================
+   JIZURA — in-browser Whisper transcription (Transformers.js)
+   ============================================================ */
+(() => {
+'use strict';
+
+const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
+const MODELS = Object.freeze({
+  base: { id: 'onnx-community/whisper-base', label: 'Base' },
+  tiny: { id: 'onnx-community/whisper-tiny', label: 'Tiny' },
+  small: { id: 'onnx-community/whisper-small', label: 'Small' },
+});
+const SAMPLE_RATE = 16000;
+let libraryPromise = null;
+const loaded = new Map();
+
+function notify(fn, detail) { if (typeof fn === 'function') fn(detail); }
+
+async function library(onProgress) {
+  if (!libraryPromise) {
+    notify(onProgress, { phase: 'library' });
+    libraryPromise = import(TRANSFORMERS_URL).then(mod => {
+      mod.env.allowLocalModels = false;
+      mod.env.useBrowserCache = true;
+      if ('useWasmCache' in mod.env) mod.env.useWasmCache = true;
+      return mod;
+    }).catch(err => { libraryPromise = null; throw err; });
+  }
+  return libraryPromise;
+}
+
+function modelProgress(onProgress, device) {
+  return info => {
+    if (!info) return;
+    if (info.status === 'progress_total' && Number.isFinite(info.progress)) {
+      notify(onProgress, { phase: 'model-progress', device, progress: info.progress });
+    } else if (info.status === 'progress' && Number.isFinite(info.progress)) {
+      notify(onProgress, { phase: 'model-file-progress', device, progress: info.progress, file: info.file || '' });
+    } else if (info.status === 'initiate' || info.status === 'download') {
+      notify(onProgress, { phase: 'model-download', device, file: info.file || '' });
+    }
+  };
+}
+
+async function createPipeline(mod, model, device, onProgress) {
+  const options = {
+    device,
+    progress_callback: modelProgress(onProgress, device),
+  };
+  // Keep the first version light enough for typical desktop browsers.
+  options.dtype = device === 'webgpu'
+    ? { encoder_model: 'fp16', decoder_model_merged: 'q4' }
+    : { encoder_model: 'q8', decoder_model_merged: 'q8' };
+  return mod.pipeline('automatic-speech-recognition', model.id, options);
+}
+
+async function loadModel(key, onProgress) {
+  const model = MODELS[key] || MODELS.base;
+  if (loaded.has(model.id)) {
+    const cached = await loaded.get(model.id);
+    notify(onProgress, { phase: 'model-ready', device: cached.device, cached: true });
+    return cached;
+  }
+  const job = (async () => {
+    let mod;
+    try { mod = await library(onProgress); }
+    catch (err) { throw whisperError('MODEL_LOAD_FAILED', 'library', err); }
+    if (typeof navigator !== 'undefined' && navigator.gpu) {
+      notify(onProgress, { phase: 'model-loading', device: 'webgpu' });
+      try {
+        const pipe = await createPipeline(mod, model, 'webgpu', onProgress);
+        return { pipe, device: 'webgpu', model: model.id };
+      } catch (err) {
+        console.warn('[JIZURA Whisper] WebGPU initialization failed; retrying with WASM.', err);
+        notify(onProgress, { phase: 'webgpu-fallback', device: 'wasm' });
+      }
+    } else {
+      notify(onProgress, { phase: 'webgpu-unavailable', device: 'wasm' });
+    }
+    try {
+      notify(onProgress, { phase: 'model-loading', device: 'wasm' });
+      const pipe = await createPipeline(mod, model, 'wasm', onProgress);
+      return { pipe, device: 'wasm', model: model.id };
+    } catch (err) {
+      throw whisperError('MODEL_LOAD_FAILED', 'model', err);
+    }
+  })();
+  loaded.set(model.id, job);
+  try {
+    const result = await job;
+    notify(onProgress, { phase: 'model-ready', device: result.device, cached: false });
+    return result;
+  } catch (err) {
+    loaded.delete(model.id);
+    throw err;
+  }
+}
+
+function normalizeSingingVoice(audio) {
+  let mean = 0;
+  for (let i = 0; i < audio.length; i++) mean += audio[i];
+  mean /= Math.max(1, audio.length);
+  let peak = 0, energy = 0;
+  for (let i = 0; i < audio.length; i++) {
+    const sample = audio[i] - mean;
+    peak = Math.max(peak, Math.abs(sample)); energy += sample * sample;
+  }
+  const rms = Math.sqrt(energy / Math.max(1, audio.length));
+  if (peak < 1e-5) return audio;
+  const rmsGain = rms > 0 ? 0.12 / rms : 1;
+  const gain = Math.min(4, 0.98 / peak, Math.max(1, rmsGain));
+  const output = new Float32Array(audio.length);
+  for (let i = 0; i < audio.length; i++) output[i] = Math.max(-1, Math.min(1, (audio[i] - mean) * gain));
+  return output;
+}
+
+async function mono16k(audioBuffer) {
+  if (!audioBuffer || !audioBuffer.numberOfChannels || !audioBuffer.length) throw whisperError('NO_AUDIO', 'audio');
+  const targetLength = Math.max(1, Math.ceil(audioBuffer.duration * SAMPLE_RATE));
+  const OfflineAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (OfflineAC) {
+    try {
+      const ctx = new OfflineAC(1, targetLength, SAMPLE_RATE);
+      const src = ctx.createBufferSource();
+      const highpass = ctx.createBiquadFilter(), lowpass = ctx.createBiquadFilter(), compressor = ctx.createDynamicsCompressor();
+      highpass.type = 'highpass'; highpass.frequency.value = 90; highpass.Q.value = 0.7;
+      lowpass.type = 'lowpass'; lowpass.frequency.value = 7400; lowpass.Q.value = 0.7;
+      compressor.threshold.value = -30; compressor.knee.value = 18; compressor.ratio.value = 3;
+      compressor.attack.value = 0.003; compressor.release.value = 0.25;
+      src.buffer = audioBuffer; src.connect(highpass); highpass.connect(lowpass); lowpass.connect(compressor); compressor.connect(ctx.destination); src.start();
+      const rendered = await ctx.startRendering();
+      return normalizeSingingVoice(rendered.getChannelData(0));
+    } catch (err) {
+      console.warn('[JIZURA Whisper] OfflineAudioContext resampling failed; using linear resampling.', err);
+    }
+  }
+  const channels = audioBuffer.numberOfChannels;
+  const sourceLength = audioBuffer.length;
+  const sourceRate = audioBuffer.sampleRate;
+  const source = Array.from({ length: channels }, (_, c) => audioBuffer.getChannelData(c));
+  const output = new Float32Array(targetLength);
+  const ratio = sourceRate / SAMPLE_RATE;
+  for (let i = 0; i < targetLength; i++) {
+    const pos = Math.min(sourceLength - 1, i * ratio), a = Math.floor(pos), b = Math.min(sourceLength - 1, a + 1), f = pos - a;
+    let sample = 0;
+    for (let c = 0; c < channels; c++) sample += (source[c][a] * (1 - f) + source[c][b] * f) / channels;
+    output[i] = sample;
+  }
+  return normalizeSingingVoice(output);
+}
+
+function timestamp(seconds) {
+  const hundredths = Math.max(0, Math.round((Number(seconds) || 0) * 100));
+  const mm = Math.floor(hundredths / 6000), ss = Math.floor(hundredths / 100) % 60, hs = hundredths % 100;
+  return `[${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}.${String(hs).padStart(2, '0')}]`;
+}
+
+function cleanText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
+
+function toLrc(result) {
+  const rows = [], chunks = result && Array.isArray(result.chunks) ? result.chunks : [];
+  for (const chunk of chunks) {
+    const text = cleanText(chunk && chunk.text), time = chunk && chunk.timestamp;
+    if (!text || !Array.isArray(time) || !Number.isFinite(+time[0])) continue;
+    const row = timestamp(+time[0]) + text;
+    if (rows[rows.length - 1] !== row) rows.push(row);
+  }
+  const whole = cleanText(result && result.text);
+  if (!rows.length && whole) rows.push(timestamp(0) + whole);
+  return rows.join('\n');
+}
+
+function whisperError(code, stage, cause) {
+  const err = new Error(code); err.code = code; err.stage = stage; if (cause) err.cause = cause; return err;
+}
+
+async function transcribe(audioBuffer, options = {}) {
+  const onProgress = options.onProgress;
+  let runtime;
+  try { runtime = await loadModel(options.model || 'base', onProgress); }
+  catch (err) { throw err && err.code ? err : whisperError('MODEL_LOAD_FAILED', 'model', err); }
+  let audio;
+  try {
+    notify(onProgress, { phase: 'audio-preparing', device: runtime.device });
+    audio = await mono16k(audioBuffer);
+  } catch (err) {
+    throw err && err.code ? err : whisperError('AUDIO_UNSUPPORTED', 'audio', err);
+  }
+  const params = {
+    task: 'transcribe',
+    return_timestamps: true,
+    chunk_length_s: 30,
+    stride_length_s: 5,
+    force_full_sequences: false,
+    // Be less eager to discard quiet/fast sung phrases as silence.
+    no_speech_threshold: 0.8,
+  };
+  if (options.language && options.language !== 'auto') params.language = options.language;
+  notify(onProgress, { phase: 'transcribing', device: runtime.device });
+  try {
+    const result = await runtime.pipe(audio, params);
+    const lrc = toLrc(result);
+    if (!lrc) throw whisperError('EMPTY_RESULT', 'transcribe');
+    notify(onProgress, { phase: 'complete', device: runtime.device });
+    return { result, lrc, device: runtime.device, sampleRate: SAMPLE_RATE };
+  } catch (err) {
+    throw err && err.code ? err : whisperError('TRANSCRIPTION_FAILED', 'transcribe', err);
+  }
+}
+
+J.whisper = { MODELS, SAMPLE_RATE, transcribe, toLrc, timestamp, mono16k };
 })();
 
 /* ============================================================
@@ -36630,6 +36884,99 @@ async function resetAll() {
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
+/* ---------------- AI歌詞Text起こし ---------------- */
+const WT = { busy: false, hasTotal: false };
+function whisperProgress(text, value, indeterminate) {
+  const box = $('whisperProgressBox'), bar = $('whisperBar'), percent = $('whisperPercent');
+  if (!box || !bar || !percent) return;
+  box.hidden = false; box.classList.toggle('indeterminate', !!indeterminate);
+  $('whisperStatus').textContent = text;
+  const role = box.querySelector('[role=progressbar]');
+  if (indeterminate) {
+    percent.textContent = '…'; role.removeAttribute('aria-valuenow');
+  } else {
+    const n = J.clamp(Number.isFinite(value) ? value / 100 : 0) * 100;
+    bar.style.width = n.toFixed(1) + '%'; percent.textContent = Math.round(n) + '%'; role.setAttribute('aria-valuenow', String(Math.round(n)));
+  }
+}
+function whisperDevice(device) {
+  const el = $('whisperDevice'); if (el) el.textContent = device === 'webgpu' ? 'WebGPU' : device === 'wasm' ? 'WASM' : '';
+}
+function onWhisperProgress(info) {
+  if (!info) return;
+  whisperDevice(info.device);
+  if (info.phase === 'library') whisperProgress('Preparing AI tools…', 0, true);
+  else if (info.phase === 'model-loading') whisperProgress(`Preparing model (${info.device === 'webgpu' ? 'WebGPU' : 'WASM'})…`, 0, true);
+  else if (info.phase === 'model-download') whisperProgress('Downloading model…', 0, true);
+  else if (info.phase === 'model-progress') { WT.hasTotal = true; whisperProgress(`Downloading model ${Math.round(info.progress)}%`, info.progress, false); }
+  else if (info.phase === 'model-file-progress' && !WT.hasTotal) whisperProgress(`Downloading model ${Math.round(info.progress)}%`, info.progress, false);
+  else if (info.phase === 'webgpu-unavailable') whisperProgress('WebGPU is unavailable; using WASM.', 0, true);
+  else if (info.phase === 'webgpu-fallback') whisperProgress('WebGPU could not start; switching to WASM.', 0, true);
+  else if (info.phase === 'model-ready') whisperProgress(`Model ready (${info.device === 'webgpu' ? 'WebGPU' : 'WASM'})`, 100, false);
+  else if (info.phase === 'audio-preparing') whisperProgress('Preparing audio (vocal-sensitive adjustment and 16 kHz mono)…', 0, true);
+  else if (info.phase === 'transcribing') whisperProgress('Transcribing…', 0, true);
+  else if (info.phase === 'complete') whisperProgress('Transcription complete', 100, false);
+}
+function whisperErrorText(err) {
+  const detail = String((err && err.cause && (err.cause.message || err.cause)) || (err && err.message) || '');
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'You are offline and the AI model is not cached. The first use requires a network connection.';
+  if (/out of memory|memory|allocation|oom|device lost/i.test(detail)) return 'Not enough memory. Close other tabs or try shorter audio.';
+  if (/failed to fetch|network|load failed|fetch/i.test(detail)) return 'Could not download the AI model. Check your network connection.';
+  if (err && err.code === 'NO_AUDIO') return 'Load a song first.';
+  if (err && err.code === 'AUDIO_UNSUPPORTED') return 'This audio format could not be analyzed. Try MP3, WAV or M4A.';
+  if (err && err.code === 'MODEL_LOAD_FAILED') return 'Could not load the AI model. Reload the page and try again.';
+  if (err && err.code === 'EMPTY_RESULT') return 'No lyrics were recognized. Check the volume and audio file.';
+  return 'Transcription failed. Check the audio and browser memory, then try again.';
+}
+function applyWhisperLyrics(value) {
+  const lyrics = String(value || '').trim(); if (!lyrics) return false;
+  const P = S.project, snap = JSON.parse(edSnap());
+  snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause(); P.lyrics = lyrics; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  $('lyrics').value = lyrics; fontKey = '';
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('AI transcription applied to the lyrics (you can edit it)');
+  return true;
+}
+function setAIBusy(busy) {
+  WT.busy = busy; WT.hasTotal = false;
+  const run = $('btnWhisper'), apply = $('btnApplyWhisper'), file = $('audioFile');
+  if (run) run.disabled = busy;
+  if (busy && apply) apply.disabled = true;
+  if (file) file.disabled = busy;
+}
+async function transcribeWhisperAudio(audioBuffer) {
+  if (!J.whisper || !J.whisper.transcribe) { const err = new Error('WHISPER_HANDOFF_FAILED'); err.code = 'WHISPER_HANDOFF_FAILED'; throw err; }
+  const out = await J.whisper.transcribe(audioBuffer, {
+    language: $('whisperLang').value,
+    model: $('whisperModel').value,
+    onProgress: onWhisperProgress,
+  });
+  $('whisperPreview').value = out.lrc;
+  $('whisperResult').hidden = false; $('btnApplyWhisper').disabled = false;
+  whisperDevice(out.device); whisperProgress('Transcription complete. Review it, then apply it to the lyrics.', 100, false);
+}
+async function runWhisper() {
+  if (WT.busy) return;
+  if (!S.audio || !S.audio.buffer) { whisperProgress('Load a song first.', 0, false); toast('Load a song first'); return; }
+  setAIBusy(true); pause(); whisperProgress('Preparing the selected AI model… (downloaded on first use only)', 0, true);
+  await new Promise(resolve => requestAnimationFrame(resolve));
+  try { await transcribeWhisperAudio(S.audio.buffer); }
+  catch (err) { console.error('[JIZURA Whisper] transcription failed', err, err && err.cause); whisperProgress(whisperErrorText(err), 0, false); }
+  finally { setAIBusy(false); }
+}
+function bindWhisper() {
+  const run = $('btnWhisper'), apply = $('btnApplyWhisper'); if (!run || !apply) return;
+  run.addEventListener('click', runWhisper);
+  apply.addEventListener('click', () => {
+    const value = $('whisperPreview').value;
+    if (!value.trim()) { whisperProgress('There is no transcription result to apply.', 0, false); return; }
+    if (S.project.lyrics.trim() && !window.confirm('Replace the current lyrics with the AI transcription?\nYou can undo this with Undo or Ctrl+Z.')) return;
+    if (applyWhisperLyrics(value)) whisperProgress('Applied to the lyrics. Edit the text as needed.', 100, false);
+  });
+}
+
 /* ---------------- 書き出す範囲（選んだline だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
@@ -37619,7 +37966,7 @@ async function restoreFonts() {
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
-  bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
+  bind(); bindWhisper(); initVolume(); syncUI(); syncLoopBtn(); replan();
   restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
