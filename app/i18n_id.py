@@ -193,6 +193,18 @@ BODY = {
 }
 
 UI = {
+  '`${i + 1}行目 カット${k + 1}の文字`': '`baris ${i + 1} cut ${k + 1} teks`',
+  'このカットの文字（/ 区切りとして歌詞に書き戻します）': 'Teks cut (ditulis kembali ke lirik dengan pemisah /)',
+
+  'の文字': ' teks',
+
+  'この行の頭とカットの頭をタップで打つ': 'Ketuk awal baris dan tiap cut baris ini',
+  '行目のカットをタップ': ' ketuk cut baris ini',
+  'このカットの開始（秒）': 'Awal cut ini (detik)',
+  'この行をループ再生します。少し前から再生するので、最初の 1 回は行の頭（カット1）を打ってください。以降は各カットの切り替わる瞬間に <span class="kbd">Tab</span>（または <span class="kbd">Space</span>）。押し間違えたら <span class="kbd">Backspace</span>、終了は <span class="kbd">Esc</span>。': 'Baris ini diputar berulang dan mulai sedikit lebih awal. Ketukan pertama adalah awal baris (cut 1), lalu tekan <span class="kbd">Tab</span> (atau <span class="kbd">Space</span>) saat cut berganti. <span class="kbd">Backspace</span> untuk membatalkan, <span class="kbd">Esc</span> untuk selesai.',
+  'この行はカットが1つです': 'Baris ini hanya punya satu cut',
+  'カットの同期が完了しました': 'Sinkronisasi cut selesai',
+
     "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
     "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",

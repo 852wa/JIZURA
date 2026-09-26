@@ -211,6 +211,14 @@ function cutTechOf(ov, k) {
   return fromLay && !t.layout ? Object.assign({}, t, { layout: fromLay }) : t;
 }
 
+/* Per-cut start time (seconds) as a delta against the computed split, keyed by the cut index on the
+   line. The auto split stays the source of truth, so a later change to the split formula keeps the
+   user's intent instead of freezing stale absolute seconds. */
+function cutTimeOf(ov, k) {
+  const t = ov.cutTime && (ov.cutTime[k] != null ? ov.cutTime[k] : ov.cutTime[String(k)]);
+  return typeof t === 'number' && isFinite(t) ? t : 0;
+}
+
 J.plan = (project, audio) => {
   const st = J.resolveStyle(project);
   const fx = Object.assign({}, J.defaultProject().fx, project.fx || {});
@@ -299,7 +307,7 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet', 'cutTime', 'gapTime'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -325,7 +333,10 @@ J.plan = (project, audio) => {
       && ov.lockedCuts.every((c, k2) => c && c.utext === units[k2].text && J.LAYOUTS[c.layout]) ? ov.lockedCuts : null;
     let acc = s; const bounds = [s];
     units.forEach((u, k) => { acc += D * u.w / tot; bounds.push(k === units.length - 1 ? visEnd : acc); });
-    for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
+    const auto = bounds.slice();                                     // the computed split, before any per-cut edit
+    for (let k = 1; k < bounds.length - 1; k++) bounds[k] += cutTimeOf(ov, k);
+    // a hand-typed boundary is never snapped to the beat; the auto ones keep snapping
+    for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(cutTimeOf(ov, k) ? bounds[k] : snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
     // scheme per line
     if (nSchemes > 1 && li > 0 && (U ? U.sectionStart(li) && rng.chance(0.25 + fx.bgSwitch) : rng.chance(fx.bgSwitch * (ln.impact ? 1.8 : 1)))) schemeIdx = (schemeIdx + 1 + rng.int(0, nSchemes - 2)) % nSchemes;
     const emphLine = ln.impact || ln.emph.length > 0;
@@ -477,7 +488,7 @@ J.plan = (project, audio) => {
         enter = 'cut'; inDur = 0.12;
         prevCut.exit = 'cut'; prevCut.outDur = 0;
       }
-      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
+      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, autoStart: auto[k], layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
         treat, treatP, bg, bgP: techBgP || (bg === lineBg ? lineBgP : {}), cam, camP, trans, transP, transDur, zone: Z, utext: u.text });
       if (kime || (LS && LS.kime)) cut.kime = true;
       if (weightGrow) cut.weightGrow = true;
@@ -528,7 +539,20 @@ J.plan = (project, audio) => {
     const nextStart = li < parsed.lines.length - 1 ? tm.starts[li + 1] : null;
     if (nextStart != null && nextStart - visEnd > 1.3 && !parsed.lines[li + 1].interlude) {
       const r2 = J.rng(J.h(lineSeed, 404));
-      plan.cuts.push(makeCut({ text: title || '', lineText: '', line: li, start: visEnd, end: nextStart, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3, params: J.LAYOUTS.interlude.plan(r2), decor: pickDecor(r2, st, en, Object.assign({}, fx, { decor: 1 }), 'interlude'), scheme: schemeIdx, seed: J.h(lineSeed, 405) }));
+      // gap: an interlude the planner inserted here. Its start is the line's visible end plus ov.gapTime, so it
+      // can be moved on its own without touching the line's own timing.
+      let gc = null;                                                      // the line's last cut (cuts are sorted, so scan)
+      for (const cc of plan.cuts) if (cc.line === li && !cc.gap && (!gc || cc.end > gc.end)) gc = cc;
+      const gs = gc && gc.line === li
+        ? Math.max(J.clamp(visEnd + (ov.gapTime || 0), visEnd - 0.6, nextStart - 0.22), gc.start + 0.22)
+        : J.clamp(visEnd + (ov.gapTime || 0), visEnd - 0.6, nextStart - 0.22);
+      if (gc && gc.line === li) {
+        // stitch: the cut before the interlude runs up to its start, text window included, so no blank strip
+        gc.end = gs;
+        if (gc.visEnd != null) gc.visEnd = gs;
+      }
+
+      plan.cuts.push(makeCut({ text: title || '', lineText: '', line: li, start: gs, end: nextStart, gap: true, autoStart: visEnd, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3, params: J.LAYOUTS.interlude.plan(r2), decor: pickDecor(r2, st, en, Object.assign({}, fx, { decor: 1 }), 'interlude'), scheme: schemeIdx, seed: J.h(lineSeed, 405) }));
     }
   });
   plan.cuts.sort((a, b) => a.start - b.start);
