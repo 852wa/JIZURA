@@ -8,7 +8,7 @@ import test from 'node:test';
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-test('technique thumbnails render only when visible, including after scrolling', { timeout: 30000 }, async () => {
+test('technique thumbnails stay visibility-limited after scrolling and bulk OFF', { timeout: 30000 }, async () => {
   const dir = await mkdtemp(tmpdir() + '/jizura-preview-test-');
   const chrome = spawn(process.env.CHROME_BIN || '/usr/bin/google-chrome', [
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage',
@@ -78,6 +78,30 @@ test('technique thumbnails render only when visible, including after scrolling',
       return last.dataset.ready === '1';
     })()`);
     assert.equal(lastReady, true, 'offscreen card paints when scrolled into view');
+
+    // Bulk OFF rebuilds every open group. Repeated clicks must not paint the
+    // far end of the first group, while its visible card is repainted each time.
+    const bulk = await evaluate(`(async () => {
+      for (const group of document.querySelectorAll('#techLists details')) group.open = true;
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const checks = [];
+      for (let i = 0; i < document.querySelectorAll('#techLists details').length; i++) {
+        document.querySelectorAll('#techLists details')[i].querySelector('.tg-tools [data-a="off"]').click();
+        const groups = [...document.querySelectorAll('#techLists details')];
+        const cards = [...groups[0].querySelectorAll('canvas[data-g]')];
+        cards[0].scrollIntoView({ block: 'start' });
+        for (let n = 0; n < 20 && cards[0].dataset.ready !== '1'; n++)
+          await new Promise(resolve => setTimeout(resolve, 25));
+        checks.push({ open: groups.filter(g => g.open).length,
+          visibleReady: cards[0].dataset.ready === '1',
+          farReady: cards.at(-1).dataset.ready === '1' });
+      }
+      return checks;
+    })()`);
+    assert.equal(bulk.length, 10, 'all ten bulk OFF controls were exercised');
+    assert.ok(bulk.every(c => c.open === 10), 'groups remain open after each rebuild');
+    assert.ok(bulk.every(c => c.visibleReady), 'visible cards repaint after each bulk OFF');
+    assert.ok(bulk.every(c => !c.farReady), 'offscreen cards stay unpainted after each bulk OFF');
   } finally {
     ws?.close();
     if (chrome.exitCode === null) {
