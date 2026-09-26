@@ -1577,6 +1577,8 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.txno-toggle').forEach(el => { el.checked = S.project.fx.hideNo !== true; });
+  document.querySelectorAll('.txtime-toggle').forEach(el => { el.checked = S.project.fx.hideTime !== true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
@@ -1677,6 +1679,16 @@ function bind() {
   setSwitch('horror-toggle', 'horror', true, 'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）', 'ホラーの演出：使わない');
   setSwitch('unify-toggle', 'unify', true, '統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）', '統一感：オフ');
   setSwitch('typeset-toggle', 'typeset', true, '文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）', '文字整列：オフ');
+  // レイアウト文字: 通し番号 / 時刻 — one project-wide pair, shared by the 演出 tab and the かんたん panel
+  const txSwitch = (cls, key, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+    remember();
+    S.project.fx[key] = !e.target.checked;
+    document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
+    replan(); commit(); flushSave();
+    toast(e.target.checked ? msgOn : msgOff);
+  }));
+  txSwitch('txno-toggle', 'hideNo', '通し番号：表示', '通し番号：非表示');
+  txSwitch('txtime-toggle', 'hideTime', '時刻：表示', '時刻：非表示');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });

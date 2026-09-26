@@ -41,6 +41,10 @@ STYLES = {
 }
 
 BODY = {
+    "通し番号": "Nomor urut",
+    "時刻": "Timecode",
+    "全カットで表示／非表示": "tampil / sembunyi di semua cut",
+    "全カットで表示／非表示（HUD を含む）": "tampil / sembunyi di semua cut (termasuk HUD)",
     "元に戻す": "Kembalikan",
     "レイアウト文字": "Teks layout",
     "このカットが画面に出す文字": "teks yang ditampilkan cut ini",
@@ -196,6 +200,10 @@ BODY = {
 }
 
 UI = {
+    "通し番号：表示": "Nomor urut: tampil",
+    "通し番号：非表示": "Nomor urut: sembunyi",
+    "時刻：表示": "Timecode: tampil",
+    "時刻：非表示": "Timecode: sembunyi",
     "行の残り（前後の語）": "Sisa baris (kata sebelum/sesudah)",
     "その他（レイアウト独自の文字）": "Lainnya (teks milik layout)",
     "時刻": "Timecode",

@@ -1,6 +1,10 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    "通し番号": "Serial number",
+    "時刻": "Timecode",
+    "全カットで表示／非表示": "shown / hidden on every cut",
+    "全カットで表示／非表示（HUD を含む）": "shown / hidden on every cut (HUD included)",
     "元に戻す": "Reset",
     "レイアウト文字": "Layout text",
     "このカットが画面に出す文字": "the texts this cut puts on screen",
@@ -164,6 +168,10 @@ BODY = {
 }
 
 UI = {
+    "通し番号：表示": "Serial number: shown",
+    "通し番号：非表示": "Serial number: hidden",
+    "時刻：表示": "Timecode: shown",
+    "時刻：非表示": "Timecode: hidden",
     "行の残り（前後の語）": "Rest of the line (neighbouring words)",
     "その他（レイアウト独自の文字）": "Other (the layout's own lettering)",
     "時刻": "Timecode",

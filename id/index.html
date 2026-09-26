@@ -628,6 +628,13 @@ button.small.primary { padding: 4px 12px; }
           </div>
         </div>
         <div class="easy-sec">
+          <h3>Teks layout</h3>
+          <div class="pick-sets">
+            <label class="check"><input class="txno-toggle" type="checkbox" checked><span>Nomor urut<small>tampil / sembunyi di semua cut</small></span></label>
+            <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>Timecode<small>tampil / sembunyi di semua cut (termasuk HUD)</small></span></label>
+          </div>
+        </div>
+        <div class="easy-sec">
           <h3>Ekspor</h3>
           <div class="fields">
             <label class="field">Rasio aspek<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 tegak</option><option value="4:3">4:3</option><option value="3:4">3:4 tegak</option><option value="1:1">1:1</option><option value="4:5">4:5 tegak</option><option value="21:9">21:9</option></select></label>
@@ -685,6 +692,9 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
           <label class="row" style="gap:6px">Interval frame <select id="fxKoma" title="Jumlah gambar per detik untuk gerakan (terpisah dari fps ekspor)"><option value="0">Penuh (mengikuti fps ekspor)</option><option value="12">Setiap 2 frame (12 gambar/dtk)</option><option value="8">Setiap 3 frame (8 gambar/dtk)</option></select></label>
         </div>
+        <h3>Teks layout</h3>
+        <label class="check"><input class="txno-toggle" type="checkbox" checked><span>Nomor urut<small>tampil / sembunyi di semua cut</small></span></label>
+        <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>Timecode<small>tampil / sembunyi di semua cut (termasuk HUD)</small></span></label>
         <div class="fields" style="margin-top:12px">
           <label class="field">HUD<select id="fxHud"><option value="auto">Otomatis (sesuai gaya)</option><option value="on">Selalu tampilkan</option><option value="off">Sembunyikan</option></select></label>
           <label class="field">Seed<input id="seed" type="number" step="1"></label>
@@ -3415,7 +3425,9 @@ J.defaultProject = () => ({
   centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
-  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
+  //                                                                                 hideNo / hideTime: レイアウト文字 —
+  // one project-wide switch pair (the 演出 panel writes them): when set, no layout and no HUD prints the serial number / the timecode
+  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
@@ -4699,7 +4711,8 @@ class Renderer {
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
-      J.drawHUD(env, plan);
+      env.__ly = true;                       // レイアウト文字: the HUD timecode / line info obey the same switches
+      try { J.drawHUD(env, plan); } finally { env.__ly = false; }
     }
     ctx.restore();
     // ---------- post ----------
@@ -6813,40 +6826,52 @@ J.txSlotOf = (cut, str, env) => {
 /* apply a cut's override to one drawn item (null = do not draw) */
 J.txApply = (env, it) => {
   const cut = env.cut, o = cut && cut.tx;
-  if (!o || !it || it.text == null) return it;
+  const g = env.fx || {};
+  if (!it || it.text == null) return it;
+  if (!o && !g.hideNo && !g.hideTime) return it;      // nothing switched on anywhere
   const s = String(it.text);
   const slot = J.txSlotOf(cut, s, env);
   if (!slot) return it;
   const hit = k => slot === k || slot.split('+').includes(k);
-  if (slot === 'no+time') {
-    if (o.hideTime) return null;
-    if (!o.hideNo) return it;
-    const tag = pad2((cut.line | 0) + 1);
-    const t = s
-      .replace(new RegExp('(#|No\\.)\\s*' + tag, 'g'), '')
-      .replace(new RegExp('^\\s*' + tag + '\\s*[／/]\\s*'), '')
-      .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
-    return t ? Object.assign({}, it, { text: t }) : null;
+  const off = k => !!(o && o[k]);                     // per-cut flag, safe when the cut has no overrides
+  // serial number / timecode: the per-cut boxes and the project-wide switches both count
+  if (hit('no') || hit('time')) {
+    const hNo = (o && o.hideNo) || !!g.hideNo, hTm = (o && o.hideTime) || !!g.hideTime;
+    if (hit('no') && hit('time') && hNo && hTm) return null;
+    if (slot === 'no+time') {
+      if (hTm) {                                       // keep the serial number, drop only the timecode
+        const t = s.replace(/\d{1,2}:\d{2}\.\d{2}/g, '').replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+        return t ? Object.assign({}, it, { text: t }) : null;
+      }
+      if (!hNo) return it;
+      const t = s
+        .replace(new RegExp('(#|No\\.)\\s*' + pad2((cut.line | 0) + 1), 'g'), '')
+        .replace(new RegExp('^\\s*' + pad2((cut.line | 0) + 1) + '\\s*[／/]\\s*'), '')
+        .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+      return t ? Object.assign({}, it, { text: t }) : null;
+    }
+    if (hit('no')) return hNo ? null : it;
+    if (hit('time')) return hTm ? null : it;
   }
   if (hit('main')) {
-    if (o.hideMain) return null;
-    if (o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
+    if (off('hideMain')) return null;
+    if (o && o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
   } else if (hit('line')) {
-    if (o.hideLine) return null;
+    if (off('hideLine')) return null;
   } else if (hit('note')) {
-    if (o.hideNote) return null;
-    if (o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
+    if (off('hideNote')) return null;
+    if (o && o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
   } else if (hit('romaji')) {
-    if (o.hideRomaji) return null;
+    if (off('hideRomaji')) return null;
   } else if (hit('no')) {
-    if (o.hideNo) return null;
+    if (off('hideNo')) return null;
   } else if (hit('time')) {
-    if (o.hideTime) return null;
+    if (off('hideTime')) return null;
   } else if (hit('title')) {
-    if (o.hideTitle) return null;
-    if (o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
+    if (off('hideTitle')) return null;
+    if (o && o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
   } else if (hit('other')) {
-    if (o.hideOther) return null;
+    if (off('hideOther')) return null;
   }
   return it;
 };
@@ -6887,7 +6912,7 @@ J.drawItem = (env, it) => {
     if (t != null && String(t)) env.__rec.push(String(t));
     if (env.__probe) return null;                       // probe: report only, never paint
   }
-  if (env.__ly) { it = J.txApply(env, it); if (!it) return null; }
+  if (env.__ly) { try { it = J.txApply(env, it); } catch (e) { /* never drop a frame for a label */ } if (!it) return null; }
   return drawItem(env, it);
 };
 
@@ -37656,6 +37681,8 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
+  document.querySelectorAll('.txno-toggle').forEach(el => { el.checked = S.project.fx.hideNo !== true; });
+  document.querySelectorAll('.txtime-toggle').forEach(el => { el.checked = S.project.fx.hideTime !== true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
@@ -37756,6 +37783,16 @@ function bind() {
   setSwitch('horror-toggle', 'horror', true, 'Efek horor: aktif (Acak menambahkan suasana Horor)', 'Efek horor: nonaktif');
   setSwitch('unify-toggle', 'unify', true, 'Tampilan seragam: aktif (bagian seragam; klimaks, morf, dan ketebalan juga dipakai)', 'Tampilan seragam: nonaktif');
   setSwitch('typeset-toggle', 'typeset', true, 'Penataan teks: aktif (jarak, partikel, Latin, 0,2 detik lebih awal, efek secukupnya)', 'Penataan teks: nonaktif');
+  // Teks layout: Nomor urut / Timecode — one project-wide pair, shared by the Efek tab and the かんたん panel
+  const txSwitch = (cls, key, msgOn, msgOff) => document.querySelectorAll('.' + cls).forEach(el => el.addEventListener('change', e => {
+    remember();
+    S.project.fx[key] = !e.target.checked;
+    document.querySelectorAll('.' + cls).forEach(x => { x.checked = e.target.checked; });
+    replan(); commit(); flushSave();
+    toast(e.target.checked ? msgOn : msgOff);
+  }));
+  txSwitch('txno-toggle', 'hideNo', 'Nomor urut: tampil', 'Nomor urut: sembunyi');
+  txSwitch('txtime-toggle', 'hideTime', 'Timecode: tampil', 'Timecode: sembunyi');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });

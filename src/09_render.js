@@ -211,7 +211,8 @@ class Renderer {
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
-      J.drawHUD(env, plan);
+      env.__ly = true;                       // レイアウト文字: the HUD timecode / line info obey the same switches
+      try { J.drawHUD(env, plan); } finally { env.__ly = false; }
     }
     ctx.restore();
     // ---------- post ----------
