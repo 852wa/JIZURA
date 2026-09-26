@@ -125,6 +125,21 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 .ln .cuts span:hover { color: var(--text); border-color: var(--amber); }
 .ln .cuts select.cut-lay { font-size: 10px; padding: 1px 4px; max-width: 112px; border: 1px solid var(--line2); border-radius: 2px; background: var(--raised); color: var(--text); }
 .ln .cuts select.cut-lay.is-forced { border-color: var(--amber); color: var(--text); }
+/* per-cut rows in the line list: [start seconds] [layout] [reset] (pro mode only) */
+.ln .cuts { flex-direction: column; align-items: stretch; gap: 3px; }
+.ln .cut-row { display: flex; align-items: center; gap: 4px; }
+.ln .cut-row .cut-t { width: 64px; text-align: right; padding: 2px 4px; font-size: 11px; }
+.ln .cut-row .cut-t.is-set { border-color: var(--amber); }
+.ln .cut-row .cut-lay { flex: 1 1 auto; min-width: 0; max-width: none; }
+.ln .cut-row .cut-r { width: 18px; height: 18px; min-width: 18px; padding: 0; font-size: 11px; line-height: 1; }
+.ln .cut-row .cut-txt { flex: 1 1 auto; min-width: 60px; font-size: 11px; padding: 2px 4px; }
+.ln .cut-row .cut-inter { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted, #9aa); opacity: 0.75; font-style: italic; }
+.ln .tools .edit[aria-pressed="true"] { color: var(--amber); border-color: var(--amber); }
+.ln .cut-row.is-playing { background: rgba(245,165,12,0.16); border-radius: 3px; }
+.ln .cut-row.is-next { outline: 1px solid var(--amber); outline-offset: 1px; border-radius: 3px; }
+.ln .cut-row.is-next.is-playing { background: rgba(245,165,12,0.26); }
+.ln .cut-row.is-next .cut-t { border-color: var(--amber); }
+.ln .tools .cuttap[aria-pressed="true"] { color: var(--amber); border-color: var(--amber); }
 
 /* ---------- stage ---------- */
 .col-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; min-width: 0; }
