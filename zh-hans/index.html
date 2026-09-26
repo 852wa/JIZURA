@@ -6726,111 +6726,159 @@ reg('cam', 'jelly', { name: 'ぷるん', tags: ['pop', 'graphic'], w: 0.7,
 
 /* JIZURA pack: レイアウト文字 — per-cut control of every text a layout draws.
 
-   Every layout (186 of them, incl. the packs upstream keeps adding) puts its text
-   on screen through J.drawItem(), so one wrapper can do both halves of the feature:
+   Every layout (186 of them, incl. the packs upstream keeps adding) paints its text through
+   J.drawItem(), so one wrapper covers all of them and does both halves of the feature:
 
-     · probe  — report which strings this cut's layout actually draws, so the panel
-                lists exactly those rows (a layout that never prints a number simply
-                shows no 番号 row)
-     · apply  — hide / replace them, again for every layout, without touching any
-                layout's render code
+     · probe  — report which strings this cut's layout really draws, so the panel lists
+                exactly those rows (a layout that never prints a number shows no number row)
+     · apply  — hide / replace them, again without touching any layout's render code
 
-   A drawn string is matched against the cut's own values (line text, 注釈, the 自動
-   ローマ字 spellings, No.NN, 時刻, 曲名), so nothing else the layout draws is touched. */
+   A drawn string is matched to a slot by comparing *normalised* forms, because layouts
+   rewrite what they are handed: they strip spaces, wrap lines with \n, split the line into
+   words, uppercase romaji, or glue the serial number and the timecode together
+   ("No.01 00:00.40"). Anything matching nothing is reported as "other", so a layout that
+   letterpresses its own station code ("LY", "33", "← LY32") is still the user's to hide. */
 (() => {
 'use strict';
 
+const RX_SP = /[\s\u3000]+/g;
+const norm = s => String(s == null ? '' : s).replace(RX_SP, '');
 const pad2 = n => String(Math.max(0, n | 0)).padStart(2, '0');
 
-/* 自動ローマ字: the spellings a pack may print for this line (plain / upper, spaces kept or stripped) */
+/* every spelling of this line's romaji a pack may print: plain / upper / Capitalised,
+   with or without spaces (packs build them with J.romaji + toUpperCase + slice) */
 const romajiSet = cut => {
   if (cut.__romajiSet) return cut.__romajiSet;
-  const s = new Set(), raw = String(cut.text || ''), clean = raw.replace(/\s+/g, '');
-  for (const t of [raw, clean]) {
+  const s = new Set();
+  for (const t of [String(cut.text || ''), norm(cut.text), String(cut.lineText || '')]) {
     if (!t) continue;
     const r = J.romaji(t);
-    if (r) { s.add(r); s.add(r.toUpperCase()); }
+    if (!r) continue;
+    for (const v of [r, norm(r)]) {
+      s.add(v);
+      s.add(v.toUpperCase());
+      s.add(v.charAt(0).toUpperCase() + v.slice(1).toLowerCase());
+    }
   }
   return (cut.__romajiSet = s);
 };
-
-/* packs also print a romaji label cut short (romaji.slice(0, 12) …) */
-const romajiPiece = (cut, s) => {
-  if ([...s].length < 2) return false;
-  for (const r of romajiSet(cut)) if (r.includes(s)) return true;
+const isRomajiExact = (cut, n) => romajiSet(cut).has(n);
+const isRomajiPiece = (cut, n) => {
+  if ([...n].length < 3) return false;
+  for (const r of romajiSet(cut)) if (r.length >= 3 && r.includes(n)) return true;
   return false;
 };
 
-/* the controllable slot a drawn string belongs to — null = not ours (frames, glyphs, punctuation …) */
+/* which controllable slot a drawn string belongs to */
 J.txSlotOf = (cut, str, env) => {
   if (!cut || str == null) return null;
-  const s = String(str), t = String(cut.text || '');
-  if (!s) return null;
-  const n = (cut.line | 0) + 1, tm = J.fmtTime(cut.start);
-  if (cut.note && s === String(cut.note)) return 'note';
-  if (romajiPiece(cut, s)) return 'romaji';
-  if (s === 'No.' + pad2(n) || s === '#' + pad2(n)) return 'no';
-  if (s === tm || (env && env.t != null && s === J.fmtTime(env.t))) return 'time';
-  if (s === pad2(n) + ' ／ ' + tm) return 'no+time';
+  const s = String(str);
+  if (!s.trim()) return null;
+  const n = norm(s);
+  if (!n) return null;
+  const main = norm(cut.text), note = norm(cut.note), line = norm(cut.lineText || cut.text);
+  const tag = pad2((cut.line | 0) + 1);
+  const noS = 'No.' + tag, hashS = '#' + tag;
+  const tm = J.fmtTime(cut.start), live = env ? J.fmtTime(env.t) : '';
+  // serial number / timecode, alone or glued together — one drawing, so the panel shows a
+  // single row for the pair and strips whichever half was switched off
+  const hasNo = n.includes(noS) || n.includes(hashS);
+  const hasTm = (!!tm && n.includes(norm(tm))) || (!!live && n.includes(norm(live)));
+  if (hasNo || hasTm) {
+    if (n === noS || n === hashS) return hasTm ? 'no+time' : 'no';
+    if ((tm && n === norm(tm)) || (live && n === norm(live))) return hasNo ? 'no+time' : 'time';
+    // a glued "No.01 00:00.40" is recognised by shape, not only against the current time,
+    // so the strip path works during the probe too (where there is no playhead)
+    if (hasNo && (hasTm || /\d{1,2}:\d{2}\.\d{2}/.test(n)) && n.length <= noS.length + 14) return 'no+time';
+  }
+  if (note && n === note) return 'note';
+  if (isRomajiExact(cut, n)) return 'romaji';
   const tt = cut.params && cut.params.titleText;
-  if (tt && s === String(tt)) return 'title';
-  if (t && s === t) return 'main';
-  if (t && [...s].length === 1 && t.includes(s)) return 'main:split';
-  return null;
+  if (tt && n === norm(tt)) return 'title';
+  if (main && n === main) return 'main';
+  if (main && [...n].length === 1 && main.includes(n)) return 'main:split';
+  // a decoration built by repeating the lyric ("nee, mada . nee, mada . ...") is still the lyric
+  const SEP = /[・･／/、,،+\-]/g;
+  if (main) {
+    const fm = main.replace(SEP, '');
+    const flat = n.replace(SEP, '');
+    if (fm && flat.length >= fm.length * 2 && flat.length % fm.length === 0 && flat === fm.repeat(flat.length / fm.length)) return 'main';
+  }
+  if (isRomajiPiece(cut, n)) return 'romaji';
+  if (line && n === line) return 'line';
+  if (line && [...n].length >= 2 && (line.includes(n) || n.includes(line))) return 'line';
+  return 'other';
 };
 
-/* the rows the panel should show for this cut: what its layout really draws.
-   The layout runs once per sample point against a throw-away 8×8 canvas, with the
-   recorder in place, so nothing is painted and no state is kept. */
-J.txProbe = (cut, plan) => {
-  const seen = [], have = new Set();
-  const st = (plan && plan.style) || {}, sch = st.schemes || [];
-  const sc = sch[(cut.scheme | 0) % Math.max(1, sch.length)] || sch[0] || {};
-  const cv = document.createElement('canvas'); cv.width = cv.height = 8;
-  const ctx = cv.getContext('2d');
-  const R = new J.Renderer();
-  const td = Math.max(0.05, cut.dur || 0);
-  let last = null;
-  for (const k of [0.3, 0.5, 0.72]) {
-    const lt = td * k;
-    const env = R.makeEnv(ctx, plan, cut, sc, { pass: 'main', layer: 'front', t: cut.start + lt, lt, ltb: lt, step: 1, scale: 1, allowFilter: false, energy: 0, bgOnly: false, zone: null });
-    env.__rec = seen; env.__probe = true; env.__ly = true; last = env;
-    const L = J.LAYOUTS[cut.layout] || J.LAYOUTS.center;
-    try { L.render(env); } catch (e) { /* keep whatever we already collected */ }
-  }
-  for (const s of seen) {
-    const sl = J.txSlotOf(cut, s, last);
-    if (sl) sl.split('+').forEach(x => have.add(x));
-  }
-  return ['main', 'main:split', 'note', 'romaji', 'no', 'time', 'title'].filter(x => have.has(x));
-};
-
-/* apply the cut's override to one drawn item; null = leave it out */
+/* apply a cut's override to one drawn item (null = do not draw) */
 J.txApply = (env, it) => {
   const cut = env.cut, o = cut && cut.tx;
   if (!o || !it || it.text == null) return it;
-  const slot = J.txSlotOf(cut, String(it.text), env);
+  const s = String(it.text);
+  const slot = J.txSlotOf(cut, s, env);
   if (!slot) return it;
-  if (slot === 'main' || slot === 'main:split') {
+  const hit = k => slot === k || slot.split('+').includes(k);
+  if (slot === 'no+time') {
+    if (o.hideTime) return null;
+    if (!o.hideNo) return it;
+    const tag = pad2((cut.line | 0) + 1);
+    const t = s
+      .replace(new RegExp('(#|No\\.)\\s*' + tag, 'g'), '')
+      .replace(new RegExp('^\\s*' + tag + '\\s*[／/]\\s*'), '')
+      .replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+    return t ? Object.assign({}, it, { text: t }) : null;
+  }
+  if (hit('main')) {
     if (o.hideMain) return null;
     if (o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
-  } else if (slot === 'note') {
+  } else if (hit('line')) {
+    if (o.hideLine) return null;
+  } else if (hit('note')) {
     if (o.hideNote) return null;
-    if (o.note != null) return Object.assign({}, it, { text: o.note });
-  } else if (slot === 'romaji') {
+    if (o.note != null && slot === 'note') return Object.assign({}, it, { text: o.note });
+  } else if (hit('romaji')) {
     if (o.hideRomaji) return null;
-  } else if (slot.split('+').includes('no')) {
+  } else if (hit('no')) {
     if (o.hideNo) return null;
-  } else if (slot.split('+').includes('time')) {
+  } else if (hit('time')) {
     if (o.hideTime) return null;
-  } else if (slot === 'title') {
+  } else if (hit('title')) {
     if (o.hideTitle) return null;
-    if (o.title != null) return Object.assign({}, it, { text: o.title });
-  } else return it;
+    if (o.title != null && slot === 'title') return Object.assign({}, it, { text: o.title });
+  } else if (hit('other')) {
+    if (o.hideOther) return null;
+  }
   return it;
 };
 
-/* one wrapper over the text primitive: every layout goes through here */
+/* the row list for the panel: what this cut's layout really draws.
+   Sampling five instants covers layouts that reveal their text over time. */
+J.txProbe = (cut, plan) => {
+  const seen = [];
+  const R = new J.Renderer();
+  const st = plan.style, sch = st.schemes || [];
+  const sc = sch[cut.scheme % sch.length] || sch[0] || {};
+  const cv = document.createElement('canvas'); cv.width = cv.height = 8;
+  const ctx = cv.getContext('2d');
+  const td = Math.max(0.05, cut.dur || 0);
+  let probeEnv = null;
+  for (const k of [0.2, 0.35, 0.5, 0.65, 0.8]) {
+    const lt = td * k;
+    const env = R.makeEnv(ctx, plan, cut, sc, { pass: 'main', layer: 'front', t: cut.start + lt, lt, ltb: lt, step: 1, scale: 1, allowFilter: false, energy: 0, bgOnly: false, zone: null });
+    env.__rec = seen; env.__probe = true; env.__ly = true;
+    probeEnv = env;
+    try { (J.LAYOUTS[cut.layout] || J.LAYOUTS.center).render(env); } catch (e) { /* keep what we have */ }
+  }
+  const order = ['main', 'main:split', 'line', 'note', 'romaji', 'no', 'time', 'title', 'other'];
+  const have = new Set();
+  for (const s of seen) {
+    const slot = J.txSlotOf(cut, s, probeEnv);
+    if (slot) slot.split('+').forEach(x => have.add(x));
+  }
+  return order.filter(x => have.has(x));
+};
+
+/* one wrapper over the text primitive — the single place every layout goes through */
 const drawItem = J.drawItem;
 J.drawItem = (env, it) => {
   if (!env) return drawItem(env, it);
@@ -36875,13 +36923,15 @@ const cutTx = { open: false, line: -1, k: -1 };
 const TX_ROWS = {
   'main':       '正文',
   'main:split': '正文（逐字排列）',
+  'line':       '同行的其他字（前后词）',
   'note':       '注释',
   'romaji':     '自动罗马字',
   'no':         '序号',
   'time':       '时间码',
   'title':      '曲名',
+  'other':      '其他（版面自己的文字）',
 };
-const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle' };
+const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', line: 'hideLine', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle', other: 'hideOther' };
 const TX_EDIT = { 'main': 'main', note: 'note', title: 'title', 'main:split': 'main' };
 
 function closeCutTx() {

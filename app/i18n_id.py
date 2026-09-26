@@ -196,6 +196,8 @@ BODY = {
 }
 
 UI = {
+    "行の残り（前後の語）": "Sisa baris (kata sebelum/sesudah)",
+    "その他（レイアウト独自の文字）": "Lainnya (teks milik layout)",
     "時刻": "Timecode",
     "曲名": "Judul lagu",
     "レイアウト文字": "Teks layout",

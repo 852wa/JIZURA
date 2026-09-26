@@ -254,6 +254,8 @@ BODY = {
 }
 
 UI = {
+    "行の残り（前後の語）": "Phần còn lại của dòng (từ kề bên)",
+    "その他（レイアウト独自の文字）": "Khác (chữ riêng của layout)",
     "時刻": "Mốc thời gian",
     "曲名": "Tên bài hát",
     "レイアウト文字": "Chữ layout",

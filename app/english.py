@@ -164,6 +164,8 @@ BODY = {
 }
 
 UI = {
+    "行の残り（前後の語）": "Rest of the line (neighbouring words)",
+    "その他（レイアウト独自の文字）": "Other (the layout's own lettering)",
     "時刻": "Timecode",
     "曲名": "Song title",
     "レイアウト文字": "Layout text",
