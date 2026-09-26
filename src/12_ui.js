@@ -656,13 +656,15 @@ const cutTx = { open: false, line: -1, k: -1 };
 const TX_ROWS = {
   'main':       '本文',
   'main:split': '本文（1文字ずつ配置）',
+  'line':       '行の残り（前後の語）',
   'note':       '注釈',
   'romaji':     '自動ローマ字',
   'no':         '通し番号',
   'time':       '時刻',
   'title':      '曲名',
+  'other':      'その他（レイアウト独自の文字）',
 };
-const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle' };
+const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', line: 'hideLine', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle', other: 'hideOther' };
 const TX_EDIT = { 'main': 'main', note: 'note', title: 'title', 'main:split': 'main' };
 
 function closeCutTx() {
