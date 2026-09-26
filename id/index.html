@@ -3541,11 +3541,24 @@ J.computeTiming = (project, parsed, audio) => {
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
   const allLrc = lines.length && lines.every(l => l.lrc != null);
+  const nextFixed = new Array(lines.length);
+  let next = null;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    nextFixed[i] = next;
+    const manual = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
+    if (!(manual != null && isFinite(manual)) && lines[i].lrc != null) next = lines[i].lrc;
+  }
   let t = T.offset ?? 0.4;
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
-    if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
+    if (man != null && isFinite(man)) {
+      // Keep an imported hand-set time within its neighbours without changing
+      // the project or moving a genuine LRC anchor (including repeated tags).
+      const lo = i ? starts[i - 1] + 0.2 : 0;
+      const hi = nextFixed[i] == null ? Infinity : Math.max(lo, nextFixed[i] - 0.2);
+      s = J.clamp(man, lo, hi);
+    }
     else if (allLrc) s = l.lrc;
     else {
       if (i > 0) {
@@ -36521,7 +36534,12 @@ function renderLines() {
       const v = parseFloat(e.target.value);
       pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-      if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
+      if (isFinite(v)) {
+        const L = S.plan.lines;
+        const lo = i ? L[i - 1].start + 0.2 : 0;
+        const hi = i < L.length - 1 ? Math.max(lo, L[i + 1].start - 0.2) : Infinity;
+        S.project.timing.lineTimes[i] = +J.clamp(v, lo, hi).toFixed(3);
+      } else delete S.project.timing.lineTimes[i];
       replan();
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));

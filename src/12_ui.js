@@ -645,7 +645,12 @@ function renderLines() {
       const v = parseFloat(e.target.value);
       pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-      if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
+      if (isFinite(v)) {
+        const L = S.plan.lines;
+        const lo = i ? L[i - 1].start + 0.2 : 0;
+        const hi = i < L.length - 1 ? Math.max(lo, L[i + 1].start - 0.2) : Infinity;
+        S.project.timing.lineTimes[i] = +J.clamp(v, lo, hi).toFixed(3);
+      } else delete S.project.timing.lineTimes[i];
       replan();
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
