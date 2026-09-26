@@ -41,6 +41,7 @@ STYLES = {
 }
 
 BODY = {
+    "レイアウトの文字制御": "Kontrol teks layout",
     "通し番号": "Nomor urut",
     "時刻": "Timecode",
     "全カットで表示／非表示": "tampil / sembunyi di semua cut",
@@ -200,6 +201,7 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Kontrol teks layout",
     "通し番号：表示": "Nomor urut: tampil",
     "通し番号：非表示": "Nomor urut: sembunyi",
     "時刻：表示": "Timecode: tampil",

@@ -42,6 +42,7 @@ STYLES = {
 }
 
 BODY = {
+    "レイアウトの文字制御": "Điều khiển chữ layout",
     "通し番号": "Số thứ tự",
     "時刻": "Mốc thời gian",
     "全カットで表示／非表示": "hiện / ẩn ở mọi cut",
@@ -258,6 +259,7 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Điều khiển chữ layout",
     "通し番号：表示": "Số thứ tự: hiện",
     "通し番号：非表示": "Số thứ tự: ẩn",
     "時刻：表示": "Mốc thời gian: hiện",

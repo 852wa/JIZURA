@@ -584,7 +584,7 @@ button.small.primary { padding: 4px 12px; }
       </div>
       <div id="cutTx" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
-          <strong id="cutTxTitle">Teks layout</strong>
+          <strong id="cutTxTitle">Kontrol teks layout</strong>
           <span class="muted" id="cutTxHint">teks yang ditampilkan cut ini</span>
           <button type="button" id="cutTxAuto" class="ghost small">Kembalikan</button>
           <button type="button" id="cutTxClose" class="ghost small" aria-label="Tutup">✕</button>
@@ -36671,7 +36671,7 @@ function updateCutInfo() {
     if (g === 'layout') {
       const on = cutTextOn(cut, k);
       const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
-      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="Atur teks yang ditampilkan layout cut ini"><b>Teks layout</b>${on ? 'disesuaikan' : 'Teks layout'}</button>`);
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="Atur teks yang ditampilkan layout cut ini"><b>Kontrol teks layout</b>${on ? 'disesuaikan' : ''}</button>`);
     }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="Undi ulang susunan cut ini saja">Acak susunan</button>`);
@@ -36792,7 +36792,7 @@ function refreshCutTx() {
 function fillCutTx(cut, k) {
   const body = $('cutTxBody'); if (!body) return;
   const ttl = $('cutTxTitle');
-  if (ttl) ttl.textContent = 'Teks layout · #' + String(cut.index + 1).padStart(2, '0');
+  if (ttl) ttl.textContent = 'Kontrol teks layout · #' + String(cut.index + 1).padStart(2, '0');
   const slot = cutTextSlot(cut.line, k);
   const rows = J.txProbe(cut, S.plan);
   body.innerHTML = '';

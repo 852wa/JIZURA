@@ -567,7 +567,7 @@ function updateCutInfo() {
     if (g === 'layout') {
       const on = cutTextOn(cut, k);
       const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
-      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="このカットのレイアウトが出す文字を調整"><b>レイアウト文字</b>${on ? '調整中' : 'レイアウトの文字'}</button>`);
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="このカットのレイアウトが出す文字を調整"><b>レイアウトの文字制御</b>${on ? '調整中' : ''}</button>`);
     }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
@@ -688,7 +688,7 @@ function refreshCutTx() {
 function fillCutTx(cut, k) {
   const body = $('cutTxBody'); if (!body) return;
   const ttl = $('cutTxTitle');
-  if (ttl) ttl.textContent = 'レイアウト文字 · #' + String(cut.index + 1).padStart(2, '0');
+  if (ttl) ttl.textContent = 'レイアウトの文字制御 · #' + String(cut.index + 1).padStart(2, '0');
   const slot = cutTextSlot(cut.line, k);
   const rows = J.txProbe(cut, S.plan);
   body.innerHTML = '';
