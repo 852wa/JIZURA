@@ -373,7 +373,8 @@ class Renderer {
     if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
     if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
-    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
+    env.__ly = true;                                    // レイアウト文字: this pass may hide / replace texts
+    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); } finally { env.__ly = false; }
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
   }

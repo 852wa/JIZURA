@@ -445,6 +445,18 @@ button.small.primary { padding: 4px 12px; }
 #app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
 #app.is-mobile button.play { flex: none; width: 44px; }
 
+/* レイアウト文字 (per-cut text control) */
+.tx-rows { display: flex; flex-direction: column; gap: 6px; }
+.tx-row { display: grid; grid-template-columns: minmax(120px, 30%) 1fr; gap: 6px 10px; align-items: center; padding: 6px 2px; border-top: 1px solid var(--line); }
+.tx-row:first-child { border-top: 0; }
+.tx-lab { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.tx-lab input { accent-color: var(--amber); }
+.tx-in { width: 100%; font-size: 12px; padding: 4px 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+.tx-in::placeholder { color: var(--muted); opacity: .7; }
+.tx-row.is-off .tx-lab span, .tx-row.is-off .tx-in { opacity: .45; }
+.tx-hint { grid-column: 1 / -1; font-size: 11px; }
+.tx-none { font-size: 12px; padding: 8px 2px; }
+
 </style>
 </head>
 <body>
@@ -569,6 +581,15 @@ button.small.primary { padding: 4px 12px; }
           <button type="button" id="cutPickClose" class="ghost small" aria-label="閉じる">✕</button>
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
+      </div>
+      <div id="cutTx" class="cut-pick pro-only" hidden>
+        <div class="cut-pick-h">
+          <strong id="cutTxTitle">レイアウト文字</strong>
+          <span class="muted" id="cutTxHint">このカットが画面に出す文字</span>
+          <button type="button" id="cutTxAuto" class="ghost small">元に戻す</button>
+          <button type="button" id="cutTxClose" class="ghost small" aria-label="閉じる">✕</button>
+        </div>
+        <div id="cutTxBody" class="tx-rows"></div>
       </div>
     </section>
 
@@ -3666,7 +3687,7 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet', 'cutText'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -3905,6 +3926,18 @@ J.plan = (project, audio) => {
     if (c.layout === 'interlude') { c.params = Object.assign({}, c.params, { showTitle: false }); return; }   // no lyric: the whole frame
     c.zone = zoneOf(c.line);
   });
+  // レイアウト文字: per-cut text override, keyed like cutTech (the cut's index within its line)
+  {
+    const kof = {};
+    for (const c of plan.cuts) {
+      const LD = J.LAYOUTS[c.layout];
+      if (c.line < 0 || !LD || LD.special) continue;
+      const k = kof[c.line] || 0; kof[c.line] = k + 1;
+      const o = (project.overrides || {})[c.line] || {};
+      const tx = o.cutText && (o.cutText[k] || o.cutText[String(k)]);
+      if (tx) c.tx = tx;
+    }
+  }
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
@@ -4828,7 +4861,8 @@ class Renderer {
     if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
     if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
-    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
+    env.__ly = true;                                    // レイアウト文字: this pass may hide / replace texts
+    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); } finally { env.__ly = false; }
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
   }
@@ -6688,6 +6722,127 @@ reg('cam', 'jelly', { name: 'ぷるん', tags: ['pop', 'graphic'], w: 0.7,
     const A = (P.a || 0.055) * K;
     return { sx: 1 + A * w, sy: 1 - A * w * 0.9, y: env.H * 0.008 * K * w, s: 1.01 };
   } });
+})();
+
+/* JIZURA pack: レイアウト文字 — per-cut control of every text a layout draws.
+
+   Every layout (186 of them, incl. the packs upstream keeps adding) puts its text
+   on screen through J.drawItem(), so one wrapper can do both halves of the feature:
+
+     · probe  — report which strings this cut's layout actually draws, so the panel
+                lists exactly those rows (a layout that never prints a number simply
+                shows no 番号 row)
+     · apply  — hide / replace them, again for every layout, without touching any
+                layout's render code
+
+   A drawn string is matched against the cut's own values (line text, 注釈, the 自動
+   ローマ字 spellings, No.NN, 時刻, 曲名), so nothing else the layout draws is touched. */
+(() => {
+'use strict';
+
+const pad2 = n => String(Math.max(0, n | 0)).padStart(2, '0');
+
+/* 自動ローマ字: the spellings a pack may print for this line (plain / upper, spaces kept or stripped) */
+const romajiSet = cut => {
+  if (cut.__romajiSet) return cut.__romajiSet;
+  const s = new Set(), raw = String(cut.text || ''), clean = raw.replace(/\s+/g, '');
+  for (const t of [raw, clean]) {
+    if (!t) continue;
+    const r = J.romaji(t);
+    if (r) { s.add(r); s.add(r.toUpperCase()); }
+  }
+  return (cut.__romajiSet = s);
+};
+
+/* packs also print a romaji label cut short (romaji.slice(0, 12) …) */
+const romajiPiece = (cut, s) => {
+  if ([...s].length < 2) return false;
+  for (const r of romajiSet(cut)) if (r.includes(s)) return true;
+  return false;
+};
+
+/* the controllable slot a drawn string belongs to — null = not ours (frames, glyphs, punctuation …) */
+J.txSlotOf = (cut, str, env) => {
+  if (!cut || str == null) return null;
+  const s = String(str), t = String(cut.text || '');
+  if (!s) return null;
+  const n = (cut.line | 0) + 1, tm = J.fmtTime(cut.start);
+  if (cut.note && s === String(cut.note)) return 'note';
+  if (romajiPiece(cut, s)) return 'romaji';
+  if (s === 'No.' + pad2(n) || s === '#' + pad2(n)) return 'no';
+  if (s === tm || (env && env.t != null && s === J.fmtTime(env.t))) return 'time';
+  if (s === pad2(n) + ' ／ ' + tm) return 'no+time';
+  const tt = cut.params && cut.params.titleText;
+  if (tt && s === String(tt)) return 'title';
+  if (t && s === t) return 'main';
+  if (t && [...s].length === 1 && t.includes(s)) return 'main:split';
+  return null;
+};
+
+/* the rows the panel should show for this cut: what its layout really draws.
+   The layout runs once per sample point against a throw-away 8×8 canvas, with the
+   recorder in place, so nothing is painted and no state is kept. */
+J.txProbe = (cut, plan) => {
+  const seen = [], have = new Set();
+  const st = (plan && plan.style) || {}, sch = st.schemes || [];
+  const sc = sch[(cut.scheme | 0) % Math.max(1, sch.length)] || sch[0] || {};
+  const cv = document.createElement('canvas'); cv.width = cv.height = 8;
+  const ctx = cv.getContext('2d');
+  const R = new J.Renderer();
+  const td = Math.max(0.05, cut.dur || 0);
+  let last = null;
+  for (const k of [0.3, 0.5, 0.72]) {
+    const lt = td * k;
+    const env = R.makeEnv(ctx, plan, cut, sc, { pass: 'main', layer: 'front', t: cut.start + lt, lt, ltb: lt, step: 1, scale: 1, allowFilter: false, energy: 0, bgOnly: false, zone: null });
+    env.__rec = seen; env.__probe = true; env.__ly = true; last = env;
+    const L = J.LAYOUTS[cut.layout] || J.LAYOUTS.center;
+    try { L.render(env); } catch (e) { /* keep whatever we already collected */ }
+  }
+  for (const s of seen) {
+    const sl = J.txSlotOf(cut, s, last);
+    if (sl) sl.split('+').forEach(x => have.add(x));
+  }
+  return ['main', 'main:split', 'note', 'romaji', 'no', 'time', 'title'].filter(x => have.has(x));
+};
+
+/* apply the cut's override to one drawn item; null = leave it out */
+J.txApply = (env, it) => {
+  const cut = env.cut, o = cut && cut.tx;
+  if (!o || !it || it.text == null) return it;
+  const slot = J.txSlotOf(cut, String(it.text), env);
+  if (!slot) return it;
+  if (slot === 'main' || slot === 'main:split') {
+    if (o.hideMain) return null;
+    if (o.main != null && slot === 'main') return Object.assign({}, it, { text: o.main });
+  } else if (slot === 'note') {
+    if (o.hideNote) return null;
+    if (o.note != null) return Object.assign({}, it, { text: o.note });
+  } else if (slot === 'romaji') {
+    if (o.hideRomaji) return null;
+  } else if (slot.split('+').includes('no')) {
+    if (o.hideNo) return null;
+  } else if (slot.split('+').includes('time')) {
+    if (o.hideTime) return null;
+  } else if (slot === 'title') {
+    if (o.hideTitle) return null;
+    if (o.title != null) return Object.assign({}, it, { text: o.title });
+  } else return it;
+  return it;
+};
+
+/* one wrapper over the text primitive: every layout goes through here */
+const drawItem = J.drawItem;
+J.drawItem = (env, it) => {
+  if (!env) return drawItem(env, it);
+  if (env.__rec) {
+    const t = it && it.text;
+    if (t != null && String(t)) env.__rec.push(String(t));
+    if (env.__probe) return null;                       // probe: report only, never paint
+  }
+  if (env.__ly) { it = J.txApply(env, it); if (!it) return null; }
+  return drawItem(env, it);
+};
+
 })();
 
 /* JIZURA pack: decor — 45 refined graphic accents: HUD / measuring marks, geometry, particles & light, hand-drawn marks, type ornaments */
@@ -36069,6 +36224,28 @@ function markCutQuiet(i, k, groups, on) {
   if (Object.keys(cutQuiet).length) cur.cutQuiet = cutQuiet; else delete cur.cutQuiet;
   if (Object.keys(cur).length) S.project.overrides[i] = cur; else delete S.project.overrides[i];
 }
+/* レイアウト文字: per-cut override of the texts the layout puts on screen.
+   Same key as cutTech (the cut's index inside its line); an entry is what the user
+   actually changed, so an empty object = no override. */
+function cutTextSlot(line, k) {
+  const o = (S.project.overrides || {})[line] || {};
+  return (o.cutText && (o.cutText[k] || o.cutText[String(k)])) || {};
+}
+function setCutText(line, k, patch) {
+  if (line == null || line < 0 || k == null || k < 0) return;
+  const cur = Object.assign({}, S.project.overrides[line] || {});
+  const all = Object.assign({}, cur.cutText || {});
+  let slot = patch === null ? {} : Object.assign({}, all[k] || all[String(k)] || {}, patch);
+  delete all[String(k)];
+  Object.keys(slot).forEach(key => { if (slot[key] == null || slot[key] === false || slot[key] === '') delete slot[key]; });
+  if (Object.keys(slot).length) all[k] = slot; else delete all[k];
+  if (Object.keys(all).length) cur.cutText = all; else delete cur.cutText;
+  if (Object.keys(cur).length) S.project.overrides[line] = cur; else delete S.project.overrides[line];
+}
+function cutTextOn(cut, k) {
+  return k >= 0 && cut && Object.keys(cutTextSlot(cut.line, k)).length > 0;
+}
+
 function cutTechSlot(line, k) {
   const o = (S.project.overrides || {})[line] || {};
   const t = (o.cutTech && (o.cutTech[k] || o.cutTech[String(k)])) || {};
@@ -36143,9 +36320,10 @@ function updateCutInfo() {
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); closeCutTx(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
+    closeCutTx();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
     const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
     el.innerHTML = [
@@ -36166,6 +36344,11 @@ function updateCutInfo() {
   CHIP_GROUPS.forEach(([g, cls, label]) => {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
+    if (g === 'layout') {
+      const on = cutTextOn(cut, k);
+      const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="このカットのレイアウトが出す文字を調整"><b>レイアウト文字</b>${on ? '調整中' : 'レイアウトの文字'}</button>`);
+    }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
   bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このカットだけ手法をランダムに">おまかせ</button>`);
@@ -36173,6 +36356,13 @@ function updateCutInfo() {
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
     el.querySelectorAll('button.cut-roll').forEach(b => b.addEventListener('click', () => rerollCurrentCut(b.dataset.roll)));
+    const tb = el.querySelector('button.chip[data-tx]');
+    if (tb) tb.addEventListener('click', () => toggleCutTx(cut, k));
+    // the panel follows the playhead, exactly like the 手法 picker does
+    if (cutTx.open && (cutTx.line !== cut.line || cutTx.k !== k)) {
+      cutTx.line = cut.line; cutTx.k = k;
+      fillCutTx(cut, k);
+    }
   }
   followCutPick(cut, k);
 }
@@ -36238,6 +36428,95 @@ function fillCutPick() {
   });
   queueThumbs(grid);
 }
+/* ---------------- レイアウト文字: what this cut's layout actually writes on screen -------------
+   The rows come from J.txProbe(), which runs the layout once with the recorder in place, so the
+   panel lists exactly the texts this layout draws (a layout that never draws a serial number
+   simply shows no row for it). */
+const cutTx = { open: false, line: -1, k: -1 };
+const TX_ROWS = {
+  'main':       '本文',
+  'main:split': '本文（1文字ずつ配置）',
+  'note':       '注釈',
+  'romaji':     '自動ローマ字',
+  'no':         '通し番号',
+  'time':       '時刻',
+  'title':      '曲名',
+};
+const TX_HIDE = { 'main': 'hideMain', 'main:split': 'hideMain', note: 'hideNote', romaji: 'hideRomaji', no: 'hideNo', time: 'hideTime', title: 'hideTitle' };
+const TX_EDIT = { 'main': 'main', note: 'note', title: 'title', 'main:split': 'main' };
+
+function closeCutTx() {
+  cutTx.open = false; cutTx.line = -1; cutTx.k = -1;
+  const p = $('cutTx'); if (p) p.hidden = true;
+}
+function toggleCutTx(cut, k) {
+  if (S.mode !== 'pro' || !cut || k < 0) return;
+  if (cutTx.open && cutTx.line === cut.line && cutTx.k === k) { closeCutTx(); lastCutIdx = -2; updateCutInfo(); return; }
+  closeCutPick();
+  cutTx.open = true; cutTx.line = cut.line; cutTx.k = k;
+  const p = $('cutTx'); if (p) p.hidden = false;
+  fillCutTx(cut, k);
+  lastCutIdx = -2; updateCutInfo();
+}
+function refreshCutTx() {
+  if (!cutTx.open) return;
+  const cut = S.plan && S.plan.cuts.find(c => c.line === cutTx.line && lyricCutK(c) === cutTx.k);
+  if (cut) fillCutTx(cut, cutTx.k); else closeCutTx();
+}
+function fillCutTx(cut, k) {
+  const body = $('cutTxBody'); if (!body) return;
+  const ttl = $('cutTxTitle');
+  if (ttl) ttl.textContent = 'レイアウト文字 · #' + String(cut.index + 1).padStart(2, '0');
+  const slot = cutTextSlot(cut.line, k);
+  const rows = J.txProbe(cut, S.plan);
+  body.innerHTML = '';
+  if (!rows.length) {
+    const p = document.createElement('p');
+    p.className = 'muted tx-none';
+    p.textContent = 'このレイアウトは画面に文字を出しません。';
+    body.appendChild(p);
+    return;
+  }
+  rows.forEach(tok => {
+    const name = TX_ROWS[tok]; if (!name) return;
+    const hideKey = TX_HIDE[tok], editKey = TX_EDIT[tok];
+    const base = tok === 'note' ? String(cut.note || '')
+      : tok === 'title' ? String((cut.params || {}).titleText || '')
+      : String(cut.text || '');
+    const row = document.createElement('div');
+    row.className = 'tx-row' + (slot[hideKey] ? ' is-off' : '');
+    const lab = document.createElement('label');
+    lab.className = 'tx-lab';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.checked = !slot[hideKey];
+    chk.addEventListener('change', () => {
+      setCutText(cutTx.line, cutTx.k, { [hideKey]: chk.checked ? null : true });
+      replan(); refreshCutTx();
+    });
+    lab.appendChild(chk);
+    const nm = document.createElement('span'); nm.textContent = name; lab.appendChild(nm);
+    row.appendChild(lab);
+    if (editKey && tok !== 'main:split') {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.className = 'tx-in';
+      inp.value = slot[editKey] != null ? String(slot[editKey]) : base;
+      inp.placeholder = base;
+      inp.addEventListener('change', () => {
+        const v = inp.value;
+        setCutText(cutTx.line, cutTx.k, { [editKey]: (v === base || v.trim() === '') ? null : v });
+        replan(); refreshCutTx();
+      });
+      row.appendChild(inp);
+    } else if (tok === 'main:split') {
+      const h = document.createElement('span');
+      h.className = 'muted tx-hint';
+      h.textContent = 'このレイアウトは1文字ずつ並べるので、差し替えはできません（表示／非表示だけ）。';
+      row.appendChild(h);
+    }
+    body.appendChild(row);
+  });
+}
+
 
 /* ---------------- line list ---------------- */
 function renderLines() {
@@ -37103,6 +37382,12 @@ function bind() {
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  const cutTxAuto = $('cutTxAuto'), cutTxClose = $('cutTxClose');
+  if (cutTxClose) cutTxClose.addEventListener('click', () => { closeCutTx(); lastCutIdx = -2; updateCutInfo(); });
+  if (cutTxAuto) cutTxAuto.addEventListener('click', () => {
+    setCutText(cutTx.line, cutTx.k, null);
+    replan(); refreshCutTx();
+  });
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
   if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
   if (cutPickAuto) cutPickAuto.addEventListener('click', () => {

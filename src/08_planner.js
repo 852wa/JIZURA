@@ -299,7 +299,7 @@ J.plan = (project, audio) => {
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet', 'cutText'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -538,6 +538,18 @@ J.plan = (project, audio) => {
     if (c.layout === 'interlude') { c.params = Object.assign({}, c.params, { showTitle: false }); return; }   // no lyric: the whole frame
     c.zone = zoneOf(c.line);
   });
+  // レイアウト文字: per-cut text override, keyed like cutTech (the cut's index within its line)
+  {
+    const kof = {};
+    for (const c of plan.cuts) {
+      const LD = J.LAYOUTS[c.layout];
+      if (c.line < 0 || !LD || LD.special) continue;
+      const k = kof[c.line] || 0; kof[c.line] = k + 1;
+      const o = (project.overrides || {})[c.line] || {};
+      const tx = o.cutText && (o.cutText[k] || o.cutText[String(k)]);
+      if (tx) c.tx = tx;
+    }
+  }
   plan.events.sort((a, b) => a.t - b.t);
   plan.energy = audio && audio.energy ? audio.energy : null;
   plan.energyRate = audio && audio.energyRate ? audio.energyRate : 0;
