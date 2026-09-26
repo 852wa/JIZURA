@@ -1,6 +1,7 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    "レイアウトの文字制御": "版面文字控制",
     "通し番号": "序號",
     "時刻": "時間碼",
     "全カットで表示／非表示": "所有 cut 顯示／隱藏",
@@ -166,6 +167,7 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "版面文字控制",
     "通し番号：表示": "序號：顯示",
     "通し番号：非表示": "序號：隱藏",
     "時刻：表示": "時間碼：顯示",

@@ -584,7 +584,7 @@ button.small.primary { padding: 4px 12px; }
       </div>
       <div id="cutTx" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
-          <strong id="cutTxTitle">레이아웃 문자</strong>
+          <strong id="cutTxTitle">레이아웃 문자 제어</strong>
           <span class="muted" id="cutTxHint">이 컷이 화면에 내보내는 문자</span>
           <button type="button" id="cutTxAuto" class="ghost small">되돌리기</button>
           <button type="button" id="cutTxClose" class="ghost small" aria-label="닫기">✕</button>
@@ -36942,7 +36942,7 @@ function updateCutInfo() {
     if (g === 'layout') {
       const on = cutTextOn(cut, k);
       const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
-      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="이 컷 레이아웃이 표시하는 문자 조정"><b>레이아웃 문자</b>${on ? '조정 중' : '레이아웃 문자'}</button>`);
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="이 컷 레이아웃이 표시하는 문자 조정"><b>레이아웃 문자 제어</b>${on ? '조정 중' : ''}</button>`);
     }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="이 컷만 구성을 다시 추첨">셔플</button>`);
@@ -37063,7 +37063,7 @@ function refreshCutTx() {
 function fillCutTx(cut, k) {
   const body = $('cutTxBody'); if (!body) return;
   const ttl = $('cutTxTitle');
-  if (ttl) ttl.textContent = '레이아웃 문자 · #' + String(cut.index + 1).padStart(2, '0');
+  if (ttl) ttl.textContent = '레이아웃 문자 제어 · #' + String(cut.index + 1).padStart(2, '0');
   const slot = cutTextSlot(cut.line, k);
   const rows = J.txProbe(cut, S.plan);
   body.innerHTML = '';

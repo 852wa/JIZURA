@@ -1,6 +1,7 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    "レイアウトの文字制御": "Layout text control",
     "通し番号": "Serial number",
     "時刻": "Timecode",
     "全カットで表示／非表示": "shown / hidden on every cut",
@@ -168,6 +169,7 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Layout text control",
     "通し番号：表示": "Serial number: shown",
     "通し番号：非表示": "Serial number: hidden",
     "時刻：表示": "Timecode: shown",

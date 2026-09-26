@@ -1,6 +1,7 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    "レイアウトの文字制御": "레이아웃 문자 제어",
     "通し番号": "일련번호",
     "時刻": "시각",
     "全カットで表示／非表示": "모든 컷에서 표시/숨김",
@@ -164,6 +165,7 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "레이아웃 문자 제어",
     "通し番号：表示": "일련번호: 표시",
     "通し番号：非表示": "일련번호: 숨김",
     "時刻：表示": "시각: 표시",

@@ -584,7 +584,7 @@ button.small.primary { padding: 4px 12px; }
       </div>
       <div id="cutTx" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
-          <strong id="cutTxTitle">版面文字</strong>
+          <strong id="cutTxTitle">版面文字控制</strong>
           <span class="muted" id="cutTxHint">这个 cut 在画面显示的文字</span>
           <button type="button" id="cutTxAuto" class="ghost small">还原</button>
           <button type="button" id="cutTxClose" class="ghost small" aria-label="关闭">✕</button>
@@ -36859,7 +36859,7 @@ function updateCutInfo() {
     if (g === 'layout') {
       const on = cutTextOn(cut, k);
       const open = cutTx.open && cutTx.line === cut.line && cutTx.k === k;
-      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="调整这个 cut 版面显示的文字"><b>版面文字</b>${on ? '调整中' : '版面文字'}</button>`);
+      bits.push(`<button type="button" class="chip l${on ? ' is-forced' : ''}" data-tx="1" aria-pressed="${open ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''} title="调整这个 cut 版面显示的文字"><b>版面文字控制</b>${on ? '调整中' : ''}</button>`);
     }
   });
   bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="只重新抽选这个镜头的编排">随机编排</button>`);
@@ -36980,7 +36980,7 @@ function refreshCutTx() {
 function fillCutTx(cut, k) {
   const body = $('cutTxBody'); if (!body) return;
   const ttl = $('cutTxTitle');
-  if (ttl) ttl.textContent = '版面文字 · #' + String(cut.index + 1).padStart(2, '0');
+  if (ttl) ttl.textContent = '版面文字控制 · #' + String(cut.index + 1).padStart(2, '0');
   const slot = cutTextSlot(cut.line, k);
   const rows = J.txProbe(cut, S.plan);
   body.innerHTML = '';
