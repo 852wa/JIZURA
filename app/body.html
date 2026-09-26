@@ -66,6 +66,33 @@
           <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
           <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
         </div>
+        <div id="whisperBox" class="whisper-box">
+          <div class="sec-h"><h3 class="whisper-title">AI文字起こし</h3><span id="whisperDevice" class="muted mono"></span></div>
+          <div class="whisper-fields">
+            <label class="field">言語
+              <select id="whisperLang"><option value="auto">自動判定</option><option value="japanese">日本語</option><option value="english">英語</option></select>
+            </label>
+            <label class="field">モデル
+              <select id="whisperModel"><option value="base">高精度 Base（推奨）</option><option value="tiny">高速 Tiny</option></select>
+            </label>
+          </div>
+          <div class="whisper-actions">
+            <button id="btnWhisper" class="accent">AIで歌詞を文字起こし</button>
+          </div>
+          <p id="whisperFirstNote" class="whisper-note muted">原曲を直接解析し、歌声を拾いやすい音量と帯域へ自動調整します。高精度 BaseはTinyより時間とメモリを使います。</p>
+          <p class="whisper-note muted">初回のみ選択したAIモデルを読み込みます。ダウンロード後はブラウザにキャッシュされます。</p>
+          <div id="whisperProgressBox" class="whisper-progress" hidden>
+            <div class="progress" role="progressbar" aria-label="AI文字起こしの進行状況" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="whisperBar"></i></div>
+            <div class="whisper-status-row"><span id="whisperStatus" role="status" aria-live="polite">準備中</span><span id="whisperPercent" class="mono">0%</span></div>
+          </div>
+          <div id="whisperResult" class="whisper-result" hidden>
+            <label class="field">文字起こし結果（反映前に修正できます）
+              <textarea id="whisperPreview" rows="7" spellcheck="false" aria-label="AI文字起こし結果"></textarea>
+            </label>
+            <button id="btnApplyWhisper" class="primary">歌詞欄に反映</button>
+          </div>
+          <p class="whisper-privacy">文字起こしと音声調整はブラウザ内で処理されます。音声ファイルは文字起こしAPIへ送信されません。</p>
+        </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
           <label class="field">開始(秒)<input id="offset" type="number" min="0" step="0.05"></label>
@@ -292,7 +319,7 @@
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
     <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません。</p>
     <details class="terms-oss"><summary>使用しているオープンソース</summary>
-      <p>MP4 書き出し：mp4-muxer（MIT License）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
+      <p>MP4 書き出し：mp4-muxer（MIT License）<br>AI文字起こし：Transformers.js / Whisper Tiny・Base（Apache License 2.0）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
     </details>
     <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>閉じる</button></div>
   </form>

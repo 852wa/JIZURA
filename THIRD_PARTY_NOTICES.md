@@ -35,3 +35,15 @@ The web app loads the following typefaces at runtime from Google Fonts (https://
 included in this repository. They are distributed by their authors under the SIL Open Font License 1.1:
 Noto Sans JP, Noto Serif JP, Dela Gothic One, Zen Kaku Gothic New, Zen Old Mincho, Kaisei Tokumin,
 M PLUS Rounded 1c, Mochiy Pop One, DotGothic16, Yuji Syuku, IBM Plex Mono, IBM Plex Sans JP.
+
+## Transformers.js 4.3.0 and Whisper Tiny / Base (loaded on demand)
+
+The AI transcription feature loads `@huggingface/transformers` 4.3.0 from jsDelivr and the multilingual
+`onnx-community/whisper-base` or `onnx-community/whisper-tiny` model from Hugging Face when the user starts
+transcription. These files are not bundled in this repository and are cached by the browser after download.
+Transformers.js and both Whisper models are licensed under the Apache License 2.0:
+
+- https://github.com/huggingface/transformers.js
+- https://huggingface.co/onnx-community/whisper-base
+- https://huggingface.co/onnx-community/whisper-tiny
+- https://www.apache.org/licenses/LICENSE-2.0

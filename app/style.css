@@ -98,6 +98,20 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
 .field input, .field select { width: 100%; }
+.whisper-box { display: grid; gap: 9px; padding: 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--raised); }
+.whisper-title { margin: 0; color: var(--text); letter-spacing: .08em; }
+.whisper-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.whisper-note, .whisper-privacy { margin: 0; font-size: 11px; line-height: 1.5; }
+.whisper-privacy { color: var(--muted); border-left: 2px solid var(--cyan); padding-left: 8px; }
+.whisper-actions { display: grid; gap: 7px; }
+.whisper-progress { display: grid; gap: 5px; }
+.whisper-progress[hidden] { display: none; }
+.whisper-status-row { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+.whisper-progress.indeterminate .progress i { width: 38% !important; animation: whisper-progress 1.1s ease-in-out infinite alternate; }
+.whisper-result { display: grid; gap: 8px; }
+.whisper-result[hidden] { display: none; }
+#whisperPreview { min-height: 118px; font: 12px/1.6 var(--mono); }
+@keyframes whisper-progress { from { transform: translateX(-15%); } to { transform: translateX(180%); } }
 .tapbox { border: 1px solid var(--amber); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; background: rgba(245,165,12,0.06); }
 .tapbox .next { font-size: 15px; }
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }

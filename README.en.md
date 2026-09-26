@@ -12,7 +12,7 @@ The Japanese, English, Indonesian, Vietnamese, Traditional Chinese, Simplified C
 <summary><h2>Quick start</h2></summary>
 
 1. Paste lyrics into the left panel, one phrase per line. The built-in English sample is shown on a fresh install.
-2. Optionally import audio. JIZURA detects beats and can snap cut boundaries to them. Use **Tap to sync** to mark the start of each line by pressing Space during playback.
+2. Optionally import audio. JIZURA detects beats and can snap cut boundaries to them. Use **Tap to sync** to mark the start of each line by pressing Space during playback. **Transcribe lyrics with AI** adjusts the original mix for vocal-sensitive recognition, then runs multilingual Whisper Base (accurate) or Tiny (fast) in the browser and previews timestamped LRC lines before you explicitly apply them. Models are downloaded on first use and cached; WebGPU is preferred with automatic WASM fallback.
 3. Press **Create a variation** (or `R`) to randomize the style, mood, motion, palette and arrangement. **Previous** and **Next** navigate variations; **Change one thing** rerolls just one part.
 4. Set aspect ratio, resolution and frame rate, then export MP4. Advanced mode adds a PNG sequence, transparent PNGs, color key backgrounds and individual technique controls.
 
@@ -99,7 +99,7 @@ The After Effects panels build all three sets too (with the same switches and th
 
 Lyric syntax: `[interlude 8]` adds an 8-second instrumental part with background and decorations only (4 seconds without a number); `I remember/the dawn` makes a manual cut; `*word*` emphasizes a word; a final `!` adds a flash and shake; `lyric|note` adds small annotation text; `[01:23.45]lyric` imports an LRC timestamp; `# comment` is ignored.
 
-Use **Save** and **Open** for `.jizura.json` projects. **Export for AE** creates arrangement data to import into the After Effects panel. Generated videos and images belong to their creators; rights to music and lyrics remain with their respective rights holders. Project files, lyrics and audio are handled in the browser. Google Fonts are loaded as needed. The tool is MIT licensed; see [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Use **Save** and **Open** for `.jizura.json` projects. **Export for AE** creates arrangement data to import into the After Effects panel. Generated videos and images belong to their creators; rights to music and lyrics remain with their respective rights holders. Project files, lyrics, audio adjustment and transcription are handled in the browser; audio is not uploaded to an external transcription service. Google Fonts are loaded as needed; the AI runtime and selected model are loaded only when transcription is used. The original song remains unchanged for BPM detection, playback, waveform and video export. The tool is MIT licensed; see [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 </details>
 

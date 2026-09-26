@@ -762,6 +762,99 @@ async function resetAll() {
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
+/* ---------------- AI歌詞文字起こし ---------------- */
+const WT = { busy: false, hasTotal: false };
+function whisperProgress(text, value, indeterminate) {
+  const box = $('whisperProgressBox'), bar = $('whisperBar'), percent = $('whisperPercent');
+  if (!box || !bar || !percent) return;
+  box.hidden = false; box.classList.toggle('indeterminate', !!indeterminate);
+  $('whisperStatus').textContent = text;
+  const role = box.querySelector('[role=progressbar]');
+  if (indeterminate) {
+    percent.textContent = '…'; role.removeAttribute('aria-valuenow');
+  } else {
+    const n = J.clamp(Number.isFinite(value) ? value / 100 : 0) * 100;
+    bar.style.width = n.toFixed(1) + '%'; percent.textContent = Math.round(n) + '%'; role.setAttribute('aria-valuenow', String(Math.round(n)));
+  }
+}
+function whisperDevice(device) {
+  const el = $('whisperDevice'); if (el) el.textContent = device === 'webgpu' ? 'WebGPU' : device === 'wasm' ? 'WASM' : '';
+}
+function onWhisperProgress(info) {
+  if (!info) return;
+  whisperDevice(info.device);
+  if (info.phase === 'library') whisperProgress('AI機能を準備中…', 0, true);
+  else if (info.phase === 'model-loading') whisperProgress(`モデル準備中（${info.device === 'webgpu' ? 'WebGPU' : 'WASM'}）…`, 0, true);
+  else if (info.phase === 'model-download') whisperProgress('モデルダウンロード中…', 0, true);
+  else if (info.phase === 'model-progress') { WT.hasTotal = true; whisperProgress(`モデルダウンロード中 ${Math.round(info.progress)}%`, info.progress, false); }
+  else if (info.phase === 'model-file-progress' && !WT.hasTotal) whisperProgress(`モデルダウンロード中 ${Math.round(info.progress)}%`, info.progress, false);
+  else if (info.phase === 'webgpu-unavailable') whisperProgress('WebGPU非対応のためWASMで実行します。', 0, true);
+  else if (info.phase === 'webgpu-fallback') whisperProgress('WebGPUを利用できなかったためWASMへ切り替えます。', 0, true);
+  else if (info.phase === 'model-ready') whisperProgress(`モデル準備完了（${info.device === 'webgpu' ? 'WebGPU' : 'WASM'}）`, 100, false);
+  else if (info.phase === 'audio-preparing') whisperProgress('音声解析中（歌声を拾いやすく調整・16kHzモノラル化）…', 0, true);
+  else if (info.phase === 'transcribing') whisperProgress('文字起こし中…', 0, true);
+  else if (info.phase === 'complete') whisperProgress('文字起こし完了', 100, false);
+}
+function whisperErrorText(err) {
+  const detail = String((err && err.cause && (err.cause.message || err.cause)) || (err && err.message) || '');
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'ネットワークに接続されておらず、AIモデルのキャッシュも見つかりません。初回はネットワーク接続が必要です。';
+  if (/out of memory|memory|allocation|oom|device lost/i.test(detail)) return 'メモリが不足しました。他のタブを閉じるか、短い音声で試してください。';
+  if (/failed to fetch|network|load failed|fetch/i.test(detail)) return 'AIモデルをダウンロードできませんでした。ネットワーク接続を確認してください。';
+  if (err && err.code === 'NO_AUDIO') return '先に曲を読み込んでください。';
+  if (err && err.code === 'AUDIO_UNSUPPORTED') return 'この音声形式を解析できませんでした。MP3・WAV・M4Aなどで試してください。';
+  if (err && err.code === 'MODEL_LOAD_FAILED') return 'AIモデルを読み込めませんでした。ページを再読み込みして、もう一度試してください。';
+  if (err && err.code === 'EMPTY_RESULT') return '歌詞を認識できませんでした。音量や音声ファイルを確認してください。';
+  return '文字起こしに失敗しました。音声やブラウザのメモリを確認して、もう一度試してください。';
+}
+function applyWhisperLyrics(value) {
+  const lyrics = String(value || '').trim(); if (!lyrics) return false;
+  const P = S.project, snap = JSON.parse(edSnap());
+  snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause(); P.lyrics = lyrics; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  $('lyrics').value = lyrics; fontKey = '';
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('AI文字起こし結果を歌詞欄に反映しました（あとから修正できます）');
+  return true;
+}
+function setAIBusy(busy) {
+  WT.busy = busy; WT.hasTotal = false;
+  const run = $('btnWhisper'), apply = $('btnApplyWhisper'), file = $('audioFile');
+  if (run) run.disabled = busy;
+  if (busy && apply) apply.disabled = true;
+  if (file) file.disabled = busy;
+}
+async function transcribeWhisperAudio(audioBuffer) {
+  if (!J.whisper || !J.whisper.transcribe) { const err = new Error('WHISPER_HANDOFF_FAILED'); err.code = 'WHISPER_HANDOFF_FAILED'; throw err; }
+  const out = await J.whisper.transcribe(audioBuffer, {
+    language: $('whisperLang').value,
+    model: $('whisperModel').value,
+    onProgress: onWhisperProgress,
+  });
+  $('whisperPreview').value = out.lrc;
+  $('whisperResult').hidden = false; $('btnApplyWhisper').disabled = false;
+  whisperDevice(out.device); whisperProgress('文字起こし完了。内容を確認して歌詞欄へ反映してください。', 100, false);
+}
+async function runWhisper() {
+  if (WT.busy) return;
+  if (!S.audio || !S.audio.buffer) { whisperProgress('先に曲を読み込んでください。', 0, false); toast('先に曲を読み込んでください'); return; }
+  setAIBusy(true); pause(); whisperProgress('選択したAIモデルを準備中…（初回のみダウンロードします）', 0, true);
+  await new Promise(resolve => requestAnimationFrame(resolve));
+  try { await transcribeWhisperAudio(S.audio.buffer); }
+  catch (err) { console.error('[JIZURA Whisper] transcription failed', err, err && err.cause); whisperProgress(whisperErrorText(err), 0, false); }
+  finally { setAIBusy(false); }
+}
+function bindWhisper() {
+  const run = $('btnWhisper'), apply = $('btnApplyWhisper'); if (!run || !apply) return;
+  run.addEventListener('click', runWhisper);
+  apply.addEventListener('click', () => {
+    const value = $('whisperPreview').value;
+    if (!value.trim()) { whisperProgress('反映できる文字起こし結果がありません。', 0, false); return; }
+    if (S.project.lyrics.trim() && !window.confirm('現在の歌詞をAI文字起こし結果で置き換えますか？\n元に戻すボタンまたは Ctrl+Z で取り消せます。')) return;
+    if (applyWhisperLyrics(value)) whisperProgress('歌詞欄に反映しました。必要に応じて歌詞を修正してください。', 100, false);
+  });
+}
+
 /* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
@@ -1751,7 +1844,7 @@ async function restoreFonts() {
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
-  bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
+  bind(); bindWhisper(); initVolume(); syncUI(); syncLoopBtn(); replan();
   restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
