@@ -1231,14 +1231,7 @@ function kickPreviewLoop() {
   previewRaf = requestAnimationFrame(tick);
 }
 function queueThumbs(list) {
-  const now = performance.now();
-  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
-    previewLive.add(cv);
-    watchThumb(cv);
-    const g = cv.dataset.g, k = cv.dataset.k;
-    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
-  });
-  kickPreviewLoop();
+  list.querySelectorAll('canvas[data-g]').forEach(watchThumb);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
 
