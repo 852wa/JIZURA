@@ -628,7 +628,7 @@ button.small.primary { padding: 4px 12px; }
           </div>
         </div>
         <div class="easy-sec">
-          <h3>레이아웃 문자</h3>
+          <h3>레이아웃 문자 제어</h3>
           <div class="pick-sets">
             <label class="check"><input class="txno-toggle" type="checkbox" checked><span>일련번호<small>모든 컷에서 표시/숨김</small></span></label>
             <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>시각<small>모든 컷에서 표시/숨김(HUD 포함)</small></span></label>
@@ -692,7 +692,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> 플래시</label>
           <label class="row" style="gap:6px">프레임 홀드 <select id="fxKoma" title="움직임을 초당 몇 장으로 그릴지 설정 (출력 fps와 별개)"><option value="0">전체 (출력 fps 그대로)</option><option value="12">2프레임 홀드 (초당 12장)</option><option value="8">3프레임 홀드 (초당 8장)</option></select></label>
         </div>
-        <h3>레이아웃 문자</h3>
+        <h3>레이아웃 문자 제어</h3>
         <label class="check"><input class="txno-toggle" type="checkbox" checked><span>일련번호<small>모든 컷에서 표시/숨김</small></span></label>
         <label class="check"><input class="txtime-toggle" type="checkbox" checked><span>시각<small>모든 컷에서 표시/숨김(HUD 포함)</small></span></label>
         <div class="fields" style="margin-top:12px">
@@ -37251,7 +37251,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  S.project = mergeProject(null); S.project.lyrics = '';
+  S.project = mergeProject(null); S.project.lyrics = ''; if (typeof refreshCutTx === 'function') refreshCutTx();
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
@@ -38154,7 +38154,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); refreshCutTx(); restoreFonts(); }
     catch (err) { showMsg('프로젝트를 열지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });

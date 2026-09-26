@@ -876,7 +876,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  S.project = mergeProject(null); S.project.lyrics = '';
+  S.project = mergeProject(null); S.project.lyrics = ''; if (typeof refreshCutTx === 'function') refreshCutTx();
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
@@ -1779,7 +1779,7 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); refreshCutTx(); restoreFonts(); }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
