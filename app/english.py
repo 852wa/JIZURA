@@ -1,6 +1,14 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    "レイアウトの文字制御": "Layout text control",
+    "通し番号": "Serial number",
+    "時刻": "Timecode",
+    "全カットで表示／非表示": "shown / hidden on every cut",
+    "全カットで表示／非表示（HUD を含む）": "shown / hidden on every cut (HUD included)",
+    "元に戻す": "Reset",
+    "レイアウト文字": "Layout text",
+    "このカットが画面に出す文字": "the texts this cut puts on screen",
     '文字PV系の部品を使う': 'Use typographic parts',
     'キネティックの部品を使う': 'Use kinetic parts',
     'ホラーの演出も使う': 'Include horror effects',
@@ -161,6 +169,26 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Layout text control",
+    "通し番号：表示": "Serial number: shown",
+    "通し番号：非表示": "Serial number: hidden",
+    "時刻：表示": "Timecode: shown",
+    "時刻：非表示": "Timecode: hidden",
+    "行の残り（前後の語）": "Rest of the line (neighbouring words)",
+    "その他（レイアウト独自の文字）": "Other (the layout's own lettering)",
+    "時刻": "Timecode",
+    "曲名": "Song title",
+    "レイアウト文字": "Layout text",
+    "レイアウトの文字": "Layout text",
+    "調整中": "adjusted",
+    "本文": "Body text",
+    "本文（1文字ずつ配置）": "Body text (one character at a time)",
+    "注釈": "Note",
+    "自動ローマ字": "Auto romaji",
+    "通し番号": "Serial number",
+    "このカットのレイアウトが出す文字を調整": "Adjust the texts this cut's layout puts on screen",
+    "このレイアウトは画面に文字を出しません。": "This layout puts no text on screen.",
+    "このレイアウトは1文字ずつ並べるので、差し替えはできません（表示／非表示だけ）。": "This layout places one character at a time, so the text cannot be swapped (show/hide only).",
     "'文字PV系の部品：使う'": "'Typographic parts: on'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
     "'キネティックの部品：使う'": "'Kinetic parts: on'",

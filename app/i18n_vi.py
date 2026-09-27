@@ -42,6 +42,14 @@ STYLES = {
 }
 
 BODY = {
+    "レイアウトの文字制御": "Điều khiển chữ layout",
+    "通し番号": "Số thứ tự",
+    "時刻": "Mốc thời gian",
+    "全カットで表示／非表示": "hiện / ẩn ở mọi cut",
+    "全カットで表示／非表示（HUD を含む）": "hiện / ẩn ở mọi cut (kể cả HUD)",
+    "元に戻す": "Hoàn tác",
+    "レイアウト文字": "Chữ layout",
+    "このカットが画面に出す文字": "chữ mà cut này hiển thị",
     '文字PV系の部品を使う': 'Dùng các thành phần kiểu chữ',
     'キネティックの部品を使う': 'Dùng các thành phần chuyển động chữ',
     'ホラーの演出も使う': 'Dùng cả hiệu ứng kinh dị',
@@ -251,6 +259,26 @@ BODY = {
 }
 
 UI = {
+    "レイアウトの文字制御": "Điều khiển chữ layout",
+    "通し番号：表示": "Số thứ tự: hiện",
+    "通し番号：非表示": "Số thứ tự: ẩn",
+    "時刻：表示": "Mốc thời gian: hiện",
+    "時刻：非表示": "Mốc thời gian: ẩn",
+    "行の残り（前後の語）": "Phần còn lại của dòng (từ kề bên)",
+    "その他（レイアウト独自の文字）": "Khác (chữ riêng của layout)",
+    "時刻": "Mốc thời gian",
+    "曲名": "Tên bài hát",
+    "レイアウト文字": "Chữ layout",
+    "レイアウトの文字": "Chữ layout",
+    "調整中": "đã chỉnh",
+    "本文": "Chữ chính",
+    "本文（1文字ずつ配置）": "Chữ chính (từng ký tự)",
+    "注釈": "Chú thích",
+    "自動ローマ字": "Romaji tự động",
+    "通し番号": "Số thứ tự",
+    "このカットのレイアウトが出す文字を調整": "Chỉnh chữ mà layout của cut này hiển thị",
+    "このレイアウトは画面に文字を出しません。": "Layout này không hiển thị chữ.",
+    "このレイアウトは1文字ずつ並べるので、差し替えはできません（表示／非表示だけ）。": "Layout này đặt từng ký tự một nên không thể thay chữ (chỉ hiện/ẩn).",
     'おまかせ': 'Ngẫu nhiên', 'シャッフル': 'Sắp xếp ngẫu nhiên',
     "'文字PV系の部品：使う'": "'Thành phần kiểu chữ: bật'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)'",
