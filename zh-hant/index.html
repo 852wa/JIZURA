@@ -126,7 +126,6 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px; background: var(--amber); color: #120c00; border-color: var(--amber); }
 /* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
 .col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
-.tapbox.compact .hint { display: none; }
 /* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
 @media (max-width: 1180px), (max-height: 619px) {
   .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
@@ -37500,7 +37499,6 @@ function startTap(from = 0) {
   S.tap = { i: from, from, done: [] };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
-  $('tapPanel').classList.remove('compact');
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
@@ -37530,7 +37528,6 @@ function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
-  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
