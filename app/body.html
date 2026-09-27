@@ -44,6 +44,7 @@
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <div class="row"><label class="file" title="LRC（時刻タグ付き）や歌詞テキスト。歌詞欄へのドラッグ＆ドロップも可">歌詞ファイル（.lrc / .txt）<input id="lrcFile" type="file" accept=".lrc,.txt,text/plain,text/lrc"></label></div>
         <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
@@ -53,6 +54,7 @@
             <li>行末の <code>!</code> … フラッシュと揺れを入れる</li>
             <li><code>歌詞|ruby or note</code> … 注釈レイアウトの小さな文字</li>
             <li><code>[01:23.45]歌詞</code> … LRC のタイムスタンプをそのまま使用</li>
+            <li>歌詞ファイル（<code>.lrc</code>）を読み込むと、時刻タグと <code>[offset:±ms]</code> をそのまま使います。ずれたときは「LRCのずれ」で全体を調整できます</li>
             <li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>
             <li><code>#</code> で始まる行 … コメント（無視）</li>
           </ul>
@@ -75,6 +77,7 @@
           <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
           <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
         </div>
+        <div class="row"><label class="field" id="lrcShiftField" hidden style="max-width:140px">LRCのずれ(秒)<input id="lrcShift" type="number" min="-30" max="30" step="0.05" placeholder="0"></label></div>
       </div>
 
       <div class="sec">

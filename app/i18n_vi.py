@@ -42,6 +42,11 @@ STYLES = {
 }
 
 BODY = {
+    # 歌詞ファイルの読み込み (LRC import)
+    '歌詞ファイル（.lrc / .txt）': 'Tệp lời bài hát (.lrc / .txt)',
+    'title="LRC（時刻タグ付き）や歌詞テキスト。歌詞欄へのドラッグ＆ドロップも可"': 'title="Tệp LRC có mốc thời gian, hoặc văn bản lời thường. Cũng có thể kéo thả vào ô lời bài hát"',
+    'LRCのずれ(秒)': 'Dịch LRC (giây)',
+    '<li>歌詞ファイル（<code>.lrc</code>）を読み込むと、時刻タグと <code>[offset:±ms]</code> をそのまま使います。ずれたときは「LRCのずれ」で全体を調整できます</li>': '<li>Nhập tệp <code>.lrc</code> để dùng nguyên mốc thời gian (và <code>[offset:±ms]</code>). Khi bị lệch, dùng “Dịch LRC” để dịch toàn bộ timeline</li>',
     '文字PV系の部品を使う': 'Dùng các thành phần kiểu chữ',
     'キネティックの部品を使う': 'Dùng các thành phần chuyển động chữ',
     'ホラーの演出も使う': 'Dùng cả hiệu ứng kinh dị',
@@ -251,6 +256,10 @@ BODY = {
 }
 
 UI = {
+    # 歌詞ファイルの読み込み (LRC import)
+    '`歌詞ファイルを読み込みました（${timed}行に時刻タグ）`': '`Đã nhập tệp lời bài hát (${timed} dòng có mốc thời gian)`',
+    '歌詞ファイルを読み込みました（時刻タグはありませんでした）': 'Đã nhập tệp lời bài hát (không thấy mốc thời gian)',
+    '歌詞ファイルを読み込めませんでした': 'Không đọc được tệp lời bài hát',
     'おまかせ': 'Ngẫu nhiên', 'シャッフル': 'Sắp xếp ngẫu nhiên',
     "'文字PV系の部品：使う'": "'Thành phần kiểu chữ: bật'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)'",

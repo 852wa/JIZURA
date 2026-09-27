@@ -1,6 +1,11 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    # 歌詞ファイルの読み込み (LRC import): the file label, its tooltip and the 記法 line
+    '歌詞ファイル（.lrc / .txt）': 'Lyric file (.lrc / .txt)',
+    'title="LRC（時刻タグ付き）や歌詞テキスト。歌詞欄へのドラッグ＆ドロップも可"': 'title="An LRC file with time tags, or plain lyric text. You can also drop it on the lyrics box"',
+    'LRCのずれ(秒)': 'LRC offset (s)',
+    '<li>歌詞ファイル（<code>.lrc</code>）を読み込むと、時刻タグと <code>[offset:±ms]</code> をそのまま使います。ずれたときは「LRCのずれ」で全体を調整できます</li>': '<li>Import a <code>.lrc</code> file to use its time tags (and <code>[offset:±ms]</code>) as they are. When the whole video is off, “LRC offset” shifts the timeline</li>',
     '文字PV系の部品を使う': 'Use typographic parts',
     'キネティックの部品を使う': 'Use kinetic parts',
     'ホラーの演出も使う': 'Include horror effects',
@@ -161,6 +166,10 @@ BODY = {
 }
 
 UI = {
+    # 歌詞ファイルの読み込み (LRC import)
+    '`歌詞ファイルを読み込みました（${timed}行に時刻タグ）`': '`Imported the lyric file (time tags on ${timed} lines)`',
+    '歌詞ファイルを読み込みました（時刻タグはありませんでした）': 'Imported the lyric file (no time tags found)',
+    '歌詞ファイルを読み込めませんでした': 'Could not read the lyric file',
     "'文字PV系の部品：使う'": "'Typographic parts: on'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
     "'キネティックの部品：使う'": "'Kinetic parts: on'",

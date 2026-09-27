@@ -29,7 +29,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1, lrcShift: 0 },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
   colors: { enabled: false },
@@ -52,8 +52,12 @@ J.parseLyrics = (raw) => {
     const s0 = rows[ri].trim();
     if (!s0) { if (lines.length) pendingGap = true; continue; }
     if (s0.startsWith('#')) continue;
-    const mm = s0.match(/^\[(ti|ar|al|by|offset):(.*)\]$/i);
-    if (mm) { meta[mm[1].toLowerCase()] = mm[2].trim(); continue; }
+    // ID タグ: the whole tag set of the LRC format, not only ti / ar / al / by / offset. An unhandled tag
+    // ([length:] [re:] [ve:] [au:] [lr:] …) used to be sung on screen as a lyric line, and since that line
+    // carries no time it also switched every timestamp in the file off (see allLrc in computeTiming).
+    // [interlude: 8] is not an ID tag: a colon after the interlude word still means 間奏.
+    const mm = s0.match(/^\[([A-Za-z][A-Za-z0-9_]{0,11})\s*:\s*(.*)\]$/);
+    if (mm && !/^(interlude|instrumental|inst)$/i.test(mm[1])) { meta[mm[1].toLowerCase()] = mm[2].trim(); continue; }
     let s = s0; const times = [];
     let m;
     while ((m = s.match(/^\[(\d+):(\d+(?:[.:]\d+)?)\]/))) { times.push(+m[1] * 60 + parseFloat(m[2].replace(':', '.'))); s = s.slice(m[0].length); }
@@ -168,18 +172,29 @@ J.phraseChunks = (words) => {
 };
 
 /* ---------------- timing ---------------- */
+/* LRC の [offset:±ms] (an ID tag): it moves every time in the file, and per the format "+" means the lyrics
+   appear sooner, so the value is subtracted. Anything that is not a signed number counts as absent. */
+const lrcOffsetTag = v => {
+  const m = String(v == null ? '' : v).trim().match(/^([+-]?)(\d+(?:\.\d+)?)$/);
+  return m ? (m[1] === '-' ? -1 : 1) * parseFloat(m[2]) / 1000 : 0;
+};
 J.computeTiming = (project, parsed, audio) => {
   const T = project.timing || {};
   const lines = parsed.lines;
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
   const allLrc = lines.length && lines.every(l => l.lrc != null);
+  // LRC の時刻は絶対値なので、「開始(秒)」(the lead-in of the first *estimated* line) cannot place them: while every
+  // line is tagged, 「LRCのずれ」(timing.lrcShift) shifts the whole timeline instead, and the [offset:±ms] tag adds to it.
+  // The shift is what an LRC time gets; it is reported as 0 while the tags are not in use, so the estimate below is
+  // never moved by it (the estimated lines are placed relative to each other).
+  const lrcShift = (+T.lrcShift || 0) - lrcOffsetTag(parsed.meta.offset);
   let t = T.offset ?? 0.4;
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
     if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
-    else if (allLrc) s = l.lrc;
+    else if (allLrc) s = Math.max(0, l.lrc + lrcShift);
     else {
       if (i > 0) {
         const n = [...lines[i - 1].text].length, pl = lines[i - 1];
@@ -199,7 +214,7 @@ J.computeTiming = (project, parsed, audio) => {
   });
   let duration = (ends.length ? ends[ends.length - 1] : 3) + (T.tail ?? 0.9);
   if (audio && audio.duration && T.useAudioLength !== false) duration = Math.max(audio.duration, ends.length ? ends[ends.length - 1] + 0.2 : 1);
-  return { starts, ends, duration };
+  return { starts, ends, duration, lrcMode: !!allLrc, lrcShift: allLrc ? lrcShift : 0 };
 };
 
 /* ---------------- planning ---------------- */
@@ -243,6 +258,7 @@ J.plan = (project, audio) => {
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     centerFree: !!zones, zones,
     typeset: !!project.typeset, unify: !!project.unify,
+    lrcMode: !!tm.lrcMode, lrcShift: tm.lrcShift || 0,     // 歌詞に LRC の時刻が付いている (and the shift that was applied)
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
   if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language

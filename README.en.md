@@ -97,7 +97,7 @@ The After Effects panels build all three sets too (with the same switches and th
 <details>
 <summary><h3>Lyric syntax and projects</h3></summary>
 
-Lyric syntax: `[interlude 8]` adds an 8-second instrumental part with background and decorations only (4 seconds without a number); `I remember/the dawn` makes a manual cut; `*word*` emphasizes a word; a final `!` adds a flash and shake; `lyric|note` adds small annotation text; `[01:23.45]lyric` imports an LRC timestamp; `# comment` is ignored.
+Lyric syntax: `[interlude 8]` adds an 8-second instrumental part with background and decorations only (4 seconds without a number); `I remember/the dawn` makes a manual cut; `*word*` emphasizes a word; a final `!` adds a flash and shake; `lyric|note` adds small annotation text; `[01:23.45]lyric` uses an LRC timestamp, and the file's `[offset:±ms]` is applied too (`+` means the lyrics appear sooner); `# comment` is ignored. **Lyric file** loads a `.lrc` / `.txt` file (you can also drop it on the lyrics box): a timed file replaces the hand-set line times (Ctrl+Z brings them back), and **LRC offset (s)** then shifts the whole timeline (`+` later, `−` earlier).
 
 Use **Save** and **Open** for `.jizura.json` projects. **Export for AE** creates arrangement data to import into the After Effects panel. Generated videos and images belong to their creators; rights to music and lyrics remain with their respective rights holders. Project files, lyrics and audio are handled in the browser. Google Fonts are loaded as needed. The tool is MIT licensed; see [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

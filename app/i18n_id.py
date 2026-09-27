@@ -41,6 +41,11 @@ STYLES = {
 }
 
 BODY = {
+    # 歌詞ファイルの読み込み (LRC import)
+    '歌詞ファイル（.lrc / .txt）': 'Berkas lirik (.lrc / .txt)',
+    'title="LRC（時刻タグ付き）や歌詞テキスト。歌詞欄へのドラッグ＆ドロップも可"': 'title="Berkas LRC dengan tanda waktu, atau teks lirik biasa. Bisa juga diseret ke kotak lirik"',
+    'LRCのずれ(秒)': 'Geser LRC (detik)',
+    '<li>歌詞ファイル（<code>.lrc</code>）を読み込むと、時刻タグと <code>[offset:±ms]</code> をそのまま使います。ずれたときは「LRCのずれ」で全体を調整できます</li>': '<li>Impor berkas <code>.lrc</code> untuk memakai tanda waktunya (dan <code>[offset:±ms]</code>) apa adanya. Kalau seluruh video meleset, geser timeline dengan “Geser LRC”</li>',
     '文字PV系の部品を使う': 'Pakai bagian tipografi',
     'キネティックの部品を使う': 'Pakai bagian kinetik',
     'ホラーの演出も使う': 'Sertakan efek horor',
@@ -193,6 +198,10 @@ BODY = {
 }
 
 UI = {
+    # 歌詞ファイルの読み込み (LRC import)
+    '`歌詞ファイルを読み込みました（${timed}行に時刻タグ）`': '`Berkas lirik diimpor (${timed} baris bertanda waktu)`',
+    '歌詞ファイルを読み込みました（時刻タグはありませんでした）': 'Berkas lirik diimpor (tanda waktu tidak ditemukan)',
+    '歌詞ファイルを読み込めませんでした': 'Berkas lirik tidak bisa dibaca',
     "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
     "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",

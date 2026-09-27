@@ -113,6 +113,7 @@ h3 { font-size: 11px; letter-spacing: 0.14em; color: var(--muted); margin-top: 1
 .sec { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
 .sec-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #lyrics { min-height: 150px; font-size: 14px; }
+#lyrics.drop-on { border-color: var(--amber); border-style: dashed; }
 .syntax { font-size: 12px; color: var(--muted); background: var(--raised); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
 .syntax code { font-family: var(--mono); color: var(--amber); }
 .syntax ul { margin: 0; padding-left: 16px; display: grid; gap: 3px; }
@@ -459,7 +460,7 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.9.0</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.0</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="曲名（タイトルカード・HUDに表示）" aria-label="曲名">
       <input id="songArtist" type="text" placeholder="アーティスト" aria-label="アーティスト">
@@ -495,6 +496,7 @@ button.small.primary { padding: 4px 12px; }
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <div class="row"><label class="file" title="LRC（時刻タグ付き）や歌詞テキスト。歌詞欄へのドラッグ＆ドロップも可">歌詞ファイル（.lrc / .txt）<input id="lrcFile" type="file" accept=".lrc,.txt,text/plain,text/lrc"></label></div>
         <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
@@ -504,6 +506,7 @@ button.small.primary { padding: 4px 12px; }
             <li>行末の <code>!</code> … フラッシュと揺れを入れる</li>
             <li><code>歌詞|ruby or note</code> … 注釈レイアウトの小さな文字</li>
             <li><code>[01:23.45]歌詞</code> … LRC のタイムスタンプをそのまま使用</li>
+            <li>歌詞ファイル（<code>.lrc</code>）を読み込むと、時刻タグと <code>[offset:±ms]</code> をそのまま使います。ずれたときは「LRCのずれ」で全体を調整できます</li>
             <li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>
             <li><code>#</code> で始まる行 … コメント（無視）</li>
           </ul>
@@ -526,6 +529,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
           <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
         </div>
+        <div class="row"><label class="field" id="lrcShiftField" hidden style="max-width:140px">LRCのずれ(秒)<input id="lrcShift" type="number" min="-30" max="30" step="0.05" placeholder="0"></label></div>
       </div>
 
       <div class="sec">
@@ -3396,7 +3400,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1, lrcShift: 0 },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
   colors: { enabled: false },
@@ -3419,8 +3423,12 @@ J.parseLyrics = (raw) => {
     const s0 = rows[ri].trim();
     if (!s0) { if (lines.length) pendingGap = true; continue; }
     if (s0.startsWith('#')) continue;
-    const mm = s0.match(/^\[(ti|ar|al|by|offset):(.*)\]$/i);
-    if (mm) { meta[mm[1].toLowerCase()] = mm[2].trim(); continue; }
+    // ID タグ: the whole tag set of the LRC format, not only ti / ar / al / by / offset. An unhandled tag
+    // ([length:] [re:] [ve:] [au:] [lr:] …) used to be sung on screen as a lyric line, and since that line
+    // carries no time it also switched every timestamp in the file off (see allLrc in computeTiming).
+    // [interlude: 8] is not an ID tag: a colon after the interlude word still means 間奏.
+    const mm = s0.match(/^\[([A-Za-z][A-Za-z0-9_]{0,11})\s*:\s*(.*)\]$/);
+    if (mm && !/^(interlude|instrumental|inst)$/i.test(mm[1])) { meta[mm[1].toLowerCase()] = mm[2].trim(); continue; }
     let s = s0; const times = [];
     let m;
     while ((m = s.match(/^\[(\d+):(\d+(?:[.:]\d+)?)\]/))) { times.push(+m[1] * 60 + parseFloat(m[2].replace(':', '.'))); s = s.slice(m[0].length); }
@@ -3535,18 +3543,29 @@ J.phraseChunks = (words) => {
 };
 
 /* ---------------- timing ---------------- */
+/* LRC の [offset:±ms] (an ID tag): it moves every time in the file, and per the format "+" means the lyrics
+   appear sooner, so the value is subtracted. Anything that is not a signed number counts as absent. */
+const lrcOffsetTag = v => {
+  const m = String(v == null ? '' : v).trim().match(/^([+-]?)(\d+(?:\.\d+)?)$/);
+  return m ? (m[1] === '-' ? -1 : 1) * parseFloat(m[2]) / 1000 : 0;
+};
 J.computeTiming = (project, parsed, audio) => {
   const T = project.timing || {};
   const lines = parsed.lines;
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
   const starts = [];
   const allLrc = lines.length && lines.every(l => l.lrc != null);
+  // LRC の時刻は絶対値なので、「開始(秒)」(the lead-in of the first *estimated* line) cannot place them: while every
+  // line is tagged, 「LRCのずれ」(timing.lrcShift) shifts the whole timeline instead, and the [offset:±ms] tag adds to it.
+  // The shift is what an LRC time gets; it is reported as 0 while the tags are not in use, so the estimate below is
+  // never moved by it (the estimated lines are placed relative to each other).
+  const lrcShift = (+T.lrcShift || 0) - lrcOffsetTag(parsed.meta.offset);
   let t = T.offset ?? 0.4;
   lines.forEach((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     let s;
     if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
-    else if (allLrc) s = l.lrc;
+    else if (allLrc) s = Math.max(0, l.lrc + lrcShift);
     else {
       if (i > 0) {
         const n = [...lines[i - 1].text].length, pl = lines[i - 1];
@@ -3566,7 +3585,7 @@ J.computeTiming = (project, parsed, audio) => {
   });
   let duration = (ends.length ? ends[ends.length - 1] : 3) + (T.tail ?? 0.9);
   if (audio && audio.duration && T.useAudioLength !== false) duration = Math.max(audio.duration, ends.length ? ends[ends.length - 1] + 0.2 : 1);
-  return { starts, ends, duration };
+  return { starts, ends, duration, lrcMode: !!allLrc, lrcShift: allLrc ? lrcShift : 0 };
 };
 
 /* ---------------- planning ---------------- */
@@ -3603,13 +3622,14 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.9.0', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.10.0', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     centerFree: !!zones, zones,
     typeset: !!project.typeset, unify: !!project.unify,
+    lrcMode: !!tm.lrcMode, lrcShift: tm.lrcShift || 0,     // 歌詞に LRC の時刻が付いている (and the shift that was applied)
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
   if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
@@ -36344,7 +36364,7 @@ function editLine(li, ln) {
 /* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lrcShift: S.project.timing.lrcShift || 0 });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -36353,6 +36373,8 @@ function edGo(d) {
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  if ('lrcShift' in o) S.project.timing.lrcShift = o.lrcShift || 0;
+  syncLrcShift();
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
@@ -36365,7 +36387,7 @@ function clearLyrics() {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  P.lyrics = ''; P.timing.lineTimes = {}; P.timing.lrcShift = 0; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
 }
@@ -36386,6 +36408,47 @@ async function resetAll() {
   toast('初期化しました');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
+
+/* ---------------- 歌詞ファイルの読み込み（.lrc / .txt） ---------------- */
+/* LRC の時刻が全行に付いているか: the panel shows 「LRCのずれ」 only then, and computeTiming reads the tags only then. */
+function hasLrcTiming() {
+  try { const ls = J.parseLyrics(S.project.lyrics).lines; return ls.length > 0 && ls.every(l => l.lrc != null); }
+  catch (e) { return false; }
+}
+/* 「LRCのずれ」: shown while the lyrics carry LRC times, and kept in step with the project (also after Ctrl+Z) */
+function syncLrcShift() {
+  const f = $('lrcShiftField'); if (!f) return;
+  f.hidden = !hasLrcTiming();
+  $('lrcShift').value = S.project.timing.lrcShift || 0;
+}
+/* A timed file replaces the timing as well: line times are keyed by line number, so the taps of the previous lyrics
+   would sit on the imported lines — and a hand-set time wins over the LRC tag in computeTiming. Undoable (Ctrl+Z). */
+async function loadLyricFile(f) {
+  let text = '';
+  try { text = await f.text(); } catch (e) { toast('歌詞ファイルを読み込めませんでした'); return; }
+  text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  if (!text.trim()) { toast('歌詞ファイルを読み込めませんでした'); return; }
+  const timed = J.parseLyrics(text).lines.filter(l => l.lrc != null).length;
+  pushEdit();
+  S.project.lyrics = text; $('lyrics').value = text;
+  if (timed) { S.project.timing.lineTimes = {}; S.project.timing.lrcShift = 0; }
+  fontKey = '';                                    // the imported lyrics may be in another language
+  syncUI(); replan(); flushSave(); seek(0);
+  toast(timed ? `歌詞ファイルを読み込みました（${timed}行に時刻タグ）` : '歌詞ファイルを読み込みました（時刻タグはありませんでした）');
+}
+/* 歌詞欄にファイルを落とす: the file input and a drop on the lyrics box do the same thing */
+function bindLyricDrop() {
+  const lz = $('lyrics'); if (!lz) return;
+  const mark = on => lz.classList.toggle('drop-on', !!on);
+  lz.addEventListener('dragover', e => { if (e.dataTransfer) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; mark(true); } });
+  lz.addEventListener('dragleave', () => mark(false));
+  lz.addEventListener('drop', e => {
+    mark(false);
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    e.preventDefault(); loadLyricFile(f);
+  });
+}
 
 /* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
 function exportRangeLines() {
@@ -37072,6 +37135,7 @@ function syncUI() {
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
+  syncLrcShift();
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
@@ -37098,6 +37162,9 @@ function bind() {
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  $('lrcFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadLyricFile(f); e.target.value = ''; });
+  $('lrcShift').addEventListener('change', e => { S.project.timing.lrcShift = J.clamp(parseFloat(e.target.value) || 0, -30, 30); replan(); });
+  bindLyricDrop();
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
@@ -37248,7 +37315,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);

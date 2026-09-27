@@ -719,7 +719,7 @@ function editLine(li, ln) {
 /* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lrcShift: S.project.timing.lrcShift || 0 });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -728,6 +728,8 @@ function edGo(d) {
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  if ('lrcShift' in o) S.project.timing.lrcShift = o.lrcShift || 0;
+  syncLrcShift();
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
@@ -740,7 +742,7 @@ function clearLyrics() {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  P.lyrics = ''; P.timing.lineTimes = {}; P.timing.lrcShift = 0; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
 }
@@ -761,6 +763,47 @@ async function resetAll() {
   toast('初期化しました');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
+
+/* ---------------- 歌詞ファイルの読み込み（.lrc / .txt） ---------------- */
+/* LRC の時刻が全行に付いているか: the panel shows 「LRCのずれ」 only then, and computeTiming reads the tags only then. */
+function hasLrcTiming() {
+  try { const ls = J.parseLyrics(S.project.lyrics).lines; return ls.length > 0 && ls.every(l => l.lrc != null); }
+  catch (e) { return false; }
+}
+/* 「LRCのずれ」: shown while the lyrics carry LRC times, and kept in step with the project (also after Ctrl+Z) */
+function syncLrcShift() {
+  const f = $('lrcShiftField'); if (!f) return;
+  f.hidden = !hasLrcTiming();
+  $('lrcShift').value = S.project.timing.lrcShift || 0;
+}
+/* A timed file replaces the timing as well: line times are keyed by line number, so the taps of the previous lyrics
+   would sit on the imported lines — and a hand-set time wins over the LRC tag in computeTiming. Undoable (Ctrl+Z). */
+async function loadLyricFile(f) {
+  let text = '';
+  try { text = await f.text(); } catch (e) { toast('歌詞ファイルを読み込めませんでした'); return; }
+  text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  if (!text.trim()) { toast('歌詞ファイルを読み込めませんでした'); return; }
+  const timed = J.parseLyrics(text).lines.filter(l => l.lrc != null).length;
+  pushEdit();
+  S.project.lyrics = text; $('lyrics').value = text;
+  if (timed) { S.project.timing.lineTimes = {}; S.project.timing.lrcShift = 0; }
+  fontKey = '';                                    // the imported lyrics may be in another language
+  syncUI(); replan(); flushSave(); seek(0);
+  toast(timed ? `歌詞ファイルを読み込みました（${timed}行に時刻タグ）` : '歌詞ファイルを読み込みました（時刻タグはありませんでした）');
+}
+/* 歌詞欄にファイルを落とす: the file input and a drop on the lyrics box do the same thing */
+function bindLyricDrop() {
+  const lz = $('lyrics'); if (!lz) return;
+  const mark = on => lz.classList.toggle('drop-on', !!on);
+  lz.addEventListener('dragover', e => { if (e.dataTransfer) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; mark(true); } });
+  lz.addEventListener('dragleave', () => mark(false));
+  lz.addEventListener('drop', e => {
+    mark(false);
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    e.preventDefault(); loadLyricFile(f);
+  });
+}
 
 /* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
 function exportRangeLines() {
@@ -1447,6 +1490,7 @@ function syncUI() {
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
+  syncLrcShift();
   document.querySelectorAll('.wa-toggle').forEach(el => { el.checked = S.project.wa !== false; });
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   for (const set of J.SET_ORDER) document.querySelectorAll('.' + set + '-toggle').forEach(el => { el.checked = J.setOn(S.project, set); });
@@ -1473,6 +1517,9 @@ function bind() {
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  $('lrcFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadLyricFile(f); e.target.value = ''; });
+  $('lrcShift').addEventListener('change', e => { S.project.timing.lrcShift = J.clamp(parseFloat(e.target.value) || 0, -30, 30); replan(); });
+  bindLyricDrop();
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
