@@ -6791,18 +6791,23 @@ J.txSlotOf = (cut, str, env) => {
   if (!n) return null;
   const main = norm(cut.text), note = norm(cut.note), line = norm(cut.lineText || cut.text);
   const tag = pad2((cut.line | 0) + 1);
-  const noS = 'No.' + tag, hashS = '#' + tag;
-  const tm = J.fmtTime(cut.start), live = env ? J.fmtTime(env.t) : '';
+  const noS = 'No.' + tag, hashS = '#' + tag, lyricS = 'LYRIC' + tag;
+  // HUD prints J.fmtTime(t, fps) → 00:00:12 (colon frames); layouts use J.fmtTime(t) → 00:00.12
+  const RX_TC = /\d{1,2}:\d{2}[.:]\d{2}/;
+  const times = [J.fmtTime(cut.start)];
+  if (env && env.fps) times.push(J.fmtTime(cut.start, env.fps));
+  if (env && env.t != null) { times.push(J.fmtTime(env.t)); if (env.fps) times.push(J.fmtTime(env.t, env.fps)); }
+  const tnorm = times.map(norm);
   // serial number / timecode, alone or glued together — one drawing, so the panel shows a
   // single row for the pair and strips whichever half was switched off
-  const hasNo = n.includes(noS) || n.includes(hashS);
-  const hasTm = (!!tm && n.includes(norm(tm))) || (!!live && n.includes(norm(live)));
+  const hasNo = n.includes(noS) || n.includes(hashS) || n.includes(lyricS);
+  const hasTm = tnorm.some(t => t && n.includes(t));
   if (hasNo || hasTm) {
-    if (n === noS || n === hashS) return hasTm ? 'no+time' : 'no';
-    if ((tm && n === norm(tm)) || (live && n === norm(live))) return hasNo ? 'no+time' : 'time';
-    // a glued "No.01 00:00.40" is recognised by shape, not only against the current time,
+    if (n === noS || n === hashS || /^LYRIC\d{2}\/\d{2}$/.test(n)) return hasTm ? 'no+time' : 'no';
+    if (tnorm.includes(n)) return hasNo ? 'no+time' : 'time';
+    // a glued "No.01 00:00.40" (or HUD 00:00:40) is recognised by shape, not only against the current time,
     // so the strip path works during the probe too (where there is no playhead)
-    if (hasNo && (hasTm || /\d{1,2}:\d{2}\.\d{2}/.test(n)) && n.length <= noS.length + 14) return 'no+time';
+    if (hasNo && (hasTm || RX_TC.test(n)) && n.length <= noS.length + 16) return 'no+time';
   }
   if (note && n === note) return 'note';
   if (isRomajiExact(cut, n)) return 'romaji';
@@ -6840,7 +6845,7 @@ J.txApply = (env, it) => {
     if (hit('no') && hit('time') && hNo && hTm) return null;
     if (slot === 'no+time') {
       if (hTm) {                                       // keep the serial number, drop only the timecode
-        const t = s.replace(/\d{1,2}:\d{2}\.\d{2}/g, '').replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
+        const t = s.replace(/\d{1,2}:\d{2}[.:]\d{2}/g, '').replace(/^[\s\u3000／/]+|[\s\u3000／/]+$/g, '');
         return t ? Object.assign({}, it, { text: t }) : null;
       }
       if (!hNo) return it;
