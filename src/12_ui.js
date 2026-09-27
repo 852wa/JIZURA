@@ -11,11 +11,12 @@ const ICON = {
   dice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="5.5" r="1" fill="currentColor"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
   pen: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13l1-3.5L11 2.5l2.5 2.5L6.5 12z"/><path d="M9.5 4l2.5 2.5"/></svg>',
+  cutTap: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 7.5h12"/><path d="M6 3.5v8M10 3.5v8" stroke-dasharray="1.6 1.6"/><circle cx="8" cy="13.2" r="1.5"/></svg>',
   tap: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.2" fill="currentColor"/><circle cx="8" cy="8" r="5.5"/></svg>',
   range: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v10M13 3v10"/><path d="M5.5 8h5M8.5 5.5L11 8l-2.5 2.5"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, cutTap: null, slow: false, lineEls: [], curLine: -2, curCutKey: '', editLine: null, editFocus: null };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -52,6 +53,7 @@ function refreshLoopHold(t) {
   S.loopHold = (S.loop === 'line' || S.loop === 'cut') ? loopRange(t != null ? t : S.t) : null;
 }
 function activeLoopRange() {
+  if (S.cutTap && S.cutTap.hold) return S.cutTap.hold;      // the cut tap drives its own range: run-up once, then the line
   if ((S.loop === 'line' || S.loop === 'cut') && S.loopHold) return S.loopHold;
   return loopRange(S.t);
 }
@@ -258,7 +260,7 @@ function tick(now) {
     const range = activeLoopRange();
     if (t >= range.end - 1e-3) {
       if (S.loop && !S.tap) { seek(range.start); t = range.start; }
-      else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); }
+      else { pause(); t = Math.min(t, S.plan.duration - 1e-3); if (S.tap) stopTap(); if (S.cutTap) stopCutTap(); }
     }
     S.t = t; S.need = true;
     followTlPlayhead();
@@ -488,7 +490,7 @@ function pickEnabledTech(g, opts) {
   return keys[(Math.random() * keys.length) | 0];
 }
 function rerollCurrentCut(kind) {
-  if (S.exporting || S.tap) return;
+  if (S.exporting || S.tap || S.cutTap) return;
   const cut = J.cutAt(S.plan, S.t);
   const k = lyricCutK(cut);
   if (!cut || k < 0) { toast('この位置のカットは抽選できません'); return; }
@@ -515,6 +517,20 @@ function updateCutInfo() {
   const idx = cut ? cut.index : -1;
   const li = cut ? cut.line : -1;
   if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; followLine(li); }
+  // highlight the cut currently under the playhead (pro mode renders one row per cut)
+  if (S.mode === 'pro') {
+    const ck = cut ? cut.line + ':' + cut.start.toFixed(3) : '';
+    if (ck !== S.curCutKey) {
+      S.curCutKey = ck;
+      const ol = $('lineList');
+      if (ol) ol.querySelectorAll('.cut-row.is-playing').forEach(r => r.classList.remove('is-playing'));
+      if (cut && ol) {
+        const group = S.plan.cuts.filter(x => x.line === cut.line && J.LAYOUTS[x.layout] && !J.LAYOUTS[x.layout].special);
+        const row = ol.querySelector('.cut-row[data-line="' + cut.line + '"][data-k="' + group.indexOf(cut) + '"]');
+        if (row) row.classList.add('is-playing');
+      }
+    }
+  }
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
   const el = $('cutInfo');
@@ -615,8 +631,27 @@ function fillCutPick() {
 }
 
 /* ---------------- line list ---------------- */
+/* ---------------- per-cut start time (seconds) ---------------- */
+/* Stored as a delta against the computed split (overrides[line].cutTime[k]) so the auto value stays
+   the source of truth. The line list shows one row per cut: [start seconds] [layout] [reset]. */
+function cutTimeSlot(line) {
+  const o = (S.project.overrides || {})[line] || {};
+  return o.cutTime || {};
+}
+function cutTimeSet(line, k) {
+  const t = cutTimeSlot(line);
+  return t[k] != null || t[String(k)] != null;
+}
+function setCutTime(line, k, delta) {
+  const cur = Object.assign({}, S.project.overrides[line] || {});
+  const tbl = Object.assign({}, cur.cutTime || {});
+  if (k != null && delta) tbl[k] = Math.round(J.clamp(delta, -30, 30) * 1000) / 1000; else if (k != null) delete tbl[k];
+  if (Object.keys(tbl).length) cur.cutTime = tbl; else delete cur.cutTime;
+  if (Object.keys(cur).length) S.project.overrides[line] = cur; else delete S.project.overrides[line];
+}
+
 function renderLines() {
-  const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
+  const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2; S.curCutKey = '';
   const ov = S.project.overrides, R = exportRangeLines();
   const layoutOpts = '<option value="">自動</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
   const cutOpts = '<option value="">カット 自動</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">カット ${n}</option>`).join('');
@@ -634,6 +669,7 @@ function renderLines() {
         ${ln.interlude ? '' : `<select class="ncut" aria-label="${i + 1}行目のカット数">${cutOpts}</select>`}
         ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="レイアウト指定">${layoutOpts}</select>`}
         <button class="icon ghost tapfrom" title="この行からタップで同期し直す" aria-label="${i + 1}行目からタップ">${ICON.tap}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost cuttap pro-only" title="この行の頭とカットの頭をタップで打つ" aria-label="${i + 1}行目のカットをタップ" aria-pressed="${S.cutTap && S.cutTap.line === i ? 'true' : 'false'}">${ICON.cutTap}</button>`}
         <button class="icon ghost rng" title="書き出す範囲にする（Shift+クリックで範囲を広げる）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}行目を書き出す範囲に">${ICON.range}</button>
         ${ln.interlude ? '' : `<button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>`}
         ${ln.interlude ? '' : `<button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
@@ -650,10 +686,42 @@ function renderLines() {
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
     q('.txt').addEventListener('dblclick', () => editLine(li, ln));
-    q('.edit').addEventListener('click', () => editLine(li, ln));
+    // in edit mode the whole line is editable as well; committing re-derives every cut text of the line
+    if (S.editLine === i && ln.src != null && !q('.txt-edit')) {
+      const txtEl = q('.txt');
+      if (txtEl) {
+        const srows = S.project.lyrics.replace(/\r/g, '').split('\n'), raw = srows[ln.src] || '';
+        const preL = (raw.match(LRC_PREFIX) || [''])[0], bodyL = raw.slice(preL.length).trim();
+        const wi = document.createElement('input');
+        wi.type = 'text'; wi.className = 'txt-edit'; wi.value = bodyL;
+        wi.setAttribute('aria-label', `${ln.index + 1}行目の歌詞`);
+        wi.title = '記法（/ 区切り・*強調*・行末の ! ・| 注釈・[間奏 8]）もそのまま使えます。Enter で確定、Esc で取り消し';
+        txtEl.replaceWith(wi);
+        wi.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); wi.blur(); }
+          else if (e.key === 'Escape') { e.preventDefault(); wi.dataset.cancel = '1'; wi.blur(); }
+        });
+        wi.addEventListener('change', () => {
+          if (wi.dataset.cancel) { renderLines(); return; }
+          const v = wi.value.trim();
+          if (!v || v === bodyL) { renderLines(); return; }
+          const rr = S.project.lyrics.replace(/\r/g, '').split('\n');
+          pushEdit();
+          rr[ln.src] = preL + v;
+          S.project.lyrics = rr.join('\n'); $('lyrics').value = S.project.lyrics;
+          setOv(i, { cuts: undefined });   // drop the pinned cut count: the line follows the plain split again
+          S.editFocus = null;
+          replan(); flushSave();
+        });
+      }
+    }
+    li.addEventListener('pointerdown', () => { if (S.editLine != null && S.editLine !== i) { S.editLine = null; S.editFocus = null; renderLines(); } }, true);
+    q('.edit').setAttribute('aria-pressed', String(S.editLine === i));
+    q('.edit').addEventListener('click', () => toggleEditLine(i));
     if (q('.lay')) q('.lay').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
     if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
     q('.tapfrom').addEventListener('click', () => startTap(i));
+    if (q('.cuttap')) q('.cuttap').addEventListener('click', () => (S.cutTap && S.cutTap.line === i ? stopCutTap() : startCutTap(i)));
     q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
     if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined }); replan(); seek(ln.start + 0.001); });
     if (q('.lock')) q('.lock').addEventListener('click', () => {
@@ -663,9 +731,39 @@ function renderLines() {
       replan();
     });
     const cutsEl = q('.cuts');
-    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
+    S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && (!J.LAYOUTS[c.layout].special || c.layout === 'interlude')).forEach((c, k) => {
+      // an interlude is one cut with no text: its start is the line start, so it writes timing.lineTimes
+      const special = !!(J.LAYOUTS[c.layout] && J.LAYOUTS[c.layout].special);
+      const interLine = !!ln.interlude;    // only an interlude LINE's cut is the line itself
+      const gapCut = !!c.gap;              // an interlude the planner inserted into a long gap: it has its own
+                                           // start (overrides[line].gapTime), the line's timing stays untouched
+      const manLine = !!(S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null);
       const forced = o.cutLayouts && o.cutLayouts[k];
-      const sel = document.createElement('select');
+      const row = document.createElement('span');
+      row.className = 'cut-row pro-only' + (S.cutTap && S.cutTap.line === i && S.cutTap.k === k ? ' is-next' : '');
+      row.dataset.line = i; row.dataset.k = k;
+      const tin = document.createElement('input');
+      tin.type = 'number'; tin.step = '0.01'; tin.min = '0';
+      const gapSet = !!(o.gapTime);
+      tin.className = 'cut-t mono' + ((interLine ? manLine : gapCut ? gapSet : cutTimeSet(i, k)) ? ' is-set' : '');
+      tin.value = c.start.toFixed(2);
+      tin.title = 'このカットの開始（秒）';
+      tin.setAttribute('aria-label', `${tin.title} ${k + 1}`);
+      tin.addEventListener('change', () => {
+        const want = parseFloat(tin.value);
+        if (!isFinite(want)) { renderLines(); return; }
+        pushEdit();
+        if (interLine) {                                 // an interlude line starts where its line starts
+          if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
+          S.project.timing.lineTimes[i] = Math.max(0, want);
+        } else if (gapCut) {                             // move only this interlude, not the line
+          setOv(i, { gapTime: Math.max(-0.6, +(want - (c.autoStart != null ? c.autoStart : c.start)).toFixed(3)) || undefined });
+        } else setCutTime(i, k, want - (c.autoStart != null ? c.autoStart : c.start));
+        replan();
+      });
+      let sel = null;
+      if (!special) {
+      sel = document.createElement('select');
       sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
       sel.innerHTML = layoutOpts;
       sel.value = forced || c.layout;
@@ -674,7 +772,39 @@ function renderLines() {
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
-      cutsEl.appendChild(sel);
+      }
+      // the cut text stays out of the row until the line is in edit mode, then it replaces the layout picker
+      row.appendChild(tin);
+      if (special) {
+        const lb = document.createElement('span');
+        lb.className = 'cut-inter mono'; lb.textContent = `（${J.LAYOUTS[c.layout].name}）`;
+        row.appendChild(lb);
+      } else if (S.editLine === i && !special) {    // a special cut has no text to edit
+        const tx = document.createElement('input');
+        tx.type = 'text'; tx.className = 'cut-txt mono'; tx.value = (c.utext || '').trim();
+        tx.title = CUT_TXT_TITLE; tx.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}の文字`);
+        tx.addEventListener('change', () => commitCutText(i, k, tx.value));
+        tx.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); S.editFocus = null; S.editLine = null; renderLines(); } });
+        sel.hidden = true;
+        row.appendChild(tx);
+      }
+      if (sel) row.appendChild(sel);
+      const rst = document.createElement('button');
+      rst.type = 'button'; rst.className = 'icon ghost cut-r'; rst.textContent = '↺';
+      rst.title = '自動'; rst.disabled = interLine ? !manLine : gapCut ? !gapSet : !cutTimeSet(i, k);
+      rst.addEventListener('click', () => {
+        pushEdit();
+        if (interLine) { delete S.project.timing.lineTimes[i]; }
+        else if (gapCut) setOv(i, { gapTime: undefined });
+        else setCutTime(i, k, 0);
+        replan();
+      });
+      row.appendChild(rst);
+      cutsEl.appendChild(row);
+      if (S.editFocus && S.editFocus.line === i && S.editFocus.k === k) {
+        S.editFocus = null;
+        const f = row.querySelector('.cut-txt'); if (f) { f.focus(); f.select(); }
+      }
     });
     // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
     if (S.openLine === i) li.classList.add('open');
@@ -691,6 +821,41 @@ function renderLines() {
 }
 
 /* ---------------- 行から歌詞を直す ---------------- */
+const CUT_TXT_TITLE = 'このカットの文字（/ 区切りとして歌詞に書き戻します）';
+// ✎ is a toggle: the line's cut texts become inputs until ✎ is pressed again or another line is clicked.
+// A cut text is written back into the lyric row as `/`-separated units, which the planner already reads as
+// this line's cut list, so no new storage is needed.
+function toggleEditLine(li, focusK) {
+  if (S.editLine === li) { S.editLine = null; S.editFocus = null; }
+  else { S.editLine = li; S.editFocus = focusK != null ? { line: li, k: focusK } : null; }
+  renderLines();
+  const b = document.querySelectorAll('#lineList li')[li];
+  const eb = b && b.querySelector('.edit'); if (eb) eb.setAttribute('aria-pressed', String(S.editLine === li));
+  const inp = focusK == null && S.editLine === li ? (b && b.querySelector('.cut-txt')) : null;
+  if (inp) { S.editFocus = null; inp.focus(); inp.select(); }
+}
+function commitCutText(li, k, v) {
+  const ln = S.plan && S.plan.lines[li], list = cutLineCuts(li);
+  if (!ln || ln.src == null || !list[k]) { renderLines(); return; }
+  const units = list.map(c => (c.utext || '').trim()), nv = String(v || '').trim();
+  S.editFocus = { line: li, k };
+  if (!nv || nv === units[k]) { renderLines(); return; }
+  units[k] = nv;
+  const rows = S.project.lyrics.replace(/\r/g, '').split('\n');
+  const row = rows[ln.src] || '';
+  const pre = (row.match(LRC_PREFIX) || [''])[0];
+  let body = row.slice(pre.length).trim(), note = '', impact = false;
+  const bar = body.indexOf('|');
+  if (bar >= 0) { note = body.slice(bar).replace(/^\|\s*/, ''); body = body.slice(0, bar).trim(); }
+  if (/!$/.test(body) && body.length > 1) { impact = true; body = body.slice(0, -1).trim(); }
+  const emph = ln.emph || [];
+  const out = units.map(u => { let s2 = u; for (const w of emph) if (w && s2.includes(w) && !s2.includes('*' + w + '*')) s2 = s2.replace(w, '*' + w + '*'); return s2; }).join(' / ');
+  pushEdit();
+  rows[ln.src] = pre + out + (impact ? '!' : '') + (note ? '| ' + note : '');
+  S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
+  setOv(li, { cuts: units.length });   // the cut list of this line is now explicit: keep the count in step with it
+  replan(); flushSave();
+}
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -719,7 +884,7 @@ function editLine(li, ln) {
 /* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, ov: S.project.overrides || {} });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -728,13 +893,14 @@ function edGo(d) {
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
-  if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
+  S.project.overrides = o.ov || {};
+  if ('range' in o) S.project.exportRange = o.range || null;
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
-  if (S.tap || S.exporting) return;
+  if (S.tap || S.exporting || S.cutTap) return;
   const P = S.project;
   if (!P.lyrics.trim() && !Object.keys(P.timing.lineTimes || {}).length) { $('lyrics').focus(); return; }
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
@@ -748,7 +914,7 @@ function clearLyrics() {
 let audioNameDefault = '';
 async function resetAll() {
   if (S.exporting) return;
-  if (S.tap) stopTap();
+  if (S.tap) stopTap(); if (S.cutTap) stopCutTap();
   pause();
   S.project = mergeProject(null); S.project.lyrics = '';
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
@@ -1037,7 +1203,7 @@ function lockBtn(k, anchor) {                     // lock button for effects tha
 /* ---------------- おまかせ ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 function omakase() {
-  if (S.exporting || S.tap) return;
+  if (S.exporting || S.tap || S.cutTap) return;
   remember();
   const keepE = lockedEnabled(), keepP = lockedParams();
   const r = J.omakase(S.project);
@@ -1049,7 +1215,7 @@ function omakase() {
 }
 // change just one aspect of the current look
 function rerollPart(part) {
-  if (S.exporting || S.tap) return;
+  if (S.exporting || S.tap || S.cutTap) return;
   remember();
   const P = S.project;
   let msg = '';
@@ -1399,6 +1565,7 @@ function offerShare(boxes, blob, name) {
 /* ---------------- tap sync ---------------- */
 // start from any line: playback begins a little before that line, earlier lines keep their times
 function startTap(from = 0) {
+  if (S.cutTap) stopCutTap();
   if (!S.plan.lines.length) return;
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
@@ -1431,6 +1598,99 @@ function tapBack() {                    // 1つ戻る: undo the last tap and jum
   seek(Math.max(0, S.t - 3)); if (!S.playing) play();
 }
 function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
+/* ---------------- cut tap sync ---------------- */
+/* Loop the line, then press Tab at every cut boundary: the tapped moment becomes that boundary,
+   stored as the same overrides[line].cutTime[k] delta the seconds fields write. Shares the tap panel
+   with the line tap (startTap / tapNow). */
+const CUT_TAP_HINT = 'この行をループ再生します。少し前から再生するので、最初の 1 回は行の頭（カット1）を打ってください。以降は各カットの切り替わる瞬間に <span class="kbd">Tab</span>（または <span class="kbd">Space</span>）。押し間違えたら <span class="kbd">Backspace</span>、終了は <span class="kbd">Esc</span>。';
+let tapHint0 = null;                       // the line-tap wording, restored when the cut mode ends
+// a line's tappable cuts: its text cuts plus an interlude the planner inserted into the gap after it
+const cutLineCuts = li => (S.plan ? S.plan.cuts.filter(c => c.line === li && (c.utext != null || c.gap)) : []);
+function startCutTap(li) {
+  if (!S.plan || li == null || li < 0) return;
+  const list = cutLineCuts(li);
+  if (!list.length) { toast('この行はカットが1つです'); return; }
+  if (S.tap) stopTap(); if (S.cutTap) stopCutTap();
+  pushEdit();
+  S.cutTap = { line: li, k: 0, done: [], loop0: S.loop, hold: null, snap0: edSnap() };   // k = 0 is cut 1 (lineTimes); snap0 = one undo for the whole run
+  if ($('tapHint')) { if (tapHint0 == null) tapHint0 = $('tapHint').innerHTML; $('tapHint').innerHTML = CUT_TAP_HINT; }
+  $('tapPanel').hidden = false; $('tapPanel').classList.remove('compact');
+  S.loop = 'line'; syncLoopBtn();
+  const prev = li > 0 ? S.plan.lines[li - 1] : null;
+  const t0 = li === 0 ? 0 : Math.max(0, prev.start + 0.01, list[0].start - 2.5);   // a little before the line, never before the previous one
+  const last = list[list.length - 1];
+  const lineEnd = Math.max(loopRange(list[0].start).end, last ? last.end : 0);   // reach the gap interlude too
+  S.cutTap.t0 = t0;
+  seek(t0);                                    // the run-up plays once (tick wraps only at the range end, never below its start)
+  play();
+  // the run-up plays through once; from the moment playback reaches the line, the loop is the line itself
+  S.cutTap.hold = { start: list[0].start, end: lineEnd };
+  renderLines(); updateCutTap();
+  $('tapBtn').focus();
+}
+function cutNow() {
+  if (!S.cutTap) return;
+  const line = S.cutTap.line, k = S.cutTap.k, list = cutLineCuts(line), c = list[k];
+  if (!c) { stopCutTap(); return; }
+  // only the run-up before the line is ignored; once inside the line every tap counts, so tapping slightly
+  // early for the next cut still registers (a tap's time *is* the cut's start)
+  if (S.t < list[0].start - 0.15) return;
+  const t = +S.t.toFixed(3);
+  if (c.gap) {                         // an interlude in the gap: move only it (overrides[line].gapTime)
+    const gb = c.autoStart != null ? c.autoStart : c.start;
+    const cur = S.project.overrides[line] && S.project.overrides[line].gapTime;
+    S.cutTap.done.push({ k, kind: 'gap', had: cur != null ? cur : null });
+    setOv(line, { gapTime: Math.max(-0.6, +(t - gb).toFixed(3)) || undefined });
+  } else if (k === 0) {                // cut 1 starts where the line starts (timing.lineTimes, same as the line tap)
+    const LT = S.project.timing.lineTimes;
+    S.cutTap.done.push({ k, kind: 'line', had: LT[line] });
+    LT[line] = t;
+    // later lines tapped earlier (a previous pass) must not come before this one
+    for (const j of Object.keys(LT)) if (+j > line && LT[j] <= t + 0.2) delete LT[j];
+  } else {
+    const slot = cutTimeSlot(line);
+    const raw = slot[k] != null ? slot[k] : slot[String(k)];
+    const base = c.autoStart != null ? c.autoStart : c.start;
+    S.cutTap.done.push({ k, kind: 'cut', had: raw != null ? raw : null });
+    setCutTime(line, k, t - base);
+  }
+  S.cutTap.k++;
+  replan(); autosave();
+  if (S.cutTap.k >= cutLineCuts(line).length) { toast('カットの同期が完了しました'); pause(); stopCutTap(); }
+  else updateCutTap();
+}
+function cutBack() {
+  if (!S.cutTap || !S.cutTap.done.length) return;
+  const d = S.cutTap.done.pop();
+  if (d.kind === 'line') {
+    const LT = S.project.timing.lineTimes;
+    if (d.had != null) LT[S.cutTap.line] = d.had; else delete LT[S.cutTap.line];
+  } else if (d.kind === 'gap') setOv(S.cutTap.line, { gapTime: d.had == null ? undefined : d.had });
+  else setCutTime(S.cutTap.line, d.k, d.had == null ? 0 : d.had);
+  S.cutTap.k = d.k;
+  replan(); autosave(); updateCutTap();
+  seek(Math.max(0, S.t - 3));
+  if (!S.playing) play();
+}
+function stopCutTap() {
+  if (!S.cutTap) return;
+  const loop0 = S.cutTap.loop0, snap0 = S.cutTap.snap0, ran = S.cutTap.done.length;
+  S.cutTap = null;
+  // the run edits the project directly, so keep one undo point for the whole run (Ctrl+Z after it stops)
+  if (ran && snap0 && ED.undo[ED.undo.length - 1] !== snap0) { ED.undo.push(snap0); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
+  S.loop = loop0; syncLoopBtn(); refreshLoopHold();
+  if ($('tapHint') && tapHint0 != null) $('tapHint').innerHTML = tapHint0;
+  $('tapPanel').hidden = true; $('tapPanel').classList.remove('compact');
+  renderLines();
+  replan(); flushSave();
+}
+function updateCutTap() {
+  if (!S.cutTap) return;
+  const list = cutLineCuts(S.cutTap.line), c = list[S.cutTap.k];
+  const el = $('tapLine');
+  if (el) el.textContent = c ? `${S.cutTap.k + 1}/${list.length} ${c.gap ? `（${J.LAYOUTS.interlude.name}）` : (c.text || '').trim().slice(0, 14)}` : '—';
+  const bb = $('tapBack'); if (bb) bb.disabled = !S.cutTap.done.length;
+}
 function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
@@ -1475,8 +1735,8 @@ function bind() {
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
-  $('tapBtn').addEventListener('click', tapNow);
-  $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
+  $('tapBtn').addEventListener('click', () => (S.cutTap ? cutNow() : tapNow()));
+  $('tapStop').addEventListener('click', () => { pause(); S.cutTap ? stopCutTap() : stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
   if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
@@ -1520,7 +1780,7 @@ function bind() {
   $('tlOut').addEventListener('click', () => tlZoom(1 / 1.6));
   $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
   $('btnUndoEdit').addEventListener('click', () => edGo(-1));
-  $('tapBack').addEventListener('click', tapBack);
+  $('tapBack').addEventListener('click', () => (S.cutTap ? cutBack() : tapBack()));
   bindRangeUI();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
@@ -1642,11 +1902,14 @@ function bind() {
   document.addEventListener('keydown', e => {
     const tag = (e.target && e.target.tagName) || '';
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
+    if (S.cutTap && (e.code === 'Tab' || e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); cutNow(); return; }
+    if (S.cutTap && e.code === 'Backspace' && !typing) { e.preventDefault(); cutBack(); return; }
+    if (S.cutTap && e.code === 'Escape') { pause(); stopCutTap(); return; }
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
-    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
-    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap && !S.cutTap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap && !S.cutTap) { e.preventDefault(); edGo(1); return; }
     if (typing || $('termsDlg').open || $('resetDlg').open) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
@@ -1714,7 +1977,7 @@ function tourPlace(tg) {
   Object.assign(bub.style, { top: top + 'px', left: left + 'px' });
 }
 function tourStart() {
-  if (S.exporting || S.tap) return;
+  if (S.exporting || S.tap || S.cutTap) return;
   if (S.mode !== 'easy') setMode('easy');
   pause(); tourShow(0);
 }

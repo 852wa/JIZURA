@@ -251,6 +251,18 @@ BODY = {
 }
 
 UI = {
+  '`${i + 1}行目 カット${k + 1}の文字`': '`dòng ${i + 1} cảnh ${k + 1} chữ`',
+  'このカットの文字（/ 区切りとして歌詞に書き戻します）': 'Chữ của cắt cảnh (ghi lại vào lời với dấu /)',
+
+
+  'の文字': ' chữ',
+  'この行の頭とカットの頭をタップで打つ': 'Chạm ở đầu dòng và đầu mỗi cắt cảnh',
+  '行目のカットをタップ': ' chạm cắt cảnh',
+  'このカットの開始（秒）': 'Bắt đầu cắt cảnh này (giây)',
+  'この行をループ再生します。少し前から再生するので、最初の 1 回は行の頭（カット1）を打ってください。以降は各カットの切り替わる瞬間に <span class="kbd">Tab</span>（または <span class="kbd">Space</span>）。押し間違えたら <span class="kbd">Backspace</span>、終了は <span class="kbd">Esc</span>。': 'Dòng này phát lặp lại và bắt đầu sớm hơn một chút. Lần đầu là đầu dòng (cắt cảnh 1), sau đó nhấn <span class="kbd">Tab</span> (hoặc <span class="kbd">Space</span>) khi cắt cảnh đổi. <span class="kbd">Backspace</span> để lùi, <span class="kbd">Esc</span> để kết thúc.',
+  'この行はカットが1つです': 'Dòng này chỉ có một cắt cảnh',
+  'カットの同期が完了しました': 'Đồng bộ cắt cảnh xong',
+
     'おまかせ': 'Ngẫu nhiên', 'シャッフル': 'Sắp xếp ngẫu nhiên',
     "'文字PV系の部品：使う'": "'Thành phần kiểu chữ: bật'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)'",
