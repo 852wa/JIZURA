@@ -1405,7 +1405,6 @@ function startTap(from = 0) {
   S.tap = { i: from, from, done: [] };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
-  $('tapPanel').classList.remove('compact');
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   seek(t0); play(); updateTap();
@@ -1435,7 +1434,6 @@ function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
-  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
