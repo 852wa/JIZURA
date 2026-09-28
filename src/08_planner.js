@@ -147,7 +147,8 @@ J.chunkText = (text) => {
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
+    // a one-letter Latin word ("a", "I", "é") joins with a space instead of gluing onto the previous word
+    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (/[A-Za-z\u00c0-\u024f]/.test(out[i]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
 };

@@ -99,14 +99,20 @@ const unionBB = (a, b) => !a ? b : !b ? a : { x0: Math.min(a.x0, b.x0), y0: Math
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
   if (arr.length <= maxPer) return text;
+  // mostly-Latin text breaks only between words, and a single long word stays whole
+  const glyphs = arr.filter(c => !/\s/.test(c)).length;
+  const latin = (text.match(/[A-Za-z\u00c0-\u024f]/g) || []).length > 0.6 * glyphs;
+  if (latin && !/\s/.test(text.trim())) return text;
   const nLines = Math.ceil(arr.length / maxPer);
   const per = arr.length / nLines;
   const out = []; let start = 0;
   for (let l = 1; l < nLines; l++) {
-    let target = Math.round(per * l), best = target, bestScore = -1;
-    for (let k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
+    let target = Math.round(per * l), best = target, bestScore = latin ? -1e9 : -1;
+    const lo = latin ? start + 1 : Math.max(start + 1, target - 3), hi = latin ? arr.length - 1 : Math.min(arr.length - 1, target + 3);
+    for (let k = lo; k <= hi; k++) {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
+      if (latin && a !== ' ' && b !== ' ') s -= 50;
       if (J.isHira(a) && !J.isHira(b)) s += 3;
       if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
