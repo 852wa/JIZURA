@@ -103,7 +103,8 @@ J.splitLines = (text, maxPer) => {
   const glyphs = arr.filter(c => !/\s/.test(c)).length;
   const latin = (text.match(/[A-Za-z\u00c0-\u024f]/g) || []).length > 0.6 * glyphs;
   if (latin && !/\s/.test(text.trim())) return text;
-  const nLines = Math.ceil(arr.length / maxPer);
+  // it also never gets more lines than it has words
+  const nLines = latin ? Math.min(Math.ceil(arr.length / maxPer), text.trim().split(/\s+/).length) : Math.ceil(arr.length / maxPer);
   const per = arr.length / nLines;
   const out = []; let start = 0;
   for (let l = 1; l < nLines; l++) {
@@ -118,6 +119,8 @@ J.splitLines = (text, maxPer) => {
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }
+    // no space left to break at: the rest stays on this line rather than cutting a word
+    if (latin && arr[best - 1] !== ' ' && arr[best] !== ' ') break;
     out.push(arr.slice(start, best).join('').trim()); start = best;
   }
   out.push(arr.slice(start).join('').trim());
