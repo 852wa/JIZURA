@@ -617,7 +617,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Kosongkan bagian tengah (untuk karakter)<small>Untuk menaruh karakter atau video lain di tengah: teks dan efeknya ditempatkan di kiri / kanan pada layar lebar dan di atas / bawah pada layar tegak, bergantian per baris. Latar dan efek layar tetap memenuhi seluruh bingkai (pratinjau menandai area kosong dengan garis putus-putus)</small></span></label>
           <label class="row center-dir" hidden>Pada layar tegak<select class="centerDirSel" aria-label="Cara membagi pada layar tegak"><option value="tb">Atas / bawah</option><option value="lr">Kiri / kanan</option></select></label>
           <div class="rng-row"><span class="rng-lab">Rentang ekspor</span><select class="rngFrom" aria-label="Baris pertama rentang ekspor"></select><span class="muted">〜</span><select class="rngTo" aria-label="Baris terakhir rentang ekspor"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Ekspor MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Ekspor MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pilih file tujuan dulu; video langsung ditulis ke file itu. Gunakan jika lagu panjang atau 1080p ke atas gagal karena memori browser tidak cukup (Chrome / Edge)">Untuk video besar (simpan langsung ke file)</button><button id="eLrc" class="ghost" title="Ekspor waktu mulai baris sebagai berkas LRC (termasuk ketukan dan waktu manual)">Ekspor LRC</button></div>
           <button class="terms-open linkish">Hak atas video yang diekspor</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Bagikan / simpan</button>
@@ -704,6 +704,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnPNG">PNG berurutan (ZIP)</button>
           <button id="btnPNGA">PNG transparan (ZIP, tanpa latar)</button>
           <button id="btnPNGL" title="Ekspor PNG transparan ke dua folder: back/ (grafik latar dan dekorasi di belakang lirik) serta front/ (lirik, dekorasi, dan efek ghost). Efek layar diterapkan ke keduanya, jadi tumpuk front di atas back untuk mendapatkan tampilan normal.">Layer PNG transparan (ZIP)</button>
+          <button id="btnLrc" title="Ekspor waktu mulai baris sebagai berkas LRC (termasuk ketukan dan waktu manual)">Ekspor LRC</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>Bagikan / simpan</button>
@@ -5436,6 +5437,38 @@ J.planForAE = (plan, project, range) => {
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
   }
   return clean;
+};
+
+/* LRC: one [mm:ss.xx] tag per plan line, using the times tap / type / LRC / auto already resolved */
+J.lrcStamp = t => {
+  let cs = Math.round(Math.max(0, +t || 0) * 100);
+  const m = Math.floor(cs / 6000); cs -= m * 6000;
+  const s = Math.floor(cs / 100); cs %= 100;
+  return '[' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0') + ']';
+};
+J.toLrc = (project, plan, rangeLines) => {
+  const lines = (plan && plan.lines) || [];
+  const from = rangeLines && rangeLines.from >= 0 ? rangeLines.from : 0;
+  const to = rangeLines && rangeLines.to >= 0 ? rangeLines.to : lines.length - 1;
+  const rawRows = String((project && project.lyrics) || '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const ti = ((project && project.title) || '').trim();
+  const ar = ((project && project.artist) || '').trim();
+  if (ti) out.push('[ti:' + ti + ']');
+  if (ar) out.push('[ar:' + ar + ']');
+  if (ti || ar) out.push('');
+  for (let i = from; i <= to; i++) {
+    const ln = lines[i];
+    if (!ln) continue;
+    let body;
+    if (ln.interlude) body = ln.secs ? '[interlude ' + ln.secs + ']' : '[interlude]';
+    else if (ln.src != null && rawRows[ln.src] != null) {
+      body = String(rawRows[ln.src]).replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+    } else body = (ln.text || '').trim();
+    if (!body) continue;
+    out.push(J.lrcStamp(ln.start) + body);
+  }
+  return out.join('\n') + (out.length ? '\n' : '');
 };
 })();
 
@@ -37501,6 +37534,15 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  const exportLrc = () => {
+    if (!S.plan || !S.plan.lines.length) { toast('Tidak ada lirik untuk diekspor'); return; }
+    const text = J.toLrc(S.project, S.plan, exportRangeLines());
+    if (!text.trim()) { toast('Tidak ada lirik untuk diekspor'); return; }
+    J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    toast('LRC diekspor');
+  };
+  $('btnLrc').addEventListener('click', exportLrc);
+  $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {

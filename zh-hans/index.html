@@ -617,7 +617,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>留出画面中央（放角色用）<small>以在中央叠加角色等素材为前提，把文字与特效放在横屏画面的左右、竖屏画面的上下，并逐行交替。背景与画面效果仍覆盖整个画面（预览会用虚线标出留空的范围）</small></span></label>
           <label class="row center-dir" hidden>竖屏时<select class="centerDirSel" aria-label="竖屏画面的分法"><option value="tb">分成上下</option><option value="lr">分成左右</option></select></label>
           <div class="rng-row"><span class="rng-lab">导出范围</span><select class="rngFrom" aria-label="导出范围的第一行"></select><span class="muted">～</span><select class="rngTo" aria-label="导出范围的最后一行"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">导出 MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="先选择要保存的文件，直接写入该文件。长歌曲或 1080p 以上因浏览器内存不足而失败时使用（Chrome / Edge）">大型视频用（直接保存为文件）</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">导出 MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="先选择要保存的文件，直接写入该文件。长歌曲或 1080p 以上因浏览器内存不足而失败时使用（Chrome / Edge）">大型视频用（直接保存为文件）</button><button id="eLrc" class="ghost" title="将各行开始时间导出为 LRC（含点按与手动时间）">导出 LRC</button></div>
           <button class="terms-open linkish">关于导出视频的权利</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>分享并保存</button>
@@ -704,6 +704,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnPNG">PNG 序列（ZIP）</button>
           <button id="btnPNGA">透明 PNG（ZIP，无背景）</button>
           <button id="btnPNGL" title="将后景（背景图形和歌词后方的装饰）与前景（歌词及其装饰、重影）分别导出为透明 PNG，放在两个文件夹（back / front）中。全屏效果会同时作用于两者，把前景叠在后景上即可还原正常画面">透明 PNG 前景／后景（ZIP）</button>
+          <button id="btnLrc" title="将各行开始时间导出为 LRC（含点按与手动时间）">导出 LRC</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>分享并保存</button>
@@ -5436,6 +5437,38 @@ J.planForAE = (plan, project, range) => {
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
   }
   return clean;
+};
+
+/* LRC: one [mm:ss.xx] tag per plan line, using the times tap / type / LRC / auto already resolved */
+J.lrcStamp = t => {
+  let cs = Math.round(Math.max(0, +t || 0) * 100);
+  const m = Math.floor(cs / 6000); cs -= m * 6000;
+  const s = Math.floor(cs / 100); cs %= 100;
+  return '[' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0') + ']';
+};
+J.toLrc = (project, plan, rangeLines) => {
+  const lines = (plan && plan.lines) || [];
+  const from = rangeLines && rangeLines.from >= 0 ? rangeLines.from : 0;
+  const to = rangeLines && rangeLines.to >= 0 ? rangeLines.to : lines.length - 1;
+  const rawRows = String((project && project.lyrics) || '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const ti = ((project && project.title) || '').trim();
+  const ar = ((project && project.artist) || '').trim();
+  if (ti) out.push('[ti:' + ti + ']');
+  if (ar) out.push('[ar:' + ar + ']');
+  if (ti || ar) out.push('');
+  for (let i = from; i <= to; i++) {
+    const ln = lines[i];
+    if (!ln) continue;
+    let body;
+    if (ln.interlude) body = ln.secs ? '[interlude ' + ln.secs + ']' : '[interlude]';
+    else if (ln.src != null && rawRows[ln.src] != null) {
+      body = String(rawRows[ln.src]).replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+    } else body = (ln.text || '').trim();
+    if (!body) continue;
+    out.push(J.lrcStamp(ln.start) + body);
+  }
+  return out.join('\n') + (out.length ? '\n' : '');
 };
 })();
 
@@ -37689,6 +37722,15 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  const exportLrc = () => {
+    if (!S.plan || !S.plan.lines.length) { toast('没有可导出的歌词'); return; }
+    const text = J.toLrc(S.project, S.plan, exportRangeLines());
+    if (!text.trim()) { toast('没有可导出的歌词'); return; }
+    J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    toast('已导出 LRC');
+  };
+  $('btnLrc').addEventListener('click', exportLrc);
+  $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {

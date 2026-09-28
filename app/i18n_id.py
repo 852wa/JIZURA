@@ -41,6 +41,8 @@ STYLES = {
 }
 
 BODY = {
+    'LRC を書き出す': 'Ekspor LRC',
+    '行の開始時間を LRC ファイルで書き出す（タップや手動の時間を含む）': 'Ekspor waktu mulai baris sebagai berkas LRC (termasuk ketukan dan waktu manual)',
     '文字PV系の部品を使う': 'Pakai bagian tipografi',
     'キネティックの部品を使う': 'Pakai bagian kinetik',
     'ホラーの演出も使う': 'Sertakan efek horor',
@@ -193,6 +195,8 @@ BODY = {
 }
 
 UI = {
+    "'書き出す歌詞がありません'": "'Tidak ada lirik untuk diekspor'",
+    "'LRC を書き出しました'": "'LRC diekspor'",
     "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
     "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",

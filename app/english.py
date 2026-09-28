@@ -1,6 +1,8 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    'LRC を書き出す': 'Export LRC',
+    '行の開始時間を LRC ファイルで書き出す（タップや手動の時間を含む）': 'Export line start times as an LRC file (includes tapped and typed times)',
     '文字PV系の部品を使う': 'Use typographic parts',
     'キネティックの部品を使う': 'Use kinetic parts',
     'ホラーの演出も使う': 'Include horror effects',
@@ -161,6 +163,8 @@ BODY = {
 }
 
 UI = {
+    "'書き出す歌詞がありません'": "'No lyrics to export'",
+    "'LRC を書き出しました'": "'Exported LRC'",
     "'文字PV系の部品：使う'": "'Typographic parts: on'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
     "'キネティックの部品：使う'": "'Kinetic parts: on'",

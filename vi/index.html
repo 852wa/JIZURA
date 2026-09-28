@@ -617,7 +617,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Để trống giữa (cho nhân vật)<small>Để đặt nhân vật hoặc video khác ở giữa: chữ và hiệu ứng đặt trái / phải trên khung ngang và trên / dưới trên khung dọc, xen kẽ từng dòng. Nền và hiệu ứng màn hình vẫn phủ toàn khung (xem trước đánh dấu vùng trống bằng nét đứt)</small></span></label>
           <label class="row center-dir" hidden>Khi khung dọc<select class="centerDirSel" aria-label="Cách chia trên khung dọc"><option value="tb">Trên / dưới</option><option value="lr">Trái / phải</option></select></label>
           <div class="rng-row"><span class="rng-lab">Xuất phạm vi</span><select class="rngFrom" aria-label="Hàng đầu tiên của phạm vi xuất"></select><span class="muted">〜</span><select class="rngTo" aria-label="Hàng cuối cùng của phạm vi xuất"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Xuất MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">Đối với video lớn (lưu trực tiếp vào tệp)</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Xuất MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Chọn tệp đích trước; video được ghi trực tiếp vào tệp đó. Chức năng này được sử dụng khi các bài hát dài hoặc 1080p trở lên không thành công do không đủ bộ nhớ trình duyệt (Chrome / Edge)">Đối với video lớn (lưu trực tiếp vào tệp)</button><button id="eLrc" class="ghost" title="Xuất thời điểm bắt đầu câu thành tệp LRC (gồm chạm và thời gian nhập tay)">Xuất LRC</button></div>
           <button class="terms-open linkish">Về quyền đối với video đã xuất</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Chia sẻ / lưu</button>
@@ -704,6 +704,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnPNG">PNG theo thứ tự(ZIP)</button>
           <button id="btnPNGA">PNG trong suốt (ZIP, không có nền)</button>
           <button id="btnPNGL" title="Xuất PNG trong suốt sang hai thư mục: back/ (đồ họa, nền và trang trí phía sau lời bài hát) và front/ (lời bài hát, trang trí và hiệu ứng). Hiệu ứng màn hình được áp dụng cho cả hai, vì vậy hãy xếp chồng mặt trước lên trên mặt sau để có giao diện bình thường.">Lớp PNG trong suốt (trước/sau, ZIP)</button>
+          <button id="btnLrc" title="Xuất thời điểm bắt đầu câu thành tệp LRC (gồm chạm và thời gian nhập tay)">Xuất LRC</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>Chia sẻ / lưu</button>
@@ -5436,6 +5437,38 @@ J.planForAE = (plan, project, range) => {
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
   }
   return clean;
+};
+
+/* LRC: one [mm:ss.xx] tag per plan line, using the times tap / type / LRC / auto already resolved */
+J.lrcStamp = t => {
+  let cs = Math.round(Math.max(0, +t || 0) * 100);
+  const m = Math.floor(cs / 6000); cs -= m * 6000;
+  const s = Math.floor(cs / 100); cs %= 100;
+  return '[' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0') + ']';
+};
+J.toLrc = (project, plan, rangeLines) => {
+  const lines = (plan && plan.lines) || [];
+  const from = rangeLines && rangeLines.from >= 0 ? rangeLines.from : 0;
+  const to = rangeLines && rangeLines.to >= 0 ? rangeLines.to : lines.length - 1;
+  const rawRows = String((project && project.lyrics) || '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const ti = ((project && project.title) || '').trim();
+  const ar = ((project && project.artist) || '').trim();
+  if (ti) out.push('[ti:' + ti + ']');
+  if (ar) out.push('[ar:' + ar + ']');
+  if (ti || ar) out.push('');
+  for (let i = from; i <= to; i++) {
+    const ln = lines[i];
+    if (!ln) continue;
+    let body;
+    if (ln.interlude) body = ln.secs ? '[interlude ' + ln.secs + ']' : '[interlude]';
+    else if (ln.src != null && rawRows[ln.src] != null) {
+      body = String(rawRows[ln.src]).replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+    } else body = (ln.text || '').trim();
+    if (!body) continue;
+    out.push(J.lrcStamp(ln.start) + body);
+  }
+  return out.join('\n') + (out.length ? '\n' : '');
 };
 })();
 
@@ -37501,6 +37534,15 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  const exportLrc = () => {
+    if (!S.plan || !S.plan.lines.length) { toast('Không có lời để xuất'); return; }
+    const text = J.toLrc(S.project, S.plan, exportRangeLines());
+    if (!text.trim()) { toast('Không có lời để xuất'); return; }
+    J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    toast('Đã xuất LRC');
+  };
+  $('btnLrc').addEventListener('click', exportLrc);
+  $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {

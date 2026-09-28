@@ -42,6 +42,8 @@ STYLES = {
 }
 
 BODY = {
+    'LRC を書き出す': 'Xuất LRC',
+    '行の開始時間を LRC ファイルで書き出す（タップや手動の時間を含む）': 'Xuất thời điểm bắt đầu câu thành tệp LRC (gồm chạm và thời gian nhập tay)',
     '文字PV系の部品を使う': 'Dùng các thành phần kiểu chữ',
     'キネティックの部品を使う': 'Dùng các thành phần chuyển động chữ',
     'ホラーの演出も使う': 'Dùng cả hiệu ứng kinh dị',
@@ -251,6 +253,8 @@ BODY = {
 }
 
 UI = {
+    "'書き出す歌詞がありません'": "'Không có lời để xuất'",
+    "'LRC を書き出しました'": "'Đã xuất LRC'",
     'おまかせ': 'Ngẫu nhiên', 'シャッフル': 'Sắp xếp ngẫu nhiên',
     "'文字PV系の部品：使う'": "'Thành phần kiểu chữ: bật'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)'",

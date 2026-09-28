@@ -307,4 +307,36 @@ J.planForAE = (plan, project, range) => {
   }
   return clean;
 };
+
+/* LRC: one [mm:ss.xx] tag per plan line, using the times tap / type / LRC / auto already resolved */
+J.lrcStamp = t => {
+  let cs = Math.round(Math.max(0, +t || 0) * 100);
+  const m = Math.floor(cs / 6000); cs -= m * 6000;
+  const s = Math.floor(cs / 100); cs %= 100;
+  return '[' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0') + ']';
+};
+J.toLrc = (project, plan, rangeLines) => {
+  const lines = (plan && plan.lines) || [];
+  const from = rangeLines && rangeLines.from >= 0 ? rangeLines.from : 0;
+  const to = rangeLines && rangeLines.to >= 0 ? rangeLines.to : lines.length - 1;
+  const rawRows = String((project && project.lyrics) || '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const ti = ((project && project.title) || '').trim();
+  const ar = ((project && project.artist) || '').trim();
+  if (ti) out.push('[ti:' + ti + ']');
+  if (ar) out.push('[ar:' + ar + ']');
+  if (ti || ar) out.push('');
+  for (let i = from; i <= to; i++) {
+    const ln = lines[i];
+    if (!ln) continue;
+    let body;
+    if (ln.interlude) body = ln.secs ? '[interlude ' + ln.secs + ']' : '[interlude]';
+    else if (ln.src != null && rawRows[ln.src] != null) {
+      body = String(rawRows[ln.src]).replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+    } else body = (ln.text || '').trim();
+    if (!body) continue;
+    out.push(J.lrcStamp(ln.start) + body);
+  }
+  return out.join('\n') + (out.length ? '\n' : '');
+};
 })();
