@@ -472,7 +472,7 @@ button.small.primary { padding: 4px 12px; }
       <button id="modePro" aria-pressed="true" title="모든 설정 표시">고급</button>
       <button id="btnTour" class="ghost tour-btn" title="간단 모드 사용법을 안내합니다" aria-label="사용법 안내">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko" selected>한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
+    <label class="lang-switch"><span class="sr-only">언어</span><select aria-label="언어" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko" selected>한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
     <div class="acts">
       <label class="file" title="저장한 프로젝트(.json) 열기">열기<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="프로젝트를 .json으로 저장">저장</button>
@@ -35880,6 +35880,7 @@ J.randomOk = (project, g, k) => {
   'use strict';
   const titles = {
     layout: {
+      title: '타이틀 카드', interlude: '간주',
       vcols: '세로쓰기', marquee: '흐르는 배너', tile: '타일 텍스트',
       huge: '초대형 텍스트', gloss: '주석', diag: '대각선 띠',
       stack: '잔상 스택', lowerThird: '로어 서드', corners: '양쪽 모서리',
@@ -36092,7 +36093,7 @@ J.randomOk = (project, g, k) => {
     .replace(/_/g, ' ').split(' ').map(part => acronym[part.toLowerCase()] || words[part.toLowerCase()] || part).join(' ');
 
   for (const group of J.GROUP_KEYS) {
-    for (const key of J.order(group)) {
+    for (const key of Object.keys(J.registry(group))) {
       const item = J.registry(group)[key];
       if (item) item.name = (titles[group] || {})[key] || label(key);
     }
@@ -36138,7 +36139,7 @@ J.randomOk = (project, g, k) => {
 /* part sets (horror / typo / kinetic): names, styles and the horror mood */
 (() => {
   'use strict';
-  const P = {"layout": {"hrFlashlight": "손전등", "hrDoorGap": "문틈", "hrWallScrawl": "벽의 낙서", "hrCctv": "감시 모니터", "hrOuija": "분신사바 판", "hrMissing": "실종 전단", "hrWrongOne": "한 글자만 이상해", "hrRisingDark": "어둠에서 기어 나옴", "hrRedacted": "검게 칠한 문서", "hrStaticTv": "지직거리는 TV", "hrSpiritPhoto": "심령사진", "hrWrongShadow": "어긋난 그림자", "tyKeySplit": "큰 글자 끼우기", "tyCropGiant": "잘린 거대 글자", "tyCross": "십자 조판", "tyBandHide": "띠 가림", "tyRuby": "루비 주석", "tyBaseline": "괘선 조판", "tyScaleSteps": "크기 계단", "tyJustify": "폭 맞춤", "tyIndexTable": "글자 목록표", "tySplitType": "절단 글자", "tyErode": "깎이는 반복", "tyVRuler": "세로 눈금", "tyFullTrack": "전폭 자간", "tyStatCount": "글자 수 표시", "tyMargin": "여백", "tyRotBlock": "회전 블록", "tySquare": "정방형 조판", "tyLineFocus": "행 속 강조", "knSlamStack": "쌓아 올리기", "knQuarterTurn": "직각 턴", "knSwapCenter": "단어 교체", "knZoomDive": "글자 속으로", "knFlowSnap": "흐르다 정렬", "knSeesaw": "시소", "knTypeSlam": "타자→슬램", "knRhythmCuts": "단어 컷 분할", "knPathRide": "루프 궤도", "knGearWords": "톱니바퀴", "knCollide": "정면충돌", "knTumble": "굴러오는 상자", "knReflow": "세로에서 가로로", "knPadGrid": "패드"}, "enter": {"hrBlinkCreep": "눈 깜빡할 사이", "hrJumpScare": "튀어나옴", "hrUneasy": "불안한 등장", "hrVhold": "수직 동기", "hrMirrorSnap": "거울 글자", "hrManifest": "떠오르다", "hrClawReveal": "손톱자국에서", "tyKeyFirst": "핵심 글자 먼저", "tyLineWipe": "행별 와이프", "tyZoomOne": "한 글자씩 확대", "tyUnderLift": "밑줄에서 서기", "tyDotGrow": "점에서 글자로", "tyBracketOpen": "괄호 열기", "tyRetype": "다시 입력", "tyRubyDrop": "루비에서", "knWordSlam": "단어 슬램", "knTypeToSlam": "타자→확대", "knReplaceIn": "교체 등장", "knHingeDrop": "경첩 내리기", "knLoopIn": "루프 등장", "knPushIn": "밀어 넣기", "knInertia": "급브레이크", "knWordSpin": "단어 회전", "knDiveIn": "앞에서 단어", "knStretchOut": "쭉 늘이기"}, "exit": {"hrPulledDown": "끌려 들어감", "hrLookBack": "한 글자 남음", "hrTurnAway": "등을 돌림", "hrShiver": "떨다 사라짐", "hrSwallow": "어둠에 삼켜짐", "hrFlickerDie": "깜빡이며 꺼짐", "hrDrain": "뚝뚝 흘러내림", "tyStrike": "줄 그어 지우기", "tyToDot": "점으로 돌아가기", "tyLineFeed": "줄바꿈 이송", "tyBracketClose": "괄호 닫기", "tyToIndex": "번호로 변신", "tyKeyLast": "한 글자 남기기", "tyUnderSink": "밑줄로 가라앉기", "tyFoldVert": "세로쓰기로 접기", "knWordKick": "단어 차내기", "knPushOut": "밀어내기 퇴장", "knDiveGlyph": "한 글자로 돌진", "knLaunch": "급발진", "knWordBlink": "한 단어씩 소등", "knCloseGap": "좁히며 사라짐", "knJumpCutOut": "점프 컷", "knStackAway": "쌓아서 떨구기"}, "hold": {"hrTwitch": "경련", "hrStare": "응시하는 글자", "hrLagOne": "늦는 한 글자", "hrFlickerLight": "꺼져가는 불빛", "tyKeyPulse": "한 글자 고동", "tyReadCursor": "읽기 커서", "tyOutlineBlink": "윤곽 깜빡임", "tyTrackStep": "자간 단계", "knWordPulse": "단어 박자", "knCounterRock": "역회전 흔들기", "knWordRide": "단어 파도타기", "knTickShift": "째깍 이동", "knBeatLean": "박자에 기울기", "knGapBreath": "단어 간격 호흡"}, "decor": {"hrScratches": "할퀸 자국", "hrSigil": "마법진", "hrWatchEye": "지켜보는 눈", "hrStaticPatch": "노이즈 조각", "hrDustBeam": "빛줄기와 먼지", "hrDrips": "흘러내리는 먹", "hrCracks": "금 간 자국", "tyColophon": "판권", "tyRunningHead": "머리말과 쪽번호", "tyGlyphBody": "글자 몸 분할선", "tyTextRule": "문자 괘선", "tyTypeScale": "크기 견본", "tyBigPunct": "큰 인용 부호", "knSpeedTrail": "따라오는 스피드 선", "knWordTicks": "단어 카운터"}, "treat": {"hrInkBleed": "번지고 흐름", "hrEroded": "풍화", "hrRedact": "검게 칠하기", "hrDoubleExp": "이중 노출", "tyHollowKey": "한 글자 윤곽", "tyHeadRules": "위아래 괘선", "tyHeadBig": "첫 글자 강조", "tyIndexSup": "글자 번호", "knWordScale": "크고 작은 단어", "knWordPlate": "단어별 반전"}, "bg": {"hrFailingLamp": "꺼져가는 등", "hrCorridor": "어두운 복도", "hrMold": "번지는 얼룩", "hrDeadTrees": "고목의 숲"}, "cam": {"hrNervous": "겁먹은 핸드헬드", "hrDutchSnap": "갑작스런 기울기", "knReadPan": "읽기 따라가기", "knTiltKick": "단어마다 기울기", "knCardFlip": "카드 뒤집기", "knShearKick": "시어 킥", "knJumpCut": "점프 컷", "knRushIn": "멀리서 돌진"}, "fx": {"hrSubliminal": "서브리미널", "hrSignalLoss": "신호 끊김", "hrPassingShadow": "스쳐가는 그림자"}, "trans": {"hrStaticCut": "노이즈 컷", "hrBlink": "눈 깜빡임", "tyRuleWipe": "괘선 와이프", "tyGridCells": "칸 채우기", "knCornerSwing": "코너 스윙", "knStutterCut": "스터터 컷", "knStripSlam": "띠 슬램"}};
+  const P = {"layout": {"hrFlashlight": "손전등", "hrDoorGap": "문틈", "hrWallScrawl": "벽의 낙서", "hrCctv": "감시 모니터", "hrOuija": "분신사바 판", "hrMissing": "실종 전단", "hrWrongOne": "한 글자만 이상해", "hrRisingDark": "어둠에서 기어 나옴", "hrRedacted": "검게 칠한 문서", "hrStaticTv": "지직거리는 TV", "hrSpiritPhoto": "심령사진", "hrWrongShadow": "어긋난 그림자", "tyKeySplit": "큰 글자 끼우기", "tyCropGiant": "잘린 거대 글자", "tyCross": "십자 조판", "tyBandHide": "띠 가림", "tyRuby": "루비 주석", "tyBaseline": "괘선 조판", "tyScaleSteps": "크기 계단", "tyJustify": "폭 맞춤", "tyIndexTable": "글자 목록표", "tySplitType": "절단 글자", "tyErode": "깎이는 반복", "tyVRuler": "세로 눈금", "tyFullTrack": "전폭 자간", "tyStatCount": "글자 수 표시", "tyMargin": "여백", "tyRotBlock": "회전 블록", "tySquare": "정방형 조판", "tyLineFocus": "행 속 강조", "knSlamStack": "쌓아 올리기", "knQuarterTurn": "직각 턴", "knSwapCenter": "단어 교체", "knZoomDive": "글자 속으로", "knFlowSnap": "흐르다 정렬", "knSeesaw": "시소", "knTypeSlam": "타자→슬램", "knRhythmCuts": "단어 컷 분할", "knPathRide": "루프 궤도", "knGearWords": "톱니바퀴", "knCollide": "정면충돌", "knTumble": "굴러오는 상자", "knReflow": "세로에서 가로로", "knPadGrid": "패드"}, "enter": {"hrBlinkCreep": "눈 깜빡할 사이", "hrJumpScare": "튀어나옴", "hrUneasy": "불안한 등장", "hrVhold": "수직 동기", "hrMirrorSnap": "거울 글자", "hrManifest": "떠오르다", "hrClawReveal": "손톱자국에서", "tyKeyFirst": "핵심 글자 먼저", "tyLineWipe": "행별 와이프", "tyZoomOne": "한 글자씩 확대", "tyUnderLift": "밑줄에서 서기", "tyDotGrow": "점에서 글자로", "tyBracketOpen": "괄호 열기", "tyRetype": "다시 입력", "tyRubyDrop": "루비에서", "knWordSlam": "단어 슬램", "knTypeToSlam": "타자→확대", "knReplaceIn": "교체 등장", "knHingeDrop": "경첩 내리기", "knLoopIn": "루프 등장", "knPushIn": "밀어 넣기", "knInertia": "급브레이크", "knWordSpin": "단어 회전", "knDiveIn": "앞에서 나타나는 단어", "knStretchOut": "쭉 늘이기"}, "exit": {"hrPulledDown": "끌려 들어감", "hrLookBack": "한 글자 남음", "hrTurnAway": "등을 돌림", "hrShiver": "떨다 사라짐", "hrSwallow": "어둠에 삼켜짐", "hrFlickerDie": "깜빡이며 꺼짐", "hrDrain": "뚝뚝 흘러내림", "tyStrike": "줄 그어 지우기", "tyToDot": "점으로 돌아가기", "tyLineFeed": "줄바꿈 이송", "tyBracketClose": "괄호 닫기", "tyToIndex": "번호로 변신", "tyKeyLast": "한 글자 남기기", "tyUnderSink": "밑줄로 가라앉기", "tyFoldVert": "세로쓰기로 접기", "knWordKick": "단어 차내기", "knPushOut": "밀어내기 퇴장", "knDiveGlyph": "한 글자로 돌진", "knLaunch": "급발진", "knWordBlink": "한 단어씩 소등", "knCloseGap": "좁히며 사라짐", "knJumpCutOut": "점프 컷", "knStackAway": "쌓아서 떨구기"}, "hold": {"hrTwitch": "경련", "hrStare": "응시하는 글자", "hrLagOne": "늦는 한 글자", "hrFlickerLight": "꺼져가는 불빛", "tyKeyPulse": "한 글자 고동", "tyReadCursor": "읽기 커서", "tyOutlineBlink": "윤곽 깜빡임", "tyTrackStep": "자간 단계", "knWordPulse": "단어 박자", "knCounterRock": "역회전 흔들기", "knWordRide": "단어 파도타기", "knTickShift": "째깍 이동", "knBeatLean": "박자에 기울기", "knGapBreath": "단어 간격 호흡"}, "decor": {"hrScratches": "할퀸 자국", "hrSigil": "마법진", "hrWatchEye": "지켜보는 눈", "hrStaticPatch": "노이즈 조각", "hrDustBeam": "빛줄기와 먼지", "hrDrips": "흘러내리는 먹", "hrCracks": "금 간 자국", "tyColophon": "판권", "tyRunningHead": "머리글과 쪽번호", "tyGlyphBody": "글자 몸 분할선", "tyTextRule": "문자 괘선", "tyTypeScale": "크기 견본", "tyBigPunct": "큰 인용 부호", "knSpeedTrail": "따라오는 스피드 선", "knWordTicks": "단어 카운터"}, "treat": {"hrInkBleed": "번지고 흐름", "hrEroded": "풍화", "hrRedact": "검게 칠하기", "hrDoubleExp": "이중 노출", "tyHollowKey": "한 글자 윤곽", "tyHeadRules": "위아래 괘선", "tyHeadBig": "첫 글자 강조", "tyIndexSup": "글자 번호", "knWordScale": "크고 작은 단어", "knWordPlate": "단어별 반전"}, "bg": {"hrFailingLamp": "꺼져가는 등", "hrCorridor": "어두운 복도", "hrMold": "번지는 얼룩", "hrDeadTrees": "고목의 숲"}, "cam": {"hrNervous": "겁먹은 핸드헬드", "hrDutchSnap": "갑작스런 기울기", "knReadPan": "읽기 따라가기", "knTiltKick": "단어마다 기울기", "knCardFlip": "카드 뒤집기", "knShearKick": "시어 킥", "knJumpCut": "점프 컷", "knRushIn": "멀리서 돌진"}, "fx": {"hrSubliminal": "서브리미널", "hrSignalLoss": "신호 끊김", "hrPassingShadow": "스쳐가는 그림자"}, "trans": {"hrStaticCut": "노이즈 컷", "hrBlink": "눈 깜빡임", "tyRuleWipe": "괘선 와이프", "tyGridCells": "칸 채우기", "knCornerSwing": "코너 스윙", "knStutterCut": "스터터 컷", "knStripSlam": "띠 슬램"}};
   for (const [g, m] of Object.entries(P)) { const t = J.registry(g) || {}; for (const [k, n] of Object.entries(m)) if (t[k]) t[k].name = n; }
   const S = {"hrRuin": ["폐허", "바랜 녹회색, 녹슨 빨강, 울리는 명조체"], "hrNightRec": ["심야의 녹화", "새까만 화면, 감시 영상의 흰색과 빨강, 노이즈"], "hrCurse": ["저주의 편지", "누렇게 바랜 편지지, 흐려진 먹, 검붉은 글씨"]};
   for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
@@ -36817,7 +36818,7 @@ function renderLines() {
       sel.innerHTML = layoutOpts;
       sel.value = forced || c.layout;
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sel.setAttribute('aria-label', `${i + 1}행 ${k + 1}번째 컷의 레이아웃`);
+      sel.setAttribute('aria-label', `${i + 1}번째 줄, ${k + 1}번째 컷의 레이아웃`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
@@ -36877,7 +36878,7 @@ function edGo(d) {
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? '되돌렸습니다' : '다시 실줄했습니다');
+  toast(d < 0 ? '되돌렸습니다' : '다시 실행했습니다');
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
@@ -37112,9 +37113,9 @@ function updateHist() {
            this does not pin one technique in place.
    params: freezes the current value of the effects sliders, on-twos and flash.
    Neither goes into J.plan: they only bracket the places that rewrite the look (Randomize, mood reroll). */
-const LOCK_TITLE_ON = '랜덤/셔플에서 바뀌지 않게 잠그기';
-const TECH_LOCK_ON = '랜덤이 이 그룹의 ON/OFF 선택을 바꾸지 않게 잠그기';
-const LOCK_TITLE_OFF = '잠김 — 클릭하면 해제';
+const LOCK_TITLE_ON = '자동 생성·셔플 시 바뀌지 않도록 잠그기';
+const TECH_LOCK_ON = '자동 생성 시 이 분류의 켜짐/꺼짐 설정을 유지하도록 잠그기';
+const LOCK_TITLE_OFF = '잠금 상태. 클릭하면 해제';
 function locksOf() {
   const P = S.project;
   if (!P.locks) P.locks = { tech: {}, params: {} };
@@ -37827,7 +37828,7 @@ async function loadAudioFile(f, restored) {
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
   { t: () => $('lyrics'), title: '1. 가사 입력', text: '1줄이 1프레이즈가 됩니다. 빈 줄은 잠깐 쉬어 가고, [간주 8]이라고 쓰면 8초 간주(배경과 장식만)가 됩니다.' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 음원 불러오기', text: 'mp3 등을 불러오면 비트를 감지해 컷 전환을 맞춥니다. 음원이 없어도 만들 수 있습니다. ‘탭으로 싱크’로 각 줄의 시작을 맞출 수도 있습니다.' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 음원 불러오기', text: 'mp3 등을 불러오면 비트를 감지해 컷 전환을 맞춥니다. 음원이 없어도 만들 수 있습니다. ‘탭으로 동기화’로 각 줄의 시작을 맞출 수도 있습니다.' },
   { t: () => $('btnOmakaseBig'), title: '3. 자동으로 만들기', text: '스타일·분위기·움직임·배색·구성을 한 번에 정합니다. 누를 때마다 다른 안이 나오고, ‘◀ 이전’으로 돌아갈 수 있습니다.' },
   { t: () => $('btnPlay'), title: '4. 재생해서 확인하기', text: '재생해서 확인해 보세요. 아래 타임라인에서는 줄 구분을 드래그해서 옮길 수 있습니다(＋−로 확대/축소).' },
   { t: () => $('lineList'), title: '5. 마음에 걸리는 줄만 고치기', text: '줄마다 가사 고치기(✎), 컷 수 정하기, 이 줄부터 탭 다시 하기(◎), 이 줄만 다시 만들기(주사위)를 할 수 있습니다.' },
