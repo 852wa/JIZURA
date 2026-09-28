@@ -73,6 +73,14 @@ for code, _, _, _ in i18n.EDITIONS:
     if code in i18n.MODULES and not i18n.has_module(code):
         print('skip', code, '(no translation module yet)'); continue
     build(code)
+# sitemap.xml for search engines: every edition, with its language alternates
+import datetime
+alts = ''.join(f'\n    <xhtml:link rel="alternate" hreflang="{hl}" href="{i18n.BASE}{f + "/" if f else ""}"/>' for c, f, hl, _ in i18n.EDITIONS)
+alts += f'\n    <xhtml:link rel="alternate" hreflang="x-default" href="{i18n.BASE}"/>'
+today = datetime.date.today().isoformat()
+urls = ''.join(f'\n  <url>\n    <loc>{i18n.BASE}{f + "/" if f else ""}</loc>\n    <lastmod>{today}</lastmod>{alts}\n  </url>' for c, f, hl, _ in i18n.EDITIONS)
+open('sitemap.xml', 'w', encoding='utf-8').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' + urls + '\n</urlset>\n')
+print('sitemap.xml', len(i18n.EDITIONS), 'urls')
 if '--dev' in sys.argv:
     os.makedirs('dev/www', exist_ok=True)
     open('dev/www/jizura.js', 'w', encoding='utf-8').write(js)
