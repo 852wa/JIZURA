@@ -75,7 +75,8 @@ function splitK(text, k, force) {
     words.forEach((w, i) => { const l = J.glyphCount(w); if (l > bl && !hard.has(w)) { bl = l; bi = i; } });
     if (bi < 0) break;
     let parts = latin ? [words[bi]] : split2(words[bi]);
-    if (parts.length < 2 && force && words.length < force) parts = split2(words[bi], true);
+    // a Latin word is never cut in two ("truth" must not become "tr" + "uth"), not even to fill a forced count
+    if (parts.length < 2 && force && words.length < force && !latin) parts = split2(words[bi], true);
     if (parts.length < 2) { hard.add(words[bi]); continue; }
     words.splice(bi, 1, ...parts);
   }
@@ -1409,7 +1410,10 @@ reg('panels', {
     const k = ch.length;
     const m = u * 0.05, g = u * 0.028, lw = Math.max(3, u * 0.0065);
     const out = tout(env);
-    // panel boundaries along the reading axis (landscape: right→left columns, portrait: top→bottom rows)
+    // Latin lyrics read left→right, so their landscape columns run left→right too
+    // (only when the cut is mostly Latin: a Japanese line with one English word keeps the right→left order)
+    const all = ch.join(''), ltr = !port && (all.match(/[A-Za-z\u00c0-\u024f]/g) || []).length > 0.6 * J.glyphCount(all);
+    // panel boundaries along the reading axis (landscape: right→left columns, or left→right for Latin; portrait: top→bottom rows)
     const L = port ? H - 2 * m : W - 2 * m, cross = port ? W - 2 * m : H - 2 * m;
     const ws = ch.map((c, i) => Math.sqrt(J.glyphCount(c) + 2) * (p.widths[i % 3] || 1));
     const tot = ws.reduce((a, b) => a + b, 0);
@@ -1422,7 +1426,7 @@ reg('panels', {
       const a0 = a + (i === 0 ? 0 : g / 2), b0 = b - (i === k - 1 ? 0 : g / 2);
       // in reading-axis coordinates: (t, c) with c in [0, cross]
       const q = [[a0 + sa, 0], [b0 + sb, 0], [b0 - sb, cross], [a0 - sa, cross]];
-      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : [W - m - t, m + c]));
+      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : ltr ? [m + t, m + c] : [W - m - t, m + c]));
       poly.along = Math.min((b0 + sb) - (a0 + sa), (b0 - sb) - (a0 - sa));
       polys.push(poly);
     }
@@ -1434,8 +1438,8 @@ reg('panels', {
       // wipe along the reading direction
       let rev = poly;
       if (e < 1) {
-        const xs = poly.map(q => (port ? q[1] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
-        rev = clipHalf(poly, port ? 0 : -1, port ? 1 : 0, lo + (hi - lo) * e);
+        const xs = poly.map(q => (port ? q[1] : ltr ? q[0] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
+        rev = clipHalf(poly, port ? 0 : ltr ? 1 : -1, port ? 1 : 0, lo + (hi - lo) * e);
       }
       if (rev.length < 3) return;
       const accent = i === p.acc % k;

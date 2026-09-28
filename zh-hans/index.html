@@ -2547,19 +2547,28 @@ const unionBB = (a, b) => !a ? b : !b ? a : { x0: Math.min(a.x0, b.x0), y0: Math
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
   if (arr.length <= maxPer) return text;
-  const nLines = Math.ceil(arr.length / maxPer);
+  // mostly-Latin text breaks only between words, and a single long word stays whole
+  const glyphs = arr.filter(c => !/\s/.test(c)).length;
+  const latin = (text.match(/[A-Za-z\u00c0-\u024f]/g) || []).length > 0.6 * glyphs;
+  if (latin && !/\s/.test(text.trim())) return text;
+  // it also never gets more lines than it has words
+  const nLines = latin ? Math.min(Math.ceil(arr.length / maxPer), text.trim().split(/\s+/).length) : Math.ceil(arr.length / maxPer);
   const per = arr.length / nLines;
   const out = []; let start = 0;
   for (let l = 1; l < nLines; l++) {
-    let target = Math.round(per * l), best = target, bestScore = -1;
-    for (let k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
+    let target = Math.round(per * l), best = target, bestScore = latin ? -1e9 : -1;
+    const lo = latin ? start + 1 : Math.max(start + 1, target - 3), hi = latin ? arr.length - 1 : Math.min(arr.length - 1, target + 3);
+    for (let k = lo; k <= hi; k++) {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
+      if (latin && a !== ' ' && b !== ' ') s -= 50;
       if (J.isHira(a) && !J.isHira(b)) s += 3;
       if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }
+    // no space left to break at: the rest stays on this line rather than cutting a word
+    if (latin && arr[best - 1] !== ' ' && arr[best] !== ' ') break;
     out.push(arr.slice(start, best).join('').trim()); start = best;
   }
   out.push(arr.slice(start).join('').trim());
@@ -3514,7 +3523,8 @@ J.chunkText = (text) => {
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
+    // a one-letter Latin word ("a", "I", "é") joins with a space instead of gluing onto the previous word
+    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (/[A-Za-z\u00c0-\u024f]/.test(out[i]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
 };
@@ -20819,7 +20829,8 @@ function splitK(text, k, force) {
     words.forEach((w, i) => { const l = J.glyphCount(w); if (l > bl && !hard.has(w)) { bl = l; bi = i; } });
     if (bi < 0) break;
     let parts = latin ? [words[bi]] : split2(words[bi]);
-    if (parts.length < 2 && force && words.length < force) parts = split2(words[bi], true);
+    // a Latin word is never cut in two ("truth" must not become "tr" + "uth"), not even to fill a forced count
+    if (parts.length < 2 && force && words.length < force && !latin) parts = split2(words[bi], true);
     if (parts.length < 2) { hard.add(words[bi]); continue; }
     words.splice(bi, 1, ...parts);
   }
@@ -22153,7 +22164,10 @@ reg('panels', {
     const k = ch.length;
     const m = u * 0.05, g = u * 0.028, lw = Math.max(3, u * 0.0065);
     const out = tout(env);
-    // panel boundaries along the reading axis (landscape: right→left columns, portrait: top→bottom rows)
+    // Latin lyrics read left→right, so their landscape columns run left→right too
+    // (only when the cut is mostly Latin: a Japanese line with one English word keeps the right→left order)
+    const all = ch.join(''), ltr = !port && (all.match(/[A-Za-z\u00c0-\u024f]/g) || []).length > 0.6 * J.glyphCount(all);
+    // panel boundaries along the reading axis (landscape: right→left columns, or left→right for Latin; portrait: top→bottom rows)
     const L = port ? H - 2 * m : W - 2 * m, cross = port ? W - 2 * m : H - 2 * m;
     const ws = ch.map((c, i) => Math.sqrt(J.glyphCount(c) + 2) * (p.widths[i % 3] || 1));
     const tot = ws.reduce((a, b) => a + b, 0);
@@ -22166,7 +22180,7 @@ reg('panels', {
       const a0 = a + (i === 0 ? 0 : g / 2), b0 = b - (i === k - 1 ? 0 : g / 2);
       // in reading-axis coordinates: (t, c) with c in [0, cross]
       const q = [[a0 + sa, 0], [b0 + sb, 0], [b0 - sb, cross], [a0 - sa, cross]];
-      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : [W - m - t, m + c]));
+      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : ltr ? [m + t, m + c] : [W - m - t, m + c]));
       poly.along = Math.min((b0 + sb) - (a0 + sa), (b0 - sb) - (a0 - sa));
       polys.push(poly);
     }
@@ -22178,8 +22192,8 @@ reg('panels', {
       // wipe along the reading direction
       let rev = poly;
       if (e < 1) {
-        const xs = poly.map(q => (port ? q[1] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
-        rev = clipHalf(poly, port ? 0 : -1, port ? 1 : 0, lo + (hi - lo) * e);
+        const xs = poly.map(q => (port ? q[1] : ltr ? q[0] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
+        rev = clipHalf(poly, port ? 0 : ltr ? 1 : -1, port ? 1 : 0, lo + (hi - lo) * e);
       }
       if (rev.length < 3) return;
       const accent = i === p.acc % k;
