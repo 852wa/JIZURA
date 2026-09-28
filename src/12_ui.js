@@ -744,6 +744,24 @@ function clearLyrics() {
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
 }
+async function loadLrcFile(f) {
+  if (S.tap || S.exporting || S.cutTap) return;
+  let raw;
+  try { raw = await f.text(); } catch (e) { toast('LRC を読み込めませんでした'); return; }
+  raw = String(raw || '').replace(/^\uFEFF/, '').replace(/\r/g, '');
+  const parsed = J.parseLyrics(raw);
+  if (!parsed.lines.length) { toast('LRC を読み込めませんでした'); return; }
+  const P = S.project;
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = raw; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  if (parsed.meta.ti && !String(P.title || '').trim()) P.title = parsed.meta.ti;
+  if (parsed.meta.ar && !String(P.artist || '').trim()) P.artist = parsed.meta.ar;
+  $('lyrics').value = raw;
+  syncUI(); replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('LRC を読み込みました');
+}
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
 async function resetAll() {
@@ -1625,7 +1643,21 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '@VERSION@' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  const exportLrc = () => {
+    if (!S.plan || !S.plan.lines.length) { toast('書き出す歌詞がありません'); return; }
+    const text = J.toLrc(S.project, S.plan, exportRangeLines());
+    if (!text.trim()) { toast('書き出す歌詞がありません'); return; }
+    J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    toast('LRC を書き出しました');
+  };
+  $('btnLrc').addEventListener('click', exportLrc);
+  $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
+  $('btnLoadLrc').addEventListener('click', () => { if (!(S.tap || S.exporting || S.cutTap)) $('fileLrc').click(); });
+  $('fileLrc').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (f) await loadLrcFile(f);
+  });
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');

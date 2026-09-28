@@ -493,7 +493,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="tapStop" class="ghost">Finish</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
+        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><button id="btnLoadLrc" class="ghost small" title="Load an LRC file into the lyrics (timestamps become line start times)">Load LRC</button><input id="fileLrc" type="file" accept=".lrc,text/plain" hidden><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
         <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -617,7 +617,7 @@ button.small.primary { padding: 4px 12px; }
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span></label>
           <label class="row center-dir" hidden>On tall frames<select class="centerDirSel" aria-label="Split on tall frames"><option value="tb">Top / bottom</option><option value="lr">Left / right</option></select></label>
           <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button><button id="eLrc" class="ghost" title="Export line start times as an LRC file (includes tapped and typed times)">Export LRC</button></div>
           <button class="terms-open linkish">Rights to exported videos</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Share / save</button>
@@ -704,6 +704,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnPNG">PNG sequence (ZIP)</button>
           <button id="btnPNGA">Transparent PNG (ZIP)</button>
           <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
+          <button id="btnLrc" title="Export line start times as an LRC file (includes tapped and typed times)">Export LRC</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>Share / save</button>
@@ -5436,6 +5437,38 @@ J.planForAE = (plan, project, range) => {
     clean.duration = sp.dur; clean.audioOffset = t0; clean.range = { t0, t1 };
   }
   return clean;
+};
+
+/* LRC: one [mm:ss.xx] tag per plan line, using the times tap / type / LRC / auto already resolved */
+J.lrcStamp = t => {
+  let cs = Math.round(Math.max(0, +t || 0) * 100);
+  const m = Math.floor(cs / 6000); cs -= m * 6000;
+  const s = Math.floor(cs / 100); cs %= 100;
+  return '[' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0') + ']';
+};
+J.toLrc = (project, plan, rangeLines) => {
+  const lines = (plan && plan.lines) || [];
+  const from = rangeLines && rangeLines.from >= 0 ? rangeLines.from : 0;
+  const to = rangeLines && rangeLines.to >= 0 ? rangeLines.to : lines.length - 1;
+  const rawRows = String((project && project.lyrics) || '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const ti = ((project && project.title) || '').trim();
+  const ar = ((project && project.artist) || '').trim();
+  if (ti) out.push('[ti:' + ti + ']');
+  if (ar) out.push('[ar:' + ar + ']');
+  if (ti || ar) out.push('');
+  for (let i = from; i <= to; i++) {
+    const ln = lines[i];
+    if (!ln) continue;
+    let body;
+    if (ln.interlude) body = ln.secs ? '[interlude ' + ln.secs + ']' : '[interlude]';
+    else if (ln.src != null && rawRows[ln.src] != null) {
+      body = String(rawRows[ln.src]).replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+    } else body = (ln.text || '').trim();
+    if (!body) continue;
+    out.push(J.lrcStamp(ln.start) + body);
+  }
+  return out.join('\n') + (out.length ? '\n' : '');
 };
 })();
 
@@ -36612,6 +36645,24 @@ function clearLyrics() {
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('Lyrics cleared (Undo or Ctrl+Z brings them back)');
 }
+async function loadLrcFile(f) {
+  if (S.tap || S.exporting || S.cutTap) return;
+  let raw;
+  try { raw = await f.text(); } catch (e) { toast('Could not load LRC'); return; }
+  raw = String(raw || '').replace(/^\uFEFF/, '').replace(/\r/g, '');
+  const parsed = J.parseLyrics(raw);
+  if (!parsed.lines.length) { toast('Could not load LRC'); return; }
+  const P = S.project;
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = raw; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  if (parsed.meta.ti && !String(P.title || '').trim()) P.title = parsed.meta.ti;
+  if (parsed.meta.ar && !String(P.artist || '').trim()) P.artist = parsed.meta.ar;
+  $('lyrics').value = raw;
+  syncUI(); replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('Loaded LRC');
+}
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
 async function resetAll() {
@@ -37493,7 +37544,21 @@ function bind() {
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  const exportLrc = () => {
+    if (!S.plan || !S.plan.lines.length) { toast('No lyrics to export'); return; }
+    const text = J.toLrc(S.project, S.plan, exportRangeLines());
+    if (!text.trim()) { toast('No lyrics to export'); return; }
+    J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    toast('Exported LRC');
+  };
+  $('btnLrc').addEventListener('click', exportLrc);
+  $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
+  $('btnLoadLrc').addEventListener('click', () => { if (!(S.tap || S.exporting || S.cutTap)) $('fileLrc').click(); });
+  $('fileLrc').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (f) await loadLrcFile(f);
+  });
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
