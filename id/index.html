@@ -493,7 +493,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="tapStop" class="ghost">Selesai</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
+        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><button id="btnLoadLrc" class="ghost small" title="Muat berkas LRC ke lirik (stempel waktu jadi waktu mulai baris)">Muat LRC</button><input id="fileLrc" type="file" accept=".lrc,text/plain" hidden><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lirik (satu frasa per baris)"></textarea>
         <label class="lang-row">Bahasa lirik<select id="lyricLang"><option value="auto">Deteksi otomatis</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -36653,6 +36653,24 @@ function clearLyrics() {
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('Lirik dihapus (Urungkan atau Ctrl+Z untuk mengembalikan)');
 }
+async function loadLrcFile(f) {
+  if (S.tap || S.exporting || S.cutTap) return;
+  let raw;
+  try { raw = await f.text(); } catch (e) { toast('Tidak bisa memuat LRC'); return; }
+  raw = String(raw || '').replace(/^\uFEFF/, '').replace(/\r/g, '');
+  const parsed = J.parseLyrics(raw);
+  if (!parsed.lines.length) { toast('Tidak bisa memuat LRC'); return; }
+  const P = S.project;
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = raw; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  if (parsed.meta.ti && !String(P.title || '').trim()) P.title = parsed.meta.ti;
+  if (parsed.meta.ar && !String(P.artist || '').trim()) P.artist = parsed.meta.ar;
+  $('lyrics').value = raw;
+  syncUI(); replan(); flushSave(); updateEditBtns(); seek(0);
+  toast('LRC dimuat');
+}
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
 async function resetAll() {
@@ -37544,6 +37562,11 @@ function bind() {
   $('btnLrc').addEventListener('click', exportLrc);
   $('eLrc').addEventListener('click', exportLrc);
   audioNameDefault = $('audioName').textContent;
+  $('btnLoadLrc').addEventListener('click', () => { if (!(S.tap || S.exporting || S.cutTap)) $('fileLrc').click(); });
+  $('fileLrc').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (f) await loadLrcFile(f);
+  });
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');

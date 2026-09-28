@@ -3,6 +3,8 @@
 BODY = {
     'LRC を書き出す': 'Export LRC',
     '行の開始時間を LRC ファイルで書き出す（タップや手動の時間を含む）': 'Export line start times as an LRC file (includes tapped and typed times)',
+    'LRC を読み込む': 'Load LRC',
+    'LRC ファイルを歌詞に読み込む（タイムスタンプを行の開始時間として使います）': 'Load an LRC file into the lyrics (timestamps become line start times)',
     '文字PV系の部品を使う': 'Use typographic parts',
     'キネティックの部品を使う': 'Use kinetic parts',
     'ホラーの演出も使う': 'Include horror effects',
@@ -165,6 +167,8 @@ BODY = {
 UI = {
     "'書き出す歌詞がありません'": "'No lyrics to export'",
     "'LRC を書き出しました'": "'Exported LRC'",
+    "'LRC を読み込みました'": "'Loaded LRC'",
+    "'LRC を読み込めませんでした'": "'Could not load LRC'",
     "'文字PV系の部品：使う'": "'Typographic parts: on'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
     "'キネティックの部品：使う'": "'Kinetic parts: on'",
