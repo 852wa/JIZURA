@@ -104,6 +104,9 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 /* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
 .col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
 .tapbox.compact .hint { display: none; }
+.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; }
+.tapbox .tap-count { margin-left: 10px; font: 700 22px/1 var(--mono); color: var(--amber); }
 /* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
 @media (max-width: 1180px), (max-height: 619px) {
   .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
@@ -292,6 +295,8 @@ dialog.terms .reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; 
 button.danger { background: #c9433a; border-color: #c9433a; color: #fff; font-weight: 700; }
 button.danger:hover { background: #dd5146; }
 .sec-btns { display: inline-flex; gap: 6px; }
+.sec-btns label.file.small { padding: 3px 8px; font-size: 12px; border-style: solid; border-color: transparent; background: transparent; color: var(--fg, inherit); }
+.sec-btns label.file.small:hover { border-color: var(--amber); }
 dialog.terms::backdrop { background: rgba(6,6,8,0.66); }
 dialog.terms h2 { font-size: 15px; letter-spacing: 0.08em; color: var(--text); margin: 0 0 14px; }
 dialog.terms p { margin: 0 0 10px; line-height: 1.75; font-size: 13px; }
@@ -421,3 +426,14 @@ button.small.primary { padding: 4px 12px; }
 #app.is-mobile .transport input[type=range] { flex: 1 1 40px; min-width: 0; }
 #app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
 #app.is-mobile button.play { flex: none; width: 44px; }
+
+/* カットの開始時刻 (詳細モード) and the cut playing now */
+.ln .cut-pair { display: inline-flex; min-width: 0; gap: 2px; align-items: center; }
+.ln .cut-time { width: 64px; font-size: 11px; padding: 2px 4px; }
+.ln .cut-time.is-forced { border-color: var(--amber); }
+.ln .cut-lay.playing { box-shadow: 0 0 0 2px var(--amber); }
+.theme-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-top: 8px; }
+.theme-row select { min-width: 9em; }
+#app.is-easy .ln .cut-pair { display: none; }
+.outbtns.out-png { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 8px; }
+.outbtns.out-png button { padding: 8px 10px; font-size: 12px; }

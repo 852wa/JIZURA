@@ -40,6 +40,18 @@ STYLES = {
 }
 
 BODY = {
+    '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '一行有多个镜头时，在镜头切换的瞬间按 <span class="kbd">Tab</span>，也能对齐该行各镜头的开始时间。',
+    '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>速度 <select id="tapRate" aria-label="点按时的播放速度">',
+    '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 倒数</label>',
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="读取 LRC 文件（带时间标记的歌词），替换当前歌词（可用“撤销”恢复）">读取 LRC',
+    'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="一键随机的主题" title="一键随机的主题（选择后，会在该方向内随机生成，并打开所需的部件开关）"',
+    '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">主题<select class="themeSel" aria-label="一键随机的主题">',
+    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">不指定主题</option><option value="lyricpv">文字PV</option><option value="kinetic">动态文字</option><option value="wa">和风</option><option value="horror">恐怖</option><option value="pop">流行</option><option value="ballad">抒情</option>',
+    '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">选择后，会在该方向内随机生成</small>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="导出带有每行开始时间的歌词（.lrc）。选择了导出范围时，只导出那些行，时间从视频开头算起">导出 LRC</button>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="导出带有每行开始时间的歌词（.lrc）。选择了导出范围时，只导出那些行，时间从视频开头算起">歌词（LRC）</button>',
+    'title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す': 'title="不绘制版式或装饰附带的“No.01”“#03”等数字（歌词中的数字保留）"><input id="fxHideNo" type="checkbox"> 隐藏装饰数字',
+    'title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す': 'title="不绘制版式或装饰附带的“00:12.34”等时间（歌词中的时间保留）"><input id="fxHideTime" type="checkbox"> 隐藏装饰时间',
     '文字PV系の部品を使う': '使用文字排版部件',
     'キネティックの部品を使う': '使用动态文字部件',
     'ホラーの演出も使う': '也使用恐怖特效',
@@ -200,6 +212,16 @@ BODY = {
 }
 
 UI = {
+    '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`为了不与前后的行交换顺序，已设为 ${w.toFixed(2)} 秒`',
+    "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'此镜头的开始时间（手动）。清空即恢复自动'",
+    "'このカットの開始時刻（自動）。数値を入れると固定します'": "'此镜头的开始时间（自动）。输入数值即可固定'",
+    '`${i + 1}行目 カット${k + 1}の開始時刻`': '`第 ${i + 1} 行 镜头 ${k + 1} 的开始时间`',
+    '`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`': '`已读取 LRC（带时间 ${n} 行 · 可用“撤销”恢复）`',
+    "'この行にはこれ以上カットがありません'": "'这一行没有更多镜头'",
+    "'LRC ファイルが大きすぎます'": "'LRC 文件太大'",
+    "'LRC を読み込めませんでした'": "'无法读取 LRC'",
+    "'今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？'": "'要用 LRC 的内容替换当前歌词吗？（各行时间、指定和导出范围也会清除。可用“撤销”恢复）'",
+    '`おまかせ（${themeName(th)}）：`': '`一键随机（${themeName(th)}）：`',
     "'文字PV系の部品：使う'": "'文字排版部件：使用'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'文字排版部件：不使用（一键生成与随机重排不会选用）'",
     "'キネティックの部品：使う'": "'动态文字部件：使用'",
@@ -352,6 +374,8 @@ UI = {
 }
 
 EXPORT = {
+    "'[間奏]'": "'[间奏]'",
+    "'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください'": "'ZIP 过大（最多 65,535 个文件 · 4GB）。请缩小导出范围或降低分辨率'",
     "'エンコーダーが出力を返しません'": "'编码器没有输出'",
     "'（ソフトウェア）'": "'（软件）'",
     "'ファイルを仕上げ中'": "'正在完成文件'",

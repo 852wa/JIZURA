@@ -42,6 +42,18 @@ STYLES = {
 }
 
 BODY = {
+    '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Nếu một dòng có nhiều cảnh, nhấn <span class="kbd">Tab</span> đúng lúc cảnh cần chuyển để canh cả thời điểm bắt đầu các cảnh của dòng đó.',
+    '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Tốc độ <select id="tapRate" aria-label="Tốc độ phát khi nhấn">',
+    '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Đếm ngược</label>',
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="Mở tệp LRC (lời có dấu thời gian) để thay lời hiện tại (Hoàn tác để lấy lại)">Mở LRC',
+    'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="Chủ đề ngẫu nhiên" title="Chủ đề ngẫu nhiên (khi chọn, Ngẫu nhiên chỉ tạo trong hướng đó và bật các bộ chi tiết cần thiết)"',
+    '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">Chủ đề<select class="themeSel" aria-label="Chủ đề ngẫu nhiên">',
+    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Không chủ đề</option><option value="lyricpv">Video lời</option><option value="kinetic">Kinetic</option><option value="wa">Phong cách Nhật</option><option value="horror">Kinh dị</option><option value="pop">Pop</option><option value="ballad">Ballad</option>',
+    '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">Ngẫu nhiên trong hướng đã chọn</small>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="Lưu lời với thời điểm bắt đầu của từng dòng (.lrc). Khi đã chọn phạm vi xuất, chỉ các dòng đó, tính từ đầu video">Lưu LRC</button>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="Lưu lời với thời điểm bắt đầu của từng dòng (.lrc). Khi đã chọn phạm vi xuất, chỉ các dòng đó, tính từ đầu video">Lời (LRC)</button>',
+    'title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す': 'title="Không vẽ các con số do bố cục hoặc trang trí thêm vào, như “No.01” hay “#03” (số trong lời vẫn giữ)"><input id="fxHideNo" type="checkbox"> Ẩn số trang trí',
+    'title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す': 'title="Không vẽ thời gian do bố cục hoặc trang trí thêm vào, như “00:12.34” (thời gian trong lời vẫn giữ)"><input id="fxHideTime" type="checkbox"> Ẩn thời gian trang trí',
     '文字PV系の部品を使う': 'Dùng các thành phần kiểu chữ',
     'キネティックの部品を使う': 'Dùng các thành phần chuyển động chữ',
     'ホラーの演出も使う': 'Dùng cả hiệu ứng kinh dị',
@@ -251,6 +263,16 @@ BODY = {
 }
 
 UI = {
+    '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Đã đặt ${w.toFixed(2)} giây để giữ thứ tự các dòng`',
+    "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Thời điểm bắt đầu cảnh này (thủ công). Xóa trống để về tự động'",
+    "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Thời điểm bắt đầu cảnh này (tự động). Nhập số để cố định'",
+    '`${i + 1}行目 カット${k + 1}の開始時刻`': '`Dòng ${i + 1}, bắt đầu cảnh ${k + 1}`',
+    '`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`': '`Đã mở LRC (${n} dòng có thời gian · Hoàn tác để lấy lại)`',
+    "'この行にはこれ以上カットがありません'": "'Dòng này không còn cảnh nào nữa'",
+    "'LRC ファイルが大きすぎます'": "'Tệp LRC quá lớn'",
+    "'LRC を読み込めませんでした'": "'Không đọc được tệp LRC'",
+    "'今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？'": "'Thay lời hiện tại bằng nội dung LRC? (Thời gian từng dòng, thiết lập từng dòng và phạm vi xuất cũng bị xóa. Hoàn tác để lấy lại.)'",
+    '`おまかせ（${themeName(th)}）：`': '`Ngẫu nhiên (${themeName(th)}): `',
     'おまかせ': 'Ngẫu nhiên', 'シャッフル': 'Sắp xếp ngẫu nhiên',
     "'文字PV系の部品：使う'": "'Thành phần kiểu chữ: bật'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Thành phần kiểu chữ: tắt (Ngẫu nhiên và Sắp xếp ngẫu nhiên sẽ không chọn)'",
@@ -435,6 +457,8 @@ UI = {
 }
 
 EXPORT = {
+    "'[間奏]'": "'[interlude]'",
+    "'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください'": "'ZIP sẽ quá lớn (tối đa 65.535 tệp / 4 GB). Hãy chọn phạm vi xuất ngắn hơn hoặc độ phân giải thấp hơn'",
     "'エンコーダーが出力を返しません'": "'Bộ mã hóa không tạo ra kết quả'",
     "'（ソフトウェア）'": "' (phần mềm)'",
     "'ファイルを仕上げ中'": "'Hoàn thành tập tin'",

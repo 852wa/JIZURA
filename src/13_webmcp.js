@@ -21,7 +21,7 @@ const params = ['motion', 'glitch', 'chroma', 'decor', 'density', 'texture', 'bg
 const revision = integer(0, Number.MAX_SAFE_INTEGER), line = integer(1, 100000), cut = integer(1, 1000);
 const color = { type: 'string', pattern: '^#[0-9a-fA-F]{6}$' };
 const fx = obj({ ...Object.fromEntries(params.slice(0, 7).map(k => [k, num(0, 1)])), flash: bool,
-  koma: { type: 'integer', enum: [0, 8, 12] }, hud: choice(['auto', 'on', 'off']) });
+  koma: { type: 'integer', enum: [0, 8, 12] }, hud: choice(['auto', 'on', 'off']), hideNo: bool, hideTime: bool });
 const settings = obj({
   title: str(1000), artist: str(1000), lang: choice(['auto', 'ja', 'en', 'zh-Hant', 'zh-Hans', 'ko']),
   style: choice(J.STYLE_ORDER), seed: integer(-2147483648, 2147483647), fx,
@@ -92,7 +92,7 @@ function projectCheck(p) {
       check(!['__proto__', 'prototype', 'constructor'].includes(k), 'Unsafe project key'); walk(x, depth + 1);
     }
   }; walk(p);
-  const allowed = [...Object.keys(settings.properties).filter(k => !['mode', 'localFont'].includes(k)), 'version', 'appVersion', 'lyrics', 'mood', 'timing', 'enabled', 'overrides', 'locks', 'userFonts', 'audioName'];
+  const allowed = [...Object.keys(settings.properties).filter(k => !['mode', 'localFont'].includes(k)), 'version', 'appVersion', 'lyrics', 'mood', 'timing', 'timingOrder', 'themeId', 'enabled', 'overrides', 'locks', 'userFonts', 'audioName'];
   for (const k of Object.keys(p)) check(allowed.includes(k), 'Unknown project field: ' + k);
   check(typeof p.lyrics === 'string' && p.lyrics.length <= 200000, 'Invalid project lyrics');
   for (const k of ['timing', 'fx', 'colors', 'fonts', 'enabled', 'overrides', 'locks']) if (p[k] !== undefined) check(p[k] && typeof p[k] === 'object' && !Array.isArray(p[k]), 'Invalid project ' + k);
@@ -100,6 +100,8 @@ function projectCheck(p) {
   for (const k of Object.keys(settings.properties)) if (own(p, k) && !['exportRange', 'colors', 'fx', 'fonts'].includes(k)) validate(p[k], settings.properties[k], 'project.' + k);
   if (p.fonts) for (const [role, key] of Object.entries(p.fonts)) check(['display', 'body', 'serif'].includes(role) && typeof key === 'string' && (own(J.FONTS, key) || J.SAFE_FONT_KEY.test(key) || localFontKey(key)), 'Invalid font role/key');
   if (p.version !== undefined) check(p.version === 1, 'Unsupported project version');
+  if (p.timingOrder !== undefined) check(Number.isSafeInteger(p.timingOrder) && [1, 2].includes(p.timingOrder), 'Invalid timing order');
+  if (p.themeId !== undefined) check(p.themeId === null || own(J.THEMES, p.themeId), 'Unknown theme');
   if (p.mood !== undefined) check(p.mood === null || own(J.MOODS, p.mood), 'Unknown mood');
   if (p.fx) validate(p.fx, obj({ ...fx.properties, onTwos: bool }), 'project.fx');
   if (p.colors) validate(p.colors, obj({ ...settings.properties.colors.properties, ...Object.fromEntries(['bg', 'fg', 'sub', 'accent', 'ghostA', 'ghostB'].map(k => [k, { type: 'string', pattern: '^#[0-9a-fA-F]{3,8}$' }])) }), 'project.colors');

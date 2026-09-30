@@ -1,6 +1,18 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '한 줄에 컷이 여러 개일 때는 컷이 바뀌는 순간 <span class="kbd">Tab</span> 을 누르면 그 줄의 컷 시작 시각도 맞출 수 있습니다.',
+    '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>속도 <select id="tapRate" aria-label="탭하는 동안의 재생 속도">',
+    '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 카운트다운</label>',
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="LRC 파일(타임스탬프가 붙은 가사)을 불러와 지금 가사를 바꿉니다(‘되돌리기’로 되돌릴 수 있습니다)">LRC 불러오기',
+    'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="자동 생성 테마" title="자동 생성 테마(고르면 그 방향 안에서 자동 생성하고, 필요한 부품 스위치도 켭니다)"',
+    '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">테마<select class="themeSel" aria-label="자동 생성 테마">',
+    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">테마 없음</option><option value="lyricpv">문자 PV</option><option value="kinetic">키네틱</option><option value="wa">일본풍</option><option value="horror">호러</option><option value="pop">팝</option><option value="ballad">발라드</option>',
+    '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">고르면 그 방향 안에서 자동 생성합니다</small>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="각 줄의 시작 시각을 붙인 가사(.lrc)를 내보냅니다. 내보낼 범위를 골랐다면 그 줄만, 영상 처음부터의 시각으로 내보냅니다">LRC 내보내기</button>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="각 줄의 시작 시각을 붙인 가사(.lrc)를 내보냅니다. 내보낼 범위를 골랐다면 그 줄만, 영상 처음부터의 시각으로 내보냅니다">가사(LRC)</button>',
+    'title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す': 'title="레이아웃이나 장식이 덧붙이는 ‘No.01’ ‘#03’ 같은 숫자를 그리지 않습니다(가사에 들어 있는 숫자는 그대로)"><input id="fxHideNo" type="checkbox"> 장식 숫자 숨기기',
+    'title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す': 'title="레이아웃이나 장식이 덧붙이는 ‘00:12.34’ 같은 시각을 그리지 않습니다(가사에 들어 있는 시각은 그대로)"><input id="fxHideTime" type="checkbox"> 장식 시각 숨기기',
     '文字PV系の部品を使う': '타이포그래피 부품 사용',
     'キネティックの部品を使う': '키네틱 부품 사용',
     'ホラーの演出も使う': '호러 연출도 사용',
@@ -157,6 +169,16 @@ BODY = {
 }
 
 UI = {
+    '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`앞뒤 줄과 순서가 바뀌지 않도록 ${w.toFixed(2)}초로 했습니다`',
+    "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'이 컷의 시작 시각(수동). 비우면 자동으로 돌아갑니다'",
+    "'このカットの開始時刻（自動）。数値を入れると固定します'": "'이 컷의 시작 시각(자동). 숫자를 넣으면 고정합니다'",
+    '`${i + 1}行目 カット${k + 1}の開始時刻`': '`${i + 1}번째 줄 컷 ${k + 1} 시작 시각`',
+    '`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`': '`LRC를 불러왔습니다(시각이 있는 줄 ${n}개 · ‘되돌리기’로 되돌릴 수 있습니다)`',
+    "'この行にはこれ以上カットがありません'": "'이 줄에는 더 이상 컷이 없습니다'",
+    "'LRC ファイルが大きすぎます'": "'LRC 파일이 너무 큽니다'",
+    "'LRC を読み込めませんでした'": "'LRC를 불러올 수 없습니다'",
+    "'今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？'": "'지금 가사를 LRC 내용으로 바꿀까요? (줄별 시각·지정·내보낼 범위도 지워집니다. ‘되돌리기’로 되돌릴 수 있습니다)'",
+    '`おまかせ（${themeName(th)}）：`': '`자동 생성(${themeName(th)}): `',
     "'文字PV系の部品：使う'": "'타이포그래피 부품: 사용'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'타이포그래피 부품: 사용 안 함(자동 생성·셔플에서 선택되지 않음)'",
     "'キネティックの部品：使う'": "'키네틱 부품: 사용'",
@@ -305,6 +327,8 @@ UI = {
 }
 
 EXPORT = {
+    "'[間奏]'": "'[간주]'",
+    "'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください'": "'ZIP가 너무 커집니다(파일 65,535개·4GB까지). 내보낼 범위를 줄이거나 해상도를 낮춰 주세요'",
     "'エンコーダーが出力を返しません'": "'인코더가 출력을 반환하지 않습니다'",
     "'（ソフトウェア）'": "'(소프트웨어)'",
     "'ファイルを仕上げ中'": "'파일을 마무리하는 중'",
