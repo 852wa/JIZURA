@@ -41,6 +41,18 @@ STYLES = {
 }
 
 BODY = {
+    '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Jika satu baris punya beberapa cut, tekan <span class="kbd">Tab</span> saat cut harus berganti untuk menyesuaikan waktu cut di baris itu juga.',
+    '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Kecepatan <select id="tapRate" aria-label="Kecepatan putar saat mengetuk">',
+    '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Hitung mundur</label>',
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="Muat file LRC (lirik dengan cap waktu) untuk mengganti lirik sekarang (Urungkan mengembalikannya)">Muat LRC',
+    'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="Tema variasi" title="Tema variasi (jika dipilih, Buat variasi tetap di arah itu dan menyalakan set bagian yang diperlukan)"',
+    '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">Tema<select class="themeSel" aria-label="Tema variasi">',
+    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Tanpa tema</option><option value="lyricpv">Video lirik</option><option value="kinetic">Kinetik</option><option value="wa">Gaya Jepang</option><option value="horror">Horor</option><option value="pop">Pop</option><option value="ballad">Balada</option>',
+    '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">Variasi dibuat dalam arah yang dipilih</small>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="Simpan lirik dengan waktu mulai tiap baris (.lrc). Jika rentang ekspor dipilih, hanya baris itu, dengan waktu dari awal video">Simpan LRC</button>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="Simpan lirik dengan waktu mulai tiap baris (.lrc). Jika rentang ekspor dipilih, hanya baris itu, dengan waktu dari awal video">Lirik (LRC)</button>',
+    'title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す': 'title="Tidak menggambar angka tambahan dari tata letak atau dekorasi, seperti “No.01” atau “#03” (angka dalam lirik tetap)"><input id="fxHideNo" type="checkbox"> Sembunyikan angka hiasan',
+    'title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す': 'title="Tidak menggambar waktu tambahan dari tata letak atau dekorasi, seperti “00:12.34” (waktu dalam lirik tetap)"><input id="fxHideTime" type="checkbox"> Sembunyikan waktu hiasan',
     '文字PV系の部品を使う': 'Pakai bagian tipografi',
     'キネティックの部品を使う': 'Pakai bagian kinetik',
     'ホラーの演出も使う': 'Sertakan efek horor',
@@ -193,6 +205,16 @@ BODY = {
 }
 
 UI = {
+    '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Diatur ke ${w.toFixed(2)} dtk agar urutan baris tetap`',
+    "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Awal cut ini (manual). Kosongkan untuk kembali otomatis'",
+    "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Awal cut ini (otomatis). Ketik waktu untuk menguncinya'",
+    '`${i + 1}行目 カット${k + 1}の開始時刻`': '`Baris ${i + 1}, awal cut ${k + 1}`',
+    '`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`': '`LRC dimuat (${n} baris berwaktu · Urungkan untuk mengembalikan)`',
+    "'この行にはこれ以上カットがありません'": "'Baris ini tidak punya cut lagi'",
+    "'LRC ファイルが大きすぎます'": "'File LRC terlalu besar'",
+    "'LRC を読み込めませんでした'": "'File LRC tidak bisa dibaca'",
+    "'今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？'": "'Ganti lirik sekarang dengan isi LRC? (Waktu per baris, pengaturan per baris, dan rentang ekspor juga dihapus. Urungkan mengembalikannya.)'",
+    '`おまかせ（${themeName(th)}）：`': '`Variasi (${themeName(th)}): `',
     "'文字PV系の部品：使う'": "'Bagian tipografi: aktif'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Bagian tipografi: nonaktif (tidak dipilih oleh Acak atau Kocok)'",
     "'キネティックの部品：使う'": "'Bagian kinetik: aktif'",
@@ -334,6 +356,8 @@ UI = {
 }
 
 EXPORT = {
+    "'[間奏]'": "'[interlude]'",
+    "'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください'": "'ZIP akan terlalu besar (maks. 65.535 file / 4 GB). Pilih rentang ekspor lebih pendek atau resolusi lebih rendah'",
     "'エンコーダーが出力を返しません'": "'Encoder tidak mengeluarkan hasil'",
     "'（ソフトウェア）'": "' (perangkat lunak)'",
     "'ファイルを仕上げ中'": "'Menyelesaikan file'",

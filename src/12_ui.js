@@ -69,18 +69,19 @@ function syncLoopBtn() {
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
-  ctx: null, src: null, startAt: 0, gain: null, vol: 0.8, muted: false,
-  play(buffer, offset) {
+  ctx: null, src: null, startAt: 0, base: 0, rate: 1, gain: null, vol: 0.8, muted: false,
+  play(buffer, offset, rate = 1) {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.stop();
     if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
     const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
     const off = Math.max(0, Math.min(offset, buffer.duration - 0.01));
-    s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime - off;
+    this.rate = rate > 0 ? rate : 1; s.playbackRate.value = this.rate;
+    s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime; this.base = off;
   },
   stop() { if (this.src) { try { this.src.stop(); } catch (e) {} try { this.src.disconnect(); } catch (e) {} this.src = null; } },
-  time() { return this.ctx ? this.ctx.currentTime - this.startAt : 0; },
+  time() { return this.ctx ? this.base + (this.ctx.currentTime - this.startAt) * this.rate : 0; },
   /* preview volume only (exports keep the original level) */
   setVol(v, muted) { if (v != null) this.vol = Math.max(0, Math.min(1, v)); if (muted != null) this.muted = !!muted; this.applyVol(); },
   applyVol() { if (!this.gain) return; const v = this.muted ? 0 : this.vol * this.vol; try { this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.015); } catch (e) { this.gain.gain.value = v; } },
@@ -123,9 +124,24 @@ function mergeProject(p) {
   o.userFonts = (Array.isArray(p && p.userFonts) ? p.userFonts : []).filter(uf => uf && J.SAFE_FONT_KEY.test(uf.key))
     .map(uf => ({ key: uf.key, label: String(uf.label || uf.key).slice(0, 80), family: J.safeFamily(uf.family || uf.key.slice(5)), weight: J.clamp(parseInt(uf.weight, 10) || 400, 100, 900) }));
   for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight);
+  migrateOrder(o, p);
+  o.themeId = p && typeof p.themeId === 'string' && J.THEMES && J.THEMES[p.themeId] ? p.themeId : null;
   o.fonts = {};
   for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
   return o;
+}
+/* v0.10: untagged lines of an LRC text now stay where they are written — move per-line settings of older projects along */
+function migrateOrder(o, p) {
+  const was = p && p.timingOrder; o.timingOrder = 2;
+  if (!p || was === 2) return;
+  const map = J.parseOrderV1(o.lyrics || ''); if (!map) return;
+  const mv = obj => { const r = {}; for (const [k, v] of Object.entries(obj || {})) { const i = +k; r[Number.isInteger(i) && map[i] != null ? map[i] : k] = v; } return r; };
+  o.timing.lineTimes = mv(o.timing.lineTimes); o.overrides = mv(o.overrides);
+  const R = o.exportRange;
+  if (R && Number.isInteger(R.from) && Number.isInteger(R.to)) {
+    const idx = []; for (let i = R.from; i <= R.to && i < map.length; i++) idx.push(map[i]);
+    o.exportRange = idx.length ? { from: Math.min(...idx), to: Math.max(...idx) } : null;
+  }
 }
 const SET_UI = { horror: { name: 'ホラー', badge: 'ホ' }, typo: { name: '文字PV系', badge: '文' }, kinetic: { name: 'キネティック', badge: 'キ' } };
 function setBadges(d) {
@@ -254,7 +270,7 @@ function tick(now) {
   if (S.exporting) return;
   if (S.playing) {
     // rAF timestamps can precede the moment play()/seek() stamped t0 → clamp so t never goes negative
-    let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000);
+    let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000 * playRate());
     const range = activeLoopRange();
     if (t >= range.end - 1e-3) {
       if (S.loop && !S.tap) { seek(range.start); t = range.start; }
@@ -270,10 +286,12 @@ function updateTimeUI() {
   $('timeDur').textContent = J.fmtTime(S.plan.duration);
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
+// タップ同期の速さ (0.5× / 0.75×): only while tapping — the song's own time is what gets stored
+const playRate = () => (S.tap && S.tap.rate > 0 ? S.tap.rate : 1);
 function play() {
   refreshLoopHold();
-  if (S.audio) AP.play(S.audio.buffer, S.t);
-  else S.t0 = performance.now() - S.t * 1000;
+  if (S.audio) AP.play(S.audio.buffer, S.t, playRate());
+  else S.t0 = performance.now() - S.t * 1000 / playRate();
   S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '一時停止');
 }
 function pause() {
@@ -282,8 +300,8 @@ function pause() {
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
-  if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t); }
-  else S.t0 = performance.now() - S.t * 1000;
+  if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t, playRate()); }
+  else S.t0 = performance.now() - S.t * 1000 / playRate();
   refreshLoopHold();
   S.need = true;
 }
@@ -517,6 +535,9 @@ function updateCutInfo() {
   if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; followLine(li); }
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
+  // the cut playing now is marked in the line list
+  document.querySelectorAll('.cut-lay.playing').forEach(x => x.classList.remove('playing'));
+  if (cut && S.lineEls[li]) { const kk = lyricCutK(cut), cs = kk >= 0 && S.lineEls[li].querySelector(`.cut-lay[data-k="${kk}"]`); if (cs) cs.classList.add('playing'); }
   const el = $('cutInfo');
   if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
@@ -645,7 +666,17 @@ function renderLines() {
       const v = parseFloat(e.target.value);
       pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-      if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
+      if (isFinite(v)) {
+        // keep the order: a typed time stays between the fixed times (typed or LRC) of the lines around it
+        const lt = S.project.timing.lineTimes, L = S.plan.lines;
+        const fix = j => (lt[j] != null && isFinite(+lt[j])) ? +lt[j] : (L[j] && L[j].lrc != null ? L[j].lrc : null);
+        let lo = 0, hi = Infinity;
+        for (let j = i - 1; j >= 0; j--) { const f = fix(j); if (f != null) { lo = f + 0.05; break; } }
+        for (let j = i + 1; j < L.length; j++) { const f = fix(j); if (f != null) { hi = f - 0.05; break; } }
+        let w = Math.max(0, v);
+        if (hi >= lo && (w < lo || w > hi)) { w = J.clamp(w, lo, hi); toast(`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`); }
+        lt[i] = +w.toFixed(3);
+      } else delete S.project.timing.lineTimes[i];
       replan();
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
@@ -674,7 +705,24 @@ function renderLines() {
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
-      cutsEl.appendChild(sel);
+      sel.dataset.k = String(k);
+      // カットの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
+      if (k > 0) {
+        const tIn = document.createElement('input');
+        const own = o.cutTime && o.cutTime[k] != null;
+        tIn.type = 'number'; tIn.step = '0.01'; tIn.min = '0'; tIn.className = 'cut-time pro-only mono' + (own ? ' is-forced' : '');
+        tIn.value = c.start.toFixed(2); tIn.title = own ? 'このカットの開始時刻（手動）。空にすると自動に戻ります' : 'このカットの開始時刻（自動）。数値を入れると固定します';
+        tIn.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}の開始時刻`);
+        tIn.addEventListener('change', e => {
+          const v = parseFloat(e.target.value);
+          pushEdit();
+          const ct = Object.assign({}, (S.project.overrides[i] || {}).cutTime || {});
+          if (isFinite(v) && e.target.value !== '') ct[k] = +Math.max(0, v - ln.start).toFixed(3); else delete ct[k];
+          setOv(i, { cutTime: Object.keys(ct).length ? ct : undefined }); replan(); seek(Math.max(0, (isFinite(v) ? v : c.start)) + 0.001);
+        });
+        const pair = document.createElement('div'); pair.className = 'cut-pair';
+        pair.append(tIn, sel); cutsEl.appendChild(pair);
+      } else cutsEl.appendChild(sel);
     });
     // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
     if (S.openLine === i) li.classList.add('open');
@@ -732,6 +780,24 @@ function edGo(d) {
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
+// LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
+function loadLrc(text) {
+  if (S.tap || S.exporting) return;
+  const P = S.project;
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  $('lyrics').value = P.lyrics;
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
+  toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
+}
+function saveLrc() {
+  const R = exportRangeLines(), r = exportRange();
+  const txt = J.lrcText(S.project, S.plan.lines, R ? { from: R.from, to: R.to, t0: r.t0 } : null);
+  J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+}
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
   if (S.tap || S.exporting) return;
@@ -750,6 +816,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
+  audioSeq++;                                  // a song still being analysed must not come back after the reset
   S.project = mergeProject(null); S.project.lyrics = '';
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
@@ -1036,15 +1103,17 @@ function lockBtn(k, anchor) {                     // lock button for effects tha
 
 /* ---------------- おまかせ ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
+const themeName = th => { const o = document.querySelector(`.themeSel option[value="${th}"]`); return o ? o.textContent : th; };
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
   const keepE = lockedEnabled(), keepP = lockedParams();
-  const r = J.omakase(S.project);
+  const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
+  const r = th ? J.omakase(S.project, Math.random, th) : J.omakase(S.project);
   Object.assign(S.project, r);
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`おまかせ：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast((th ? `おまかせ（${themeName(th)}）：` : 'おまかせ：') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -1061,8 +1130,10 @@ function rerollPart(part) {
     msg = `スタイル：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const keepE = lockedEnabled(), keepP = lockedParams();
-    const r = J.omakase(P);
+    const th = J.THEMES[P.themeId] ? P.themeId : null;
+    const r = th ? J.omakase(P, Math.random, th) : J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
     msg = `雰囲気：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
@@ -1149,6 +1220,7 @@ function renderFx() {
   $('fxFlash').checked = !!S.project.fx.flash;
   $('fxKoma').value = String(J.komaOf(S.project.fx));
   $('fxHud').value = S.project.fx.hud || 'auto';
+  $('fxHideNo').checked = !!S.project.fx.hideNo; $('fxHideTime').checked = !!S.project.fx.hideTime;
   $('seed').value = S.project.seed;
 }
 
@@ -1202,7 +1274,14 @@ function techPaneOpen() {
 function ensurePreviewObs() {
   if (previewObs) return previewObs;
   previewObs = new IntersectionObserver((ents) => {
-    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    const now = performance.now();
+    ents.forEach(e => {
+      const cv = e.target;
+      if (e.isIntersecting && e.intersectionRatio > 0) {
+        previewLive.add(cv);
+        if (!cv.dataset.ready && cv.dataset.g && cv.dataset.k) paintTechCanvas(cv, cv.dataset.g, cv.dataset.k, previewTime(getPreviewPlan(cv.dataset.g, cv.dataset.k), cv.dataset.g, now));
+      } else previewLive.delete(cv);
+    });
     kickPreviewLoop();
   }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
   return previewObs;
@@ -1230,15 +1309,9 @@ function kickPreviewLoop() {
   };
   previewRaf = requestAnimationFrame(tick);
 }
+// only the thumbnails on screen are drawn (the observer adds them to the live set when they scroll in)
 function queueThumbs(list) {
-  const now = performance.now();
-  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
-    previewLive.add(cv);
-    watchThumb(cv);
-    const g = cv.dataset.g, k = cv.dataset.k;
-    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
-  });
-  kickPreviewLoop();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => watchThumb(cv));
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
 
@@ -1315,7 +1388,7 @@ async function codecNote() {
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
   if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File', 'ePNG', 'ePNGA', 'ePNGL'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
@@ -1402,40 +1475,89 @@ function startTap(from = 0) {
   if (!S.plan.lines.length) return;
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
-  S.tap = { i: from, from, done: [] };
+  const opt = tapOpts();
+  S.tap = { i: from, from, done: [], rate: opt.rate };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
   $('tapPanel').classList.remove('compact');
+  $('tapRate').value = String(opt.rate); $('tapCount').checked = opt.count;
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
-  seek(t0); play(); updateTap();
+  pause(); seek(t0); updateTap();
   $('tapBtn').focus();
   if (from > 0) toast(`${from + 1}行目からタップで同期します（${J.fmtTime(t0)} から再生）`);
+  // カウントダウン: 3, 2, 1 — then the song starts
+  const tap = S.tap;
+  if (opt.count) {
+    const el = $('tapCountNum'); let n = 3; tap.counting = true;
+    const step = () => {
+      if (S.tap !== tap) { el.hidden = true; return; }
+      if (n === 0) { el.hidden = true; tap.counting = false; play(); return; }
+      el.hidden = false; el.textContent = String(n--); tap.cd = setTimeout(step, 700);
+    };
+    step();
+  } else play();
+}
+/* タップ同期の速さ・カウントダウン: remembered in this browser */
+function tapOpts() {
+  let o = null; try { o = JSON.parse(localStorage.getItem('jizura.tapOpts') || 'null'); } catch (e) {}
+  const rate = o && [1, 0.75, 0.5].includes(+o.rate) ? +o.rate : 1;
+  return { rate, count: !!(o && o.count) };
+}
+function saveTapOpts() {
+  try { localStorage.setItem('jizura.tapOpts', JSON.stringify({ rate: +$('tapRate').value || 1, count: $('tapCount').checked })); } catch (e) {}
 }
 function tapNow() {
-  if (!S.tap) return;
+  if (!S.tap || S.tap.counting) return;         // not during the countdown
   const LT = S.project.timing.lineTimes, i = S.tap.i, t = +S.t.toFixed(3);
   S.tap.done.push({ i, had: LT[i] });
   LT[i] = t;
   // later lines tapped earlier (a previous pass) must not come before this one
   for (const k of Object.keys(LT)) if (+k > i && LT[k] <= t + 0.2) delete LT[k];
-  S.tap.i++;
+  S.tap.i++; S.tap.cl = i; S.tap.ck = 1;
   replan();
   if (S.tap.i >= S.plan.lines.length) stopTap(); else updateTap();
+}
+/* Tab during tap sync: the next cut of the line just tapped starts now (a line with several cuts) */
+function tapCut() {
+  if (!S.tap || S.tap.counting || S.tap.cl == null) return;
+  const li = S.tap.cl, k = S.tap.ck | 0, ln = S.plan.lines[li];
+  const n = S.plan.cuts.filter(c => c.line === li && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).length;
+  if (!ln || k < 1 || k >= n) { toast('この行にはこれ以上カットがありません'); return; }
+  const cur = S.project.overrides[li] || {}, ct = Object.assign({}, cur.cutTime || {});
+  S.tap.done.push({ cut: true, li, k, had: ct[k] });
+  ct[k] = +Math.max(0, S.t - ln.start).toFixed(3);
+  setOv(li, { cutTime: ct });
+  S.tap.ck = k + 1;
+  replan(); updateTap();
 }
 function tapBack() {                    // 1つ戻る: undo the last tap and jump back a little
   if (!S.tap || !S.tap.done.length) return;
   const d = S.tap.done.pop(), LT = S.project.timing.lineTimes;
-  if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
-  S.tap.i = d.i; replan(); updateTap();
+  if (d.cut) {
+    const ct = Object.assign({}, (S.project.overrides[d.li] || {}).cutTime || {});
+    if (d.had != null) ct[d.k] = d.had; else delete ct[d.k];
+    setOv(d.li, { cutTime: Object.keys(ct).length ? ct : undefined });
+    S.tap.cl = d.li; S.tap.ck = d.k;
+  } else {
+    if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
+    S.tap.i = d.i;
+    const prev = [...S.tap.done].reverse().find(x => !x.cut);   // cut taps go on after the line tapped before
+    S.tap.cl = prev ? prev.i : null; S.tap.ck = 1 + S.tap.done.filter(x => x.cut && prev && x.li === prev.i).length;
+  }
+  replan(); updateTap();
   seek(Math.max(0, S.t - 3)); if (!S.playing) play();
 }
-function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
+function stopTap() {
+  const slow = S.tap && S.tap.rate !== 1;
+  if (S.tap && S.tap.cd) clearTimeout(S.tap.cd); $('tapCountNum').hidden = true; S.tap = null;
+  if (slow && S.playing) seek(S.t);             // back to normal speed
+  $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
 function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '〔間奏〕' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
-  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
+  $('tapPanel').classList.toggle('compact', S.tap.done.length >= 3);  // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -1453,6 +1575,7 @@ function syncUI() {
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
+  document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
@@ -1476,6 +1599,14 @@ function bind() {
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
+  $('tapRate').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.rate = +$('tapRate').value || 1;
+    if (S.playing) seek(S.t);                 // restart at the new speed from where it is
+    $('tapBtn').focus();
+  });
+  $('tapCount').addEventListener('change', () => { saveTapOpts(); $('tapBtn').focus(); });
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
@@ -1547,6 +1678,8 @@ function bind() {
   setSwitch('typeset-toggle', 'typeset', true, '文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）', '文字整列：オフ');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
+  $('fxHideNo').addEventListener('change', e => { remember(); S.project.fx.hideNo = e.target.checked; replan(); commit(); });
+  $('fxHideTime').addEventListener('change', e => { remember(); S.project.fx.hideTime = e.target.checked; replan(); commit(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
   $('btnSeed').addEventListener('click', () => { S.project.seed = (Math.random() * 1e9) | 0; $('seed').value = S.project.seed; replan(); });
   const colorToggle = (flag, keys) => e => {
@@ -1600,6 +1733,9 @@ function bind() {
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
   $('btnPNGL').addEventListener('click', () => runExport('pngl'));
+  $('ePNG').addEventListener('click', () => runExport('png'));
+  $('ePNGA').addEventListener('click', () => runExport('pnga'));
+  $('ePNGL').addEventListener('click', () => runExport('pngl'));
   document.querySelectorAll('.exp-cancel').forEach(b => b.addEventListener('click', () => { if (S.exporting) S.exporting.abort(); }));
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
@@ -1627,6 +1763,21 @@ function bind() {
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
+  document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
+    S.project.themeId = J.THEMES[el.value] ? el.value : null;
+    document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
+    flushSave();
+  }));
+  $('fileLrc').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (f.size > 2e6) { toast('LRC ファイルが大きすぎます'); return; }
+    let text = '';
+    try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
+    catch (err) { toast('LRC を読み込めませんでした'); return; }
+    if (S.project.lyrics.trim() && !window.confirm('今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？')) return;
+    loadLrc(text);
+  });
+  ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
     if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) resetAll(); return; }
@@ -1635,7 +1786,15 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try {
+      const np = mergeProject(JSON.parse(await f.text()));
+      if (S.tap) stopTap();
+      pause();
+      S.project = np;
+      // another project: undo and 前の案 / 次の案 belonged to the old one
+      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
+    }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -1645,6 +1804,7 @@ function bind() {
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
+    if (S.tap && e.code === 'Tab' && !typing) { e.preventDefault(); tapCut(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
     if (typing || $('termsDlg').open || $('resetDlg').open) return;

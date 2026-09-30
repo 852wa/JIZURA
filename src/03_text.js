@@ -146,11 +146,30 @@ function drawItemLayered(env, it) {
 }
 
 /* draw one text item. env = {ctx, pass, passColor, scale}. Returns design-space bbox + glyph boxes. */
+/* 飾りの数字・時刻を出さない: decorative copy that is only a number (No.01, #03, 128) or a time (00:12.34, REC 1:05).
+   Anything that also appears in the lyric of the cut is lyric, and stays. */
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/;
+J.decoTextKind = (t) => {
+  t = String(t || '').trim();
+  if (!t || !/\d/.test(t) || CJK.test(t)) return null;
+  if (/\d{1,2}[:：]\d{2}/.test(t) && /^[A-Za-z]{0,4}[\s.#]*[\d:：.;'"\s\/\-–—+]+[A-Za-z]{0,3}$/.test(t)) return 'time';
+  if ((t.match(/[A-Za-z]/g) || []).length <= 5 && /^[A-Za-z#№.\s\d\/\-–—+×x%:,'°]+$/.test(t)) return 'no';
+  return null;
+};
+J.hideDecoText = (env, text) => {
+  const fx = env.fx || {};
+  if (!fx.hideNo && !fx.hideTime) return false;
+  const k = J.decoTextKind(text);
+  if (!k || !(k === 'no' ? fx.hideNo : fx.hideTime)) return false;
+  const lyr = env.cut ? String(env.cut.lineText || env.cut.text || '') : '';
+  return !lyr.includes(String(text).trim());
+};
 J.drawItem = (env, it) => {
   const ctx = env.ctx;
   const ghostPass = env.pass !== 'main';
   if (ghostPass && it.ghost === false) return null;
   if (!it.text || it.size <= 0.5) return null;
+  if (J.hideDecoText(env, it.text)) return null;
   if (!env.inLayer && !env.glyphLog && !env.hideText && env.allowFilter && !it.pieceFn && ((it.blur || 0) > 0.4 || (it.shadow && !ghostPass && (it.shadow.blur || 0) * (env.scale || 1) > 6))) {
     const r = drawItemLayered(env, it);
     if (r !== undefined) return r;

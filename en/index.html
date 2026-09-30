@@ -127,6 +127,9 @@ button.tap { font: 700 18px/1 var(--mono); letter-spacing: 0.2em; padding: 16px;
 /* タップ同期中は行一覧の自動スクロールで押せなくなるので、左カラムの先頭に貼り付けて固定する */
 .col-left > #tapPanel { position: sticky; top: 0; z-index: 20; margin: 10px 12px; background-color: var(--panel); background-image: linear-gradient(rgba(245,165,12,0.10), rgba(245,165,12,0.10)); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
 .tapbox.compact .hint { display: none; }
+.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; }
+.tapbox .tap-count { margin-left: 10px; font: 700 22px/1 var(--mono); color: var(--amber); }
 /* 固定レイアウトにならない広さ／高さのときは、左カラムがスクロールしないのでビューポートに重ねて固定する */
 @media (max-width: 1180px), (max-height: 619px) {
   .col-left > #tapPanel { position: fixed; top: 8px; left: 8px; right: 8px; bottom: auto; margin: 0; max-height: 62vh; overflow: auto; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
@@ -315,6 +318,8 @@ dialog.terms .reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; 
 button.danger { background: #c9433a; border-color: #c9433a; color: #fff; font-weight: 700; }
 button.danger:hover { background: #dd5146; }
 .sec-btns { display: inline-flex; gap: 6px; }
+.sec-btns label.file.small { padding: 3px 8px; font-size: 12px; border-style: solid; border-color: transparent; background: transparent; color: var(--fg, inherit); }
+.sec-btns label.file.small:hover { border-color: var(--amber); }
 dialog.terms::backdrop { background: rgba(6,6,8,0.66); }
 dialog.terms h2 { font-size: 15px; letter-spacing: 0.08em; color: var(--text); margin: 0 0 14px; }
 dialog.terms p { margin: 0 0 10px; line-height: 1.75; font-size: 13px; }
@@ -445,6 +450,17 @@ button.small.primary { padding: 4px 12px; }
 #app.is-mobile .transport .hist-btns button { min-width: 36px; padding: 4px 8px; }
 #app.is-mobile button.play { flex: none; width: 44px; }
 
+/* カットの開始時刻 (詳細モード) and the cut playing now */
+.ln .cut-pair { display: inline-flex; min-width: 0; gap: 2px; align-items: center; }
+.ln .cut-time { width: 64px; font-size: 11px; padding: 2px 4px; }
+.ln .cut-time.is-forced { border-color: var(--amber); }
+.ln .cut-lay.playing { box-shadow: 0 0 0 2px var(--amber); }
+.theme-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-top: 8px; }
+.theme-row select { min-width: 9em; }
+#app.is-easy .ln .cut-pair { display: none; }
+.outbtns.out-png { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 8px; }
+.outbtns.out-png button { padding: 8px 10px; font-size: 12px; }
+
 </style>
 </head>
 <body>
@@ -459,7 +475,7 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.9.0</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.0</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="Song title (shown on title cards and HUD)" aria-label="Song title">
       <input id="songArtist" type="text" placeholder="Artist" aria-label="Artist">
@@ -486,14 +502,15 @@ button.small.primary { padding: 4px 12px; }
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="Lyrics and timing">
       <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.</div>
-          <div class="next">Next: <b id="tapLine">—</b></div>
+          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.</div>
+          <div class="tap-opts"><label>Speed <select id="tapRate" aria-label="Playback speed while tapping"><option value="1">1×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label><label><input type="checkbox" id="tapCount"> Count-in</label></div>
+          <div class="next">Next: <b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
           <button id="tapBtn" class="tap">TAP</button>
           <button id="tapBack" class="ghost">Undo tap</button>
           <button id="tapStop" class="ghost">Finish</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
+        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><label class="file ghost small" title="Load an LRC file (lyrics with time stamps) in place of the current lyrics (Undo brings them back)">Load LRC<input id="fileLrc" type="file" accept=".lrc,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
         <label class="lang-row">Lyrics language<select id="lyricLang"><option value="auto">Auto-detect</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -548,6 +565,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnNext" class="ghost small icon-txt" title="Next variation" aria-label="Next">▶</button>
         </span>
         <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
+        <select class="themeSel" aria-label="Randomize theme" title="Randomize theme (when set, Randomize stays within that direction and turns on the part sets it needs)"><option value="">No theme</option><option value="lyricpv">Lyric video</option><option value="kinetic">Kinetic</option><option value="wa">Japanese</option><option value="horror">Horror</option><option value="pop">Pop</option><option value="ballad">Ballad</option></select>
         <button id="btnOmakase" class="primary" title="Randomize style, mood, effects and colors (R)">Randomize</button>
       </div>
       <div class="tl-bar">
@@ -577,6 +595,7 @@ button.small.primary { padding: 4px 12px; }
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">Create a variation</button>
+          <label class="theme-row">Theme<select class="themeSel" aria-label="Randomize theme"><option value="">No theme</option><option value="lyricpv">Lyric video</option><option value="kinetic">Kinetic</option><option value="wa">Japanese</option><option value="horror">Horror</option><option value="pop">Pop</option><option value="ballad">Ballad</option></select><small class="muted">Randomize stays within the chosen direction</small></label>
           <p class="hint">Each click changes the style, mood, motion, colors and arrangement. Press <span class="kbd">R</span> to do the same.</p>
           <div class="hist-row">
             <button id="btnPrev2" class="ghost">◀ Previous</button>
@@ -617,7 +636,8 @@ button.small.primary { padding: 4px 12px; }
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Keep the centre free (for a character)<small>For a character or other footage in the middle: lyrics and their effects go to the left / right on wide frames and top / bottom on tall ones, alternating line by line. Backgrounds and screen effects still cover the whole frame (the preview outlines the free area with a dotted line)</small></span></label>
           <label class="row center-dir" hidden>On tall frames<select class="centerDirSel" aria-label="Split on tall frames"><option value="tb">Top / bottom</option><option value="lr">Left / right</option></select></label>
           <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Export MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">For large videos (save straight to a file)</button><button id="eLRC" class="ghost" title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Save LRC</button></div>
+          <div class="outbtns out-png"><button id="ePNG" class="ghost">PNG sequence (ZIP)</button><button id="ePNGA" class="ghost">Transparent PNG (ZIP)</button><button id="ePNGL" class="ghost" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button></div>
           <button class="terms-open linkish">Rights to exported videos</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Share / save</button>
@@ -664,6 +684,10 @@ button.small.primary { padding: 4px 12px; }
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
           <label class="row" style="gap:6px">Frame stepping <select id="fxKoma" title="Motion drawings per second (independent of export fps)"><option value="0">Full (export fps)</option><option value="12">On twos (12 drawings/s)</option><option value="8">On threes (8 drawings/s)</option></select></label>
         </div>
+        <div class="row" style="margin-top:6px">
+          <label class="row" style="gap:6px" title="Leave out the numbers layouts and decorations add, like “No.01” or “#03” (numbers in the lyrics stay)"><input id="fxHideNo" type="checkbox"> Hide decorative numbers</label>
+          <label class="row" style="gap:6px" title="Leave out the times layouts and decorations add, like “00:12.34” (times in the lyrics stay)"><input id="fxHideTime" type="checkbox"> Hide decorative times</label>
+        </div>
         <div class="fields" style="margin-top:12px">
           <label class="field">HUD<select id="fxHud"><option value="auto">Auto (by style)</option><option value="on">Always show</option><option value="off">Hide</option></select></label>
           <label class="field">Seed<input id="seed" type="number" step="1"></label>
@@ -703,6 +727,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="btnMP4File" class="mp4file" hidden title="Pick the file first; the video is written straight into it. Use this when long songs or 1080p and above fail because the browser runs out of memory (Chrome / Edge)">MP4 (large videos, save straight to a file)</button>
           <button id="btnPNG">PNG sequence (ZIP)</button>
           <button id="btnPNGA">Transparent PNG (ZIP)</button>
+          <button id="btnLRC" title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Lyrics (LRC)</button>
           <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Transparent PNG layers (ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
@@ -1542,11 +1567,30 @@ function drawItemLayered(env, it) {
 }
 
 /* draw one text item. env = {ctx, pass, passColor, scale}. Returns design-space bbox + glyph boxes. */
+/* 飾りの数字・時刻を出さない: decorative copy that is only a number (No.01, #03, 128) or a time (00:12.34, REC 1:05).
+   Anything that also appears in the lyric of the cut is lyric, and stays. */
+const CJK = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/;
+J.decoTextKind = (t) => {
+  t = String(t || '').trim();
+  if (!t || !/\d/.test(t) || CJK.test(t)) return null;
+  if (/\d{1,2}[:：]\d{2}/.test(t) && /^[A-Za-z]{0,4}[\s.#]*[\d:：.;'"\s\/\-–—+]+[A-Za-z]{0,3}$/.test(t)) return 'time';
+  if ((t.match(/[A-Za-z]/g) || []).length <= 5 && /^[A-Za-z#№.\s\d\/\-–—+×x%:,'°]+$/.test(t)) return 'no';
+  return null;
+};
+J.hideDecoText = (env, text) => {
+  const fx = env.fx || {};
+  if (!fx.hideNo && !fx.hideTime) return false;
+  const k = J.decoTextKind(text);
+  if (!k || !(k === 'no' ? fx.hideNo : fx.hideTime)) return false;
+  const lyr = env.cut ? String(env.cut.lineText || env.cut.text || '') : '';
+  return !lyr.includes(String(text).trim());
+};
 J.drawItem = (env, it) => {
   const ctx = env.ctx;
   const ghostPass = env.pass !== 'main';
   if (ghostPass && it.ghost === false) return null;
   if (!it.text || it.size <= 0.5) return null;
+  if (J.hideDecoText(env, it.text)) return null;
   if (!env.inLayer && !env.glyphLog && !env.hideText && env.allowFilter && !it.pieceFn && ((it.blur || 0) > 0.4 || (it.shadow && !ghostPass && (it.shadow.blur || 0) * (env.scale || 1) > 6))) {
     const r = drawItemLayered(env, it);
     if (r !== undefined) return r;
@@ -2543,10 +2587,31 @@ J.drawFx = (env, it) => {
 
 const unionBB = (a, b) => !a ? b : !b ? a : { x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1), boxes: [], cx: (Math.min(a.x0, b.x0) + Math.max(a.x1, b.x1)) / 2, cy: (Math.min(a.y0, b.y0) + Math.max(a.y1, b.y1)) / 2 };
 
+/* Latin text: break between words only, into as few balanced lines as fit (never more lines than words) */
+const splitWords = (text, maxPer) => {
+  const ws = text.trim().split(/\s+/), n = ws.length;
+  const total = ws.reduce((a, w) => a + [...w].length, 0) + n - 1;
+  const nLines = Math.min(n, Math.ceil(total / maxPer));
+  if (nLines <= 1) return ws.join(' ');
+  // balanced split: minimise the squared difference to the ideal line length
+  const len = (a, b) => ws.slice(a, b).reduce((s, w) => s + [...w].length, 0) + (b - a - 1);
+  const ideal = total / nLines, memo = new Map();
+  const best = (i, l) => {
+    if (l === 1) { const d = len(i, n) - ideal; return { c: d * d, cuts: [] }; }
+    const key = i + "," + l; if (memo.has(key)) return memo.get(key);
+    let r = { c: Infinity, cuts: [] };
+    for (let j = i + 1; j <= n - l + 1; j++) { const d = len(i, j) - ideal, sub = best(j, l - 1), c = d * d + sub.c; if (c < r.c) r = { c, cuts: [j, ...sub.cuts] }; }
+    memo.set(key, r); return r;
+  };
+  const cuts = [0, ...best(0, nLines).cuts, n], out = [];
+  for (let k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
+  return out.join('\n');
+};
 /* split long text into balanced lines, preferring script boundaries */
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
   if (arr.length <= maxPer) return text;
+  if (J.isLatinText && J.isLatinText(text)) return /\s/.test(text.trim()) ? splitWords(text, maxPer) : text;   // one word stays whole
   const nLines = Math.ceil(arr.length / maxPer);
   const per = arr.length / nLines;
   const out = []; let start = 0;
@@ -3378,6 +3443,8 @@ J.SAMPLE_LYRICS = `夜明けの色を/覚えてる
 
 J.defaultProject = () => ({
   version: 1,
+  timingOrder: 2,                 // lyric lines keep their written order around LRC-tagged lines (v0.10)
+  themeId: null,                  // おまかせのテーマ (J.THEMES key) — only おまかせ reads it
   title: '', artist: '',
   lyrics: J.SAMPLE_LYRICS,
   style: 'noir', mood: null,
@@ -3394,7 +3461,7 @@ J.defaultProject = () => ({
   centerFree: false,              // 中央を空ける: lay the cuts out in side bands (left / right or top / bottom) around a character
   seed: 20260922,
   aspect: '16:9', res: 1080, fps: 24,
-  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35 },
+  fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
@@ -3453,8 +3520,23 @@ J.parseLyrics = (raw) => {
     if (times.length) times.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
     else lines.push(Object.assign({}, base, { lrc: null }));
   }
-  if (lines.some(l => l.lrc != null)) lines.sort((a, b) => (a.lrc ?? 1e9) - (b.lrc ?? 1e9));
+  // LRC: order by time. A line without a tag (an interlude, a line added by hand) stays right after the line it
+  // follows in the text — it used to be moved to the very end.
+  if (lines.some(l => l.lrc != null)) {
+    let key = -1, k = 0;
+    lines.forEach(l => { if (l.lrc != null) { key = l.lrc; k = 0; l._key = l.lrc; } else l._key = key + 1e-6 * ++k; });
+    lines.sort((a, b) => a._key - b._key);
+    lines.forEach(l => { delete l._key; });
+  }
   return { lines, meta };
+};
+/* the order the lyric lines had before v0.10 (untagged lines last) — used once to move saved per-line settings of old projects */
+J.parseOrderV1 = (raw) => {
+  const p = J.parseLyrics(raw), lines = p.lines.slice();
+  if (!lines.some(l => l.lrc != null) || lines.every(l => l.lrc != null)) return null;
+  const byRow = lines.map((l, i) => ({ l, i }));
+  const old = byRow.slice().sort((a, b) => ((a.l.lrc ?? 1e9) - (b.l.lrc ?? 1e9)) || (a.l.src - b.l.src));
+  return old.map(x => x.i);          // old index -> new index
 };
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
@@ -3486,6 +3568,20 @@ J.segments = (text) => {
   if (cur) out.push(cur);
   return out;
 };
+/* Latin / Hangul helpers: words are joined with a space, except right after a dash (never- + ending → never-ending) */
+const WORDCH = /[A-Za-z\u00c0-\u024f0-9\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/;
+J.isWordLike = t => /^[A-Za-z\u00c0-\u024f0-9\uac00-\ud7af'’.,!?‐–—-]+$/.test(t) && WORDCH.test(t);
+J.joinWords = arr => {
+  const latin = /[A-Za-z]/.test(arr.join('')), HG = /[\uac00-\ud7af]/;
+  return arr.reduce((acc, w, i) => {
+    if (!i) return w;
+    if (/[-‐–—]$/.test(acc)) return acc + w;
+    return acc + (latin || (HG.test([...acc].pop()) && HG.test([...w][0])) ? ' ' : '') + w;
+  }, '');
+};
+/* mostly Latin letters (English, Indonesian, Vietnamese … lyrics) */
+J.isLatinText = t => { const s = String(t || '').replace(/\s/g, ''); if (!s) return false; const n = (s.match(/[A-Za-z\u00c0-\u024f\u1e00-\u1eff]/g) || []).length; return n / [...s].length >= 0.6; };
+
 J.chunkText = (text) => {
   const segs = J.segments(text);
   const chunks = []; let cur = null;
@@ -3510,11 +3606,15 @@ J.chunkText = (text) => {
   const out = [];
   for (const c of chunks) {
     const n = [...c].length;
-    if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
+    if (n > 10 && J.isWordLike(c)) {
+      // one long Latin / Hangul word: never cut inside it — only after its dashes (never-ending → never- / ending)
+      const parts = c.split(/(?<=[-‐–—])(?=\S)/);
+      if (parts.length > 1) parts.forEach(x => out.push(x)); else out.push(c);
+    } else if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
+    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (WORDCH.test([...out[i - 1]].pop()) && WORDCH.test(out[i]) && !/[-‐–—]$/.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
   return out.length ? out : [text];
 };
@@ -3522,7 +3622,7 @@ J.chunkText = (text) => {
 /* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
 J.phraseChunks = (words) => {
   const out = []; let cur = [], letters = 0;
-  const flush = () => { if (cur.length) out.push(cur.join(' ')); cur = []; letters = 0; };
+  const flush = () => { if (cur.length) out.push(J.joinWords(cur)); cur = []; letters = 0; };
   for (const w of words) {
     const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
     cur.push(w); letters += n;
@@ -3530,7 +3630,7 @@ J.phraseChunks = (words) => {
   }
   flush();
   // a lone short word at the end joins the previous phrase
-  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] += ' ' + last; }
+  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] = J.joinWords([out[out.length - 1], last]); }
   return out.length ? out : words;
 };
 
@@ -3539,24 +3639,43 @@ J.computeTiming = (project, parsed, audio) => {
   const T = project.timing || {};
   const lines = parsed.lines;
   const beat = T.bpm > 0 ? 60 / T.bpm : 0;
-  const starts = [];
-  const allLrc = lines.length && lines.every(l => l.lrc != null);
-  let t = T.offset ?? 0.4;
-  lines.forEach((l, i) => {
+  // fixed times: a hand-set time (typed, tapped, dragged) wins over the LRC tag; the rest is estimated
+  const fixed = lines.map((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
-    let s;
-    if (man != null && isFinite(man)) s = man;          // a hand-set time (typed, tapped, dragged) wins over the LRC tag
-    else if (allLrc) s = l.lrc;
-    else {
-      if (i > 0) {
-        const n = [...lines[i - 1].text].length, pl = lines[i - 1];
-        let d = pl.interlude ? (pl.secs > 0 ? pl.secs : 4) : J.clamp(0.8 + n * 0.17, 1.3, 5.2) * (T.lineScale || 1);
-        if (beat && !(pl.interlude && pl.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
-        s = starts[i - 1] + d + (l.gapBefore ? (beat ? beat * 2 : 0.8) : 0);
-      } else s = t;
-    }
-    starts.push(s);
+    if (man != null && isFinite(man)) return Math.max(0, man);
+    return l.lrc != null && isFinite(l.lrc) ? l.lrc : null;
   });
+  // a fixed time may not go back past an earlier one (the saved value itself is left alone)
+  let lastFix = -Infinity;
+  for (let i = 0; i < fixed.length; i++) if (fixed[i] != null) { if (fixed[i] < lastFix + 0.05) fixed[i] = lastFix + 0.05; lastFix = fixed[i]; }
+  const natural = i => {         // estimated length of line i
+    const n = [...lines[i].text].length, L = lines[i];
+    let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.3, 5.2) * (T.lineScale || 1);
+    if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
+    return d;
+  };
+  const gapOf = i => (i > 0 && i < lines.length && lines[i].gapBefore ? (beat ? beat * 2 : 0.8) : 0);
+  const starts = new Array(lines.length);
+  let i = 0, t = T.offset ?? 0.4;
+  if (fixed.length && fixed[0] != null) t = fixed[0];
+  while (i < lines.length) {
+    if (fixed[i] != null) { starts[i] = fixed[i]; t = fixed[i]; i++; continue; }
+    // a run of estimated lines [i, j) between the previous start and the next fixed time (if any)
+    let j = i; while (j < lines.length && fixed[j] == null) j++;
+    if (i === 0 && j < lines.length && t >= fixed[j]) t = 0;
+    const from = i > 0 ? starts[i - 1] : t;
+    // chained the same way as before (so plans without fixed times stay exactly the same)
+    for (let k = i; k < j; k++) starts[k] = k > 0 ? starts[k - 1] + natural(k - 1) + gapOf(k) : t;
+    if (j < lines.length) {
+      // they must all start before the next fixed time: squeeze them into the room there is
+      const room = fixed[j] - from, need = starts[j - 1] + natural(j - 1) + gapOf(j) - from;
+      if (need > room) {
+        const f = room > 0 ? room / need : 0;
+        for (let k = i; k < j; k++) starts[k] = from + (starts[k] - from) * f;
+      }
+    }
+    i = j;
+  }
   const ends = starts.map((s, i) => {
     if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
     const n = [...lines[i].text].length, L = lines[i];
@@ -3603,7 +3722,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.9.0', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.10.0', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -3627,6 +3746,7 @@ J.plan = (project, audio) => {
   let schemeIdx = 0;
   const nSchemes = st.schemes.length;
   const addEvent = (t, type, amp, dur) => plan.events.push({ t, type, amp, dur });
+  const evOwner = new WeakMap(); Object.defineProperty(plan, 'evOwner', { value: evOwner });
 
   // title card
   const firstStart = tm.starts.length ? tm.starts[0] : 0;
@@ -3643,7 +3763,7 @@ J.plan = (project, audio) => {
     const lineSeed = ov.lock && ov.lockedSeed != null ? ov.lockedSeed : J.h(project.seed, li + 1, ov.seed | 0);
     const rng = J.rng(lineSeed);
     if (ln.interlude) {                                    // [間奏]: background, decorations and screen effects only
-      plan.lines.push({ index: li, src: ln.src, text: '', interlude: true, secs: ln.secs, start: s, end: e, visEnd: e, note: null, impact: false, emph: [], chunks: [], seed: lineSeed });
+      plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: '', interlude: true, secs: ln.secs, start: s, end: e, visEnd: e, note: null, impact: false, emph: [], chunks: [], seed: lineSeed });
       const bg = ov.bg && J.BG[ov.bg] ? ov.bg : pickBg(rng, st, en, fx, bgHistory); bgHistory.push(bg);
       const dur = e - s, showTitle = dur >= 6 && !!(title || artist);
       plan.cuts.push(makeCut({ text: '', lineText: '', line: li, start: s, end: e, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.4, outDur: 0.4,
@@ -3659,14 +3779,14 @@ J.plan = (project, audio) => {
     const n = [...ln.text.replace(/\s+/g, '')].length;
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
-    plan.lines.push({ index: li, src: ln.src, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
+    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
     const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);
     const maxC = chunks.length + (chunks.length >= 2 && D > 2.0 ? 1 : 0);
     nC = J.clamp(nC, 1, Math.max(1, maxC));
-    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet'].includes(k2));
+    const ovAny = Object.keys(ov).some(k2 => !['lock', 'lockedSeed', 'seed', 'cutTech', 'cutLayouts', 'cutQuiet', 'cutTime'].includes(k2));
     const kime = !!(U && U.kime.has(li) && !ov.cuts);
     if (ov.single || kime) nC = 1;
     if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: each cut is split in two, so keep ≥ 2 words per cut
@@ -3678,7 +3798,7 @@ J.plan = (project, audio) => {
     let groups;
     const nG = Math.min(nC, chunks2.length);
     if (nG <= 1) groups = [ln.text];
-    else groups = partition(chunks2, nG).map(g => g.join(/[A-Za-z]/.test(g.join('')) ? ' ' : ''));
+    else groups = partition(chunks2, nG).map(g => J.joinWords(g));
     const recap = !fixedN && nC > groups.length && groups.length >= 2;
     let units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
     if (recap) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
@@ -3693,6 +3813,13 @@ J.plan = (project, audio) => {
     let acc = s; const bounds = [s];
     units.forEach((u, k) => { acc += D * u.w / tot; bounds.push(k === units.length - 1 ? visEnd : acc); });
     for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
+    // カットの開始時刻 (詳細モード): seconds from the line start, set by hand or by tapping — kept in order, 0.22 s apart
+    if (ov.cutTime && typeof ov.cutTime === 'object') {
+      const nb = bounds.length - 1;
+      for (let k = 1; k < nb; k++) { const d = +ov.cutTime[k]; if (ov.cutTime[k] != null && isFinite(d)) bounds[k] = J.clamp(s + d, s + 0.22 * k, visEnd - 0.22 * (nb - k)); }
+      for (let k = 1; k < nb; k++) if (bounds[k] < bounds[k - 1] + 0.22) bounds[k] = bounds[k - 1] + 0.22;
+      for (let k = nb - 1; k >= 1; k--) if (bounds[k] > bounds[k + 1] - 0.22) bounds[k] = bounds[k + 1] - 0.22;
+    }
     // scheme per line
     if (nSchemes > 1 && li > 0 && (U ? U.sectionStart(li) && rng.chance(0.25 + fx.bgSwitch) : rng.chance(fx.bgSwitch * (ln.impact ? 1.8 : 1)))) schemeIdx = (schemeIdx + 1 + rng.int(0, nSchemes - 2)) % nSchemes;
     const emphLine = ln.impact || ln.emph.length > 0;
@@ -3890,6 +4017,7 @@ J.plan = (project, audio) => {
         let extra = 0;
         for (const e of mine) if (e.type === 'chroma' || e.type === 'shake' && emph || extra++ < 1) plan.events.push(e);
       }
+      for (let q = evMark; q < plan.events.length; q++) evOwner.set(plan.events[q], cut);   // which cut each accent came from (for ロック)
     });
     // interlude in long gaps
     const nextStart = li < parsed.lines.length - 1 ? tm.starts[li + 1] : null;
@@ -4060,6 +4188,9 @@ J.lineSnapshot = (plan, li) => {
     trans: c.trans, transP: c.transP, transDur: c.transDur, morph: c.morph || null, weightGrow: !!c.weightGrow, kime: !!c.kime, recap: !!c.recap, twinParams: c.companion ? c.companion.params : null, events: [] }))));
   // each accent belongs to the cut it plays in (the ones just before a cut start belong to that cut)
   for (const e of plan.events) {
+    // an accent belongs to the cut that made it — also one that plays after the line ends (an exit accent)
+    const own = plan.evOwner && plan.evOwner.get(e);
+    if (own) { const k = cuts.indexOf(own); if (k >= 0) S[k].events.push({ dt: +(e.t - cuts[k].start).toFixed(4), type: e.type, amp: e.amp, dur: e.dur }); continue; }
     let k = -1;
     // [start − 0.25, next start − 0.25): an accent just before the following cut belongs to that cut
     for (let j = 0; j < cuts.length; j++) { const until = j < cuts.length - 1 ? cuts[j + 1].start - 0.25 : cuts[j].end - 0.3; if (e.t >= cuts[j].start - 0.25 && e.t < until) k = j; }
@@ -4389,13 +4520,32 @@ J.MOODS = {
   for (const [g, map] of Object.entries(extra)) for (const [k, ms] of Object.entries(map)) ms.forEach(m => add(g, k, m));
 })();
 
-J.omakase = (project, rnd = Math.random) => {
+/* テーマ: おまかせ within one direction. A theme picks among its moods, turns on the part switches it needs
+   (returned with the result) and always keeps the parts of its set / 和風 as candidates. No theme = the usual おまかせ. */
+J.THEMES = {
+  lyricpv: { name: '文字PV', moods: ['editorial', 'graphic', 'emotional'], set: 'typo' },
+  kinetic: { name: 'キネティック', moods: ['pop', 'graphic', 'glitch'], set: 'kinetic' },
+  wa:      { name: '和風', moods: ['calm', 'emotional', 'editorial'], wa: true },
+  horror:  { name: 'ホラー', moods: ['horror'], set: 'horror' },
+  pop:     { name: 'ポップ', moods: ['pop'] },
+  ballad:  { name: 'バラード', moods: ['calm', 'emotional'], koma: [0, 0, 12] },
+};
+J.THEME_ORDER = Object.keys(J.THEMES);
+
+J.omakase = (project, rnd = Math.random, themeId = null) => {
+  const T = themeId && J.THEMES[themeId] ? J.THEMES[themeId] : null;
+  const switches = {};
+  if (T && T.set) switches[T.set] = true;
+  if (T && T.wa) { switches.wa = true; switches.extra = true; }     // most 和風 parts belong to 追加分
+  if (T) project = Object.assign({}, project, switches);
+  const themePart = d => !!(T && d && ((T.set && d.set === T.set) || (T.wa && d.wa)));
   const pick = a => a[Math.floor(rnd() * a.length) % a.length];
   const range = r => +(r[0] + (r[1] - r[0]) * rnd()).toFixed(2);
   const moodOk = k => !J.MOODS[k].set || (J.setOn && J.setOn(project, J.MOODS[k].set));
-  const moods = Object.keys(J.MOODS).filter(k => k !== project.mood && moodOk(k));
+  let moods = Object.keys(J.MOODS).filter(k => k !== project.mood && moodOk(k));
+  if (T) { const tm = T.moods.filter(k => J.MOODS[k] && moodOk(k)); moods = tm.filter(k => k !== project.mood); if (!moods.length) moods = tm.length ? tm : Object.keys(J.MOODS).filter(moodOk); }
   // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat)
-  const mood = moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods), M = J.MOODS[mood];
+  const mood = !T && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods), M = J.MOODS[mood];
   // a set tied to a mood (ホラー) is only used in that mood
   const moodSetOk = d => !(d && d.set) || !Object.values(J.MOODS).some(m => m.set === d.set) || M.set === d.set;
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
@@ -4403,12 +4553,13 @@ J.omakase = (project, rnd = Math.random) => {
   const okStyle = k => J.STYLES[k] && (!J.randomOk || J.randomOk(project, 'style', k)) && moodSetOk(J.STYLES[k]);
   const moodStyles = [...new Set([...(M.styles || []), ...J.STYLE_ORDER.filter(k => (J.STYLES[k].moods || []).includes(mood))])].filter(okStyle);
   let pool = (moodStyles.length && rnd() < 0.72 ? moodStyles : J.STYLE_ORDER.filter(okStyle)).filter(k => k !== project.style);
+  if (T) { const ts = J.STYLE_ORDER.filter(k => okStyle(k) && themePart(J.STYLES[k]) && k !== project.style); if (ts.length && rnd() < 0.8) pool = ts; }
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style && okStyle(k));
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
   const style = pick(pool);
   const fx = Object.assign({}, project.fx);
   for (const k of Object.keys(M.fx)) fx[k] = range(M.fx[k]);
-  fx.koma = pick({ horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
+  fx.koma = pick(T && T.koma ? T.koma : { horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
   fx.onTwos = fx.koma > 0; fx.flash = rnd() < 0.65; fx.hud = pick(['auto', 'auto', 'on', 'off']);
   // technique subset per group: everything tagged with the mood (plus the mood's hand-picked core items),
   // a sprinkle of everything else, and a minimum count so the planner always has room to vary
@@ -4418,6 +4569,7 @@ J.omakase = (project, rnd = Math.random) => {
     const order = J.order(g).filter(k => !(J.registry(g)[k] || {}).special && (!J.randomOk || J.randomOk(project, g, k)) && moodSetOk(J.registry(g)[k]));
     const hand = ['layout', 'enter', 'exit'].includes(g) && Array.isArray(M[g]) ? M[g] : [];   // (M.fx holds slider ranges, not a list)
     const prefer = mood === 'chaos' ? null : new Set([...hand, ...J.taggedWith(g, mood)]);
+    if (prefer && T) for (const k of order) if (themePart(J.registry(g)[k])) prefer.add(k);   // the theme's own parts stay in
     const on = {};
     // entries of a set tied to another mood are switched off explicitly (a missing key would count as enabled)
     for (const k of J.order(g)) if (!moodSetOk(J.registry(g)[k])) on[k] = false;
@@ -4448,8 +4600,8 @@ J.omakase = (project, rnd = Math.random) => {
   }
   // keep locked lines, drop other per-line picks
   const overrides = {};
-  for (const [i, o] of Object.entries(project.overrides || {})) if (o.lock) overrides[i] = o;
-  return { mood, style, fx, enabled, fonts, colors, overrides, seed: Math.floor(rnd() * 1e9) };
+  for (const [i, o] of Object.entries(project.overrides || {})) if (o.lock) overrides[i] = o; else if (o.cutTime) overrides[i] = { cutTime: o.cutTime };   // cut times are timing, not the look
+  return Object.assign({ mood, style, fx, enabled, fonts, colors, overrides, seed: Math.floor(rnd() * 1e9) }, switches);
 };
 })();
 
@@ -5226,6 +5378,28 @@ J.exportSpan = (plan, range) => {
   return { t0, dur: Math.max(1 / plan.fps, t1 - t0) };
 };
 
+/* ---------- LRC (timed lyrics) ----------
+   each line gets its start time (typed / tapped > LRC tag > estimate), the lyric row as written (/ * ! | and interlude rows kept).
+   With a line range, only those lines, timed from the start of the exported video. */
+J.lrcText = (project, lines, range) => {
+  const parsed = J.parseLyrics(project.lyrics);
+  const tm = J.computeTiming(project, parsed, null);
+  const rows = String(project.lyrics || '').replace(/\r/g, '').split('\n');
+  const stamp = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return `[${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}]`; };
+  const clean = r => String(r || '').trim().replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+  const out = [];
+  const ti = project.title || parsed.meta.ti, ar = project.artist || parsed.meta.ar;
+  if (ti) out.push(`[ti:${ti}]`); if (ar) out.push(`[ar:${ar}]`); if (parsed.meta.al) out.push(`[al:${parsed.meta.al}]`);
+  const from = range ? range.from : 0, to = range ? range.to : parsed.lines.length - 1, t0 = range ? range.t0 : 0;
+  for (let i = from; i <= to && i < parsed.lines.length; i++) {
+    const L = parsed.lines[i];
+    let txt = clean(rows[L.src]);
+    if (L.interlude && !/^\[/.test(txt)) txt = '[interlude]';
+    out.push(stamp(tm.starts[i] - t0) + txt);
+  }
+  return out.join('\n') + '\n';
+};
+
 /* ---------- MP4 ---------- */
 /* The MP4 is written as it is encoded (mp4-muxer, moov at the end) instead of being assembled in one huge
    ArrayBuffer: into many small memory blocks (file: null), or straight into a file the user picked
@@ -5345,10 +5519,15 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+const ZIP_TOO_BIG = 'The ZIP would be too large (65,535 files / 4 GB at most). Choose a shorter export range or a lower resolution';
 class ZipWriter {
   constructor() { this.parts = []; this.central = []; this.offset = 0; }
   add(name, u8) {
-    const nb = new TextEncoder().encode(name), crc = crc32(u8);
+    const nb = new TextEncoder().encode(name);
+    // plain ZIP (no ZIP64): at most 65,535 files and 4 GB
+    if (this.central.length / 2 >= 0xffff) throw new Error(ZIP_TOO_BIG);
+    if (this.offset + 30 + nb.length + u8.length > 0xffffffff) throw new Error(ZIP_TOO_BIG);
+    const crc = crc32(u8);
     const lh = new DataView(new ArrayBuffer(30));
     lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
     lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, u8.length, true); lh.setUint32(22, u8.length, true);
@@ -5364,6 +5543,7 @@ class ZipWriter {
   finish() {
     const cdSize = this.central.reduce((s, p) => s + (p.byteLength ?? p.length), 0);
     const n = this.central.length / 2;
+    if (this.offset + cdSize > 0xffffffff) throw new Error(ZIP_TOO_BIG);
     const end = new DataView(new ArrayBuffer(22));
     end.setUint32(0, 0x06054b50, true); end.setUint16(8, n, true); end.setUint16(10, n, true); end.setUint32(12, cdSize, true); end.setUint32(16, this.offset, true);
     return new Blob([...this.parts, ...this.central, end.buffer], { type: 'application/zip' });
@@ -5378,6 +5558,8 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const ctx = canvas.getContext('2d');
   const R = new J.Renderer();
   const fps = plan.fps, total = Math.max(1, Math.round(span.dur * fps));
+  const nFiles = Math.ceil(total / every) * (layers ? 2 : 1);
+  if (nFiles > 0xffff) throw new Error(ZIP_TOO_BIG);        // say so before rendering, not after an hour
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
@@ -20819,7 +21001,7 @@ function splitK(text, k, force) {
     words.forEach((w, i) => { const l = J.glyphCount(w); if (l > bl && !hard.has(w)) { bl = l; bi = i; } });
     if (bi < 0) break;
     let parts = latin ? [words[bi]] : split2(words[bi]);
-    if (parts.length < 2 && force && words.length < force) parts = split2(words[bi], true);
+    if (parts.length < 2 && force && words.length < force && !latin) parts = split2(words[bi], true);   // never cut inside a Latin word
     if (parts.length < 2) { hard.add(words[bi]); continue; }
     words.splice(bi, 1, ...parts);
   }
@@ -20902,7 +21084,7 @@ function dash(env, x0, y0, x1, y1, d, g, col, lw, a = 1) {
 const closeLoop = pts => pts.concat([pts[0], pts[1]]);
 /* one-call text row for dense secondary copy (main pass only); sp = extra px after each glyph */
 function fastRow(env, text, font, size, x, y, sp, color, alpha, align = 'left') {
-  if (env.pass !== 'main' || alpha <= 0.01 || !text) return;
+  if (env.pass !== 'main' || alpha <= 0.01 || !text || J.hideDecoText(env, text)) return;
   const ctx = env.ctx;
   if (!('letterSpacing' in ctx)) { env.draw({ text, font, size, x, y, align, track: sp / size, color, alpha, ghost: false }); return; }
   ctx.save();
@@ -22149,6 +22331,7 @@ reg('panels', {
   plan: (rng, cut, st) => { const k = cut.n >= 6 ? 3 : 2; return { chunks: splitK(cut.text, k, 2), font: rng.pick(fontsOf(st, ['display', 'serif'])), acc: rng.int(0, 2), fx: rng.pick(['focus', 'tone', 'focus', 'none']), slant: rng.range(5, 11), widths: [rng.range(0.8, 1.25), rng.range(0.8, 1.25), rng.range(0.8, 1.25)] }; },
   render(env) {
     const { W, H, sc, ctx } = env, p = env.cut.params, u = U(env), port = isPort(env);
+    const ltr = !port && J.isLatinText && J.isLatinText(env.cut.text);   // Latin lyrics read left → right
     let ch = p.chunks && p.chunks.length ? p.chunks : splitK(env.cut.text, 2, 2);
     const k = ch.length;
     const m = u * 0.05, g = u * 0.028, lw = Math.max(3, u * 0.0065);
@@ -22166,7 +22349,7 @@ reg('panels', {
       const a0 = a + (i === 0 ? 0 : g / 2), b0 = b - (i === k - 1 ? 0 : g / 2);
       // in reading-axis coordinates: (t, c) with c in [0, cross]
       const q = [[a0 + sa, 0], [b0 + sb, 0], [b0 - sb, cross], [a0 - sa, cross]];
-      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : [W - m - t, m + c]));
+      const poly = q.map(([t, c]) => (port ? [m + c, m + t] : ltr ? [m + t, m + c] : [W - m - t, m + c]));
       poly.along = Math.min((b0 + sb) - (a0 + sa), (b0 - sb) - (a0 - sa));
       polys.push(poly);
     }
@@ -22178,8 +22361,8 @@ reg('panels', {
       // wipe along the reading direction
       let rev = poly;
       if (e < 1) {
-        const xs = poly.map(q => (port ? q[1] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
-        rev = clipHalf(poly, port ? 0 : -1, port ? 1 : 0, lo + (hi - lo) * e);
+        const xs = poly.map(q => (port ? q[1] : ltr ? q[0] : -q[0])), lo = Math.min(...xs), hi = Math.max(...xs);
+        rev = clipHalf(poly, port ? 0 : ltr ? 1 : -1, port ? 1 : 0, lo + (hi - lo) * e);
       }
       if (rev.length < 3) return;
       const accent = i === p.acc % k;
@@ -24775,7 +24958,7 @@ function fitBlock(text, font, aw, ah, o = {}, maxLines = 4) {
 const rowW = (text, font, size) => { let w = 0; for (const ch of text) w += J.metrics.adv(font, ch) * size; return w; };
 /* one-call text row for dense secondary copy (main pass only); sp = extra px after each glyph */
 function fastRow(env, text, font, size, x, y, sp, color, alpha, align = 'left') {
-  if (env.pass !== 'main' || alpha <= 0.01 || !text) return;
+  if (env.pass !== 'main' || alpha <= 0.01 || !text || J.hideDecoText(env, text)) return;
   const ctx = env.ctx;
   if (!('letterSpacing' in ctx)) { env.draw({ text, font, size, x, y, align, track: sp / size, color, alpha, ghost: false }); return; }
   ctx.save();
@@ -35937,18 +36120,19 @@ function syncLoopBtn() {
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
-  ctx: null, src: null, startAt: 0, gain: null, vol: 0.8, muted: false,
-  play(buffer, offset) {
+  ctx: null, src: null, startAt: 0, base: 0, rate: 1, gain: null, vol: 0.8, muted: false,
+  play(buffer, offset, rate = 1) {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.stop();
     if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
     const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
     const off = Math.max(0, Math.min(offset, buffer.duration - 0.01));
-    s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime - off;
+    this.rate = rate > 0 ? rate : 1; s.playbackRate.value = this.rate;
+    s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime; this.base = off;
   },
   stop() { if (this.src) { try { this.src.stop(); } catch (e) {} try { this.src.disconnect(); } catch (e) {} this.src = null; } },
-  time() { return this.ctx ? this.ctx.currentTime - this.startAt : 0; },
+  time() { return this.ctx ? this.base + (this.ctx.currentTime - this.startAt) * this.rate : 0; },
   /* preview volume only (exports keep the original level) */
   setVol(v, muted) { if (v != null) this.vol = Math.max(0, Math.min(1, v)); if (muted != null) this.muted = !!muted; this.applyVol(); },
   applyVol() { if (!this.gain) return; const v = this.muted ? 0 : this.vol * this.vol; try { this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.015); } catch (e) { this.gain.gain.value = v; } },
@@ -35991,9 +36175,24 @@ function mergeProject(p) {
   o.userFonts = (Array.isArray(p && p.userFonts) ? p.userFonts : []).filter(uf => uf && J.SAFE_FONT_KEY.test(uf.key))
     .map(uf => ({ key: uf.key, label: String(uf.label || uf.key).slice(0, 80), family: J.safeFamily(uf.family || uf.key.slice(5)), weight: J.clamp(parseInt(uf.weight, 10) || 400, 100, 900) }));
   for (const uf of o.userFonts) if (!J.FONTS[uf.key]) J.addUserFont(uf.key, uf.label, uf.family, uf.weight);
+  migrateOrder(o, p);
+  o.themeId = p && typeof p.themeId === 'string' && J.THEMES && J.THEMES[p.themeId] ? p.themeId : null;
   o.fonts = {};
   for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
   return o;
+}
+/* v0.10: untagged lines of an LRC text now stay where they are written — move per-line settings of older projects along */
+function migrateOrder(o, p) {
+  const was = p && p.timingOrder; o.timingOrder = 2;
+  if (!p || was === 2) return;
+  const map = J.parseOrderV1(o.lyrics || ''); if (!map) return;
+  const mv = obj => { const r = {}; for (const [k, v] of Object.entries(obj || {})) { const i = +k; r[Number.isInteger(i) && map[i] != null ? map[i] : k] = v; } return r; };
+  o.timing.lineTimes = mv(o.timing.lineTimes); o.overrides = mv(o.overrides);
+  const R = o.exportRange;
+  if (R && Number.isInteger(R.from) && Number.isInteger(R.to)) {
+    const idx = []; for (let i = R.from; i <= R.to && i < map.length; i++) idx.push(map[i]);
+    o.exportRange = idx.length ? { from: Math.min(...idx), to: Math.max(...idx) } : null;
+  }
 }
 const SET_UI = { horror: { name: 'Horror', badge: 'H' }, typo: { name: 'Typographic', badge: 'T' }, kinetic: { name: 'Kinetic', badge: 'K' } };
 function setBadges(d) {
@@ -36122,7 +36321,7 @@ function tick(now) {
   if (S.exporting) return;
   if (S.playing) {
     // rAF timestamps can precede the moment play()/seek() stamped t0 → clamp so t never goes negative
-    let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000);
+    let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000 * playRate());
     const range = activeLoopRange();
     if (t >= range.end - 1e-3) {
       if (S.loop && !S.tap) { seek(range.start); t = range.start; }
@@ -36138,10 +36337,12 @@ function updateTimeUI() {
   $('timeDur').textContent = J.fmtTime(S.plan.duration);
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
+// タップ同期の速さ (0.5× / 0.75×): only while tapping — the song's own time is what gets stored
+const playRate = () => (S.tap && S.tap.rate > 0 ? S.tap.rate : 1);
 function play() {
   refreshLoopHold();
-  if (S.audio) AP.play(S.audio.buffer, S.t);
-  else S.t0 = performance.now() - S.t * 1000;
+  if (S.audio) AP.play(S.audio.buffer, S.t, playRate());
+  else S.t0 = performance.now() - S.t * 1000 / playRate();
   S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Pause');
 }
 function pause() {
@@ -36150,8 +36351,8 @@ function pause() {
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
-  if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t); }
-  else S.t0 = performance.now() - S.t * 1000;
+  if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t, playRate()); }
+  else S.t0 = performance.now() - S.t * 1000 / playRate();
   refreshLoopHold();
   S.need = true;
 }
@@ -36385,6 +36586,9 @@ function updateCutInfo() {
   if (li !== S.curLine) { S.lineEls.forEach((el, i) => el.classList.toggle('cur', i === li)); S.curLine = li; followLine(li); }
   if (idx === lastCutIdx) return;
   lastCutIdx = idx;
+  // the cut playing now is marked in the line list
+  document.querySelectorAll('.cut-lay.playing').forEach(x => x.classList.remove('playing'));
+  if (cut && S.lineEls[li]) { const kk = lyricCutK(cut), cs = kk >= 0 && S.lineEls[li].querySelector(`.cut-lay[data-k="${kk}"]`); if (cs) cs.classList.add('playing'); }
   const el = $('cutInfo');
   if (!cut) { el.innerHTML = '<span class="hint">No cut at this position</span>'; closeCutPick(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
@@ -36513,7 +36717,17 @@ function renderLines() {
       const v = parseFloat(e.target.value);
       pushEdit();
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-      if (isFinite(v)) S.project.timing.lineTimes[i] = Math.max(0, v); else delete S.project.timing.lineTimes[i];
+      if (isFinite(v)) {
+        // keep the order: a typed time stays between the fixed times (typed or LRC) of the lines around it
+        const lt = S.project.timing.lineTimes, L = S.plan.lines;
+        const fix = j => (lt[j] != null && isFinite(+lt[j])) ? +lt[j] : (L[j] && L[j].lrc != null ? L[j].lrc : null);
+        let lo = 0, hi = Infinity;
+        for (let j = i - 1; j >= 0; j--) { const f = fix(j); if (f != null) { lo = f + 0.05; break; } }
+        for (let j = i + 1; j < L.length; j++) { const f = fix(j); if (f != null) { hi = f - 0.05; break; } }
+        let w = Math.max(0, v);
+        if (hi >= lo && (w < lo || w > hi)) { w = J.clamp(w, lo, hi); toast(`Set to ${w.toFixed(2)} s so the lines stay in order`); }
+        lt[i] = +w.toFixed(3);
+      } else delete S.project.timing.lineTimes[i];
       replan();
     });
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
@@ -36542,7 +36756,24 @@ function renderLines() {
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
-      cutsEl.appendChild(sel);
+      sel.dataset.k = String(k);
+      // cutsの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
+      if (k > 0) {
+        const tIn = document.createElement('input');
+        const own = o.cutTime && o.cutTime[k] != null;
+        tIn.type = 'number'; tIn.step = '0.01'; tIn.min = '0'; tIn.className = 'cut-time pro-only mono' + (own ? ' is-forced' : '');
+        tIn.value = c.start.toFixed(2); tIn.title = own ? 'Start of this cut (set by hand). Clear it to go back to automatic' : 'Start of this cut (automatic). Type a time to fix it';
+        tIn.setAttribute('aria-label', `Line ${i + 1}, start of cut ${k + 1}`);
+        tIn.addEventListener('change', e => {
+          const v = parseFloat(e.target.value);
+          pushEdit();
+          const ct = Object.assign({}, (S.project.overrides[i] || {}).cutTime || {});
+          if (isFinite(v) && e.target.value !== '') ct[k] = +Math.max(0, v - ln.start).toFixed(3); else delete ct[k];
+          setOv(i, { cutTime: Object.keys(ct).length ? ct : undefined }); replan(); seek(Math.max(0, (isFinite(v) ? v : c.start)) + 0.001);
+        });
+        const pair = document.createElement('div'); pair.className = 'cut-pair';
+        pair.append(tIn, sel); cutsEl.appendChild(pair);
+      } else cutsEl.appendChild(sel);
     });
     // スマホ: a row is one line of text; tapping it opens its tools (and jumps there)
     if (S.openLine === i) li.classList.add('open');
@@ -36600,6 +36831,24 @@ function edGo(d) {
   replan(); flushSave(); updateEditBtns();
   toast(d < 0 ? 'Undone' : 'Redone');
 }
+// LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
+function loadLrc(text) {
+  if (S.tap || S.exporting) return;
+  const P = S.project;
+  const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
+  ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
+  pause();
+  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  $('lyrics').value = P.lyrics;
+  replan(); flushSave(); updateEditBtns(); seek(0);
+  const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
+  toast(`LRC loaded (${n} timed lines · Undo brings the old lyrics back)`);
+}
+function saveLrc() {
+  const R = exportRangeLines(), r = exportRange();
+  const txt = J.lrcText(S.project, S.plan.lines, R ? { from: R.from, to: R.to, t0: r.t0 } : null);
+  J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+}
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
   if (S.tap || S.exporting) return;
@@ -36618,6 +36867,7 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
+  audioSeq++;                                  // a song still being analysed must not come back after the reset
   S.project = mergeProject(null); S.project.lyrics = '';
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
@@ -36904,15 +37154,17 @@ function lockBtn(k, anchor) {                     // lock button for effects tha
 
 /* ---------------- Randomize ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
+const themeName = th => { const o = document.querySelector(`.themeSel option[value="${th}"]`); return o ? o.textContent : th; };
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
   const keepE = lockedEnabled(), keepP = lockedParams();
-  const r = J.omakase(S.project);
+  const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
+  const r = th ? J.omakase(S.project, Math.random, th) : J.omakase(S.project);
   Object.assign(S.project, r);
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`Randomized: ${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast((th ? `Randomized (${themeName(th)}): ` : 'Randomized: ') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -36929,8 +37181,10 @@ function rerollPart(part) {
     msg = `Style：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const keepE = lockedEnabled(), keepP = lockedParams();
-    const r = J.omakase(P);
+    const th = J.THEMES[P.themeId] ? P.themeId : null;
+    const r = th ? J.omakase(P, Math.random, th) : J.omakase(P);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
     msg = `Mood：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
@@ -37017,6 +37271,7 @@ function renderFx() {
   $('fxFlash').checked = !!S.project.fx.flash;
   $('fxKoma').value = String(J.komaOf(S.project.fx));
   $('fxHud').value = S.project.fx.hud || 'auto';
+  $('fxHideNo').checked = !!S.project.fx.hideNo; $('fxHideTime').checked = !!S.project.fx.hideTime;
   $('seed').value = S.project.seed;
 }
 
@@ -37070,7 +37325,14 @@ function techPaneOpen() {
 function ensurePreviewObs() {
   if (previewObs) return previewObs;
   previewObs = new IntersectionObserver((ents) => {
-    ents.forEach(e => { if (e.isIntersecting && e.intersectionRatio > 0) previewLive.add(e.target); else previewLive.delete(e.target); });
+    const now = performance.now();
+    ents.forEach(e => {
+      const cv = e.target;
+      if (e.isIntersecting && e.intersectionRatio > 0) {
+        previewLive.add(cv);
+        if (!cv.dataset.ready && cv.dataset.g && cv.dataset.k) paintTechCanvas(cv, cv.dataset.g, cv.dataset.k, previewTime(getPreviewPlan(cv.dataset.g, cv.dataset.k), cv.dataset.g, now));
+      } else previewLive.delete(cv);
+    });
     kickPreviewLoop();
   }, { root: null, rootMargin: '40px 0px', threshold: [0, 0.12, 0.4] });
   return previewObs;
@@ -37098,15 +37360,9 @@ function kickPreviewLoop() {
   };
   previewRaf = requestAnimationFrame(tick);
 }
+// only the thumbnails on screen are drawn (the observer adds them to the live set when they scroll in)
 function queueThumbs(list) {
-  const now = performance.now();
-  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => {
-    previewLive.add(cv);
-    watchThumb(cv);
-    const g = cv.dataset.g, k = cv.dataset.k;
-    if (g && k) paintTechCanvas(cv, g, k, previewTime(getPreviewPlan(g, k), g, now));
-  });
-  kickPreviewLoop();
+  [...list.querySelectorAll('canvas[data-g]')].forEach(cv => watchThumb(cv));
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
 
@@ -37183,7 +37439,7 @@ async function codecNote() {
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
   if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
 }
-const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File'];
+const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File', 'ePNG', 'ePNGA', 'ePNGL'];
 function baseName() {
   const k = J.keyMode(S.project);
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
@@ -37270,40 +37526,89 @@ function startTap(from = 0) {
   if (!S.plan.lines.length) return;
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
-  S.tap = { i: from, from, done: [] };
+  const opt = tapOpts();
+  S.tap = { i: from, from, done: [], rate: opt.rate };
   if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
   $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
   $('tapPanel').classList.remove('compact');
+  $('tapRate').value = String(opt.rate); $('tapCount').checked = opt.count;
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
-  seek(t0); play(); updateTap();
+  pause(); seek(t0); updateTap();
   $('tapBtn').focus();
   if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  // カウントダウン: 3, 2, 1 — then the song starts
+  const tap = S.tap;
+  if (opt.count) {
+    const el = $('tapCountNum'); let n = 3; tap.counting = true;
+    const step = () => {
+      if (S.tap !== tap) { el.hidden = true; return; }
+      if (n === 0) { el.hidden = true; tap.counting = false; play(); return; }
+      el.hidden = false; el.textContent = String(n--); tap.cd = setTimeout(step, 700);
+    };
+    step();
+  } else play();
+}
+/* タップ同期の速さ · カウントダウン: remembered in this browser */
+function tapOpts() {
+  let o = null; try { o = JSON.parse(localStorage.getItem('jizura.tapOpts') || 'null'); } catch (e) {}
+  const rate = o && [1, 0.75, 0.5].includes(+o.rate) ? +o.rate : 1;
+  return { rate, count: !!(o && o.count) };
+}
+function saveTapOpts() {
+  try { localStorage.setItem('jizura.tapOpts', JSON.stringify({ rate: +$('tapRate').value || 1, count: $('tapCount').checked })); } catch (e) {}
 }
 function tapNow() {
-  if (!S.tap) return;
+  if (!S.tap || S.tap.counting) return;         // not during the countdown
   const LT = S.project.timing.lineTimes, i = S.tap.i, t = +S.t.toFixed(3);
   S.tap.done.push({ i, had: LT[i] });
   LT[i] = t;
   // later lines tapped earlier (a previous pass) must not come before this one
   for (const k of Object.keys(LT)) if (+k > i && LT[k] <= t + 0.2) delete LT[k];
-  S.tap.i++;
+  S.tap.i++; S.tap.cl = i; S.tap.ck = 1;
   replan();
   if (S.tap.i >= S.plan.lines.length) stopTap(); else updateTap();
+}
+/* Tab during tap sync: the next cut of the line just tapped starts now (a line with several cuts) */
+function tapCut() {
+  if (!S.tap || S.tap.counting || S.tap.cl == null) return;
+  const li = S.tap.cl, k = S.tap.ck | 0, ln = S.plan.lines[li];
+  const n = S.plan.cuts.filter(c => c.line === li && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).length;
+  if (!ln || k < 1 || k >= n) { toast('This line has no more cuts'); return; }
+  const cur = S.project.overrides[li] || {}, ct = Object.assign({}, cur.cutTime || {});
+  S.tap.done.push({ cut: true, li, k, had: ct[k] });
+  ct[k] = +Math.max(0, S.t - ln.start).toFixed(3);
+  setOv(li, { cutTime: ct });
+  S.tap.ck = k + 1;
+  replan(); updateTap();
 }
 function tapBack() {                    // 1つ戻る: undo the last tap and jump back a little
   if (!S.tap || !S.tap.done.length) return;
   const d = S.tap.done.pop(), LT = S.project.timing.lineTimes;
-  if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
-  S.tap.i = d.i; replan(); updateTap();
+  if (d.cut) {
+    const ct = Object.assign({}, (S.project.overrides[d.li] || {}).cutTime || {});
+    if (d.had != null) ct[d.k] = d.had; else delete ct[d.k];
+    setOv(d.li, { cutTime: Object.keys(ct).length ? ct : undefined });
+    S.tap.cl = d.li; S.tap.ck = d.k;
+  } else {
+    if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
+    S.tap.i = d.i;
+    const prev = [...S.tap.done].reverse().find(x => !x.cut);   // cut taps go on after the line tapped before
+    S.tap.cl = prev ? prev.i : null; S.tap.ck = 1 + S.tap.done.filter(x => x.cut && prev && x.li === prev.i).length;
+  }
+  replan(); updateTap();
   seek(Math.max(0, S.t - 3)); if (!S.playing) play();
 }
-function stopTap() { S.tap = null; $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
+function stopTap() {
+  const slow = S.tap && S.tap.rate !== 1;
+  if (S.tap && S.tap.cd) clearTimeout(S.tap.cd); $('tapCountNum').hidden = true; S.tap = null;
+  if (slow && S.playing) seek(S.t);             // back to normal speed
+  $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
 function updateTap() {
   const ln = S.plan.lines[S.tap.i];
   $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '[interlude]' : ln.text}` : '—';
   const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
-  $('tapPanel').classList.toggle('compact', S.tap.done.length > 0);   // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
+  $('tapPanel').classList.toggle('compact', S.tap.done.length >= 3);  // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -37321,6 +37626,7 @@ function syncUI() {
   document.querySelectorAll('.unify-toggle').forEach(el => { el.checked = S.project.unify === true; });
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
+  document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
 }
 
@@ -37344,6 +37650,14 @@ function bind() {
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
+  $('tapRate').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.rate = +$('tapRate').value || 1;
+    if (S.playing) seek(S.t);                 // restart at the new speed from where it is
+    $('tapBtn').focus();
+  });
+  $('tapCount').addEventListener('change', () => { saveTapOpts(); $('tapBtn').focus(); });
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
@@ -37415,6 +37729,8 @@ function bind() {
   setSwitch('typeset-toggle', 'typeset', true, 'Typesetting: on (spacing, particles, Latin, 0.2 s lead, fewer effects)', 'Typesetting: off');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
+  $('fxHideNo').addEventListener('change', e => { remember(); S.project.fx.hideNo = e.target.checked; replan(); commit(); });
+  $('fxHideTime').addEventListener('change', e => { remember(); S.project.fx.hideTime = e.target.checked; replan(); commit(); });
   $('seed').addEventListener('change', e => { S.project.seed = parseInt(e.target.value, 10) || 0; replan(); });
   $('btnSeed').addEventListener('click', () => { S.project.seed = (Math.random() * 1e9) | 0; $('seed').value = S.project.seed; replan(); });
   const colorToggle = (flag, keys) => e => {
@@ -37468,6 +37784,9 @@ function bind() {
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
   $('btnPNGL').addEventListener('click', () => runExport('pngl'));
+  $('ePNG').addEventListener('click', () => runExport('png'));
+  $('ePNGA').addEventListener('click', () => runExport('pnga'));
+  $('ePNGL').addEventListener('click', () => runExport('pngl'));
   document.querySelectorAll('.exp-cancel').forEach(b => b.addEventListener('click', () => { if (S.exporting) S.exporting.abort(); }));
   $('eMP4').addEventListener('click', () => runExport('mp4'));
   // かんたんモード
@@ -37491,10 +37810,25 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.9.0' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
+  document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
+    S.project.themeId = J.THEMES[el.value] ? el.value : null;
+    document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
+    flushSave();
+  }));
+  $('fileLrc').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (f.size > 2e6) { toast('The LRC file is too large'); return; }
+    let text = '';
+    try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
+    catch (err) { toast('Could not read the LRC file'); return; }
+    if (S.project.lyrics.trim() && !window.confirm('Replace the current lyrics with the LRC file? (Line times, per-line settings and the export range are cleared too. Undo brings them back.)')) return;
+    loadLrc(text);
+  });
+  ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
     if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Clear lyrics, song, settings and history and start over? This cannot be undone.')) resetAll(); return; }
@@ -37503,7 +37837,15 @@ function bind() {
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { S.project = mergeProject(JSON.parse(await f.text())); syncUI(); replan(); restoreFonts(); }
+    try {
+      const np = mergeProject(JSON.parse(await f.text()));
+      if (S.tap) stopTap();
+      pause();
+      S.project = np;
+      // another project: undo and 前の案 / 次の案 belonged to the old one
+      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
+    }
     catch (err) { showMsg('Could not open the project'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -37513,6 +37855,7 @@ function bind() {
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
+    if (S.tap && e.code === 'Tab' && !typing) { e.preventDefault(); tapCut(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
     if (typing || $('termsDlg').open || $('resetDlg').open) return;

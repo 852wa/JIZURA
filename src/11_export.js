@@ -96,6 +96,28 @@ J.exportSpan = (plan, range) => {
   return { t0, dur: Math.max(1 / plan.fps, t1 - t0) };
 };
 
+/* ---------- LRC (timed lyrics) ----------
+   each line gets its start time (typed / tapped > LRC tag > estimate), the lyric row as written (/ * ! | and interlude rows kept).
+   With a line range, only those lines, timed from the start of the exported video. */
+J.lrcText = (project, lines, range) => {
+  const parsed = J.parseLyrics(project.lyrics);
+  const tm = J.computeTiming(project, parsed, null);
+  const rows = String(project.lyrics || '').replace(/\r/g, '').split('\n');
+  const stamp = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return `[${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}]`; };
+  const clean = r => String(r || '').trim().replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
+  const out = [];
+  const ti = project.title || parsed.meta.ti, ar = project.artist || parsed.meta.ar;
+  if (ti) out.push(`[ti:${ti}]`); if (ar) out.push(`[ar:${ar}]`); if (parsed.meta.al) out.push(`[al:${parsed.meta.al}]`);
+  const from = range ? range.from : 0, to = range ? range.to : parsed.lines.length - 1, t0 = range ? range.t0 : 0;
+  for (let i = from; i <= to && i < parsed.lines.length; i++) {
+    const L = parsed.lines[i];
+    let txt = clean(rows[L.src]);
+    if (L.interlude && !/^\[/.test(txt)) txt = '[間奏]';
+    out.push(stamp(tm.starts[i] - t0) + txt);
+  }
+  return out.join('\n') + '\n';
+};
+
 /* ---------- MP4 ---------- */
 /* The MP4 is written as it is encoded (mp4-muxer, moov at the end) instead of being assembled in one huge
    ArrayBuffer: into many small memory blocks (file: null), or straight into a file the user picked
@@ -215,10 +237,15 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+const ZIP_TOO_BIG = 'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください';
 class ZipWriter {
   constructor() { this.parts = []; this.central = []; this.offset = 0; }
   add(name, u8) {
-    const nb = new TextEncoder().encode(name), crc = crc32(u8);
+    const nb = new TextEncoder().encode(name);
+    // plain ZIP (no ZIP64): at most 65,535 files and 4 GB
+    if (this.central.length / 2 >= 0xffff) throw new Error(ZIP_TOO_BIG);
+    if (this.offset + 30 + nb.length + u8.length > 0xffffffff) throw new Error(ZIP_TOO_BIG);
+    const crc = crc32(u8);
     const lh = new DataView(new ArrayBuffer(30));
     lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
     lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, u8.length, true); lh.setUint32(22, u8.length, true);
@@ -234,6 +261,7 @@ class ZipWriter {
   finish() {
     const cdSize = this.central.reduce((s, p) => s + (p.byteLength ?? p.length), 0);
     const n = this.central.length / 2;
+    if (this.offset + cdSize > 0xffffffff) throw new Error(ZIP_TOO_BIG);
     const end = new DataView(new ArrayBuffer(22));
     end.setUint32(0, 0x06054b50, true); end.setUint16(8, n, true); end.setUint16(10, n, true); end.setUint32(12, cdSize, true); end.setUint32(16, this.offset, true);
     return new Blob([...this.parts, ...this.central, end.buffer], { type: 'application/zip' });
@@ -248,6 +276,8 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const ctx = canvas.getContext('2d');
   const R = new J.Renderer();
   const fps = plan.fps, total = Math.max(1, Math.round(span.dur * fps));
+  const nFiles = Math.ceil(total / every) * (layers ? 2 : 1);
+  if (nFiles > 0xffff) throw new Error(ZIP_TOO_BIG);        // say so before rendering, not after an hour
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {

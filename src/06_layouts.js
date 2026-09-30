@@ -95,10 +95,31 @@ J.drawFx = (env, it) => {
 
 const unionBB = (a, b) => !a ? b : !b ? a : { x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1), boxes: [], cx: (Math.min(a.x0, b.x0) + Math.max(a.x1, b.x1)) / 2, cy: (Math.min(a.y0, b.y0) + Math.max(a.y1, b.y1)) / 2 };
 
+/* Latin text: break between words only, into as few balanced lines as fit (never more lines than words) */
+const splitWords = (text, maxPer) => {
+  const ws = text.trim().split(/\s+/), n = ws.length;
+  const total = ws.reduce((a, w) => a + [...w].length, 0) + n - 1;
+  const nLines = Math.min(n, Math.ceil(total / maxPer));
+  if (nLines <= 1) return ws.join(' ');
+  // balanced split: minimise the squared difference to the ideal line length
+  const len = (a, b) => ws.slice(a, b).reduce((s, w) => s + [...w].length, 0) + (b - a - 1);
+  const ideal = total / nLines, memo = new Map();
+  const best = (i, l) => {
+    if (l === 1) { const d = len(i, n) - ideal; return { c: d * d, cuts: [] }; }
+    const key = i + "," + l; if (memo.has(key)) return memo.get(key);
+    let r = { c: Infinity, cuts: [] };
+    for (let j = i + 1; j <= n - l + 1; j++) { const d = len(i, j) - ideal, sub = best(j, l - 1), c = d * d + sub.c; if (c < r.c) r = { c, cuts: [j, ...sub.cuts] }; }
+    memo.set(key, r); return r;
+  };
+  const cuts = [0, ...best(0, nLines).cuts, n], out = [];
+  for (let k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
+  return out.join('\n');
+};
 /* split long text into balanced lines, preferring script boundaries */
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
   if (arr.length <= maxPer) return text;
+  if (J.isLatinText && J.isLatinText(text)) return /\s/.test(text.trim()) ? splitWords(text, maxPer) : text;   // one word stays whole
   const nLines = Math.ceil(arr.length / maxPer);
   const per = arr.length / nLines;
   const out = []; let start = 0;

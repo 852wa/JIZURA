@@ -1,6 +1,18 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.',
+    '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Speed <select id="tapRate" aria-label="Playback speed while tapping">',
+    '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Count-in</label>',
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="Load an LRC file (lyrics with time stamps) in place of the current lyrics (Undo brings them back)">Load LRC',
+    'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="Randomize theme" title="Randomize theme (when set, Randomize stays within that direction and turns on the part sets it needs)"',
+    '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">Theme<select class="themeSel" aria-label="Randomize theme">',
+    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">No theme</option><option value="lyricpv">Lyric video</option><option value="kinetic">Kinetic</option><option value="wa">Japanese</option><option value="horror">Horror</option><option value="pop">Pop</option><option value="ballad">Ballad</option>',
+    '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">Randomize stays within the chosen direction</small>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Save LRC</button>',
+    'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Lyrics (LRC)</button>',
+    'title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す': 'title="Leave out the numbers layouts and decorations add, like “No.01” or “#03” (numbers in the lyrics stay)"><input id="fxHideNo" type="checkbox"> Hide decorative numbers',
+    'title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す': 'title="Leave out the times layouts and decorations add, like “00:12.34” (times in the lyrics stay)"><input id="fxHideTime" type="checkbox"> Hide decorative times',
     '文字PV系の部品を使う': 'Use typographic parts',
     'キネティックの部品を使う': 'Use kinetic parts',
     'ホラーの演出も使う': 'Include horror effects',
@@ -161,6 +173,16 @@ BODY = {
 }
 
 UI = {
+    '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Set to ${w.toFixed(2)} s so the lines stay in order`',
+    "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Start of this cut (set by hand). Clear it to go back to automatic'",
+    "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Start of this cut (automatic). Type a time to fix it'",
+    '`${i + 1}行目 カット${k + 1}の開始時刻`': '`Line ${i + 1}, start of cut ${k + 1}`',
+    '`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`': '`LRC loaded (${n} timed lines · Undo brings the old lyrics back)`',
+    "'この行にはこれ以上カットがありません'": "'This line has no more cuts'",
+    "'LRC ファイルが大きすぎます'": "'The LRC file is too large'",
+    "'LRC を読み込めませんでした'": "'Could not read the LRC file'",
+    "'今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？'": "'Replace the current lyrics with the LRC file? (Line times, per-line settings and the export range are cleared too. Undo brings them back.)'",
+    '`おまかせ（${themeName(th)}）：`': '`Randomized (${themeName(th)}): `',
     "'文字PV系の部品：使う'": "'Typographic parts: on'",
     "'文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）'": "'Typographic parts: off (not picked by Randomize or Shuffle)'",
     "'キネティックの部品：使う'": "'Kinetic parts: on'",
@@ -302,6 +324,8 @@ UI = {
 }
 
 EXPORT = {
+    "'[間奏]'": "'[interlude]'",
+    "'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください'": "'The ZIP would be too large (65,535 files / 4 GB at most). Choose a shorter export range or a lower resolution'",
     "'エンコーダーが出力を返しません'": "'The encoder returned no output'",
     "'（ソフトウェア）'": "' (software)'",
     "'ファイルを仕上げ中'": "'Finishing the file'",
