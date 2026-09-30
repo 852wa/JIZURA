@@ -36346,6 +36346,8 @@ const ICON = {
 };
 
 const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+S.revision = 0; S.loading = { boot: true, audio: false, fonts: false }; S.exportJob = null;
+const copyData = value => JSON.parse(JSON.stringify(value, (_key, item) => ArrayBuffer.isView(item) ? Array.from(item) : item));
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: '반복', en: 'Loop', titleJa: '전체 반복 재생', titleEn: 'Loop the whole piece' },
@@ -36424,6 +36426,7 @@ function initVolume() {
   if (!(v >= 0 && v <= 1)) v = 0.8;
   const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '음소거' : '음량'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '음량 ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
+  AP.showVolume = () => { show(); save(); };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
   mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
@@ -36503,6 +36506,8 @@ function langNote() {
   langNote.last = J.lang;
 }
 function replan() {
+  clearTimeout(replanTimer); replanTimer = null;
+  S.revision++;
   S.plan = J.plan(S.project, audioLike());
   // lines locked in older projects (seed only): take a snapshot now, so from here on they stay exactly as they are
   for (const [i, o] of Object.entries(S.project.overrides || {})) if (o && o.lock && !Array.isArray(o.lockedCuts)) { const snap = J.lineSnapshot(S.plan, +i); if (snap) o.lockedCuts = snap; }
@@ -37084,10 +37089,8 @@ function editLine(li, ln) {
     if (done) return; done = true;
     const v = inp.value.trim();
     if (ok && v && v !== body) {
-      pushEdit();
-      rows[ln.src] = pre + v;
-      S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`${ln.index + 1}줄 가사를 고쳤습니다`);
+      replaceLineText(ln, v);
+      toast(`${ln.index + 1}줄 가사를 고쳤습니다`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -37146,10 +37149,10 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  audioSeq++;                                  // a song still being analysed must not come back after the reset
+  S.loading.reset = true; ++audioSeq; S.loading.audio = false;
   S.project = mergeProject(null); S.project.lyrics = '';
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
-  if (J.forgetSong) await J.forgetSong();
+  try { if (J.forgetSong) await J.forgetSong(); } finally { S.loading.reset = false; }
   $('audioName').textContent = audioNameDefault;
   ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
   TL.z = 1; TL.off = 0;
@@ -37269,6 +37272,14 @@ function fontSelectOptions(sel) {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
+}
+function addLocalFont(name) {
+  name = name.trim();
+  const key = 'local_' + name.replace(/\s+/g, '_');
+  const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
+  J.addUserFont(key, name + ' (PC)', name, weight);
+  S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (PC)', family: name, weight }]);
+  S.project.fonts.display = key;
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -37645,6 +37656,14 @@ function queueThumbs(list) {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
 
+function changeTechniques(group, keys, action, bulk) {
+  const en = S.project.enabled[group];
+  keys.forEach(k => { en[k] = action === 'on' ? true : action === 'off' ? false : en[k] === false; });
+  if (!bulk) return;
+  if (group === 'layout' && !techItems(group).some(k => en[k] !== false)) en.center = true;
+  const fallback = { enter: 'cut', exit: 'cut', hold: 'still', treat: 'none', bg: 'none', cam: 'push' };
+  if (fallback[group]) en[fallback[group]] = true;
+}
 function renderTech() {
   resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
@@ -37680,10 +37699,7 @@ function renderTech() {
     d.querySelector('summary .lk').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTechLock(g); });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
-      shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
-      if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
-      if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
+      changeTechniques(g, shown, a, true);
       S.project.mood = null; openGroups.add(g); renderTech(); replan();
     }));
     d.appendChild(list);
@@ -37724,59 +37740,75 @@ function baseName() {
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
 }
 const canPickFile = () => typeof window.showSaveFilePicker === 'function' && !document.documentElement.classList.contains('cep') && typeof VideoEncoder !== 'undefined';
+let exportSeq = 0;
 async function runExport(kind) {
   if (S.exporting) return;
+  if (replanTimer) replan();
+  const plan = copyData(S.plan), snapshot = copyData(S.project), audio = S.audio;
+  const range = exportRange(), nameBase = baseName(), suffix = rangeSuffix(), mobile = S.mode === 'mobile';
+  const ac = new AbortController(); S.exporting = ac;
+  const job = S.exportJob = { id: 'export-' + (++exportSeq), kind, status: 'running', progress: 0, files: [], error: null };
+  const save = async (name, blob) => {
+    if (ac.signal.aborted) throw new Error('Export cancelled');
+    const result = await J.saveFile(name, blob);
+    job.files.push({ name, bytes: blob.size, status: result === 'declined' ? 'declined' : 'download_started' });
+    return result;
+  };
   // 大きな動画用: the save dialog must open straight from the click (before anything is awaited)
   let file = null, fileName = '';
   if (kind === 'mp4file') {
     try {
-      const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
+      const hnd = await window.showSaveFilePicker({ suggestedName: nameBase + suffix + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('저장 위치를 열 수 없습니다: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { job.status = e && e.name === 'AbortError' ? 'cancelled' : 'failed'; job.error = String(e.message || e); S.exporting = null; if (job.status === 'failed') toast('저장 위치를 열 수 없습니다: ' + job.error); return; }
   }
   pause();
-  const ac = new AbortController(); S.exporting = ac;
   const boxes = [...document.querySelectorAll('.exp-box')];
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
   setText('준비 중…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
-  const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
+  const onProgress = (p, m) => { job.progress = p; job.message = m; boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
   boxes.forEach(b => { const sh = b.querySelector('.exp-share'); if (sh) sh.hidden = true; });
   // keep the phone's screen on while exporting (a sleeping screen stops the encoder)
   let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
-  const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
-  if (proj !== S.project) toast('스마트폰 화면에서는 최대 1080p로 내보냅니다');
+  const proj = mobile && (snapshot.res || 1080) > 1080 ? Object.assign({}, snapshot, { res: 1080 }) : snapshot;
+  if (proj !== snapshot) toast('스마트폰 화면에서는 최대 1080p로 내보냅니다');
   try {
-    await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
-    const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
+    if (ac.signal.aborted) throw new Error('Export cancelled');
+    await J.ensureFonts(snapshot.lyrics + (snapshot.title || '') + (snapshot.artist || '') + HUD_CHARS, J.fontsOfPlan(plan));
+    const lost = J.missingUserFonts(J.fontsOfPlan(plan).concat(Object.values(snapshot.fonts || {})));
     if (lost.length) throw new Error(`불러온 글꼴(${[...new Set(lost)].join(', ')})이 이 브라우저에 없어 내보내기를 멈췄습니다. 「글꼴」에서 같은 파일을 다시 불러오거나 다른 글꼴을 고르세요`);
     if (kind === 'mp4' || kind === 'mp4file') {
-      const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      const span = J.exportSpan(plan, range);
+      const r = await J.exportMP4({ plan, project: proj, audio: snapshot.includeAudio !== false ? audio : null, quality: snapshot.quality || 'high', onProgress, signal: ac.signal, range, file });
+      if (file) job.files.push({ name: fileName, status: 'saved' });
       file = null;
       txt.textContent = `완료 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}초`;
       if (r.blob) {
-        const name = baseName() + rangeSuffix() + '.mp4';
-        const res = await J.saveFile(name, r.blob);
+        const name = nameBase + suffix + '.mp4';
+        const res = await save(name, r.blob);
         if (res === 'declined') txt.textContent += ' (저장이 취소됨)';
         offerShare(boxes, r.blob, name);
       } else txt.textContent += `·「${fileName}」에 저장했습니다`;
       if (r.tried && r.tried.length) txt.textContent += '(처음 방법이 실패해서 다른 인코더로 내보냈습니다)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
-        await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
+        await save(nameBase + suffix + '_audio.wav', J.audioWav(audio.buffer, span.dur, span.t0));
         txt.textContent += r.audio ? '. 이 브라우저에서는 오디오가 Opus가 되어 iPhone·QuickTime 등에서 소리가 나지 않을 수 있으므로, 오디오를 WAV로도 저장했습니다' : '. 이 브라우저는 오디오를 내보낼 수 없어 오디오를 WAV로 따로 저장했습니다(영상 편집 프로그램에서 합쳐 주세요)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. 음원을 불러오지 않아 소리가 없습니다(‘음원 불러오기’로 다시 불러오세요)';
+      } else if (snapshot.includeAudio !== false && !audio && snapshot.audioName) txt.textContent += '. 음원을 불러오지 않아 소리가 없습니다(‘음원 불러오기’로 다시 불러오세요)';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
+      const blob = await J.exportPNGZip({ plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range });
       txt.textContent = `완료 ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
+      await save(nameBase + suffix + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
+    job.status = ac.signal.aborted ? 'cancelled' : job.files.some(f => f.status === 'declined') ? 'save_declined' : 'completed';
+    job.progress = 1;
   } catch (e) {
+    job.status = ac.signal.aborted ? 'cancelled' : 'failed'; job.error = String(e.message || e);
     txt.textContent = '오류: ' + (e && e.message ? e.message : e);
     console.error(e);
     if (file) { try { await file.abort(); } catch (e2) {} }
@@ -38023,21 +38055,19 @@ function bind() {
   $('btnRandPalette').addEventListener('click', randomPalette);
   $('btnAddFont').addEventListener('click', () => {
     const name = $('localFont').value.trim(); if (!name) return;
-    const key = 'local_' + name.replace(/\s+/g, '_');
-    const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (PC)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (PC)', family: name, weight }]);
-    S.project.fonts.display = key; $('localFont').value = '';
+    addLocalFont(name); $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
+    S.loading.fonts = true;
     try {
       const uf = await J.loadFontFile(f);
       S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
       S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
     }
     catch (err) { showMsg('글꼴을 불러오지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
+    finally { S.loading.fonts = false; }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -38089,8 +38119,8 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.0' }), null, 1)));
-  $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  $('btnSave').addEventListener('click', () => saveProject(false));
+  $('btnAE').addEventListener('click', () => saveProject(true));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
@@ -38108,23 +38138,11 @@ function bind() {
     loadLrc(text);
   });
   ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
-  $('btnReset').addEventListener('click', () => {
-    const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('가사·음원·설정·기록을 모두 지우고 처음 상태로 되돌릴까요? 되돌릴 수 없습니다.')) resetAll(); return; }
-    dlg.returnValue = ''; dlg.showModal();
-  });
+  $('btnReset').addEventListener('click', requestReset);
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try {
-      const np = mergeProject(JSON.parse(await f.text()));
-      if (S.tap) stopTap();
-      pause();
-      S.project = np;
-      // another project: undo and 前の案 / 次の案 belonged to the old one
-      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
-      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
-    }
+    try { await importProject(JSON.parse(await f.text())); }
     catch (err) { showMsg('프로젝트를 열지 못했습니다'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -38151,6 +38169,7 @@ function bind() {
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 let audioSeq = 0;
 async function loadAudioFile(f, restored) {
+  S.loading.audio = true;
   const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
   $('audioName').textContent = '분석 중…';
   try {
@@ -38165,6 +38184,7 @@ async function loadAudioFile(f, restored) {
     syncUI(); replan();
     return true;
   } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '불러오지 못했습니다: ' + err.message; S.audio = null; return false; }
+  finally { if (my === audioSeq) S.loading.audio = false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -38238,29 +38258,464 @@ async function restoreFonts() {
   if (missing.length) toast(`불러온 글꼴(${missing.join(', ')})이 이 브라우저에 없습니다. 「글꼴」에서 같은 파일을 다시 불러오세요(그때까지는 비슷한 글꼴로 표시합니다)`);
 }
 
+/* Small editor operations shared by the UI and the WebMCP adapter. */
+function replaceLineText(ln, text) {
+  const rows = S.project.lyrics.replace(/\r/g, '').split('\n');
+  const pre = ((rows[ln.src] || '').match(LRC_PREFIX) || [''])[0];
+  pushEdit(); rows[ln.src] = pre + text.trim();
+  S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
+  replan(); flushSave();
+}
+function requestReset() {
+  const dlg = $('resetDlg');
+  if (!dlg || typeof dlg.showModal !== 'function') {
+    if (window.confirm('가사·음원·설정·기록을 모두 지우고 처음 상태로 되돌릴까요? 되돌릴 수 없습니다.')) return resetAll();
+    return;
+  }
+  if (!dlg.open) { dlg.returnValue = ''; dlg.showModal(); }
+}
+async function importProject(project) {
+  S.loading.fonts = true;
+  try {
+    const next = mergeProject(project);
+    // Preflight before replacing the active document.
+    try { J.plan(next, audioLike()); } finally { if (J.setLang) J.setLang(S.plan.lang || 'ja'); }
+    pause();
+    if (next.audioName !== S.project.audioName) { ++audioSeq; S.loading.audio = false; S.audio = null; $('audioName').textContent = audioNameDefault; }
+    ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    S.project = next; syncUI(); replan();
+    await restoreFonts(); commit(); updateEditBtns(); flushSave();
+  } finally { S.loading.fonts = false; }
+}
+function projectData(ae) {
+  return ae ? J.planForAE(S.plan, S.project, exportRange()) : Object.assign(copyData(S.project), { appVersion: '0.10.0' });
+}
+async function saveProject(ae) {
+  const name = baseName() + (ae ? rangeSuffix() + '_ae.json' : '.jizura.json');
+  const result = await J.saveFile(name, JSON.stringify(projectData(ae), null, 1));
+  return { name, status: result === 'declined' ? 'declined' : 'download_started' };
+}
+const editorActions = {
+  prepare() { if (replanTimer) replan(); },
+  activate() { S.agentActive = true; if (TR.i >= 0) tourEnd(); },
+  state(detail = false) {
+    const r = exportRangeLines();
+    const result = {
+      revision: S.revision, loading: copyData(S.loading), duration: S.plan.duration,
+      lineCount: S.plan.lines.length, cutCount: S.plan.cuts.length,
+      playback: { playing: S.playing, time: S.t, loop: S.loop || 'off', volume: AP.vol, muted: AP.muted, mode: S.mode },
+      history: { undo: ED.undo.length > 0, redo: ED.redo.length > 0, previous: H.i > 0, next: H.i < H.list.length - 1 },
+      audio: { loaded: !!S.audio, name: S.project.audioName || null, duration: S.audio ? S.audio.duration : null, bpm: S.audio ? S.audio.bpm : null, input: '#audioFile' },
+      fonts: { missing: J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {}))), input: '#fontFile' },
+      tap: S.tap ? { nextLine: S.tap.i + 1 } : null,
+      exportRange: r ? { from: r.from + 1, to: r.to + 1 } : null,
+      exportJob: S.exportJob ? copyData(S.exportJob) : null,
+      resetPending: !!$('resetDlg').open,
+    };
+    if (detail) {
+      result.project = projectData(false);
+      result.lines = S.plan.lines.map((ln, i) => ({ line: i + 1, sourceRow: ln.src + 1, text: ln.text, interlude: !!ln.interlude, start: ln.start, end: ln.end, locked: !!(S.project.overrides[i] || {}).lock }));
+      result.cuts = S.plan.cuts.map(c => ({ line: c.line >= 0 ? c.line + 1 : null, cut: lyricCutK(c) >= 0 ? lyricCutK(c) + 1 : null, text: c.text, start: c.start, end: c.end,
+        techniques: Object.fromEntries(CHIP_GROUPS.map(([g]) => [g, cutGroupVal(c, g)])) }));
+    }
+    return result;
+  },
+  settings(patch) {
+    remember();
+    if ('style' in patch) S.project.colors.enabled = false;
+    for (const [k, v] of Object.entries(patch)) {
+      if (['fx', 'colors', 'fonts'].includes(k)) Object.assign(S.project[k], v);
+      else if (k === 'exportRange') S.project.exportRange = v ? { from: v.from - 1, to: v.to - 1 } : null;
+      else if (k !== 'mode' && k !== 'localFont') S.project[k] = v;
+    }
+    for (const [role, key] of Object.entries(S.project.fonts)) if (!key) delete S.project.fonts[role];
+    if (patch.fx) {
+      S.project.mood = null;
+      if ('koma' in patch.fx) S.project.fx.onTwos = patch.fx.koma > 0;
+    }
+    if (patch.localFont) addLocalFont(patch.localFont);
+    fontKey = ''; syncUI(); replan(); commit(); flushSave();
+    if (patch.mode) setMode(patch.mode);
+    codecNoteSoon();
+  },
+  lyrics(text, clear) {
+    if (clear) return clearLyrics();
+    pushEdit(); S.project.lyrics = text; $('lyrics').value = text; replan(); flushSave();
+  },
+  timing(patch, times, clear) {
+    pushEdit(); Object.assign(S.project.timing, patch);
+    if (clear) S.project.timing.lineTimes = {};
+    for (const entry of times) {
+      if (entry.time === null) delete S.project.timing.lineTimes[entry.line - 1];
+      else S.project.timing.lineTimes[entry.line - 1] = entry.time;
+    }
+    syncUI(); replan(); flushSave();
+  },
+  line(i, patch) {
+    const ln = S.plan.lines[i];
+    if ('text' in patch) replaceLineText(ln, patch.text);
+    else {
+      remember();
+      if ('layout' in patch) setOv(i, { layout: patch.layout || undefined });
+      if ('cuts' in patch) setOv(i, { cuts: patch.cuts || undefined, single: undefined });
+      if ('lock' in patch) setOv(i, patch.lock ? { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined } : { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      replan(); commit(); flushSave();
+    }
+  },
+  cut(i, k, group, key, quiet) {
+    remember();
+    if (key !== undefined) setCutTech(i, k, group, key);
+    if (quiet !== undefined) markCutQuiet(i, k, [group], quiet);
+    replan(); commit(); flushSave();
+  },
+  techniques(group, keys, enabled, bulk) {
+    remember(); changeTechniques(group, keys, enabled ? 'on' : 'off', bulk);
+    S.project.mood = null; renderTech(); replan(); commit(); flushSave();
+  },
+  locks(kind, keys, on) {
+    for (const key of keys) if (!!locksOf()[kind][key] !== on) (kind === 'tech' ? toggleTechLock : toggleParamLock)(key);
+    flushSave();
+  },
+  randomize(target, i, k, strategy) {
+    if (target === 'all') omakase();
+    else if (target === 'palette') { randomPalette(); restartPreview(); }
+    else if (target === 'line') {
+      const cur = S.project.overrides[i] || {}; remember();
+      setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      replan(); commit(); seek(S.plan.lines[i].start + 0.001);
+    } else if (target === 'cut') {
+      const cut = S.plan.cuts.filter(c => c.line === i && lyricCutK(c) >= 0)[k];
+      seek(cut.start + Math.min(cut.dur * 0.5, cut.inDur + 0.05)); rerollCurrentCut(strategy || 'omakase');
+    } else rerollPart(target === 'composition' ? 'cut' : target);
+    flushSave();
+  },
+  history(kind, direction) { if (kind === 'edit') edGo(direction); else histGo(direction); },
+  preview(options) {
+    if (options.mode) setMode(options.mode);
+    if (options.time !== undefined) seek(options.time);
+    if (options.loop !== undefined) { S.loop = options.loop === 'off' ? false : options.loop; syncLoopBtn(); }
+    if (options.volume !== undefined || options.muted !== undefined) { AP.setVol(options.volume, options.muted); AP.showVolume(); }
+    if (options.action === 'play') play();
+    if (options.action === 'pause') pause();
+    updateTimeUI(); S.need = true;
+    return { audioPlayback: AP.ctx && AP.ctx.state === 'suspended' ? 'needs_user_activation' : 'ready' };
+  },
+  tap(action, from) {
+    if (action === 'start') startTap(from);
+    else if (action === 'record') tapNow();
+    else if (action === 'back') tapBack();
+    else { pause(); if (S.tap) stopTap(); }
+  },
+  projectData, importProject, saveProject, requestReset,
+  startExport(kind) { void runExport(kind); return copyData(S.exportJob); },
+  cancelExport() { if (S.exporting) S.exporting.abort(); return S.exportJob ? copyData(S.exportJob) : null; },
+};
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
-  restoreFonts();
+  const fontsReady = restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
   try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
-  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(tourStart, 600);   // first visit: show the tour once
+  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(() => { if (!S.agentActive) tourStart(); }, 600);   // first visit: show the tour once
   // open on a representative frame (end of the first cut's entrance)
   const c0 = S.plan.cuts.find(c => c.line >= 0);
   if (c0) seek(c0.start + Math.min(c0.dur * 0.6, c0.inDur + 0.25));
   requestAnimationFrame(tick);
   // the song used last time (same name as the saved project's) comes back after a reload
-  if (J.loadSong && S.project.audioName) J.loadSong().then(f => { if (f && f.name === S.project.audioName && !S.audio) loadAudioFile(f, true); });
+  const songReady = J.loadSong && S.project.audioName ? J.loadSong().then(f => { if (f && f.name === S.project.audioName && !S.audio) return loadAudioFile(f, true); }) : Promise.resolve();
+  Promise.allSettled([fontsReady, songReady]).then(() => { S.loading.boot = false; });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { editor: editorActions, toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+})();
+
+/* WebMCP browser adapter. No server, polyfill, or dependency; editor owns all mutations. */
+(() => {
+'use strict';
+if (!document.getElementById('app') || window.__adobe_cep__ || document.documentElement.classList.contains('cep') || J.webMCP) return;
+const status = J.webMCP = { status: 'unavailable', tools: [] };
+const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const fail = (code, message) => { throw Object.assign(new Error(message), { code }); };
+const check = (ok, message) => { if (!ok) fail('invalid_input', message); };
+const obj = (properties = {}, required = []) => ({ type: 'object', properties, required, additionalProperties: false });
+const str = (maxLength = 200) => ({ type: 'string', maxLength });
+const choice = values => ({ type: 'string', enum: values });
+const bool = { type: 'boolean' };
+const num = (minimum, maximum) => ({ type: 'number', minimum, maximum });
+const integer = (minimum, maximum) => ({ type: 'integer', minimum, maximum });
+const list = items => ({ type: 'array', items, maxItems: 2000 });
+const nullable = schema => ({ ...schema, type: [schema.type, 'null'] });
+const groups = J.GROUP_KEYS;
+const cutGroups = ['layout', 'enter', 'hold', 'exit', 'decor', 'treat', 'bg', 'cam', 'trans'];
+const localFontKey = key => /^local_[\w\u0080-\uFFFF-]+$/.test(key);
+const params = ['motion', 'glitch', 'chroma', 'decor', 'density', 'texture', 'bgSwitch', 'flash', 'koma'];
+const revision = integer(0, Number.MAX_SAFE_INTEGER), line = integer(1, 100000), cut = integer(1, 1000);
+const color = { type: 'string', pattern: '^#[0-9a-fA-F]{6}$' };
+const fx = obj({ ...Object.fromEntries(params.slice(0, 7).map(k => [k, num(0, 1)])), flash: bool,
+  koma: { type: 'integer', enum: [0, 8, 12] }, hud: choice(['auto', 'on', 'off']), hideNo: bool, hideTime: bool });
+const settings = obj({
+  title: str(1000), artist: str(1000), lang: choice(['auto', 'ja', 'en', 'zh-Hant', 'zh-Hans', 'ko']),
+  style: choice(J.STYLE_ORDER), seed: integer(-2147483648, 2147483647), fx,
+  colors: obj({ enabled: bool, accentOn: bool, ...Object.fromEntries(['bg', 'fg', 'sub', 'accent', 'ghostA', 'ghostB'].map(k => [k, color])) }),
+  fonts: obj({ display: str(), serif: str(), body: str() }), localFont: { ...str(80), minLength: 1, pattern: '^[\\w \\u0080-\\uFFFF-]+$' },
+  ...Object.fromEntries(['extra', 'wa', 'horror', 'typo', 'kinetic', 'unify', 'typeset', 'centerFree', 'includeAudio'].map(k => [k, bool])),
+  centerDir: choice(['tb', 'lr']), keyBg: choice(['off', 'green', 'black']),
+  aspect: choice(['16:9', '9:16', '4:3', '3:4', '1:1', '4:5', '21:9']),
+  res: { type: 'integer', enum: [720, 1080, 1440, 2160] }, fps: { type: 'integer', enum: [24, 30, 60] },
+  quality: choice(['standard', 'high', 'max']), mode: choice(['easy', 'pro', 'mobile']),
+  exportRange: nullable(obj({ from: line, to: line }, ['from', 'to'])),
+});
+const timing = obj({ bpm: num(0, 300), offset: num(0, 86400), lineScale: num(0.3, 4), snap: bool });
+// The same small JSON Schema subset is published and enforced even on legacy implementations.
+function validate(value, schema, path = 'arguments') {
+  if (value === null && (schema.type === 'null' || Array.isArray(schema.type) && schema.type.includes('null'))) return;
+  const type = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+  check(type === 'object' ? value !== null && typeof value === 'object' && !Array.isArray(value)
+    : type === 'array' ? Array.isArray(value) : type === 'integer' ? Number.isSafeInteger(value)
+    : type === 'number' ? typeof value === 'number' && Number.isFinite(value) : typeof value === type, path + ': expected ' + type);
+  if (schema.enum) check(schema.enum.includes(value), path + ': unsupported value');
+  if (type === 'object') {
+    for (const k of schema.required || []) check(own(value, k), path + ': missing ' + k);
+    for (const [k, v] of Object.entries(value)) {
+      check(!['__proto__', 'prototype', 'constructor'].includes(k), path + ': unsafe key');
+      check(own(schema.properties, k), path + ': unknown field ' + k);
+      validate(v, schema.properties[k], path + '.' + k);
+    }
+  }
+  if (type === 'array') { check(value.length <= schema.maxItems, path + ': too many items'); value.forEach((v, i) => validate(v, schema.items, path + '[' + i + ']')); }
+  if (type === 'string') {
+    if (schema.maxLength !== undefined) check(value.length <= schema.maxLength, path + ': too long');
+    if (schema.minLength !== undefined) check(value.length >= schema.minLength, path + ': too short');
+    if (schema.pattern) check(new RegExp(schema.pattern).test(value), path + ': invalid format');
+  }
+  if (type === 'number' || type === 'integer') {
+    if (schema.minimum !== undefined) check(value >= schema.minimum, path + ': below minimum');
+    if (schema.maximum !== undefined) check(value <= schema.maximum, path + ': above maximum');
+  }
+}
+const api = () => J.uiApi.editor;
+function current(rev) { if (rev !== J.ui.revision) fail('stale_revision', 'Call jizura_get_state and use its revision and line/cut numbers.'); }
+function lineIndex(n) { check(n <= J.ui.plan.lines.length, 'Line does not exist'); return n - 1; }
+function cutIndex(n, k) {
+  const i = lineIndex(n);
+  const cuts = J.ui.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special);
+  check(k <= cuts.length, 'Editable cut does not exist on this line'); return k - 1;
+}
+function tech(group, key, auto = false) {
+  if (auto && key === '') return;
+  if (auto && key === 'none' && ['decor', 'trans'].includes(group)) return;
+  check(own(J.registry(group), key) && !J.registry(group)[key].special, 'Unknown technique: ' + group + '/' + key);
+}
+function settingsCheck(p) {
+  for (const key of Object.values(p.fonts || {})) check(key === '' || own(J.FONTS, key), 'Unknown font; use jizura_list_options');
+  if (p.localFont) check(p.localFont.trim().length > 0, 'Font name is empty');
+  if (p.exportRange) { lineIndex(p.exportRange.from); lineIndex(p.exportRange.to); check(p.exportRange.from <= p.exportRange.to, 'Range is reversed'); }
+}
+// Project files use the existing format, including opaque engine snapshots. Reject executable/prototype
+// payloads and malformed known containers before passing a detached copy to the existing importer.
+function projectCheck(p) {
+  check(p && typeof p === 'object' && !Array.isArray(p), 'Expected a project object');
+  check(JSON.stringify(p).length <= 8000000, 'Project exceeds 8 MB');
+  const walk = (v, depth = 0) => {
+    check(depth < 40, 'Project nesting is too deep');
+    if (typeof v === 'number') check(Number.isFinite(v), 'Non-finite project number');
+    if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) {
+      check(!['__proto__', 'prototype', 'constructor'].includes(k), 'Unsafe project key'); walk(x, depth + 1);
+    }
+  }; walk(p);
+  const allowed = [...Object.keys(settings.properties).filter(k => !['mode', 'localFont'].includes(k)), 'version', 'appVersion', 'lyrics', 'mood', 'timing', 'timingOrder', 'themeId', 'enabled', 'overrides', 'locks', 'userFonts', 'audioName'];
+  for (const k of Object.keys(p)) check(allowed.includes(k), 'Unknown project field: ' + k);
+  check(typeof p.lyrics === 'string' && p.lyrics.length <= 200000, 'Invalid project lyrics');
+  for (const k of ['timing', 'fx', 'colors', 'fonts', 'enabled', 'overrides', 'locks']) if (p[k] !== undefined) check(p[k] && typeof p[k] === 'object' && !Array.isArray(p[k]), 'Invalid project ' + k);
+  for (const k of ['title', 'artist', 'audioName', 'appVersion']) if (p[k] !== undefined) check(typeof p[k] === 'string', 'Invalid project ' + k);
+  for (const k of Object.keys(settings.properties)) if (own(p, k) && !['exportRange', 'colors', 'fx', 'fonts'].includes(k)) validate(p[k], settings.properties[k], 'project.' + k);
+  if (p.fonts) for (const [role, key] of Object.entries(p.fonts)) check(['display', 'body', 'serif'].includes(role) && typeof key === 'string' && (own(J.FONTS, key) || J.SAFE_FONT_KEY.test(key) || localFontKey(key)), 'Invalid font role/key');
+  if (p.version !== undefined) check(p.version === 1, 'Unsupported project version');
+  if (p.timingOrder !== undefined) check(Number.isSafeInteger(p.timingOrder) && [1, 2].includes(p.timingOrder), 'Invalid timing order');
+  if (p.themeId !== undefined) check(p.themeId === null || own(J.THEMES, p.themeId), 'Unknown theme');
+  if (p.mood !== undefined) check(p.mood === null || own(J.MOODS, p.mood), 'Unknown mood');
+  if (p.fx) validate(p.fx, obj({ ...fx.properties, onTwos: bool }), 'project.fx');
+  if (p.colors) validate(p.colors, obj({ ...settings.properties.colors.properties, ...Object.fromEntries(['bg', 'fg', 'sub', 'accent', 'ghostA', 'ghostB'].map(k => [k, { type: 'string', pattern: '^#[0-9a-fA-F]{3,8}$' }])) }), 'project.colors');
+  if (p.exportRange != null) validate(p.exportRange, obj({ from: integer(0, 100000), to: integer(0, 100000) }, ['from', 'to']), 'project.exportRange');
+  if (p.locks) {
+    check(Object.keys(p.locks).every(k => ['tech', 'params'].includes(k)), 'Invalid locks');
+    for (const kind of ['tech', 'params']) if (p.locks[kind]) validate(p.locks[kind], obj(Object.fromEntries((kind === 'tech' ? groups : params).map(k => [k, bool]))), 'project.locks.' + kind);
+  }
+  if (p.userFonts !== undefined) {
+    check(Array.isArray(p.userFonts), 'Invalid userFonts');
+    for (const f of p.userFonts) check(f && typeof f.key === 'string' && (J.SAFE_FONT_KEY.test(f.key) || localFontKey(f.key)) && typeof f.family === 'string', 'Invalid user font');
+  }
+  if (p.timing) {
+    for (const k of Object.keys(timing.properties)) if (own(p.timing, k)) validate(p.timing[k], timing.properties[k], 'timing.' + k);
+    if (p.timing.lineTimes !== undefined) {
+      check(p.timing.lineTimes && !Array.isArray(p.timing.lineTimes) && typeof p.timing.lineTimes === 'object', 'Invalid lineTimes');
+      for (const [i, t] of Object.entries(p.timing.lineTimes)) check(/^\d+$/.test(i) && Number.isFinite(t) && t >= 0, 'Invalid line time');
+    }
+  }
+  if (p.enabled) for (const [g, values] of Object.entries(p.enabled)) {
+    check(groups.includes(g) && values && typeof values === 'object' && !Array.isArray(values), 'Invalid technique group');
+    for (const [k, on] of Object.entries(values)) check(own(J.registry(g), k) && typeof on === 'boolean', 'Invalid enabled technique');
+  }
+  const record = (v, label, visit) => {
+    check(v && typeof v === 'object' && !Array.isArray(v), 'Invalid ' + label);
+    for (const [k, x] of Object.entries(v)) { check(/^\d+$/.test(k), 'Invalid index in ' + label); visit(x); }
+  };
+  const techniqueValues = o => {
+    for (const g of cutGroups) if (o[g] !== undefined && o[g] !== null && g !== 'decor') tech(g, o[g], true);
+    if (o.decor !== undefined) { check(Array.isArray(o.decor), 'Invalid decorations'); o.decor.forEach(d => tech('decor', typeof d === 'string' ? d : d && d.id)); }
+  };
+  record(p.overrides || {}, 'overrides', o => {
+    check(o && typeof o === 'object' && !Array.isArray(o), 'Invalid line override');
+    const allowed = [...cutGroups, 'cuts', 'single', 'seed', 'lock', 'lockedSeed', 'lockedCuts', 'cutLayouts', 'cutTech', 'cutQuiet'];
+    check(Object.keys(o).every(k => allowed.includes(k)), 'Unknown line override');
+    techniqueValues(o);
+    for (const k of ['seed', 'lockedSeed', 'cuts']) if (o[k] !== undefined) check(Number.isSafeInteger(o[k]), 'Invalid override ' + k);
+    for (const k of ['lock', 'single']) if (o[k] !== undefined) check(typeof o[k] === 'boolean', 'Invalid override ' + k);
+    if (o.cutLayouts) record(o.cutLayouts, 'cutLayouts', k => tech('layout', k, true));
+    if (o.cutTech) record(o.cutTech, 'cutTech', slot => {
+      check(slot && typeof slot === 'object' && !Array.isArray(slot), 'Invalid cut technique');
+      for (const [g, k] of Object.entries(slot)) { check(cutGroups.includes(g), 'Unknown cut group'); tech(g, k, true); }
+    });
+    if (o.cutQuiet) record(o.cutQuiet, 'cutQuiet', slot => validate(slot, obj(Object.fromEntries(cutGroups.map(g => [g, bool]))), 'cutQuiet'));
+    if (o.lockedCuts) {
+      check(Array.isArray(o.lockedCuts), 'Invalid locked cuts');
+      for (const c of o.lockedCuts) {
+        check(c && typeof c.utext === 'string', 'Invalid locked text'); techniqueValues(c);
+        for (const k of ['layout', 'enter', 'exit', 'hold']) check(typeof c[k] === 'string', 'Missing locked technique');
+        for (const k of ['inDur', 'outDur', 'seed']) check(Number.isFinite(c[k]), 'Invalid locked cut ' + k);
+      }
+    }
+  });
+}
+const definitions = [];
+function tool(name, description, schema, run, readOnly = false) { definitions.push({ name: 'jizura_' + name, description, inputSchema: schema, run, readOnly }); }
+tool('get_state', 'Read the editor, revision, one-based lines/cuts and source rows. Use detail=false for a small status response. Audio and font files must be supplied through the existing browser file inputs.', obj({ detail: bool }), a => api().state(a.detail !== false), true);
+tool('list_options', 'Search IDs and localized labels. category is style, font, settings, or a technique group. Pagination is one-based.', obj({ category: choice(['style', 'font', 'settings', ...groups]), query: str(), page: integer(1, 10000), pageSize: integer(1, 100) }, ['category']), a => {
+  if (a.category === 'settings') return { settingsSchema: settings, timingSchema: timing, lockParameters: params, groups };
+  const table = a.category === 'style' ? J.STYLES : a.category === 'font' ? J.FONTS : J.registry(a.category);
+  let items = Object.entries(table).filter(([, v]) => !v.special).map(([id, v]) => ({ id, label: v.name || v.label || id, description: v.desc || '', enabled: a.category === 'font' || a.category === 'style' || J.ui.project.enabled[a.category][id] !== false, eligibleForRandom: a.category === 'font' || J.randomOk(J.ui.project, a.category, id) }));
+  if (a.query) items = items.filter(x => (x.id + ' ' + x.label + ' ' + x.description).toLowerCase().includes(a.query.toLowerCase()));
+  const page = a.page || 1, size = a.pageSize || 30;
+  return { total: items.length, page, items: items.slice((page - 1) * size, page * size) };
+}, true);
+tool('set_lyrics', 'Replace raw lyrics (LRC and JIZURA syntax supported), or clear lyrics and line settings. Undo uses the existing edit history.', obj({ text: str(200000), clear: bool }), a => {
+  check((a.clear === true) !== own(a, 'text'), 'Supply text OR clear=true'); api().lyrics(a.text, a.clear);
+});
+tool('update_settings', 'Update only supplied settings. Empty font IDs restore style defaults. exportRange uses one-based lines and requires revision. Discover values with list_options.', obj({ settings, revision }, ['settings']), a => {
+  settingsCheck(a.settings); if (own(a.settings, 'exportRange')) current(a.revision); api().settings(a.settings);
+});
+tool('set_timing', 'Update timing, set/delete manual line times, or clear manual times. Times use seconds; line references require revision.', obj({ settings: timing, times: list(obj({ line, time: nullable(num(0, 86400)) }, ['line', 'time'])), clear: bool, revision }), a => {
+  if (a.times && a.times.length || a.clear) current(a.revision);
+  for (const t of a.times || []) lineIndex(t.line);
+  api().timing(a.settings || {}, a.times || [], !!a.clear);
+});
+tool('edit_line', 'Edit one parsed line. Text replaces its source row body, preserving LRC tags (shared timestamps on that source row also change). Send text separately from layout/cuts/lock. cuts=0 and layout="" restore automatic choices.', obj({ revision, line, text: { ...str(10000), minLength: 1, pattern: '^[^\\r\\n]+$' }, layout: str(), cuts: integer(0, 6), lock: bool }, ['revision', 'line']), a => {
+  current(a.revision); const i = lineIndex(a.line), { revision: r, line: l, ...patch } = a;
+  check(Object.keys(patch).length > 0, 'No edit specified');
+  if (own(patch, 'text')) check(Object.keys(patch).length === 1 && patch.text.trim().length > 0, 'Text must be a separate nonempty edit');
+  if (own(patch, 'layout')) tech('layout', patch.layout, true);
+  if (!own(patch, 'text')) check(!J.ui.plan.lines[i].interlude, 'Interlude lines only support text/timing edits');
+  api().line(i, patch);
+});
+tool('edit_cut', 'Set a technique on a one-based cut within its line. key="" restores automatic selection. quiet toggles extra-effect suppression for the group.', obj({ revision, line, cut, group: choice(cutGroups), key: str(), quiet: bool }, ['revision', 'line', 'cut', 'group']), a => {
+  current(a.revision); const k = cutIndex(a.line, a.cut); check(own(a, 'key') || own(a, 'quiet'), 'Supply key or quiet');
+  if (own(a, 'key')) tech(a.group, a.key, true); api().cut(a.line - 1, k, a.group, a.key, a.quiet);
+});
+tool('set_techniques', 'Enable/disable techniques in one group. Omit keys to affect the entire group, keeping the same safe defaults as the UI bulk buttons.', obj({ group: choice(groups), keys: list(str()), enabled: bool }, ['group', 'enabled']), a => {
+  const keys = a.keys || J.order(a.group).filter(k => !J.registry(a.group)[k].special); keys.forEach(k => tech(a.group, k)); api().techniques(a.group, keys, a.enabled, !a.keys);
+});
+tool('set_locks', 'Set randomization locks for technique groups (tech) or effect parameters (params).', obj({ kind: choice(['tech', 'params']), keys: list(str()), locked: bool }, ['kind', 'keys', 'locked']), a => {
+  check(a.keys.every(k => (a.kind === 'tech' ? groups : params).includes(k)), 'Unknown lock'); api().locks(a.kind, a.keys, a.locked);
+});
+tool('randomize', 'Randomize all, style, mood, palette, composition, line, or cut. Line/cut targets require revision and one-based references. Explicit line reroll unlocks that line, as in the UI.', obj({ target: choice(['all', 'style', 'mood', 'palette', 'composition', 'line', 'cut']), revision, line, cut, strategy: choice(['omakase', 'shuffle']) }, ['target']), a => {
+  if (a.strategy) check(a.target === 'cut', 'strategy is only for cut rerolls');
+  if (['line', 'cut'].includes(a.target)) { current(a.revision); check(a.line !== undefined, 'Supply line'); lineIndex(a.line); check(!J.ui.plan.lines[a.line - 1].interlude, 'Cannot reroll an interlude line'); }
+  if (a.target === 'cut') { check(a.cut !== undefined, 'Supply cut'); cutIndex(a.line, a.cut); }
+  api().randomize(a.target, a.line - 1, a.cut - 1, a.strategy);
+});
+tool('history', 'Use edit undo/redo or look previous/next. These are separate existing histories.', obj({ kind: choice(['edit', 'look']), direction: choice(['back', 'forward']) }, ['kind', 'direction']), a => {
+  const h = api().state().history, key = a.kind === 'edit' ? a.direction === 'back' ? 'undo' : 'redo' : a.direction === 'back' ? 'previous' : 'next';
+  check(h[key], 'No history in that direction'); api().history(a.kind, a.direction === 'back' ? -1 : 1);
+});
+tool('preview', 'Play, pause, seek in seconds, set loop/preview volume/mute or display mode. Audio may require a real browser gesture.', obj({ action: choice(['play', 'pause']), time: num(0, 86400), loop: choice(['all', 'line', 'cut', 'off']), volume: num(0, 1), muted: bool, mode: choice(['easy', 'pro', 'mobile']) }), a => api().preview(a));
+tool('tap_sync', 'Start tap synchronization at a line, record the current playhead, undo the last tap, or stop. Prefer set_timing for known timestamps.', obj({ action: choice(['start', 'record', 'back', 'stop']), line, revision }, ['action']), a => {
+  if (a.action === 'start') { check(!J.ui.tap, 'Tap sync already active'); current(a.revision); lineIndex(a.line || 1); }
+  else if (a.action !== 'stop') check(!!J.ui.tap, 'Tap sync is not active');
+  api().tap(a.action, (a.line || 1) - 1);
+});
+tool('project', 'Get/import/save the existing project JSON or get/save AE JSON. JSON does not include audio/font bytes. Import replaces the current project. File inputs are #fileProject, #audioFile, #fontFile.', obj({ action: choice(['get', 'import', 'save', 'get_ae', 'save_ae']), json: str(8000000) }, ['action']), async a => {
+  if (a.action === 'import') { check(typeof a.json === 'string', 'Supply json'); let p; try { p = JSON.parse(a.json); } catch { fail('invalid_input', 'Invalid JSON'); } projectCheck(p); await api().importProject(p); }
+  else if (a.action === 'get' || a.action === 'get_ae') return { project: api().projectData(a.action === 'get_ae') };
+  else return { file: await api().saveProject(a.action === 'save_ae') };
+});
+tool('start_export', 'Start MP4 or PNG ZIP export. Returns a job immediately; poll get_export_status. Direct-to-file MP4 requires the existing #btnMP4File browser button.', obj({ kind: choice(['mp4', 'png', 'pnga', 'pngl', 'mp4file']) }, ['kind']), a => {
+  if (a.kind === 'mp4file') return { status: 'needs_user_action', nextAction: 'Use the #btnMP4File button to choose the destination, then call jizura_get_export_status.' };
+  return { job: api().startExport(a.kind) };
+});
+tool('get_export_status', 'Read the latest export job. completed means encoding completed; download_started is not proof of a file saved on disk. Only the latest job is retained.', obj({ jobId: str() }), a => {
+  const job = J.ui.exportJob; if (a.jobId) check(job && a.jobId === job.id, 'Unknown or superseded export job'); return { job: job ? JSON.parse(JSON.stringify(job)) : null };
+}, true);
+tool('cancel_export', 'Cancel the current export. Poll status for cancellation completion.', obj({ jobId: str() }), a => {
+  if (a.jobId) check(J.ui.exportJob && a.jobId === J.ui.exportJob.id, 'Unknown or superseded export job'); return { job: api().cancelExport() };
+});
+tool('reset_project', 'Open the existing irreversible reset confirmation. The user must confirm in the UI; this tool never bypasses confirmation.', obj(), () => {
+  check(typeof document.getElementById('resetDlg').showModal === 'function', 'Use the existing reset button in this browser'); api().requestReset();
+  return { status: 'needs_user_action', nextAction: 'Confirm or cancel the existing #resetDlg dialog in the browser.' };
+});
+let queue = Promise.resolve();
+function execute(def, args, options) {
+  const run = async () => {
+    try {
+      if (options && options.signal && options.signal.aborted) fail('cancelled', 'Tool call cancelled before execution');
+      validate(args, def.inputSchema);
+      check(J.ui && J.ui.project && J.ui.plan, 'Editor has not initialized');
+      api().prepare();
+      const suffix = def.name.slice(7);
+      const read = def.readOnly || suffix === 'project' && ['get', 'get_ae'].includes(args.action);
+      if (!read && suffix !== 'cancel_export') {
+        if (Object.values(J.ui.loading).some(Boolean)) fail('busy', 'Restoring project or loading audio/fonts; poll jizura_get_state.');
+        if (J.ui.exporting) fail('busy', 'Export running; poll or cancel it first.');
+        if (document.getElementById('resetDlg').open) fail('busy', 'Resolve the reset dialog in the browser.');
+        if (J.ui.tap && !['tap_sync', 'preview'].includes(suffix)) fail('busy', 'Stop tap_sync before editing.');
+        api().activate();
+      }
+      const data = await def.run(args);
+      return JSON.stringify({ ok: true, ...(data || {}), state: read ? undefined : api().state() });
+    } catch (e) { return JSON.stringify({ ok: false, error: { code: e.code || 'operation_failed', message: String(e.message || e) } }); }
+  };
+  if (def.readOnly || def.name === 'jizura_cancel_export') return run();
+  const result = queue.then(run, run); queue = result.then(() => undefined, () => undefined); return result;
+}
+async function register() {
+  try {
+    if (window.__adobe_cep__ || document.documentElement.classList.contains('cep')) { status.status = 'disabled'; return; }
+    const context = document.modelContext && typeof document.modelContext.registerTool === 'function' ? document.modelContext : navigator.modelContext;
+    if (!context || typeof context.registerTool !== 'function') return;
+    const controller = new AbortController(); status.status = 'registering';
+    try {
+      for (const def of definitions) {
+        await context.registerTool({ name: def.name, description: def.description, inputSchema: def.inputSchema,
+          annotations: { readOnlyHint: def.readOnly, untrustedContentHint: true },
+          execute: (args, options) => execute(def, args, options) }, { signal: controller.signal });
+        status.tools.push(def.name);
+      }
+      status.status = 'ready';
+    } catch (e) {
+      controller.abort();
+      if (typeof context.unregisterTool === 'function') for (const name of status.tools) { try { context.unregisterTool(name); } catch {} }
+      status.status = 'failed'; status.error = String(e.message || e);
+    }
+  } catch (e) { status.status = 'failed'; status.error = String(e.message || e); }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', register, { once: true }); else void register();
 })();
 
 </script>

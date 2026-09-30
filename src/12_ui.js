@@ -16,6 +16,8 @@ const ICON = {
 };
 
 const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+S.revision = 0; S.loading = { boot: true, audio: false, fonts: false }; S.exportJob = null;
+const copyData = value => JSON.parse(JSON.stringify(value, (_key, item) => ArrayBuffer.isView(item) ? Array.from(item) : item));
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -94,6 +96,7 @@ function initVolume() {
   if (!(v >= 0 && v <= 1)) v = 0.8;
   const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '消音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '音量 ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
+  AP.showVolume = () => { show(); save(); };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
   mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
@@ -173,6 +176,8 @@ function langNote() {
   langNote.last = J.lang;
 }
 function replan() {
+  clearTimeout(replanTimer); replanTimer = null;
+  S.revision++;
   S.plan = J.plan(S.project, audioLike());
   // lines locked in older projects (seed only): take a snapshot now, so from here on they stay exactly as they are
   for (const [i, o] of Object.entries(S.project.overrides || {})) if (o && o.lock && !Array.isArray(o.lockedCuts)) { const snap = J.lineSnapshot(S.plan, +i); if (snap) o.lockedCuts = snap; }
@@ -754,10 +759,8 @@ function editLine(li, ln) {
     if (done) return; done = true;
     const v = inp.value.trim();
     if (ok && v && v !== body) {
-      pushEdit();
-      rows[ln.src] = pre + v;
-      S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`${ln.index + 1}行目の歌詞を直しました`);
+      replaceLineText(ln, v);
+      toast(`${ln.index + 1}行目の歌詞を直しました`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -816,10 +819,10 @@ async function resetAll() {
   if (S.exporting) return;
   if (S.tap) stopTap();
   pause();
-  audioSeq++;                                  // a song still being analysed must not come back after the reset
+  S.loading.reset = true; ++audioSeq; S.loading.audio = false;
   S.project = mergeProject(null); S.project.lyrics = '';
   S.audio = null; if ($('audioFile')) $('audioFile').value = '';
-  if (J.forgetSong) await J.forgetSong();
+  try { if (J.forgetSong) await J.forgetSong(); } finally { S.loading.reset = false; }
   $('audioName').textContent = audioNameDefault;
   ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
   TL.z = 1; TL.off = 0;
@@ -939,6 +942,14 @@ function fontSelectOptions(sel) {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
+}
+function addLocalFont(name) {
+  name = name.trim();
+  const key = 'local_' + name.replace(/\s+/g, '_');
+  const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
+  J.addUserFont(key, name + '（PC）', name, weight);
+  S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '（PC）', family: name, weight }]);
+  S.project.fonts.display = key;
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
@@ -1315,6 +1326,14 @@ function queueThumbs(list) {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kickPreviewLoop(); });
 
+function changeTechniques(group, keys, action, bulk) {
+  const en = S.project.enabled[group];
+  keys.forEach(k => { en[k] = action === 'on' ? true : action === 'off' ? false : en[k] === false; });
+  if (!bulk) return;
+  if (group === 'layout' && !techItems(group).some(k => en[k] !== false)) en.center = true;
+  const fallback = { enter: 'cut', exit: 'cut', hold: 'still', treat: 'none', bg: 'none', cam: 'push' };
+  if (fallback[group]) en[fallback[group]] = true;
+}
 function renderTech() {
   resetPreviewWatch();
   const box = $('techLists'); box.innerHTML = '';
@@ -1350,10 +1369,7 @@ function renderTech() {
     d.querySelector('summary .lk').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTechLock(g); });
     d.querySelectorAll('.tg-tools button').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.a;
-      shown.forEach(k => { en[k] = a === 'on' ? true : a === 'off' ? false : en[k] === false; });
-      if (g === 'layout' && !items.some(k => en[k] !== false)) en.center = true;
-      if (g === 'enter') en.cut = true; if (g === 'exit') en.cut = true; if (g === 'hold') en.still = true;
-      if (g === 'treat') en.none = true; if (g === 'bg') en.none = true; if (g === 'cam') en.push = true;
+      changeTechniques(g, shown, a, true);
       S.project.mood = null; openGroups.add(g); renderTech(); replan();
     }));
     d.appendChild(list);
@@ -1394,59 +1410,75 @@ function baseName() {
   return ((S.project.title || 'jizura').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60) || 'jizura') + (k ? (k === 'green' ? '_greenback' : '_blackback') : '');
 }
 const canPickFile = () => typeof window.showSaveFilePicker === 'function' && !document.documentElement.classList.contains('cep') && typeof VideoEncoder !== 'undefined';
+let exportSeq = 0;
 async function runExport(kind) {
   if (S.exporting) return;
+  if (replanTimer) replan();
+  const plan = copyData(S.plan), snapshot = copyData(S.project), audio = S.audio;
+  const range = exportRange(), nameBase = baseName(), suffix = rangeSuffix(), mobile = S.mode === 'mobile';
+  const ac = new AbortController(); S.exporting = ac;
+  const job = S.exportJob = { id: 'export-' + (++exportSeq), kind, status: 'running', progress: 0, files: [], error: null };
+  const save = async (name, blob) => {
+    if (ac.signal.aborted) throw new Error('Export cancelled');
+    const result = await J.saveFile(name, blob);
+    job.files.push({ name, bytes: blob.size, status: result === 'declined' ? 'declined' : 'download_started' });
+    return result;
+  };
   // 大きな動画用: the save dialog must open straight from the click (before anything is awaited)
   let file = null, fileName = '';
   if (kind === 'mp4file') {
     try {
-      const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
+      const hnd = await window.showSaveFilePicker({ suggestedName: nameBase + suffix + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('保存先を開けませんでした: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { job.status = e && e.name === 'AbortError' ? 'cancelled' : 'failed'; job.error = String(e.message || e); S.exporting = null; if (job.status === 'failed') toast('保存先を開けませんでした: ' + job.error); return; }
   }
   pause();
-  const ac = new AbortController(); S.exporting = ac;
   const boxes = [...document.querySelectorAll('.exp-box')];
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
   setText('準備中…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
-  const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
+  const onProgress = (p, m) => { job.progress = p; job.message = m; boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
   boxes.forEach(b => { const sh = b.querySelector('.exp-share'); if (sh) sh.hidden = true; });
   // keep the phone's screen on while exporting (a sleeping screen stops the encoder)
   let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
-  const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
-  if (proj !== S.project) toast('スマホの画面では 1080p で書き出します');
+  const proj = mobile && (snapshot.res || 1080) > 1080 ? Object.assign({}, snapshot, { res: 1080 }) : snapshot;
+  if (proj !== snapshot) toast('スマホの画面では 1080p で書き出します');
   try {
-    await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
-    const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
+    if (ac.signal.aborted) throw new Error('Export cancelled');
+    await J.ensureFonts(snapshot.lyrics + (snapshot.title || '') + (snapshot.artist || '') + HUD_CHARS, J.fontsOfPlan(plan));
+    const lost = J.missingUserFonts(J.fontsOfPlan(plan).concat(Object.values(snapshot.fonts || {})));
     if (lost.length) throw new Error(`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`);
     if (kind === 'mp4' || kind === 'mp4file') {
-      const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
-      const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
+      const span = J.exportSpan(plan, range);
+      const r = await J.exportMP4({ plan, project: proj, audio: snapshot.includeAudio !== false ? audio : null, quality: snapshot.quality || 'high', onProgress, signal: ac.signal, range, file });
+      if (file) job.files.push({ name: fileName, status: 'saved' });
       file = null;
       txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB・' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
       if (r.blob) {
-        const name = baseName() + rangeSuffix() + '.mp4';
-        const res = await J.saveFile(name, r.blob);
+        const name = nameBase + suffix + '.mp4';
+        const res = await save(name, r.blob);
         if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
         offerShare(boxes, r.blob, name);
       } else txt.textContent += `・「${fileName}」に保存しました`;
       if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
-        await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
+        await save(nameBase + suffix + '_audio.wav', J.audioWav(audio.buffer, span.dur, span.t0));
         txt.textContent += r.audio ? '。このブラウザでは音声が Opus になり、iPhone・QuickTime などでは音が出ないことがあるため、音声を WAV でも保存しました' : '。このブラウザは音声を書き出せないため、音声を WAV で別に保存しました（動画編集ソフトで重ねてください）';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
+      } else if (snapshot.includeAudio !== false && !audio && snapshot.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
     } else {
-      const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
+      const blob = await J.exportPNGZip({ plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
+      await save(nameBase + suffix + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
+    job.status = ac.signal.aborted ? 'cancelled' : job.files.some(f => f.status === 'declined') ? 'save_declined' : 'completed';
+    job.progress = 1;
   } catch (e) {
+    job.status = ac.signal.aborted ? 'cancelled' : 'failed'; job.error = String(e.message || e);
     txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
     console.error(e);
     if (file) { try { await file.abort(); } catch (e2) {} }
@@ -1693,21 +1725,19 @@ function bind() {
   $('btnRandPalette').addEventListener('click', randomPalette);
   $('btnAddFont').addEventListener('click', () => {
     const name = $('localFont').value.trim(); if (!name) return;
-    const key = 'local_' + name.replace(/\s+/g, '_');
-    const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + '（PC）', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '（PC）', family: name, weight }]);
-    S.project.fonts.display = key; $('localFont').value = '';
+    addLocalFont(name); $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
   $('fontFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
+    S.loading.fonts = true;
     try {
       const uf = await J.loadFontFile(f);
       S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
       S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
     }
     catch (err) { showMsg('フォントを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+    finally { S.loading.fonts = false; }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -1759,8 +1789,8 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '@VERSION@' }), null, 1)));
-  $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  $('btnSave').addEventListener('click', () => saveProject(false));
+  $('btnAE').addEventListener('click', () => saveProject(true));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
@@ -1778,23 +1808,11 @@ function bind() {
     loadLrc(text);
   });
   ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
-  $('btnReset').addEventListener('click', () => {
-    const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) resetAll(); return; }
-    dlg.returnValue = ''; dlg.showModal();
-  });
+  $('btnReset').addEventListener('click', requestReset);
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
   $('fileProject').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try {
-      const np = mergeProject(JSON.parse(await f.text()));
-      if (S.tap) stopTap();
-      pause();
-      S.project = np;
-      // another project: undo and 前の案 / 次の案 belonged to the old one
-      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
-      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
-    }
+    try { await importProject(JSON.parse(await f.text())); }
     catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
     e.target.value = '';
   });
@@ -1821,6 +1839,7 @@ function bind() {
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
 let audioSeq = 0;
 async function loadAudioFile(f, restored) {
+  S.loading.audio = true;
   const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
   $('audioName').textContent = '解析中…';
   try {
@@ -1835,6 +1854,7 @@ async function loadAudioFile(f, restored) {
     syncUI(); replan();
     return true;
   } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
+  finally { if (my === audioSeq) S.loading.audio = false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -1908,27 +1928,181 @@ async function restoreFonts() {
   if (missing.length) toast(`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`);
 }
 
+/* Small editor operations shared by the UI and the WebMCP adapter. */
+function replaceLineText(ln, text) {
+  const rows = S.project.lyrics.replace(/\r/g, '').split('\n');
+  const pre = ((rows[ln.src] || '').match(LRC_PREFIX) || [''])[0];
+  pushEdit(); rows[ln.src] = pre + text.trim();
+  S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
+  replan(); flushSave();
+}
+function requestReset() {
+  const dlg = $('resetDlg');
+  if (!dlg || typeof dlg.showModal !== 'function') {
+    if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) return resetAll();
+    return;
+  }
+  if (!dlg.open) { dlg.returnValue = ''; dlg.showModal(); }
+}
+async function importProject(project) {
+  S.loading.fonts = true;
+  try {
+    const next = mergeProject(project);
+    // Preflight before replacing the active document.
+    try { J.plan(next, audioLike()); } finally { if (J.setLang) J.setLang(S.plan.lang || 'ja'); }
+    pause();
+    if (next.audioName !== S.project.audioName) { ++audioSeq; S.loading.audio = false; S.audio = null; $('audioName').textContent = audioNameDefault; }
+    ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    S.project = next; syncUI(); replan();
+    await restoreFonts(); commit(); updateEditBtns(); flushSave();
+  } finally { S.loading.fonts = false; }
+}
+function projectData(ae) {
+  return ae ? J.planForAE(S.plan, S.project, exportRange()) : Object.assign(copyData(S.project), { appVersion: '@VERSION@' });
+}
+async function saveProject(ae) {
+  const name = baseName() + (ae ? rangeSuffix() + '_ae.json' : '.jizura.json');
+  const result = await J.saveFile(name, JSON.stringify(projectData(ae), null, 1));
+  return { name, status: result === 'declined' ? 'declined' : 'download_started' };
+}
+const editorActions = {
+  prepare() { if (replanTimer) replan(); },
+  activate() { S.agentActive = true; if (TR.i >= 0) tourEnd(); },
+  state(detail = false) {
+    const r = exportRangeLines();
+    const result = {
+      revision: S.revision, loading: copyData(S.loading), duration: S.plan.duration,
+      lineCount: S.plan.lines.length, cutCount: S.plan.cuts.length,
+      playback: { playing: S.playing, time: S.t, loop: S.loop || 'off', volume: AP.vol, muted: AP.muted, mode: S.mode },
+      history: { undo: ED.undo.length > 0, redo: ED.redo.length > 0, previous: H.i > 0, next: H.i < H.list.length - 1 },
+      audio: { loaded: !!S.audio, name: S.project.audioName || null, duration: S.audio ? S.audio.duration : null, bpm: S.audio ? S.audio.bpm : null, input: '#audioFile' },
+      fonts: { missing: J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {}))), input: '#fontFile' },
+      tap: S.tap ? { nextLine: S.tap.i + 1 } : null,
+      exportRange: r ? { from: r.from + 1, to: r.to + 1 } : null,
+      exportJob: S.exportJob ? copyData(S.exportJob) : null,
+      resetPending: !!$('resetDlg').open,
+    };
+    if (detail) {
+      result.project = projectData(false);
+      result.lines = S.plan.lines.map((ln, i) => ({ line: i + 1, sourceRow: ln.src + 1, text: ln.text, interlude: !!ln.interlude, start: ln.start, end: ln.end, locked: !!(S.project.overrides[i] || {}).lock }));
+      result.cuts = S.plan.cuts.map(c => ({ line: c.line >= 0 ? c.line + 1 : null, cut: lyricCutK(c) >= 0 ? lyricCutK(c) + 1 : null, text: c.text, start: c.start, end: c.end,
+        techniques: Object.fromEntries(CHIP_GROUPS.map(([g]) => [g, cutGroupVal(c, g)])) }));
+    }
+    return result;
+  },
+  settings(patch) {
+    remember();
+    if ('style' in patch) S.project.colors.enabled = false;
+    for (const [k, v] of Object.entries(patch)) {
+      if (['fx', 'colors', 'fonts'].includes(k)) Object.assign(S.project[k], v);
+      else if (k === 'exportRange') S.project.exportRange = v ? { from: v.from - 1, to: v.to - 1 } : null;
+      else if (k !== 'mode' && k !== 'localFont') S.project[k] = v;
+    }
+    for (const [role, key] of Object.entries(S.project.fonts)) if (!key) delete S.project.fonts[role];
+    if (patch.fx) {
+      S.project.mood = null;
+      if ('koma' in patch.fx) S.project.fx.onTwos = patch.fx.koma > 0;
+    }
+    if (patch.localFont) addLocalFont(patch.localFont);
+    fontKey = ''; syncUI(); replan(); commit(); flushSave();
+    if (patch.mode) setMode(patch.mode);
+    codecNoteSoon();
+  },
+  lyrics(text, clear) {
+    if (clear) return clearLyrics();
+    pushEdit(); S.project.lyrics = text; $('lyrics').value = text; replan(); flushSave();
+  },
+  timing(patch, times, clear) {
+    pushEdit(); Object.assign(S.project.timing, patch);
+    if (clear) S.project.timing.lineTimes = {};
+    for (const entry of times) {
+      if (entry.time === null) delete S.project.timing.lineTimes[entry.line - 1];
+      else S.project.timing.lineTimes[entry.line - 1] = entry.time;
+    }
+    syncUI(); replan(); flushSave();
+  },
+  line(i, patch) {
+    const ln = S.plan.lines[i];
+    if ('text' in patch) replaceLineText(ln, patch.text);
+    else {
+      remember();
+      if ('layout' in patch) setOv(i, { layout: patch.layout || undefined });
+      if ('cuts' in patch) setOv(i, { cuts: patch.cuts || undefined, single: undefined });
+      if ('lock' in patch) setOv(i, patch.lock ? { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined } : { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      replan(); commit(); flushSave();
+    }
+  },
+  cut(i, k, group, key, quiet) {
+    remember();
+    if (key !== undefined) setCutTech(i, k, group, key);
+    if (quiet !== undefined) markCutQuiet(i, k, [group], quiet);
+    replan(); commit(); flushSave();
+  },
+  techniques(group, keys, enabled, bulk) {
+    remember(); changeTechniques(group, keys, enabled ? 'on' : 'off', bulk);
+    S.project.mood = null; renderTech(); replan(); commit(); flushSave();
+  },
+  locks(kind, keys, on) {
+    for (const key of keys) if (!!locksOf()[kind][key] !== on) (kind === 'tech' ? toggleTechLock : toggleParamLock)(key);
+    flushSave();
+  },
+  randomize(target, i, k, strategy) {
+    if (target === 'all') omakase();
+    else if (target === 'palette') { randomPalette(); restartPreview(); }
+    else if (target === 'line') {
+      const cur = S.project.overrides[i] || {}; remember();
+      setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined });
+      replan(); commit(); seek(S.plan.lines[i].start + 0.001);
+    } else if (target === 'cut') {
+      const cut = S.plan.cuts.filter(c => c.line === i && lyricCutK(c) >= 0)[k];
+      seek(cut.start + Math.min(cut.dur * 0.5, cut.inDur + 0.05)); rerollCurrentCut(strategy || 'omakase');
+    } else rerollPart(target === 'composition' ? 'cut' : target);
+    flushSave();
+  },
+  history(kind, direction) { if (kind === 'edit') edGo(direction); else histGo(direction); },
+  preview(options) {
+    if (options.mode) setMode(options.mode);
+    if (options.time !== undefined) seek(options.time);
+    if (options.loop !== undefined) { S.loop = options.loop === 'off' ? false : options.loop; syncLoopBtn(); }
+    if (options.volume !== undefined || options.muted !== undefined) { AP.setVol(options.volume, options.muted); AP.showVolume(); }
+    if (options.action === 'play') play();
+    if (options.action === 'pause') pause();
+    updateTimeUI(); S.need = true;
+    return { audioPlayback: AP.ctx && AP.ctx.state === 'suspended' ? 'needs_user_activation' : 'ready' };
+  },
+  tap(action, from) {
+    if (action === 'start') startTap(from);
+    else if (action === 'record') tapNow();
+    else if (action === 'back') tapBack();
+    else { pause(); if (S.tap) stopTap(); }
+  },
+  projectData, importProject, saveProject, requestReset,
+  startExport(kind) { void runExport(kind); return copyData(S.exportJob); },
+  cancelExport() { if (S.exporting) S.exporting.abort(); return S.exportJob ? copyData(S.exportJob) : null; },
+};
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
-  restoreFonts();
+  const fontsReady = restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
   try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
-  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(tourStart, 600);   // first visit: show the tour once
+  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(() => { if (!S.agentActive) tourStart(); }, 600);   // first visit: show the tour once
   // open on a representative frame (end of the first cut's entrance)
   const c0 = S.plan.cuts.find(c => c.line >= 0);
   if (c0) seek(c0.start + Math.min(c0.dur * 0.6, c0.inDur + 0.25));
   requestAnimationFrame(tick);
   // the song used last time (same name as the saved project's) comes back after a reload
-  if (J.loadSong && S.project.audioName) J.loadSong().then(f => { if (f && f.name === S.project.audioName && !S.audio) loadAudioFile(f, true); });
+  const songReady = J.loadSong && S.project.audioName ? J.loadSong().then(f => { if (f && f.name === S.project.audioName && !S.audio) return loadAudioFile(f, true); }) : Promise.resolve();
+  Promise.allSettled([fontsReady, songReady]).then(() => { S.loading.boot = false; });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { editor: editorActions, toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
 })();
