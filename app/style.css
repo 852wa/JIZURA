@@ -437,3 +437,6 @@ button.small.primary { padding: 4px 12px; }
 #app.is-easy .ln .cut-pair { display: none; }
 .outbtns.out-png { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 8px; }
 .outbtns.out-png button { padding: 8px 10px; font-size: 12px; }
+/* layout menus are filled on first use: keep their width fixed so nothing jumps */
+.ln .cuts select.cut-lay { width: 112px; }
+.ln .tools select.lay { width: 112px; }

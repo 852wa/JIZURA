@@ -460,6 +460,9 @@ button.small.primary { padding: 4px 12px; }
 #app.is-easy .ln .cut-pair { display: none; }
 .outbtns.out-png { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 8px; }
 .outbtns.out-png button { padding: 8px 10px; font-size: 12px; }
+/* layout menus are filled on first use: keep their width fixed so nothing jumps */
+.ln .cuts select.cut-lay { width: 112px; }
+.ln .tools select.lay { width: 112px; }
 
 </style>
 </head>
@@ -475,7 +478,7 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.0</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.1</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="Song title (shown on title cards and HUD)" aria-label="Song title">
       <input id="songArtist" type="text" placeholder="Artist" aria-label="Artist">
@@ -3722,7 +3725,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.10.0', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.10.1', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -36691,6 +36694,14 @@ function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
   const layoutOpts = '<option value="">Auto</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  // layout menus hold only their current choice until they are used: a long song has hundreds of them
+  // (with ~180 options each, building them all made every replan slow)
+  const lazyLay = (sel, v) => {
+    sel.innerHTML = '<option value="">Auto</option>' + (v && J.LAYOUTS[v] ? `<option value="${v}">${J.LAYOUTS[v].name}</option>` : '');
+    sel.value = v || '';
+    const fill = () => { if (sel.dataset.full) return; const cur = sel.value; sel.innerHTML = layoutOpts; sel.value = cur; sel.dataset.full = '1'; };
+    for (const ev of ['pointerdown', 'mousedown', 'focus', 'keydown', 'touchstart']) sel.addEventListener(ev, fill, { capture: true, passive: true });
+  };
   const cutOpts = '<option value="">Cuts: auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cuts: ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
@@ -36704,14 +36715,14 @@ function renderLines() {
       <span class="tools">
         <button class="icon ghost edit" title="Edit this line’s lyrics" aria-label="Edit the lyrics of line ${i + 1}">${ICON.pen}</button>
         ${ln.interlude ? '' : `<select class="ncut" aria-label="Number of cuts in line ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout">${layoutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout"></select>`}
         <button class="icon ghost tapfrom" title="Tap sync again from this line" aria-label="Tap sync from line ${i + 1}">${ICON.tap}</button>
         <button class="icon ghost rng" title="Set as the export range (Shift+click extends it)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Export line ${i + 1}">${ICON.range}</button>
         ${ln.interlude ? '' : `<button class="icon ghost dice" title="Reroll this line">${ICON.dice}</button>`}
         ${ln.interlude ? '' : `<button class="icon ghost lock" title="Lock this line" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
-    if (q('.lay')) q('.lay').value = o.layout || '';
+    if (q('.lay')) lazyLay(q('.lay'), o.layout || '');
     if (q('.ncut')) q('.ncut').value = o.cuts ? String(o.cuts) : '';
     q('.time').addEventListener('change', e => {
       const v = parseFloat(e.target.value);
@@ -36749,8 +36760,7 @@ function renderLines() {
       const forced = o.cutLayouts && o.cutLayouts[k];
       const sel = document.createElement('select');
       sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
-      sel.innerHTML = layoutOpts;
-      sel.value = forced || c.layout;
+      lazyLay(sel, forced || c.layout);
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
       sel.setAttribute('aria-label', `Layout of cut ${k + 1} on line ${i + 1}`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
@@ -37380,7 +37390,9 @@ function renderTech() {
     const d = document.createElement('details'); d.className = 'tgroup';
     d.open = !!q || openGroups.has(g);
     const list = document.createElement('div'); list.className = 'checks tech-grid';
-    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); queueThumbs(list); } else openGroups.delete(g); });
+    let built = false;
+    const build = () => { if (built) return; built = true; fillCards(); };
+    d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); build(); queueThumbs(list); } else openGroups.delete(g); });
     const lked = !!locksOf().tech[g];
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span>`
       + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">All on</button><button class="ghost small" data-a="off">All off</button><button class="ghost small" data-a="flip">Invert</button></div>`;
@@ -37388,7 +37400,8 @@ function renderTech() {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
     })();
-    shown.forEach(k => {
+    // the cards of a closed group are made when it is first opened (860 cards with canvases made every syncUI slow)
+    const fillCards = () => shown.forEach(k => {
       const l = document.createElement('label');
       l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
@@ -37409,7 +37422,7 @@ function renderTech() {
     }));
     d.appendChild(list);
     box.appendChild(d);
-    if (d.open) queueThumbs(list);
+    if (d.open) { build(); queueThumbs(list); }
   });
   $('techTotal').textContent = `${onAll}/${total}`;
 }
@@ -37810,7 +37823,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.0' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.1' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
