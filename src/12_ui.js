@@ -1116,6 +1116,55 @@ function omakase() {
   toast((th ? `おまかせ（${themeName(th)}）：` : 'おまかせ：') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
+/* ---------------- AI おまかせ: LLM が歌詞を読んで演出を決める ---------------- */
+let aiCtl = null, aiRunning = false;
+function openAiDlg() {
+  if (S.exporting || S.tap || aiRunning) return;
+  const cfg = J.aiSettings();
+  $('aiBase').value = cfg.base; $('aiModel').value = cfg.model; $('aiKey').value = cfg.key;
+  const st = $('aiStatus'); st.hidden = true; st.textContent = '';
+  const d = $('aiDlg');
+  if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+}
+async function runAi() {
+  if (aiRunning || S.exporting || S.tap) return;
+  const cfg = { base: $('aiBase').value.trim(), model: $('aiModel').value.trim(), key: $('aiKey').value.trim() };
+  J.aiSaveSettings(cfg);
+  const st = $('aiStatus');
+  const wait = m => { st.hidden = false; st.textContent = m; };
+  aiRunning = true; aiCtl = new AbortController();
+  ['btnAi', 'btnAiTop', 'btnAiBig'].forEach(id => { const b = $(id); if (b) b.disabled = true; });
+  wait('AIが歌詞を読んでいます…（数十秒かかることがあります）');
+  try {
+    const r = await J.aiCompose(S.project, cfg, { audio: audioLike(), signal: aiCtl.signal });
+    aiCtl = null;
+    const d = $('aiDlg'); if (d.close) d.close(); else d.removeAttribute('open');
+    applyAi(r);
+  } catch (err) {
+    if (err && err.name === 'AbortError') { wait(''); st.hidden = true; }
+    else wait('失敗しました: ' + (err && err.message === 'no lyrics' ? '歌詞が入力されていません' : err.message));
+  } finally {
+    aiRunning = false; aiCtl = null;
+    ['btnAi', 'btnAiTop', 'btnAiBig'].forEach(id => { const b = $(id); if (b) b.disabled = false; });
+  }
+}
+function applyAi(r) {
+  remember();
+  const keepE = lockedEnabled(), keepP = lockedParams();
+  const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
+  const o = J.omakase(S.project, Math.random, th, { mood: r.mood, style: r.style });
+  Object.assign(S.project, o);
+  restoreEnabled(keepE); restoreParams(keepP);
+  let n = 0;
+  for (const [k, v] of Object.entries(r.lines || {})) {
+    const i = +k;
+    if ((S.project.overrides[i] || {}).lock) continue;      // ロックした行は触らない
+    setOv(i, v); n++;
+  }
+  fontKey = ''; syncUI(); replan(); commit();
+  toast(`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}` + (r.reason ? `　—　${r.reason}` : ''), o.colors.accentOn ? [o.colors.accent, o.colors.ghostA, o.colors.ghostB] : null);
+  restartPreview();
+}
 // change just one aspect of the current look
 function rerollPart(part) {
   if (S.exporting || S.tap) return;
@@ -1748,6 +1797,16 @@ function bind() {
   $('modePro').addEventListener('click', () => setMode('pro'));
   $('btnOmakase').addEventListener('click', omakase);
   $('btnOmakaseBig').addEventListener('click', omakase);
+  // AI おまかせ
+  $('btnAiTop').addEventListener('click', openAiDlg);
+  $('btnAi').addEventListener('click', openAiDlg);
+  $('btnAiBig').addEventListener('click', openAiDlg);
+  {
+    const ad = $('aiDlg');
+    ad.addEventListener('close', () => { if (aiCtl) { aiCtl.abort(); aiCtl = null; } });   // Esc で閉じたら中断
+    ad.addEventListener('click', e => { if (e.target === ad) ad.close ? ad.close() : ad.removeAttribute('open'); });   // backdrop
+    $('aiRun').addEventListener('click', e => { e.preventDefault(); runAi(); });
+  }
   ['btnPrev', 'btnPrev2'].forEach(id => $(id).addEventListener('click', () => histGo(-1)));
   ['btnNext', 'btnNext2'].forEach(id => $(id).addEventListener('click', () => histGo(1)));
   $('eStyle').addEventListener('click', () => rerollPart('style'));

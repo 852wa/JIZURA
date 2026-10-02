@@ -334,6 +334,14 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .terms-oss p { font-size: 12px !important; margin-top: 6px; }
 .terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
 
+/* ---------- AI おまかせ dialog ---------- */
+.ai-note { font-size: 12px !important; }
+.ai-fields { display: grid; gap: 8px; margin: 12px 0 4px; }
+.ai-fields label { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.ai-fields input { width: 100%; box-sizing: border-box; padding: 6px 8px; font-size: 12px; font-family: var(--mono, monospace); background: var(--raised, rgba(255,255,255,0.04)); color: var(--text); border: 1px solid var(--line2); border-radius: 4px; }
+.ai-status { font-size: 12px !important; }
+.easy-hero #btnAiBig { margin-top: 6px; }
+
 /* ---------- fixed workspace (wide & tall enough windows) ----------
    The page no longer scrolls as a whole: the header and the preview + timeline stay put, and the
    lyrics / line list (left) and settings (right) scroll inside their own columns. */
@@ -475,12 +483,13 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.0</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.11.1</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="곡 제목 (타이틀 카드와 HUD에 표시)" aria-label="곡 제목">
       <input id="songArtist" type="text" placeholder="아티스트" aria-label="아티스트">
     </div>
     <button id="btnOmakaseTop" class="primary omk-top" title="스타일·분위기·연출·배색을 한꺼번에 무작위로">자동 생성</button>
+    <button id="btnAiTop" class="ghost omk-top" title="AI가 가사를 읽고 분위기·스타일·행별 연출을 정합니다">AI</button>
     <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">메뉴</button>
     <div class="modes" role="group" aria-label="편집 모드">
       <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="스마트폰 화면(자동 생성 버튼을 위에 고정, 줄은 접어서 표시)">스마트폰</button>
@@ -567,6 +576,7 @@ button.small.primary { padding: 4px 12px; }
         <button id="btnShuffle" class="accent" title="설정은 유지하고 구성만 다시 추첨 (잠근 줄은 유지)">셔플</button>
         <select class="themeSel" aria-label="자동 생성 테마" title="자동 생성 테마(고르면 그 방향 안에서 자동 생성하고, 필요한 부품 스위치도 켭니다)"><option value="">테마 없음</option><option value="lyricpv">문자 PV</option><option value="kinetic">키네틱</option><option value="wa">일본풍</option><option value="horror">호러</option><option value="pop">팝</option><option value="ballad">발라드</option></select>
         <button id="btnOmakase" class="primary" title="스타일·분위기·연출·배색을 모두 랜덤으로 변경 (R 키)">자동 생성</button>
+        <button id="btnAi" class="accent" title="AI가 가사를 읽고 분위기·스타일·행별 연출을 정합니다">AI</button>
       </div>
       <div class="tl-bar">
         <span class="tl-hint muted">줄 구분(위쪽 눈금)은 드래그로 옮길 수 있습니다. <span class="kbd">Shift</span>를 누르면 비트에 맞추지 않음</span>
@@ -595,6 +605,7 @@ button.small.primary { padding: 4px 12px; }
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">자동으로 만들기</button>
+          <button id="btnAiBig" class="omakase ghost" title="AI가 가사를 읽고 분위기·스타일·행별 연출을 정합니다">AI 연출</button>
           <label class="theme-row">테마<select class="themeSel" aria-label="자동 생성 테마"><option value="">테마 없음</option><option value="lyricpv">문자 PV</option><option value="kinetic">키네틱</option><option value="wa">일본풍</option><option value="horror">호러</option><option value="pop">팝</option><option value="ballad">발라드</option></select><small class="muted">고르면 그 방향 안에서 자동 생성합니다</small></label>
           <p class="hint">누를 때마다 스타일, 분위기, 움직임, 배색, 구성이 모두 바뀝니다. 키보드의 <span class="kbd">R</span> 로도 실행할 수 있습니다.</p>
           <div class="hist-row">
@@ -757,6 +768,20 @@ button.small.primary { padding: 4px 12px; }
     <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">취소</button><button value="reset" class="danger">초기화</button></span></div>
   </form>
 </dialog>
+<dialog id="aiDlg" class="terms" aria-labelledby="aiTitle">
+  <form method="dialog">
+    <h2 id="aiTitle">AI 자동 연출</h2>
+    <p class="terms-sub">AI(LLM)가 가사를 읽고 전체 분위기와 스타일, 감정이 강한 행의 연출을 정합니다.</p>
+    <p class="ai-note muted">※ AI 기능에서는 가사와 곡명·아티스트명이 아래 연결 대상(LLM 서버)으로 전송됩니다. 원치 않으면 실행하지 마세요.</p>
+    <div class="ai-fields">
+      <label>URL <input id="aiBase" type="text" spellcheck="false" aria-label="LLMサーバーのURL"></label>
+      <label>모델 <input id="aiModel" type="text" spellcheck="false" aria-label="モデル名"></label>
+      <label>API 키 <input id="aiKey" type="password" spellcheck="false" aria-label="APIキー"></label>
+    </div>
+    <p class="muted ai-status" id="aiStatus" hidden></p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button id="aiRun" value="run" class="primary">실행</button></span></div>
+  </form>
+</dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
     <h2 id="termsTitle">이용 안내</h2>
@@ -766,7 +791,7 @@ button.small.primary { padding: 4px 12px; }
     </div>
     <p>도구 자체는 <strong>MIT 라이선스</strong>로 공개되어 있습니다. 자세한 라이선스:</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">입력한 가사와 음원은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
+    <p class="muted terms-note">입력한 가사와 곡은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다(AI 자동 연출 사용 시에만 가사 등이 설정한 LLM 서버로 전송됩니다).</p>
     <details class="terms-oss"><summary>사용 중인 오픈소스</summary>
       <p>MP4 내보내기: mp4-muxer (MIT License)<br>글꼴: Google Fonts 배포 서체 (SIL Open Font License 1.1)</p>
     </details>
@@ -3722,7 +3747,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.10.0', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.11.1', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -4532,7 +4557,7 @@ J.THEMES = {
 };
 J.THEME_ORDER = Object.keys(J.THEMES);
 
-J.omakase = (project, rnd = Math.random, themeId = null) => {
+J.omakase = (project, rnd = Math.random, themeId = null, force = null) => {
   const T = themeId && J.THEMES[themeId] ? J.THEMES[themeId] : null;
   const switches = {};
   if (T && T.set) switches[T.set] = true;
@@ -4544,8 +4569,11 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   const moodOk = k => !J.MOODS[k].set || (J.setOn && J.setOn(project, J.MOODS[k].set));
   let moods = Object.keys(J.MOODS).filter(k => k !== project.mood && moodOk(k));
   if (T) { const tm = T.moods.filter(k => J.MOODS[k] && moodOk(k)); moods = tm.filter(k => k !== project.mood); if (!moods.length) moods = tm.length ? tm : Object.keys(J.MOODS).filter(moodOk); }
-  // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat)
-  const mood = !T && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods), M = J.MOODS[mood];
+  // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat);
+  // when a caller (AI) forces a mood, that wins as long as the set switch allows it
+  let mood = !T && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods);
+  if (force && force.mood && J.MOODS[force.mood] && moodOk(force.mood)) mood = force.mood;
+  const M = J.MOODS[mood];
   // a set tied to a mood (ホラー) is only used in that mood
   const moodSetOk = d => !(d && d.set) || !Object.values(J.MOODS).some(m => m.set === d.set) || M.set === d.set;
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
@@ -4556,7 +4584,8 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   if (T) { const ts = J.STYLE_ORDER.filter(k => okStyle(k) && themePart(J.STYLES[k]) && k !== project.style); if (ts.length && rnd() < 0.8) pool = ts; }
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style && okStyle(k));
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
-  const style = pick(pool);
+  let style = pick(pool);
+  if (force && force.style && J.STYLES[force.style] && (!J.randomOk || J.randomOk(project, 'style', force.style))) style = force.style;   // AI がスタイルを指定したときはそれに合わせる（使えるスタイルのときだけ）
   const fx = Object.assign({}, project.fx);
   for (const k of Object.keys(M.fx)) fx[k] = range(M.fx[k]);
   fx.koma = pick(T && T.koma ? T.koma : { horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
@@ -4602,6 +4631,177 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   const overrides = {};
   for (const [i, o] of Object.entries(project.overrides || {})) if (o.lock) overrides[i] = o; else if (o.cutTime) overrides[i] = { cutTime: o.cutTime };   // cut times are timing, not the look
   return Object.assign({ mood, style, fx, enabled, fonts, colors, overrides, seed: Math.floor(rnd() * 1e9) }, switches);
+};
+})();
+
+/* ============================================================
+   JIZURA — AI おまかせ: LLM が歌詞を読んで全体の雰囲気・スタイルと、
+   重要な行ごとの演出を決める（OpenAI 互換 /v1/chat/completions）
+   設定は localStorage の 'jizura.ai' に保存（デフォルトは同梱の接続先）。
+   ============================================================ */
+(() => {
+'use strict';
+
+J.AI_DEFAULTS = { base: 'http://45.207.198.37:9534', key: 'sk-39232d10cf39144e0063109fe9a1c88eb729587f594d10a739a6c92ff56d84a3', model: 'glm-5' };
+
+J.aiSettings = () => {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem('jizura.ai') || '{}') || {}; } catch (e) {}
+  return Object.assign({}, J.AI_DEFAULTS, s);
+};
+J.aiSaveSettings = s => { try { localStorage.setItem('jizura.ai', JSON.stringify(s)); } catch (e) {} };
+
+/* カタログ: 手法の鍵と名前の一覧（special は除く）。LLM には鍵だけ返させる */
+const list = g => J.order(g).filter(k => { const d = J.registry(g)[k]; return d && !d.special; })
+  .map(k => `${k}(${(J.registry(g)[k].name || k).replace(/\s+/g, '')})`).join(' ');
+J.aiCatalog = () => ({
+  moods: Object.keys(J.MOODS).filter(k => k !== 'chaos' && (!J.MOODS[k].set || (J.setOn && J.setOn(J.defaultProject(), J.MOODS[k].set)))).map(k => `${k}(${J.MOODS[k].name})`).join(' '),
+  styles: J.STYLE_ORDER.map(k => `${k}(${(J.STYLES[k].name || k).replace(/\s+/g, '')})`).join(' '),
+  layout: list('layout'), enter: list('enter'), exit: list('exit'), hold: list('hold'), bg: list('bg'),
+});
+
+/* プロンプト: 歌詞（行番号・時刻・本文）とカタログを渡す */
+const lineTime = (s, e) => `${s.toFixed(1)}-${e.toFixed(1)}s`;
+J.aiBuildPrompt = (project, parsed, tm, cat) => {
+  const title = (project.title || parsed.meta.ti || '').trim();
+  const artist = (project.artist || parsed.meta.ar || '').trim();
+  const rows = parsed.lines.map((ln, i) => {
+    const s = tm.starts[i] || 0, e = tm.ends[i] || s + 2;
+    const txt = ln.interlude ? (ln.secs > 0 ? `[間奏 ${ln.secs}秒]` : '[間奏]') : String(ln.src || ln.text || '').slice(0, 42);
+    return `${String(i).padStart(2, '0')}  ${lineTime(s, e)}  ${txt}`;
+  });
+  const sys = 'あなたはリリックビデオ（文字PV）の演出家です。歌詞の意味・情景・感情の流れを読み取り、全体の方向性と、感情の起伏に合わせた行ごとの演出を決めます。返答はJSONのみ（コードフェンスや説明文は禁止）。JSONの値の中に半角の二重引用符（"）を含めないこと。引用したいときは「」や『』を使う。';
+  const user = `曲: ${[title, artist].filter(Boolean).join(' / ') || '無題'}
+
+## 選べる手法（かっこ内は名前。JSON には鍵をそのまま書く）
+mood: ${cat.moods}
+style: ${cat.styles}
+layout: ${cat.layout}
+enter: ${cat.enter}
+exit: ${cat.exit}
+hold: ${cat.hold}
+bg: ${cat.bg}
+
+## 歌詞（行番号  時刻  本文）
+${rows.join('\n')}
+
+## 仕事
+1. 歌詞全体の意味と感情のアーチ（Aメロ→Bメロ→サビなど）を読む。
+2. mood を1つ選ぶ（歌詞の感情に最も合うもの）。style も1つ選ぶ（mood と色彩・世界観が合うもの）。
+3. 感情が強い行（サビ・クライマックス・象徴的な言葉・転換点）を中心に、全行の 1〜3 割に行ごとの指定を付ける。付けても意味のない地味な行には何も付けない。
+   - layout: その行のレイアウト。意味や情景が伝わるものを選ぶ（例: 大きな一言 → huge、つぶやき → stack や type、並べたい → vcols）。
+   - enter / exit: 出現・退場の動き。感情の強い行には目立つもの、静かな行には控えめなもの。
+   - hold: その行で文字がどう居座るか。
+   - bg: 背景グラフィック。行の情景に合うものを。
+   - single: その行を1カットで見せたいとき true（短く強い言葉など）。
+4. 隣接する行に同じ layout を続けない。演出は細かく指定しすぎない。
+5. "reason" に演出の意図を日本語で30字くらい。
+
+## 出力JSONの形（鍵は文字列で行番号）
+{"mood":"…","style":"…","reason":"…","lines":{"12":{"layout":"…","enter":"…","exit":"…","hold":"…","bg":"…"},"5":{"single":true}}}`;
+  return { sys, user };
+};
+
+/* リクエスト (OpenAI 互換 /v1/chat/completions) */
+J.aiRequest = async (cfg, sys, user, signal) => {
+  const base = String(cfg.base || J.AI_DEFAULTS.base).replace(/\/+$/, '');
+  const res = await fetch(base + '/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.key || ''}` },
+    body: JSON.stringify({ model: cfg.model || J.AI_DEFAULTS.model, temperature: 0.7, max_tokens: 2400, messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText || ''}`.trim());
+  const data = await res.json();
+  return (((data || {}).choices || [])[0] || {}).message || {};
+};
+
+/* 返答のパース: コードフェンスを除いて JSON を取り出し、手法の鍵を検証する。
+   LLM が壊した JSON（引用符の混入・余分なカンマ・後ろに説明文）は修復を試みる */
+const clean = s => String(s || '').replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+/* 文字列リテラルを数えながら、最初の { から対応する } までを取り出す */
+const extract = s => {
+  const start = s.indexOf('{');
+  if (start < 0) return '';
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; }
+    else if (c === '"') inStr = true;
+    else if (c === '{') depth++;
+    else if (c === '}') { if (--depth === 0) return s.slice(start, i + 1); }
+  }
+  return s.slice(start);
+};
+const repair = s => s.replace(/[\u201C\u201D]/g, '"').replace(/、\s*([}\]])/g, '$1').replace(/,\s*([}\]])/g, '$1');
+const tryParse = s => { try { return JSON.parse(s); } catch (e) { return null; } };
+/* 最後の手段: 正規表現で各フィールドを拾う（reason の中の引用符で壊れたときの救済） */
+const salvage = t => {
+  let inStr = false, esc = false, depth = 0;
+  for (const c of t) { if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; } else if (c === '"') inStr = true; else if (c === '{') depth++; else if (c === '}') depth--; }
+  return t + (inStr ? '"' : '') + '}'.repeat(Math.max(0, depth));
+};
+const loose = s => {
+  const val = k => { const m = s.match(new RegExp('"' + k + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"')); return m ? m[1] : null; };
+  const out = { mood: val('mood'), style: val('style'), reason: val('reason'), lines: {} };
+  const li = s.indexOf('"lines"'), lb = li >= 0 ? s.indexOf('{', li) : -1;
+  if (lb >= 0) {
+    let depth = 0, inStr = false, esc = false, end = -1;
+    for (let i = lb; i < s.length; i++) {
+      const c = s[i];
+      if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; }
+      else if (c === '"') inStr = true;
+      else if (c === '{') depth++;
+      else if (c === '}') { if (--depth === 0) { end = i + 1; break; } }
+    }
+    const L = tryParse(repair(end > 0 ? s.slice(lb, end) : salvage(s.slice(lb))));
+    if (L) out.lines = L;
+  }
+  return out;
+};
+const validKey = (g, k) => { const d = k && J.registry(g)[k]; return d && !d.special ? k : null; };
+J.aiParse = (text, parsed) => {
+  const s = clean(text);
+  const raw = tryParse(extract(s)) || tryParse(repair(extract(s))) || loose(s) || (() => { throw new Error('no JSON in response'); })();
+  const out = { mood: raw.mood && J.MOODS[raw.mood] && raw.mood !== 'chaos' ? raw.mood : null, style: raw.style && J.STYLES[raw.style] ? raw.style : null, reason: String(raw.reason || '').slice(0, 80), lines: {} };
+  if (!out.mood) out.mood = 'emotional';
+  const fits = (k, txt) => !J.LAYOUTS[k].fits || J.LAYOUTS[k].fits([...String(txt || '').replace(/\s+/g, '')].length);
+  for (const [k2, v] of Object.entries(raw.lines || {})) {
+    const li = +k2, L = parsed.lines[li];
+    if (!L || !v || typeof v !== 'object') continue;
+    const o = {};
+    for (const g of ['enter', 'exit', 'hold', 'bg']) { const key = validKey(g, v[g]); if (key) o[g] = key; }
+    if (!L.interlude) {
+      const key = validKey('layout', v.layout);
+      if (key && fits(key, L.text)) o.layout = key;
+      if (v.single === true) o.single = true;
+    }
+    if (Object.keys(o).length) out.lines[li] = o;
+  }
+  return out;
+};
+
+/* 一連の流れ: 歌詞とタイミング → プロンプト → LLM → 検証済みの案。
+   audio は拍グリッドのためのもの（UI の audioLike() と同じ形）。
+   返答のJSONが壊れていたり・サーバーが一時的に失敗したときは1回だけやり直す */
+J.aiCompose = async (project, cfg, opt = {}) => {
+  const parsed = J.parseLyrics(project.lyrics);
+  if (!parsed.lines.length) throw new Error('no lyrics');
+  const tm = J.computeTiming(project, parsed, opt.audio || null);
+  const cat = J.aiCatalog();
+  const { sys, user } = J.aiBuildPrompt(project, parsed, tm, cat);
+  let lastErr = null;
+  for (let n = 0; n < 2; n++) {
+    if (n) await new Promise(r => setTimeout(r, 900));
+    try {
+      const msg = await J.aiRequest(cfg, sys, user, opt.signal);
+      return J.aiParse(msg.content, parsed);
+    } catch (e) {
+      if (e && e.name === 'AbortError') throw e;
+      lastErr = e;
+    }
+  }
+  throw lastErr;
 };
 })();
 
@@ -37446,6 +37646,55 @@ function omakase() {
   toast((th ? `자동 생성(${themeName(th)}): ` : '자동 생성: ') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
+/* ---------------- AI 자동 생성: LLM が歌詞を読んで연출を決める ---------------- */
+let aiCtl = null, aiRunning = false;
+function openAiDlg() {
+  if (S.exporting || S.tap || aiRunning) return;
+  const cfg = J.aiSettings();
+  $('aiBase').value = cfg.base; $('aiModel').value = cfg.model; $('aiKey').value = cfg.key;
+  const st = $('aiStatus'); st.hidden = true; st.textContent = '';
+  const d = $('aiDlg');
+  if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+}
+async function runAi() {
+  if (aiRunning || S.exporting || S.tap) return;
+  const cfg = { base: $('aiBase').value.trim(), model: $('aiModel').value.trim(), key: $('aiKey').value.trim() };
+  J.aiSaveSettings(cfg);
+  const st = $('aiStatus');
+  const wait = m => { st.hidden = false; st.textContent = m; };
+  aiRunning = true; aiCtl = new AbortController();
+  ['btnAi', 'btnAiTop', 'btnAiBig'].forEach(id => { const b = $(id); if (b) b.disabled = true; });
+  wait('AI가 가사를 읽고 있습니다…(수십 초 걸릴 수 있습니다)');
+  try {
+    const r = await J.aiCompose(S.project, cfg, { audio: audioLike(), signal: aiCtl.signal });
+    aiCtl = null;
+    const d = $('aiDlg'); if (d.close) d.close(); else d.removeAttribute('open');
+    applyAi(r);
+  } catch (err) {
+    if (err && err.name === 'AbortError') { wait(''); st.hidden = true; }
+    else wait('실패: ' + (err && err.message === 'no lyrics' ? '가사가 입력되지 않았습니다' : err.message));
+  } finally {
+    aiRunning = false; aiCtl = null;
+    ['btnAi', 'btnAiTop', 'btnAiBig'].forEach(id => { const b = $(id); if (b) b.disabled = false; });
+  }
+}
+function applyAi(r) {
+  remember();
+  const keepE = lockedEnabled(), keepP = lockedParams();
+  const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
+  const o = J.omakase(S.project, Math.random, th, { mood: r.mood, style: r.style });
+  Object.assign(S.project, o);
+  restoreEnabled(keepE); restoreParams(keepP);
+  let n = 0;
+  for (const [k, v] of Object.entries(r.lines || {})) {
+    const i = +k;
+    if ((S.project.overrides[i] || {}).lock) continue;      // ロックした줄 は触らない
+    setOv(i, v); n++;
+  }
+  fontKey = ''; syncUI(); replan(); commit();
+  toast(`AI 연출: ${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}·지정 ${n}행` + (r.reason ? `　—　${r.reason}` : ''), o.colors.accentOn ? [o.colors.accent, o.colors.ghostA, o.colors.ghostB] : null);
+  restartPreview();
+}
 // change just one aspect of the current look
 function rerollPart(part) {
   if (S.exporting || S.tap) return;
@@ -38078,6 +38327,16 @@ function bind() {
   $('modePro').addEventListener('click', () => setMode('pro'));
   $('btnOmakase').addEventListener('click', omakase);
   $('btnOmakaseBig').addEventListener('click', omakase);
+  // AI 자동 생성
+  $('btnAiTop').addEventListener('click', openAiDlg);
+  $('btnAi').addEventListener('click', openAiDlg);
+  $('btnAiBig').addEventListener('click', openAiDlg);
+  {
+    const ad = $('aiDlg');
+    ad.addEventListener('close', () => { if (aiCtl) { aiCtl.abort(); aiCtl = null; } });   // Esc で閉じたら中断
+    ad.addEventListener('click', e => { if (e.target === ad) ad.close ? ad.close() : ad.removeAttribute('open'); });   // backdrop
+    $('aiRun').addEventListener('click', e => { e.preventDefault(); runAi(); });
+  }
   ['btnPrev', 'btnPrev2'].forEach(id => $(id).addEventListener('click', () => histGo(-1)));
   ['btnNext', 'btnNext2'].forEach(id => $(id).addEventListener('click', () => histGo(1)));
   $('eStyle').addEventListener('click', () => rerollPart('style'));
@@ -38089,7 +38348,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.0' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.11.1' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);

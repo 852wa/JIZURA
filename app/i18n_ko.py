@@ -1,6 +1,16 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    # AI 자동 연출
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI 자동 연출</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'AI(LLM)가 가사를 읽고 전체 분위기와 스타일, 감정이 강한 행의 연출을 정합니다.',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': '※ AI 기능에서는 가사와 곡명·아티스트명이 아래 연결 대상(LLM 서버)으로 전송됩니다. 원치 않으면 실행하지 마세요.',
+    'モデル <input id="aiModel"': '모델 <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'API 키 <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">실행</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="AI가 가사를 읽고 분위기·스타일·행별 연출을 정합니다"',
+    '>AIで作る</button>': '>AI 연출</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': '입력한 가사와 곡은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다(AI 자동 연출 사용 시에만 가사 등이 설정한 LLM 서버로 전송됩니다).',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '한 줄에 컷이 여러 개일 때는 컷이 바뀌는 순간 <span class="kbd">Tab</span> 을 누르면 그 줄의 컷 시작 시각도 맞출 수 있습니다.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>속도 <select id="tapRate" aria-label="탭하는 동안의 재생 속도">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 카운트다운</label>',
@@ -169,6 +179,12 @@ BODY = {
 }
 
 UI = {
+    # AI 자동 연출
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'AI가 가사를 읽고 있습니다…(수십 초 걸릴 수 있습니다)'",
+    "'失敗しました: '": "'실패: '",
+    "'歌詞が入力されていません'": "'가사가 입력되지 않았습니다'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI 연출: ${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}·지정 ${n}행`',
+    '`　—　${r.reason}`': '`　—　${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`앞뒤 줄과 순서가 바뀌지 않도록 ${w.toFixed(2)}초로 했습니다`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'이 컷의 시작 시각(수동). 비우면 자동으로 돌아갑니다'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'이 컷의 시작 시각(자동). 숫자를 넣으면 고정합니다'",

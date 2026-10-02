@@ -40,6 +40,16 @@ STYLES = {
 }
 
 BODY = {
+    # AI 自动编排
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI 自动编排</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'AI（LLM）会阅读歌词，决定整体的氛围与风格，并为情感强烈的行指定演出。',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': '※ 使用 AI 功能时，歌词与歌名、歌手名会发送到下方的连接目标（LLM 服务器）。不想发送请不要执行。',
+    'モデル <input id="aiModel"': '模型 <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'API 密钥 <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">执行</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="AI 阅读歌词，决定氛围、风格与逐行演出"',
+    '>AIで作る</button>': '>AI 编排</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': '输入的歌词和歌曲只在此浏览器内处理，不会发送到服务器（只有使用 AI 自动编排时，歌词等信息才会发送到你设置的 LLM 服务器）。',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '一行有多个镜头时，在镜头切换的瞬间按 <span class="kbd">Tab</span>，也能对齐该行各镜头的开始时间。',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>速度 <select id="tapRate" aria-label="点按时的播放速度">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 倒数</label>',
@@ -212,6 +222,12 @@ BODY = {
 }
 
 UI = {
+    # AI 自动编排
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'AI 正在阅读歌词…（可能需要几十秒）'",
+    "'失敗しました: '": "'失败：'",
+    "'歌詞が入力されていません'": "'未输入歌词'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI 编排：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}·指定 ${n} 行`',
+    '`　—　${r.reason}`': '`　—　${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`为了不与前后的行交换顺序，已设为 ${w.toFixed(2)} 秒`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'此镜头的开始时间（手动）。清空即恢复自动'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'此镜头的开始时间（自动）。输入数值即可固定'",

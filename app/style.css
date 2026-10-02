@@ -311,6 +311,14 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .terms-oss p { font-size: 12px !important; margin-top: 6px; }
 .terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
 
+/* ---------- AI おまかせ dialog ---------- */
+.ai-note { font-size: 12px !important; }
+.ai-fields { display: grid; gap: 8px; margin: 12px 0 4px; }
+.ai-fields label { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.ai-fields input { width: 100%; box-sizing: border-box; padding: 6px 8px; font-size: 12px; font-family: var(--mono, monospace); background: var(--raised, rgba(255,255,255,0.04)); color: var(--text); border: 1px solid var(--line2); border-radius: 4px; }
+.ai-status { font-size: 12px !important; }
+.easy-hero #btnAiBig { margin-top: 6px; }
+
 /* ---------- fixed workspace (wide & tall enough windows) ----------
    The page no longer scrolls as a whole: the header and the preview + timeline stay put, and the
    lyrics / line list (left) and settings (right) scroll inside their own columns. */

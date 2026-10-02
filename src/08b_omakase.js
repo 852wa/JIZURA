@@ -52,7 +52,7 @@ J.THEMES = {
 };
 J.THEME_ORDER = Object.keys(J.THEMES);
 
-J.omakase = (project, rnd = Math.random, themeId = null) => {
+J.omakase = (project, rnd = Math.random, themeId = null, force = null) => {
   const T = themeId && J.THEMES[themeId] ? J.THEMES[themeId] : null;
   const switches = {};
   if (T && T.set) switches[T.set] = true;
@@ -64,8 +64,11 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   const moodOk = k => !J.MOODS[k].set || (J.setOn && J.setOn(project, J.MOODS[k].set));
   let moods = Object.keys(J.MOODS).filter(k => k !== project.mood && moodOk(k));
   if (T) { const tm = T.moods.filter(k => J.MOODS[k] && moodOk(k)); moods = tm.filter(k => k !== project.mood); if (!moods.length) moods = tm.length ? tm : Object.keys(J.MOODS).filter(moodOk); }
-  // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat)
-  const mood = !T && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods), M = J.MOODS[mood];
+  // with the ホラー switch on, おまかせ leans to the ホラー mood (it may repeat);
+  // when a caller (AI) forces a mood, that wins as long as the set switch allows it
+  let mood = !T && moodOk('horror') && rnd() < 0.55 ? 'horror' : pick(moods);
+  if (force && force.mood && J.MOODS[force.mood] && moodOk(force.mood)) mood = force.mood;
+  const M = J.MOODS[mood];
   // a set tied to a mood (ホラー) is only used in that mood
   const moodSetOk = d => !(d && d.set) || !Object.values(J.MOODS).some(m => m.set === d.set) || M.set === d.set;
   // style: mostly one that suits the mood, sometimes anything; never the same twice in a row
@@ -76,7 +79,8 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   if (T) { const ts = J.STYLE_ORDER.filter(k => okStyle(k) && themePart(J.STYLES[k]) && k !== project.style); if (ts.length && rnd() < 0.8) pool = ts; }
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style && okStyle(k));
   if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== project.style);
-  const style = pick(pool);
+  let style = pick(pool);
+  if (force && force.style && J.STYLES[force.style] && (!J.randomOk || J.randomOk(project, 'style', force.style))) style = force.style;   // AI がスタイルを指定したときはそれに合わせる（使えるスタイルのときだけ）
   const fx = Object.assign({}, project.fx);
   for (const k of Object.keys(M.fx)) fx[k] = range(M.fx[k]);
   fx.koma = pick(T && T.koma ? T.koma : { horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
