@@ -1,6 +1,16 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    # AI 自動編排
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI 自動編排</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'AI（LLM）會閱讀歌詞，決定整體的氛圍與風格，並為情感強烈的行指定演出。',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': '※ 使用 AI 功能時，歌詞與歌名、歌手名會傳送到下方的連接目標（LLM 伺服器）。不想傳送請不要執行。',
+    'モデル <input id="aiModel"': '模型 <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'API 金鑰 <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">執行</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="AI 閱讀歌詞，決定氛圍、風格與逐行演出"',
+    '>AIで作る</button>': '>AI 編排</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': '輸入的歌詞和歌曲只在此瀏覽器內處理，不會傳送到伺服器（只有使用 AI 自動編排時，歌詞等資訊才會傳送到你設定的 LLM 伺服器）。',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '一行有多個片段時，在片段切換的瞬間按 <span class="kbd">Tab</span>，也能對齊該行各片段的開始時間。',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>速度 <select id="tapRate" aria-label="點按時的播放速度">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 倒數</label>',
@@ -171,6 +181,12 @@ BODY = {
 }
 
 UI = {
+    # AI 自動編排
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'AI 正在閱讀歌詞…（可能需要數十秒）'",
+    "'失敗しました: '": "'失敗：'",
+    "'歌詞が入力されていません'": "'未輸入歌詞'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI 編排：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}·指定 ${n} 行`',
+    '`　—　${r.reason}`': '`　—　${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`為了不與前後的行交換順序，已設為 ${w.toFixed(2)} 秒`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'此片段的開始時間（手動）。清空即恢復自動'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'此片段的開始時間（自動）。輸入數值即可固定'",

@@ -41,6 +41,16 @@ STYLES = {
 }
 
 BODY = {
+    # AI Otomatis
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI Otomatis</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'AI (LLM) membaca lirik lalu menentukan suasana dan gaya keseluruhan, serta efek per baris pada bagian yang paling emosional.',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': '※ Fitur AI mengirim lirik, judul, dan nama artis ke server LLM di bawah. Jangan jalankan jika tidak ingin mengirimnya.',
+    'モデル <input id="aiModel"': 'Model <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'Kunci API <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">Jalankan</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="AI membaca lirik dan menentukan suasana, gaya, dan efek per baris"',
+    '>AIで作る</button>': '>Buat dengan AI</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': 'Lirik dan lagu yang dimasukkan hanya diproses di dalam peramban ini dan tidak dikirim ke server (hanya saat memakai AI Otomatis lirik dll. dikirim ke server LLM yang kamu atur).',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Jika satu baris punya beberapa cut, tekan <span class="kbd">Tab</span> saat cut harus berganti untuk menyesuaikan waktu cut di baris itu juga.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Kecepatan <select id="tapRate" aria-label="Kecepatan putar saat mengetuk">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Hitung mundur</label>',
@@ -205,6 +215,12 @@ BODY = {
 }
 
 UI = {
+    # AI Otomatis
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'AI sedang membaca lirik… (bisa memakan waktu puluhan detik)'",
+    "'失敗しました: '": "'Gagal: '",
+    "'歌詞が入力されていません'": "'Lirik belum dimasukkan'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI: ${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}, ${n} baris diatur`',
+    '`　—　${r.reason}`': '`　—　${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Diatur ke ${w.toFixed(2)} dtk agar urutan baris tetap`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Awal cut ini (manual). Kosongkan untuk kembali otomatis'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Awal cut ini (otomatis). Ketik waktu untuk menguncinya'",

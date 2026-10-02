@@ -1,6 +1,16 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    # AI Director (AI おまかせ)
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI Director</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'An AI (LLM) reads the lyrics and picks the overall mood, style and effects for the lines that matter most.',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': 'The AI feature sends the lyrics, title and artist to the LLM server below. Don’t run it if you don’t want them sent.',
+    'モデル <input id="aiModel"': 'Model <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'API key <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">Create</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="An AI reads the lyrics and picks the mood, style and per-line effects"',
+    '>AIで作る</button>': '>Create with AI</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': 'Your lyrics and songs are processed only inside this browser and are never sent to a server (the AI Director is the one exception: it sends the lyrics and song info to the LLM server you configure).',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Speed <select id="tapRate" aria-label="Playback speed while tapping">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Count-in</label>',
@@ -173,6 +183,12 @@ BODY = {
 }
 
 UI = {
+    # AI Director (AI おまかせ)
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'The AI is reading the lyrics... (this can take a while)'",
+    "'失敗しました: '": "'Failed: '",
+    "'歌詞が入力されていません'": "'No lyrics entered'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI: ${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}, ${n} lines directed`',
+    '`　—　${r.reason}`': '` — ${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Set to ${w.toFixed(2)} s so the lines stay in order`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Start of this cut (set by hand). Clear it to go back to automatic'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Start of this cut (automatic). Type a time to fix it'",

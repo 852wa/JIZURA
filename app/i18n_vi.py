@@ -42,6 +42,16 @@ STYLES = {
 }
 
 BODY = {
+    # AI tự động
+    '<h2 id="aiTitle">AI おまかせ</h2>': '<h2 id="aiTitle">AI tự động</h2>',
+    'AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。': 'AI (LLM) đọc lời bài hát để chọn không khí, phong cách chung và hiệu ứng cho từng dòng giàu cảm xúc.',
+    '※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。': '※ Khi dùng tính năng AI, lời bài hát cùng tên bài, nghệ sĩ sẽ được gửi đến máy chủ LLM bên dưới. Không muốn gửi thì đừng chạy.',
+    'モデル <input id="aiModel"': 'Mô hình <input id="aiModel"',
+    'APIキー <input id="aiKey"': 'Khóa API <input id="aiKey"',
+    '<button id="aiRun" value="run" class="primary">実行</button>': '<button id="aiRun" value="run" class="primary">Chạy</button>',
+    'title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます"': 'title="AI đọc lời bài hát và chọn không khí, phong cách, hiệu ứng theo từng dòng"',
+    '>AIで作る</button>': '>Tạo bằng AI</button>',
+    '入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。': 'Lời bài hát và bài hát nhập vào chỉ được xử lý trong trình duyệt này, không gửi lên máy chủ (chỉ khi dùng AI tự động, lời bài hát v.v. mới được gửi đến máy chủ LLM đã cài đặt).',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Nếu một dòng có nhiều cảnh, nhấn <span class="kbd">Tab</span> đúng lúc cảnh cần chuyển để canh cả thời điểm bắt đầu các cảnh của dòng đó.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Tốc độ <select id="tapRate" aria-label="Tốc độ phát khi nhấn">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Đếm ngược</label>',
@@ -263,6 +273,12 @@ BODY = {
 }
 
 UI = {
+    # AI tự động
+    "'AIが歌詞を読んでいます…（数十秒かかることがあります）'": "'AI đang đọc lời bài hát… (có thể mất vài chục giây)'",
+    "'失敗しました: '": "'Thất bại: '",
+    "'歌詞が入力されていません'": "'Chưa nhập lời bài hát'",
+    '`AIおまかせ：${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}・行指定 ${n}`': '`AI: ${J.STYLES[o.style].name} × ${J.MOODS[o.mood].name}, chỉ đạo ${n} dòng`',
+    '`　—　${r.reason}`': '`　—　${r.reason}`',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Đã đặt ${w.toFixed(2)} giây để giữ thứ tự các dòng`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Thời điểm bắt đầu cảnh này (thủ công). Xóa trống để về tự động'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Thời điểm bắt đầu cảnh này (tự động). Nhập số để cố định'",

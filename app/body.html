@@ -15,6 +15,7 @@
       <input id="songArtist" type="text" placeholder="アーティスト" aria-label="アーティスト">
     </div>
     <button id="btnOmakaseTop" class="primary omk-top" title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>
+    <button id="btnAiTop" class="ghost omk-top" title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます">AI</button>
     <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">メニュー</button>
     <div class="modes" role="group" aria-label="表示モード">
       <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>
@@ -100,6 +101,7 @@
         <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
         <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select>
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
+        <button id="btnAi" class="accent" title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます">AI</button>
       </div>
       <div class="tl-bar">
         <span class="tl-hint muted">行の区切り（上の目盛り）はドラッグで動かせます。<span class="kbd">Shift</span> で拍に吸着しない</span>
@@ -128,6 +130,7 @@
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">おまかせで作る</button>
+          <button id="btnAiBig" class="omakase ghost" title="AIが歌詞を読んで雰囲気・スタイル・行ごとの演出を決めます">AIで作る</button>
           <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select><small class="muted">選ぶと、その方向の中でおまかせします</small></label>
           <p class="hint">押すたびに、スタイル・雰囲気・動き・配色・構成がまるごと変わります。キーボードの <span class="kbd">R</span> でも実行できます。</p>
           <div class="hist-row">
@@ -290,6 +293,20 @@
     <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button value="reset" class="danger">初期化する</button></span></div>
   </form>
 </dialog>
+<dialog id="aiDlg" class="terms" aria-labelledby="aiTitle">
+  <form method="dialog">
+    <h2 id="aiTitle">AI おまかせ</h2>
+    <p class="terms-sub">AI（LLM）が歌詞を読んで、全体の雰囲気・スタイルと、感情の強い行ごとの演出を決めます。</p>
+    <p class="ai-note muted">※ AI機能では、歌詞と曲名・アーティスト名が下の接続先（LLMサーバー）に送信されます。送りたくないときは実行しないでください。</p>
+    <div class="ai-fields">
+      <label>URL <input id="aiBase" type="text" spellcheck="false" aria-label="LLMサーバーのURL"></label>
+      <label>モデル <input id="aiModel" type="text" spellcheck="false" aria-label="モデル名"></label>
+      <label>APIキー <input id="aiKey" type="password" spellcheck="false" aria-label="APIキー"></label>
+    </div>
+    <p class="muted ai-status" id="aiStatus" hidden></p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button id="aiRun" value="run" class="primary">実行</button></span></div>
+  </form>
+</dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
     <h2 id="termsTitle">利用について</h2>
@@ -299,7 +316,7 @@
     </div>
     <p>ツール本体は <strong>MIT ライセンス</strong>で公開しています。詳細なライセンスはこちら：</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません。</p>
+    <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません（AI おまかせを使ったときだけ、歌詞などが設定したLLMサーバーに送られます）。</p>
     <details class="terms-oss"><summary>使用しているオープンソース</summary>
       <p>MP4 書き出し：mp4-muxer（MIT License）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
     </details>
