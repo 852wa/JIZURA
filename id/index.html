@@ -11478,6 +11478,14 @@ const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers
 /* What the user is about to download, in MB: measured from the files on Hugging Face
    for the quantisation each device actually loads (dev/model_sizes.py).
 
+   `note` is what the model is for, and the menu shows it next to the name, because the
+   choice is not "bigger is better". Measured on two real songs (dev/autolrc_realsong.py):
+   on the Japanese song base and small both put 84% of lines within a second, and on the
+   Chinese song base is the better of the two (0.75 s median against 1.82 s). Tiny is a
+   different offer: it is the one to pick when the machine is slow or the download
+   matters, and on a real song it is not accurate enough on its own — the first eight
+   lines of the Japanese song came out more than 20 seconds late.
+
    `broken` lists the devices a model cannot be timed on, found by measurement rather
    than by guessing (dev/autolrc_probe.py): on WebGPU the fp16 exports of base and small
    do not place anything in time. whisper-base_timestamped there returns almost nothing —
@@ -11488,7 +11496,7 @@ const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers
 const MODELS = [
   { key: 'tiny', id: 'onnx-community/whisper-tiny_timestamped', label: 'Tiny', mb: { webgpu: 77, wasm: 41 }, note: 'fastest' },
   { key: 'base', id: 'onnx-community/whisper-base_timestamped', label: 'Base', mb: { webgpu: 146, wasm: 77 }, note: 'recommended', broken: ['webgpu'] },
-  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'most accurate', broken: ['webgpu'] },
+  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'accurate', broken: ['webgpu'] },
 ];
 const SAMPLE_RATE = 16000;
 const WINDOW = 30;                                         // seconds per recogniser pass
@@ -44217,11 +44225,19 @@ async function autoFeatures() {
   } catch (e) { console.warn('[JIZURA auto timing] audio features skipped', e); return null; }
 }
 
+/* what each model is for, in the user's language: the menu says it, because the sizes
+   on their own do not tell anyone which one to pick */
+const AUTO_ROLE = { fastest: 'tercepat', recommended: 'disarankan', accurate: 'paling akurat' };
+
 /* the model choices. Every model is offered, and the MB figure is the file that will
    actually be downloaded, because a model the GPU cannot time (src/10b_whisper.js
    `broken`) is run on the CPU instead of being hidden: it is slower and it is the only
-   way to get those words placed at all, so it says "(CPU)" and the default stays the
-   fastest model that runs on the device's own backend */
+   way to get those words placed at all, so it says "(CPU)".
+
+   The default is the recommended model, which on a GPU machine means downloading it for
+   the CPU. That is deliberate: a real song is where this feature is actually used, and
+   there the fast model is the one that gets the timing wrong (dev/autolrc_realsong.py).
+   Tiny stays on the menu for slow machines, and says what it is for. */
 function fillAutoModels() {
   const sel = $('autoModel');
   if (!sel || !J.whisper) return;
@@ -44230,9 +44246,8 @@ function fillAutoModels() {
   try { saved = localStorage.getItem('jizura.autoModel'); } catch (e) {}
   const plans = J.whisper.MODELS.map(m => J.whisper.plan(m.key));
   sel.innerHTML = plans.map(p =>
-    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'}</option>`).join('');
-  const native = plans.filter(p => p.device === at);
-  const fallback = native.find(p => p.model.note === 'recommended') || native[0] || plans[0];
+    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'} ${AUTO_ROLE[p.model.note] || ''}</option>`).join('');
+  const fallback = plans.find(p => p.model.note === 'recommended') || plans[0];
   sel.value = plans.some(p => p.model.key === saved) ? saved : fallback.model.key;
   sel.title = at === 'webgpu' ? 'WebGPU' : 'CPU';          // device names, the same in every edition
 }

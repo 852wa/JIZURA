@@ -210,12 +210,6 @@ BODY = {
 
     '認識モデル<select id="autoModel"': 'Model pengenalan<select id="autoModel"',
 
-    'Tiny 42MB 速い': 'Tiny 42MB tercepat',
-
-    'Base 76MB おすすめ': 'Base 76MB disarankan',
-
-    'Small 250MB 高精度': 'Small 250MB paling akurat',
-
     'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'Model yang diunduh disimpan di peramban ini dan tidak diunduh lagi.',
 
     '音声は送信しません。解析はこの端末の中で行います': 'Audio tidak diunggah; analisis berjalan di perangkat ini',
@@ -412,6 +406,11 @@ UI = {
     '\'始めますか？\'': '\'Mulai?\'',
 
     '\'・自動タイミングの一致度が低い行です。再生して確かめてください\'': '\'・Kecocokan penyelarasan otomatis untuk baris ini rendah — putar dan periksa\'',
+    '速い': 'tercepat',
+
+    'おすすめ': 'disarankan',
+
+    '高精度': 'paling akurat',
 
 }
 

@@ -1594,11 +1594,19 @@ async function autoFeatures() {
   } catch (e) { console.warn('[JIZURA auto timing] audio features skipped', e); return null; }
 }
 
+/* what each model is for, in the user's language: the menu says it, because the sizes
+   on their own do not tell anyone which one to pick */
+const AUTO_ROLE = { fastest: '速い', recommended: 'おすすめ', accurate: '高精度' };
+
 /* the model choices. Every model is offered, and the MB figure is the file that will
    actually be downloaded, because a model the GPU cannot time (src/10b_whisper.js
    `broken`) is run on the CPU instead of being hidden: it is slower and it is the only
-   way to get those words placed at all, so it says "(CPU)" and the default stays the
-   fastest model that runs on the device's own backend */
+   way to get those words placed at all, so it says "(CPU)".
+
+   The default is the recommended model, which on a GPU machine means downloading it for
+   the CPU. That is deliberate: a real song is where this feature is actually used, and
+   there the fast model is the one that gets the timing wrong (dev/autolrc_realsong.py).
+   Tiny stays on the menu for slow machines, and says what it is for. */
 function fillAutoModels() {
   const sel = $('autoModel');
   if (!sel || !J.whisper) return;
@@ -1607,9 +1615,8 @@ function fillAutoModels() {
   try { saved = localStorage.getItem('jizura.autoModel'); } catch (e) {}
   const plans = J.whisper.MODELS.map(m => J.whisper.plan(m.key));
   sel.innerHTML = plans.map(p =>
-    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'}</option>`).join('');
-  const native = plans.filter(p => p.device === at);
-  const fallback = native.find(p => p.model.note === 'recommended') || native[0] || plans[0];
+    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'} ${AUTO_ROLE[p.model.note] || ''}</option>`).join('');
+  const fallback = plans.find(p => p.model.note === 'recommended') || plans[0];
   sel.value = plans.some(p => p.model.key === saved) ? saved : fallback.model.key;
   sel.title = at === 'webgpu' ? 'WebGPU' : 'CPU';          // device names, the same in every edition
 }

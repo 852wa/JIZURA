@@ -36,15 +36,6 @@ BODY = [
         'zh-Hans': '识别模型<select id="autoModel"', 'zh-Hant': '辨識模型<select id="autoModel"',
         'ko': '인식 모델<select id="autoModel"', 'id': 'Model pengenalan<select id="autoModel"',
         'vi': 'Mô hình nhận dạng<select id="autoModel"'}),
-    ('Tiny 42MB 速い', {
-        'zh-Hans': 'Tiny 42MB 最快', 'zh-Hant': 'Tiny 42MB 最快', 'ko': 'Tiny 42MB 가장 빠름',
-        'id': 'Tiny 42MB tercepat', 'vi': 'Tiny 42MB nhanh nhất'}),
-    ('Base 76MB おすすめ', {
-        'zh-Hans': 'Base 76MB 推荐', 'zh-Hant': 'Base 76MB 推薦', 'ko': 'Base 76MB 권장',
-        'id': 'Base 76MB disarankan', 'vi': 'Base 76MB đề xuất'}),
-    ('Small 250MB 高精度', {
-        'zh-Hans': 'Small 250MB 高精度', 'zh-Hant': 'Small 250MB 高精度', 'ko': 'Small 250MB 고정밀',
-        'id': 'Small 250MB paling akurat', 'vi': 'Small 250MB chính xác nhất'}),
     ('ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。', {
         'zh-Hans': '下载的模型会保存在这个浏览器里，下次不再下载。',
         'zh-Hant': '下載的模型會保存在這個瀏覽器裡，下次不再下載。',
@@ -156,6 +147,18 @@ UI = [
         'ko': "'・자동 타이밍의 일치도가 낮은 줄입니다. 재생해 확인하세요'",
         'id': "'・Kecocokan penyelarasan otomatis untuk baris ini rendah — putar dan periksa'",
         'vi': "'・Độ khớp của khớp thời gian tự động cho dòng này thấp — hãy phát lại và kiểm tra'"}),
+    # the model menu builds "Tiny 77MB fastest" and so on: the size comes from the model
+    # table in src/10b_whisper.js, so only the role word has to be translated. The key is
+    # the bare word, as it appears inside the JavaScript literal in src/12_ui.js
+    ('速い', {
+        'zh-Hans': '最快', 'zh-Hant': '最快', 'ko': '가장 빠름',
+        'id': 'tercepat', 'vi': 'nhanh nhất'}),
+    ('おすすめ', {
+        'zh-Hans': '推荐', 'zh-Hant': '推薦', 'ko': '권장',
+        'id': 'disarankan', 'vi': 'đề xuất'}),
+    ('高精度', {
+        'zh-Hans': '高精度', 'zh-Hant': '高精度', 'ko': '고정밀',
+        'id': 'paling akurat', 'vi': 'chính xác nhất'}),
 ]
 
 MODULES = {'zh-Hans': 'app/i18n_zh_hans.py', 'zh-Hant': 'app/i18n_zh_hant.py', 'ko': 'app/i18n_ko.py',
@@ -188,16 +191,31 @@ def insert(text, section, entries):
     return '\n'.join(lines) + '\n' + '\n'.join(entries) + text[end:]
 
 
+def bare(key):
+    """the Japanese text of a key, without the quotes of the JavaScript literal it may
+    have been written with: the list above holds both forms"""
+    if len(key) > 2 and key[0] == key[-1] and key[0] in '\'"':
+        return key[1:-1]
+    return key
+
+
+def as_entry(key):
+    """the key as quote() writes it into a module: a Python string literal.
+
+    The key itself is what the module has to match, quotes and all, because the module's
+    keys are compared with app/english.py's - so an entry written with the quotes of its
+    JavaScript literal stays that way, and the presence test has to look for the escaped
+    form."""
+    return "'" + key.replace('\\', '\\\\').replace("'", "\\'") + "'"
+
+
 def main():
     check = '--check' in sys.argv
     for code, path in MODULES.items():
         with io.open(path, encoding='utf-8') as f:
             text = f.read()
-        # a key that starts with a backtick is written into the file as a quoted string
-        # too (the grammar of the replacement only needs the Japanese text to match)
         def has(k):
-            k = "'" + k + "'"
-            return k in text
+            return as_entry(k) in text or as_entry(bare(k)) in text
         missing_body = [k for k, tr in BODY if not has(k)]
         missing_ui = [k for k, tr in UI if not has(k)]
         print(f'{code:8s} missing BODY {len(missing_body):2d}  UI {len(missing_ui):2d}')

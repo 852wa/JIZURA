@@ -174,9 +174,6 @@ BODY = {
     '<button id="btnAutoTime" title="曲をブラウザの中で解析して、歌詞の各行の開始時刻を自動で合わせます。音声は送信しません。初回だけ認識モデルをダウンロードします">自動で時間を合わせる</button>': '<button id="btnAutoTime" title="Listen to the song in your browser and time every line of the lyrics. The audio is never uploaded; the first run downloads a recognition model">Time it automatically</button>',
     'aria-label="認識モデル"': 'aria-label="Recognition model"',
     '認識モデル<select id="autoModel"': 'Recognition model<select id="autoModel"',
-    'Tiny 42MB 速い': 'Tiny 42MB fastest',
-    'Base 76MB おすすめ': 'Base 76MB recommended',
-    'Small 250MB 高精度': 'Small 250MB most accurate',
     'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'The model is kept in this browser and not downloaded again.',
     '音声は送信しません。解析はこの端末の中で行います': 'The audio is not uploaded; the analysis happens on this device',
 
@@ -355,6 +352,9 @@ UI = {
     'このカットをおまかせ': 'Randomize this cut',
     'おまかせ': 'Randomize',
     'シャッフル': 'Shuffle',
+    '速い': 'fastest',
+    'おすすめ': 'recommended',
+    '高精度': 'most accurate',
 }
 
 EXPORT = {

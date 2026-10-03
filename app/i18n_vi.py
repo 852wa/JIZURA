@@ -268,12 +268,6 @@ BODY = {
 
     '認識モデル<select id="autoModel"': 'Mô hình nhận dạng<select id="autoModel"',
 
-    'Tiny 42MB 速い': 'Tiny 42MB nhanh nhất',
-
-    'Base 76MB おすすめ': 'Base 76MB đề xuất',
-
-    'Small 250MB 高精度': 'Small 250MB chính xác nhất',
-
     'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'Mô hình đã tải được lưu trong trình duyệt này và sẽ không tải lại.',
 
     '音声は送信しません。解析はこの端末の中で行います': 'Âm thanh không được tải lên; phân tích chạy trên thiết bị này',
@@ -513,6 +507,11 @@ UI = {
     '\'始めますか？\'': '\'Bắt đầu chứ?\'',
 
     '\'・自動タイミングの一致度が低い行です。再生して確かめてください\'': '\'・Độ khớp của khớp thời gian tự động cho dòng này thấp — hãy phát lại và kiểm tra\'',
+    '速い': 'nhanh nhất',
+
+    'おすすめ': 'đề xuất',
+
+    '高精度': 'chính xác nhất',
 
 }
 

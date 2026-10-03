@@ -33,6 +33,14 @@ const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers
 /* What the user is about to download, in MB: measured from the files on Hugging Face
    for the quantisation each device actually loads (dev/model_sizes.py).
 
+   `note` is what the model is for, and the menu shows it next to the name, because the
+   choice is not "bigger is better". Measured on two real songs (dev/autolrc_realsong.py):
+   on the Japanese song base and small both put 84% of lines within a second, and on the
+   Chinese song base is the better of the two (0.75 s median against 1.82 s). Tiny is a
+   different offer: it is the one to pick when the machine is slow or the download
+   matters, and on a real song it is not accurate enough on its own — the first eight
+   lines of the Japanese song came out more than 20 seconds late.
+
    `broken` lists the devices a model cannot be timed on, found by measurement rather
    than by guessing (dev/autolrc_probe.py): on WebGPU the fp16 exports of base and small
    do not place anything in time. whisper-base_timestamped there returns almost nothing —
@@ -43,7 +51,7 @@ const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers
 const MODELS = [
   { key: 'tiny', id: 'onnx-community/whisper-tiny_timestamped', label: 'Tiny', mb: { webgpu: 77, wasm: 41 }, note: 'fastest' },
   { key: 'base', id: 'onnx-community/whisper-base_timestamped', label: 'Base', mb: { webgpu: 146, wasm: 77 }, note: 'recommended', broken: ['webgpu'] },
-  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'most accurate', broken: ['webgpu'] },
+  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'accurate', broken: ['webgpu'] },
 ];
 const SAMPLE_RATE = 16000;
 const WINDOW = 30;                                         // seconds per recogniser pass

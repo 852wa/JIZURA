@@ -20,11 +20,11 @@ from app import english as E, i18n  # noqa: E402
 # the strings the feature adds: HTML text first, then the ones only 12_ui.js uses
 wanted = [
     '自動で時間を合わせる', '中止', '閉じる', '認識モデル',
-    'Tiny 42MB 速い', 'Base 76MB おすすめ', 'Small 250MB 高精度',
     'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。',
     '音声は送信しません。解析はこの端末の中で行います',
 ]
 ui_wanted = [
+    '速い', 'おすすめ', '高精度',
     '準備しています…', '認識ライブラリを読み込んでいます…', '音を調べています…',
     '先に曲を読み込んでください', '先に歌詞を入れてください', 'この版では自動タイミングを使えません',
     '自動タイミングを中止しました', '自動タイミングに失敗しました（コンソールに詳細）',
@@ -35,16 +35,29 @@ ui_wanted = [
     '・曲の長さによっては数分かかります', '始めますか？',
 ]
 
-print('BODY keys present in english.py:')
-for w in wanted:
-    print(' ', 'OK ' if w in E.BODY else 'MISSING', repr(w))
-print('\nUI keys present in english.py:')
-for w in ui_wanted:
-    print(' ', 'OK ' if w in E.UI else 'MISSING', repr(w))
 
-print('\nper-module coverage:')
+def present(keys, text):
+    """Some of the strings above are fragments of longer ones (`'・初回は認識モデル（約'`),
+    so the test is whether the fragment can be found among the registered keys, not
+    whether it is a key itself."""
+    return any(text in k for k in keys)
+
+
+print('strings registered in english.py:')
+for w in wanted:
+    print(' ', 'OK ' if present(E.BODY, w) else 'MISSING', repr(w))
+print('\nUI strings registered in english.py:')
+for w in ui_wanted:
+    print(' ', 'OK ' if present(E.UI, w) else 'MISSING', repr(w))
+
+print('\nstrings still in Japanese in the built page, per edition')
+print('(the two Chinese editions share some words with Japanese — 高精度 is written the same):')
+body = open('app/body.html', encoding='utf-8').read()
+js = open('src/12_ui.js', encoding='utf-8').read()
 for code in i18n.MODULES:
-    m = i18n.module(code)
-    miss = [w for w in wanted if w not in m.BODY]
-    miss_ui = [w for w in ui_wanted if w not in m.UI]
-    print(f'  {code:8s} BODY missing {len(miss):3d}  UI missing {len(miss_ui):3d}')
+    out_body = i18n.localize_body(code, body)
+    out_js = i18n.localize_js(code, js, 'src/12_ui.js')
+    miss = [w for w in wanted if w in out_body]
+    miss_ui = [w for w in ui_wanted if w in out_js]
+    print(f'  {code:8s} untranslated {len(miss) + len(miss_ui):3d}'
+          + ('' if not (miss or miss_ui) else '  ' + repr((miss + miss_ui)[:4])))
