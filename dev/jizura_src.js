@@ -10,11 +10,13 @@ const vm = require('vm');
 
 const ROOT = path.dirname(__dirname);
 
-/* engine files only, in the load order build.py uses: no expression packs, no
-   renderer, no UI. Same idea as dev/build_test.py's "core" set, minus the parts
-   that want a canvas at load time (02_fonts) — the planner does not need them. */
+/* Engine files only, in the load order build.py uses: no expression packs, no renderer,
+   no UI. Same idea as dev/build_test.py's "core" set, minus the parts that want a canvas
+   at load time (02_fonts) — the planner and the alignment do not need them. 11_export is
+   here for J.lrcText, which is how a generated time reaches an .lrc. */
 const FILES = ['01_util.js', '02b_lang.js', '03_text.js', '04_styles.js', '05_anim.js', '05b_registry.js',
-  '06_layouts.js', '07_decor.js', '08_planner.js', '08b_omakase.js', '09a_han.js', '09b_autolrc.js', '10_audio.js', '10c_features.js'];
+  '06_layouts.js', '07_decor.js', '08_planner.js', '08b_omakase.js', '09a_han.js', '09b_autolrc.js',
+  '10_audio.js', '10b_whisper.js', '10c_features.js', '11_export.js'];
 
 function load(files) {
   const sandbox = { window: {}, console, Math, JSON, Date, Object, Array, Number, String, Boolean, Error, isFinite, parseInt, parseFloat, Intl, Float32Array, Uint8Array, Uint16Array, Set, Map };

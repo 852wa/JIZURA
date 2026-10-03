@@ -213,6 +213,29 @@ test('language guess from the lyrics', () => {
   assert.strictEqual(J.asrLang('ja'), 'ja');
 });
 
+test('the generated times drive the existing LRC export', () => {
+  /* The whole point of writing into timing.lineTimes is that the rest of the editor
+     picks the numbers up. This is the bridge: J.lrcText reads the project, not the
+     alignment result, so a line timed by the recogniser has to come out of the export
+     with that time on it. */
+  const lyrics = 'first line of the song\nsecond line of the song';
+  const asr = words([[10.0, 'first'], [10.4, 'line'], [10.8, 'of'], [11.0, 'the'], [11.3, 'song'],
+    [14.0, 'second'], [14.4, 'line'], [14.8, 'of'], [15.0, 'the'], [15.3, 'song']]);
+  const result = J.alignLyricTimes(lyrics, asr);
+  const project = Object.assign(J.defaultProject(), {
+    lyrics,
+    timing: Object.assign(J.defaultProject().timing, { lineTimes: {} }),
+  });
+  for (const [k, v] of Object.entries(result.times)) project.timing.lineTimes[k] = v;
+  const lines = J.parseLyrics(lyrics).lines;
+  const lrc = J.lrcText(project, lines, null);
+  const rows = lrc.replace(/\r/g, '').split('\n').filter(r => /^\[\d/.test(r));
+  assert.deepStrictEqual(rows, [
+    '[00:10.00]first line of the song',
+    '[00:14.00]second line of the song',
+  ]);
+});
+
 /* ---------------- real song regression ----------------
    A real 4-minute English song: the word-level transcript that came out of a
    recogniser, the written lyrics, and the LRC that was made by hand from those

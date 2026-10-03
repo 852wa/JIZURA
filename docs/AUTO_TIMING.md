@@ -1,7 +1,7 @@
 # 自動タイミング（歌詞のない曲でも、歌詞だけで時刻を合わせる）
 
 音声と、すでにある歌詞から、**各行の開始時刻を自動で求めて LRC を作る**ための実装です。
-`dev/autolrc_test.js` と `dev/autolrc_features_test.js` がオフラインで検証し、
+`dev/autolrc_test.js`（22件）と `dev/autolrc_features_test.js`（4件）がオフラインで検証し、
 `dev/autolrc_browser_test.py` が実ブラウザで端から端まで確かめます。
 
 ## なぜ「認識結果」ではなく「歌詞」を合わせるのか
@@ -103,3 +103,4 @@ python dev/autolrc_browser_test.py --model tiny
 （`dev/fixtures/`）。
 
 詳しい数値は PR の説明にまとめてあります。
+
