@@ -169,6 +169,17 @@ BODY = {
     'このカットをおまかせ': 'Randomise this cut',
     'このカットをおまかせ': 'Randomize this cut',
 
+    # 自動で時間を合わせる (v0.11)
+    '自動で時間を合わせる': 'Time it automatically',
+    '<button id="btnAutoTime" title="曲をブラウザの中で解析して、歌詞の各行の開始時刻を自動で合わせます。音声は送信しません。初回だけ認識モデルをダウンロードします">自動で時間を合わせる</button>': '<button id="btnAutoTime" title="Listen to the song in your browser and time every line of the lyrics. The audio is never uploaded; the first run downloads a recognition model">Time it automatically</button>',
+    'aria-label="認識モデル"': 'aria-label="Recognition model"',
+    '認識モデル<select id="autoModel"': 'Recognition model<select id="autoModel"',
+    'Tiny 42MB 速い': 'Tiny 42MB fastest',
+    'Base 76MB おすすめ': 'Base 76MB recommended',
+    'Small 250MB 高精度': 'Small 250MB most accurate',
+    'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'The model is kept in this browser and not downloaded again.',
+    '音声は送信しません。解析はこの端末の中で行います': 'The audio is not uploaded; the analysis happens on this device',
+
 
 }
 
@@ -306,6 +317,29 @@ UI = {
     "'ロック中。クリックで解除'": "'Locked — click to unlock'",
     "'ロック：'": "'Locked: '",
     "'ロック解除：'": "'Unlocked: '",
+
+    # 自動で時間を合わせる (v0.11)
+    "'準備しています…'": "'Getting ready…'",
+    "'認識ライブラリを読み込んでいます…'": "'Loading the recognition library…'",
+    "'音を調べています…'": "'Looking at the audio…'",
+    "'先に曲を読み込んでください'": "'Load the song first'",
+    "'先に歌詞を入れてください'": "'Type the lyrics first'",
+    "'この版では自動タイミングを使えません'": "'Automatic timing is not available in this edition'",
+    "'自動タイミングを中止しました'": "'Automatic timing stopped'",
+    "'自動タイミングに失敗しました（コンソールに詳細）'": "'Automatic timing failed (see the console for details)'",
+    "'できませんでした: '": "'It did not work: '",
+    '`認識モデルを準備しています（${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}・約${p.mb}MB）…`': '`Preparing the recognition model (${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}, about ${p.mb} MB)…`',
+    '`認識モデルをダウンロードしています（約${p.mb}MB）…`': '`Downloading the recognition model (about ${p.mb} MB)…`',
+    '`歌詞を聴き取っています…（${p.chunk} / ${p.chunks}）`': '`Listening to the lyrics… (${p.chunk} / ${p.chunks})`',
+    '`できました（${n}行・一致度 ${cov}%${low ? `・要確認 ${low}行` : \'\'}）`': '`Done: ${n} lines, match ${cov}%${low ? `, ${low} to check` : \'\'}`',
+    '`${n}行の時刻を入れました。一致度の低い ${low} 行は赤く表示しています（行ごとに直せます）`': '`Timed ${n} lines. The ${low} lines the recogniser was unsure about are marked in red (each one can be fixed on its own)`',
+    '`${n}行の時刻を入れました。再生して確かめて、気になる行だけ直してください`': '`Timed ${n} lines. Play it back and fix whichever lines need it`',
+    "'曲をブラウザの中で解析して、歌詞の各行の開始時刻を求めます。'": "'This listens to the song in your browser and times every line of the lyrics.'",
+    "'・音声は送信しません（解析はこの端末の中で行います）'": "'· The audio is never uploaded (the analysis runs on this device)'",
+    '`・初回は認識モデル（約${mb}MB）をダウンロードします。2回目からは不要です`': '`· The first run downloads a recognition model (about ${mb} MB); after that it is kept`',
+    "'・曲の長さによっては数分かかります'": "'· A long song can take a few minutes'",
+    "'始めますか？'": "'Start?'",
+    "'・自動タイミングの一致度が低い行です。再生して確かめてください'": "'· Automatic timing was unsure about this line — play it back and check'",
 
 
 

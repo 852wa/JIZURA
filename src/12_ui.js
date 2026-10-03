@@ -651,11 +651,12 @@ function renderLines() {
   const cutOpts = '<option value="">カット 自動</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">カット ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
-    const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
+    const lo = S.auto && S.auto.score && S.auto.score[i] != null && S.auto.score[i] < 0.5;
+    const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '') + (lo ? ' is-unsure' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
     const label = ln.interlude ? `〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}${lo ? '・自動タイミングの一致度が低い行です。再生して確かめてください' : ''}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
@@ -673,6 +674,7 @@ function renderLines() {
     q('.time').addEventListener('change', e => {
       const v = parseFloat(e.target.value);
       pushEdit();
+      clearAutoFlag(i);                                    // the user has looked at this line: drop its "check this" mark
       if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
       if (isFinite(v)) {
         // keep the order: a typed time stays between the fixed times (typed or LRC) of the lines around it
@@ -831,6 +833,8 @@ async function resetAll() {
   ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
   TL.z = 1; TL.off = 0;
   $('lyrics').value = ''; fontKey = '';
+  S.auto = null;
+  if (J.whisper && J.whisper.dispose) J.whisper.dispose();          // let the recogniser go with the song it was loaded for
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
   toast('初期化しました');
 }
@@ -1479,6 +1483,133 @@ function offerShare(boxes, blob, name) {
   });
 }
 
+/* ---------------- automatic timing (v0.11) ----------------
+   Recognise the song in the browser, work out where each written line starts, and put
+   the result in timing.lineTimes — the same slot a typed, tapped or dragged time goes
+   to, so everything downstream (the plan, the LRC export, the line list) treats it as a
+   hand-set time and the user can correct any line afterwards. Neither the song nor the
+   lyrics leave the browser; only the recognition model is downloaded, once. */
+const AT = { running: false, ctrl: null, result: null, unsub: false };
+function autoMsg(text) { const el = $('autoMsg'); if (el) el.textContent = text; }
+function autoBar(p) { const b = $('autoBar'); if (b) b.firstChild.style.width = Math.round(J.clamp(p == null ? 0 : p) * 100) + '%'; }
+function autoShow(on) {
+  $('autoTime').hidden = !on;
+  $('autoStop').hidden = !on;
+  $('autoClose').hidden = on;
+  $('btnAutoTime').setAttribute('aria-pressed', String(!!on));
+}
+function autoStop() {
+  if (AT.ctrl) AT.ctrl.abort();
+  AT.running = false;
+  autoShow(false);
+  toast('自動タイミングを中止しました');
+}
+/* the "check this line" mark: cleared once the user has set that line's time by hand */
+function clearAutoFlag(i) {
+  if (!S.auto || !S.auto.score) return;
+  delete S.auto.score[i];
+  const low = S.auto.low || [];
+  const k = low.indexOf(i);
+  if (k >= 0) low.splice(k, 1);
+}
+/* write the generated times into the project as hand-set line times */
+function applyAutoTimes(result, keep) {
+  const lt = keep ? Object.assign({}, S.project.timing.lineTimes || {}) : {};
+  let n = 0;
+  for (const [k, v] of Object.entries(result.times)) {
+    if (v == null || !isFinite(v)) continue;
+    lt[k] = +(+v).toFixed(3);
+    n++;
+  }
+  S.project.timing.lineTimes = lt;
+  S.auto = { score: result.score, low: result.stats.low || [] };
+  return n;
+}
+async function runAutoTime() {
+  if (AT.running || S.tap || S.exporting) return;
+  if (!S.audio || !S.audio.buffer) { toast('先に曲を読み込んでください'); return; }
+  if (!S.project.lyrics.trim()) { toast('先に歌詞を入れてください'); $('lyrics').focus(); return; }
+  if (!J.whisper) { toast('この版では自動タイミングを使えません'); return; }
+  const model = $('autoModel').value;
+  const size = (J.whisper.MODELS.find(m => m.key === model) || {}).mb || {};
+  const mb = size[J.whisper.webgpu() ? 'webgpu' : 'wasm'] || 0;
+  if (!window.confirm([
+    '曲をブラウザの中で解析して、歌詞の各行の開始時刻を求めます。',
+    '',
+    '・音声は送信しません（解析はこの端末の中で行います）',
+    `・初回は認識モデル（約${mb}MB）をダウンロードします。2回目からは不要です`,
+    '・曲の長さによっては数分かかります',
+    '',
+    '始めますか？',
+  ].join('\n'))) return;
+  pushEdit();
+  AT.running = true; AT.ctrl = new AbortController();
+  autoShow(true); autoBar(0);
+  autoMsg('準備しています…');
+  pause();
+  try {
+    const features = await autoFeatures();
+    const r = await J.whisper.timeLyrics(S.project.lyrics, S.audio.buffer, {
+      model,
+      signal: AT.ctrl.signal,
+      onProgress: (p) => {
+        if (p.phase === 'library') autoMsg('認識ライブラリを読み込んでいます…');
+        else if (p.phase === 'model') autoMsg(`認識モデルを準備しています（${p.device === 'webgpu' ? 'WebGPU' : 'CPU'}・約${p.mb}MB）…`);
+        else if (p.phase === 'download') { autoMsg(`認識モデルをダウンロードしています（約${p.mb}MB）…`); autoBar(p.progress); }
+        else if (p.phase === 'run') { autoMsg(`歌詞を聴き取っています…（${p.chunk} / ${p.chunks}）`); autoBar(p.chunk / p.chunks); }
+      },
+      align: { features, beats: S.project.timing.snap ? S.plan.beats : null },
+    });
+    if (AT.ctrl.signal.aborted) return;
+    const n = applyAutoTimes(r.result, false);
+    AT.result = r;
+    replan(); flushSave();
+    const low = (r.result.stats.low || []).length;
+    const cov = Math.round((r.result.stats.coverage || 0) * 100);
+    autoMsg(`できました（${n}行・一致度 ${cov}%${low ? `・要確認 ${low}行` : ''}）`);
+    autoBar(1);
+    autoShow(false);
+    $('autoClose').hidden = true;
+    toast(low
+      ? `${n}行の時刻を入れました。一致度の低い ${low} 行は赤く表示しています（行ごとに直せます）`
+      : `${n}行の時刻を入れました。再生して確かめて、気になる行だけ直してください`);
+  } catch (e) {
+    if (!(e && (e.name === 'AbortError' || String(e.message) === 'aborted'))) {
+      autoMsg('できませんでした: ' + (e && e.message ? e.message : e));
+      toast('自動タイミングに失敗しました（コンソールに詳細）');
+      console.error('[JIZURA auto timing]', e);
+    }
+    autoShow(false);
+    $('autoClose').hidden = true;
+  } finally {
+    AT.running = false; AT.ctrl = null;
+  }
+}
+/* the audio features (where the singing is, where the syllables attack): used only to tidy up the generated times */
+async function autoFeatures() {
+  if (!S.audio || !S.audio.buffer || !J.audioFeatures) return null;
+  try {
+    autoMsg('音を調べています…'); autoBar(0.05);
+    const mono = await J.mono16k(S.audio.buffer);
+    return J.audioFeatures(mono, 16000);
+  } catch (e) { console.warn('[JIZURA auto timing] audio features skipped', e); return null; }
+}
+
+/* the model choices: a combination the device cannot use (WebGPU with base, see
+   src/10b_whisper.js) is not offered, and the MB figures are the files that will
+   actually be downloaded for this device */
+function fillAutoModels() {
+  const sel = $('autoModel');
+  if (!sel || !J.whisper) return;
+  const device = J.whisper.webgpu() ? 'webgpu' : 'wasm';
+  let saved = null;
+  try { saved = localStorage.getItem('jizura.autoModel'); } catch (e) {}
+  const usable = J.whisper.MODELS.filter(m => !(m.broken && m.broken.indexOf(device) >= 0));
+  sel.innerHTML = usable.map(m => `<option value="${m.key}">${m.label} ${m.mb[device]}MB</option>`).join('');
+  sel.value = usable.some(m => m.key === saved) ? saved : (usable.find(m => m.note === 'recommended') || usable[0]).key;
+  sel.title = device === 'webgpu' ? 'WebGPU' : 'CPU';      // device names, the same in every edition
+}
+
 /* ---------------- tap sync ---------------- */
 // start from any line: playback begins a little before that line, earlier lines keep their times
 function startTap(from = 0) {
@@ -1605,8 +1736,13 @@ function bind() {
   $('offset').addEventListener('change', e => { S.project.timing.offset = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
-  $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; S.auto = null; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
+  $('btnAutoTime').addEventListener('click', runAutoTime);
+  $('autoStop').addEventListener('click', autoStop);
+  $('autoClose').addEventListener('click', () => autoShow(false));
+  $('autoModel').addEventListener('change', () => { try { localStorage.setItem('jizura.autoModel', $('autoModel').value); } catch (e) {} });
+  fillAutoModels();
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   $('tapBtn').addEventListener('click', tapNow);
   $('tapRate').addEventListener('change', () => {
@@ -1942,3 +2078,4 @@ J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
 J.uiApi = { toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
 })();
+

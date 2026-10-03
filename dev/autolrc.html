@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>JIZURA auto-timing — browser test</title>
+<style>body{font:13px/1.5 ui-monospace,monospace;background:#111;color:#ddd;margin:16px}pre{white-space:pre-wrap}</style>
+</head>
+<body>
+<pre id="log">starting…</pre>
+<script src="jizura_core.js"></script>
+<script>
+/* End-to-end check of the auto-timing in a real browser: audio file -> Whisper in
+   the browser (Transformers.js) -> the alignment engine -> per-line times, compared
+   with the known line starts of the sample. Driven by dev/autolrc_browser_test.py. */
+const q = new URLSearchParams(location.search);
+const log = (m) => { document.getElementById('log').textContent += '\n' + m; };
+window.__RESULT = null;
+window.__ERROR = null;
+
+(async () => {
+  try {
+    const audio = q.get('audio') || 'sample.en.wav';
+    const truth = q.get('truth') || 'sample.en.truth.json';
+    const lyrics = q.get('lyrics') || 'sample.en.txt';
+    const model = q.get('model') || 'tiny';
+    const mirror = q.get('mirror') === '0' ? null : location.origin + '/mirror';
+    /* ?dtype=q8 forces a quantisation, ?device=wasm forces the CPU path: both exist so
+       a model that returns no word timestamps can be told apart from a broken page */
+    if (q.get('dtype')) window.__JIZURA_FORCE_DTYPE = q.get('dtype');
+    if (q.get('device')) window.__JIZURA_FORCE_DEVICE = q.get('device');
+    if (mirror) {
+      // point Transformers.js at this server, which mirrors Hugging Face and caches
+      window.__JIZURA_MIRROR = mirror;
+    }
+    const read = async (u) => (await fetch('/samples/' + u)).text();
+    const [text, truthText] = await Promise.all([read(lyrics), read(truth)]);
+    const expect = JSON.parse(truthText);
+    const buf = await (await fetch('/samples/' + audio)).arrayBuffer();
+    log(`audio ${audio} ${(buf.byteLength / 1e6).toFixed(1)} MB, ${expect.lines.length} lines, model ${model}`);
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ac = new AC();
+    const decoded = await ac.decodeAudioData(buf.slice(0));
+    ac.close();
+    const t0 = performance.now();
+    const mode = q.get('mode') || 'timing';
+    if (mode === 'probe') {
+      /* dump the shape the recogniser returned, for a model whose word timestamps
+         come out empty */
+      const probe = await J.whisper.probe(decoded, { model, language: q.get('lang') || undefined, onProgress: (p) => log('  ' + JSON.stringify(p)) });
+      const summarize = (r) => ({
+        keys: Object.keys(r),
+        text: String(r.text || '').slice(0, 80),
+        timestamp: r.timestamp,
+        chunks: (r.chunks || []).slice(0, 3).map(c => ({
+          keys: Object.keys(c), text: String(c.text || '').slice(0, 60), timestamp: c.timestamp,
+          words: c.words ? c.words.length : null,
+          wordSample: c.words ? c.words.slice(0, 4) : null,
+        })),
+        chunkCount: (r.chunks || []).length,
+      });
+      const out = Array.isArray(probe.out) ? probe.out.map(summarize) : [summarize(probe.out)];
+      window.__RESULT = { device: probe.device, probe: out };
+      log(JSON.stringify(window.__RESULT, null, 1));
+      window.__DONE = true;
+      return;
+    }
+    /* the audio features exactly as the editor computes them, so this covers the whole
+       path: they are what tells the alignment where the singing starts */
+    const mono = await J.mono16k(decoded);
+    const features = J.audioFeatures(mono, 16000);
+    log(`  audio: ${features.frames} frames, singing from ${features.firstVoice.toFixed(2)}s`);
+    const r = await J.whisper.timeLyrics(text, decoded, {
+      model,
+      onProgress: (p) => log('  ' + JSON.stringify(p)),
+      align: { features },
+    });
+    window.__FEATURES = { frames: features.frames, firstVoice: features.firstVoice, quiet: features.quiet };
+    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    const at = (obj, i) => (obj && obj[i] !== undefined ? obj[i] : obj && obj[String(i)]);
+    const errs = expect.lines.map((l, i) => (at(r.result.times, i) == null ? NaN : at(r.result.times, i) - l.start));
+    const abs = errs.filter(v => !isNaN(v)).map(Math.abs).sort((a, b) => a - b);
+    const q2 = (p) => abs[Math.min(abs.length - 1, Math.floor(abs.length * p))] || 0;
+    window.__RESULT = {
+      language: r.language, device: r.device, seconds: +secs,
+      stats: r.result.stats,
+      times: r.result.times, how: r.result.how, score: r.result.score,
+      expected: expect.lines.map(l => l.start),
+      errors: errs,
+      median: q2(0.5), p90: q2(0.9), max: abs[abs.length - 1] || 0,
+      features: window.__FEATURES,
+      transcript: r.asr.segments.map(s => s.text).join(' ').slice(0, 400),
+      tokens: (J.asrTokens(r.asr) || []).slice(0, 30).map(t => t.own + '@' + t.t.toFixed(2)).join(' '),
+    };
+    log(`\nmedian ${(q2(0.5) * 1000).toFixed(0)}ms  p90 ${(q2(0.9) * 1000).toFixed(0)}ms  max ${((abs[abs.length - 1] || 0) * 1000).toFixed(0)}ms  (${secs}s, ${r.device})`);
+    expect.lines.forEach((l, i) => log(`  ${String(i + 1).padStart(2)} expected ${l.start.toFixed(2)} got ${String(at(r.result.times, i)).padStart(6)} ${String(at(r.result.how, i)).padEnd(6)} score ${at(r.result.score, i)} | ${l.text.slice(0, 40)}`));
+    log('\ntranscript: ' + window.__RESULT.transcript);
+  } catch (e) {
+    window.__ERROR = String(e && e.stack || e);
+    log('ERROR ' + window.__ERROR);
+  }
+  window.__DONE = true;
+})();
+</script>
+</body>
+</html>
+
+
+

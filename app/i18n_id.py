@@ -202,6 +202,24 @@ BODY = {
     'このカットだけ手法をランダムに': 'Acak teknik cut ini saja',
     'このカットをシャッフル': 'Acak cut ini',
     'このカットをおまかせ': 'Buat variasi cut ini',
+    '自動で時間を合わせる': 'Selaraskan waktu otomatis',
+
+    '<button id="btnAutoTime" title="曲をブラウザの中で解析して、歌詞の各行の開始時刻を自動で合わせます。音声は送信しません。初回だけ認識モデルをダウンロードします">自動で時間を合わせる</button>': '<button id="btnAutoTime" title="Analisis lagu ini di dalam peramban dan selaraskan waktu mulai setiap baris lirik secara otomatis. Audio tidak diunggah; model pengenalan hanya diunduh sekali">Selaraskan waktu otomatis</button>',
+
+    'aria-label="認識モデル"': 'aria-label="Model pengenalan"',
+
+    '認識モデル<select id="autoModel"': 'Model pengenalan<select id="autoModel"',
+
+    'Tiny 42MB 速い': 'Tiny 42MB tercepat',
+
+    'Base 76MB おすすめ': 'Base 76MB disarankan',
+
+    'Small 250MB 高精度': 'Small 250MB paling akurat',
+
+    'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'Model yang diunduh disimpan di peramban ini dan tidak diunduh lagi.',
+
+    '音声は送信しません。解析はこの端末の中で行います': 'Audio tidak diunggah; analisis berjalan di perangkat ini',
+
 }
 
 UI = {
@@ -353,6 +371,48 @@ UI = {
     'このカットをおまかせ': 'Buat variasi cut ini',
     'おまかせ': 'Buat variasi',
     'シャッフル': 'Acak susunan',
+    '\'準備しています…\'': '\'Menyiapkan…\'',
+
+    '\'認識ライブラリを読み込んでいます…\'': '\'Memuat pustaka pengenalan…\'',
+
+    '\'音を調べています…\'': '\'Memeriksa audionya…\'',
+
+    '\'先に曲を読み込んでください\'': '\'Muat lagunya lebih dulu\'',
+
+    '\'先に歌詞を入れてください\'': '\'Isi liriknya lebih dulu\'',
+
+    '\'この版では自動タイミングを使えません\'': '\'Penyelarasan otomatis tidak tersedia di edisi ini\'',
+
+    '\'自動タイミングを中止しました\'': '\'Penyelarasan otomatis dihentikan\'',
+
+    '\'自動タイミングに失敗しました（コンソールに詳細）\'': '\'Penyelarasan otomatis gagal (lihat konsol untuk detail)\'',
+
+    '\'できませんでした: \'': '\'Tidak berhasil: \'',
+
+    '`認識モデルを準備しています（${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}・約${p.mb}MB）…`': '`Menyiapkan model pengenalan (${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}, sekitar ${p.mb}MB)…`',
+
+    '`認識モデルをダウンロードしています（約${p.mb}MB）…`': '`Mengunduh model pengenalan (sekitar ${p.mb}MB)…`',
+
+    '`歌詞を聴き取っています…（${p.chunk} / ${p.chunks}）`': '`Mendengarkan liriknya… (${p.chunk} / ${p.chunks})`',
+
+    '`できました（${n}行・一致度 ${cov}%${low ? `・要確認 ${low}行` : \'\'}）`': '`Selesai (${n} baris, kecocokan ${cov}%${low ? `, ${low} perlu diperiksa` : \'\'})`',
+
+    '`${n}行の時刻を入れました。一致度の低い ${low} 行は赤く表示しています（行ごとに直せます）`': '`Waktu ${n} baris sudah diisi. ${low} baris dengan kecocokan rendah ditandai merah (bisa diperbaiki per baris)`',
+
+    '`${n}行の時刻を入れました。再生して確かめて、気になる行だけ直してください`': '`Waktu ${n} baris sudah diisi. Putar untuk memeriksa dan perbaiki baris yang perlu saja`',
+
+    '\'曲をブラウザの中で解析して、歌詞の各行の開始時刻を求めます。\'': '\'Lagu ini dianalisis di dalam peramban untuk mencari waktu mulai setiap baris lirik.\'',
+
+    '\'・音声は送信しません（解析はこの端末の中で行います）\'': '\'・Audio tidak diunggah (analisis berjalan di perangkat ini)\'',
+
+    '`・初回は認識モデル（約${mb}MB）をダウンロードします。2回目からは不要です`': '`・Pertama kali mengunduh model pengenalan (sekitar ${mb}MB). Setelah itu tidak perlu lagi`',
+
+    '\'・曲の長さによっては数分かかります\'': '\'・Tergantung panjang lagu, bisa perlu beberapa menit\'',
+
+    '\'始めますか？\'': '\'Mulai?\'',
+
+    '\'・自動タイミングの一致度が低い行です。再生して確かめてください\'': '\'・Kecocokan penyelarasan otomatis untuk baris ini rendah — putar dan periksa\'',
+
 }
 
 EXPORT = {

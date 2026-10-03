@@ -259,7 +259,25 @@ BODY = {
     '標準': 'Tiêu chuẩn',
     '最高': 'Tối đa',
     '高': 'Cao',
-    '中止': 'Đã hủy'
+    '中止': 'Đã hủy',
+    '自動で時間を合わせる': 'Tự động khớp thời gian',
+
+    '<button id="btnAutoTime" title="曲をブラウザの中で解析して、歌詞の各行の開始時刻を自動で合わせます。音声は送信しません。初回だけ認識モデルをダウンロードします">自動で時間を合わせる</button>': '<button id="btnAutoTime" title="Phân tích bài hát ngay trong trình duyệt và tự động khớp thời gian bắt đầu từng dòng lời. Âm thanh không bị tải lên; mô hình nhận dạng chỉ tải một lần đầu">Tự động khớp thời gian</button>',
+
+    'aria-label="認識モデル"': 'aria-label="Mô hình nhận dạng"',
+
+    '認識モデル<select id="autoModel"': 'Mô hình nhận dạng<select id="autoModel"',
+
+    'Tiny 42MB 速い': 'Tiny 42MB nhanh nhất',
+
+    'Base 76MB おすすめ': 'Base 76MB đề xuất',
+
+    'Small 250MB 高精度': 'Small 250MB chính xác nhất',
+
+    'ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。': 'Mô hình đã tải được lưu trong trình duyệt này và sẽ không tải lại.',
+
+    '音声は送信しません。解析はこの端末の中で行います': 'Âm thanh không được tải lên; phân tích chạy trên thiết bị này',
+
 }
 
 UI = {
@@ -453,7 +471,49 @@ UI = {
     '（PC）': '(đã cài đặt)',
     '字面': 'JIZURA',
     '追加': 'Mới',
-    '和': 'JP'
+    '和': 'JP',
+    '\'準備しています…\'': '\'Đang chuẩn bị…\'',
+
+    '\'認識ライブラリを読み込んでいます…\'': '\'Đang tải thư viện nhận dạng…\'',
+
+    '\'音を調べています…\'': '\'Đang xem xét âm thanh…\'',
+
+    '\'先に曲を読み込んでください\'': '\'Hãy tải bài hát trước\'',
+
+    '\'先に歌詞を入れてください\'': '\'Hãy nhập lời trước\'',
+
+    '\'この版では自動タイミングを使えません\'': '\'Bản này không có tính năng khớp thời gian tự động\'',
+
+    '\'自動タイミングを中止しました\'': '\'Đã dừng khớp thời gian tự động\'',
+
+    '\'自動タイミングに失敗しました（コンソールに詳細）\'': '\'Khớp thời gian tự động thất bại (xem bảng điều khiển để biết chi tiết)\'',
+
+    '\'できませんでした: \'': '\'Không thành công: \'',
+
+    '`認識モデルを準備しています（${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}・約${p.mb}MB）…`': '`Đang chuẩn bị mô hình nhận dạng (${p.device === \'webgpu\' ? \'WebGPU\' : \'CPU\'}, khoảng ${p.mb}MB)…`',
+
+    '`認識モデルをダウンロードしています（約${p.mb}MB）…`': '`Đang tải mô hình nhận dạng (khoảng ${p.mb}MB)…`',
+
+    '`歌詞を聴き取っています…（${p.chunk} / ${p.chunks}）`': '`Đang nghe lời bài hát… (${p.chunk} / ${p.chunks})`',
+
+    '`できました（${n}行・一致度 ${cov}%${low ? `・要確認 ${low}行` : \'\'}）`': '`Xong (${n} dòng, độ khớp ${cov}%${low ? `, ${low} dòng cần xem lại` : \'\'})`',
+
+    '`${n}行の時刻を入れました。一致度の低い ${low} 行は赤く表示しています（行ごとに直せます）`': '`Đã điền thời gian cho ${n} dòng. ${low} dòng có độ khớp thấp được tô đỏ (sửa được từng dòng)`',
+
+    '`${n}行の時刻を入れました。再生して確かめて、気になる行だけ直してください`': '`Đã điền thời gian cho ${n} dòng. Phát lại để kiểm tra và chỉ sửa những dòng cần thiết`',
+
+    '\'曲をブラウザの中で解析して、歌詞の各行の開始時刻を求めます。\'': '\'Bài hát được phân tích trong trình duyệt để tìm thời gian bắt đầu từng dòng lời.\'',
+
+    '\'・音声は送信しません（解析はこの端末の中で行います）\'': '\'・Âm thanh không được tải lên (phân tích chạy trên thiết bị này)\'',
+
+    '`・初回は認識モデル（約${mb}MB）をダウンロードします。2回目からは不要です`': '`・Lần đầu tải mô hình nhận dạng (khoảng ${mb}MB). Từ lần sau không cần nữa`',
+
+    '\'・曲の長さによっては数分かかります\'': '\'・Tùy độ dài bài hát, có thể mất vài phút\'',
+
+    '\'始めますか？\'': '\'Bắt đầu chứ?\'',
+
+    '\'・自動タイミングの一致度が低い行です。再生して確かめてください\'': '\'・Độ khớp của khớp thời gian tự động cho dòng này thấp — hãy phát lại và kiểm tra\'',
+
 }
 
 EXPORT = {

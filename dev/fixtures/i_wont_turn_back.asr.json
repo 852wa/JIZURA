@@ -1,0 +1,2463 @@
+{
+ "_note": "word-level transcript of a real song, produced by a local recogniser; used by dev/autolrc_test.js",
+ "lang": "en",
+ "segments": [
+  {
+   "text": "I saw your shadow dancing in the dashboard light",
+   "start": 5.65,
+   "end": 10.37,
+   "words": [
+    {
+     "word": "I",
+     "start": 5.65,
+     "end": 5.81
+    },
+    {
+     "word": "saw",
+     "start": 5.81,
+     "end": 6.05
+    },
+    {
+     "word": "your",
+     "start": 6.05,
+     "end": 6.37
+    },
+    {
+     "word": "shadow",
+     "start": 6.37,
+     "end": 7.89
+    },
+    {
+     "word": "dancing",
+     "start": 7.89,
+     "end": 8.65
+    },
+    {
+     "word": "in",
+     "start": 8.65,
+     "end": 8.89
+    },
+    {
+     "word": "the",
+     "start": 8.89,
+     "end": 9.09
+    },
+    {
+     "word": "dashboard",
+     "start": 9.09,
+     "end": 9.93
+    },
+    {
+     "word": "light",
+     "start": 9.93,
+     "end": 10.37
+    }
+   ]
+  },
+  {
+   "text": "like a memory that never learned goodbye",
+   "start": 11.45,
+   "end": 15.33,
+   "words": [
+    {
+     "word": "like",
+     "start": 11.45,
+     "end": 11.65
+    },
+    {
+     "word": "a",
+     "start": 11.65,
+     "end": 12.21
+    },
+    {
+     "word": "memory",
+     "start": 12.21,
+     "end": 12.97
+    },
+    {
+     "word": "that",
+     "start": 12.97,
+     "end": 13.33
+    },
+    {
+     "word": "never",
+     "start": 13.33,
+     "end": 13.85
+    },
+    {
+     "word": "learned",
+     "start": 13.85,
+     "end": 14.65
+    },
+    {
+     "word": "goodbye",
+     "start": 14.65,
+     "end": 15.33
+    }
+   ]
+  },
+  {
+   "text": "You kept your secrets underneath your tongue",
+   "start": 17.89,
+   "end": 21.37,
+   "words": [
+    {
+     "word": "You",
+     "start": 17.89,
+     "end": 18.09
+    },
+    {
+     "word": "kept",
+     "start": 18.09,
+     "end": 18.37
+    },
+    {
+     "word": "your",
+     "start": 18.37,
+     "end": 18.81
+    },
+    {
+     "word": "secrets",
+     "start": 18.81,
+     "end": 19.61
+    },
+    {
+     "word": "underneath",
+     "start": 19.61,
+     "end": 20.37
+    },
+    {
+     "word": "your",
+     "start": 20.37,
+     "end": 20.81
+    },
+    {
+     "word": "tongue",
+     "start": 20.81,
+     "end": 21.37
+    }
+   ]
+  },
+  {
+   "text": "I kept pretending that we were still young",
+   "start": 23.37,
+   "end": 26.49,
+   "words": [
+    {
+     "word": "I",
+     "start": 23.37,
+     "end": 23.53
+    },
+    {
+     "word": "kept",
+     "start": 23.53,
+     "end": 23.93
+    },
+    {
+     "word": "pretending",
+     "start": 23.93,
+     "end": 24.73
+    },
+    {
+     "word": "that",
+     "start": 24.73,
+     "end": 24.89
+    },
+    {
+     "word": "we",
+     "start": 24.89,
+     "end": 25.09
+    },
+    {
+     "word": "were",
+     "start": 25.09,
+     "end": 25.37
+    },
+    {
+     "word": "still",
+     "start": 25.37,
+     "end": 25.93
+    },
+    {
+     "word": "young",
+     "start": 25.93,
+     "end": 26.49
+    }
+   ]
+  },
+  {
+   "text": "We drove for hours with the windows down",
+   "start": 28.53,
+   "end": 32.21,
+   "words": [
+    {
+     "word": "We",
+     "start": 28.53,
+     "end": 28.89
+    },
+    {
+     "word": "drove",
+     "start": 28.89,
+     "end": 29.17
+    },
+    {
+     "word": "for",
+     "start": 29.17,
+     "end": 29.77
+    },
+    {
+     "word": "hours",
+     "start": 29.77,
+     "end": 30.25
+    },
+    {
+     "word": "with",
+     "start": 30.25,
+     "end": 30.57
+    },
+    {
+     "word": "the",
+     "start": 30.57,
+     "end": 31.13
+    },
+    {
+     "word": "windows",
+     "start": 31.13,
+     "end": 31.73
+    },
+    {
+     "word": "down",
+     "start": 31.73,
+     "end": 32.21
+    }
+   ]
+  },
+  {
+   "text": "chasing a place that was never in this town",
+   "start": 33.05,
+   "end": 36.85,
+   "words": [
+    {
+     "word": "chasing",
+     "start": 33.05,
+     "end": 33.45
+    },
+    {
+     "word": "a",
+     "start": 33.45,
+     "end": 33.65
+    },
+    {
+     "word": "place",
+     "start": 33.65,
+     "end": 34.61
+    },
+    {
+     "word": "that",
+     "start": 34.61,
+     "end": 34.77
+    },
+    {
+     "word": "was",
+     "start": 34.77,
+     "end": 35.05
+    },
+    {
+     "word": "never",
+     "start": 35.05,
+     "end": 35.77
+    },
+    {
+     "word": "in",
+     "start": 35.77,
+     "end": 36.01
+    },
+    {
+     "word": "this",
+     "start": 36.01,
+     "end": 36.33
+    },
+    {
+     "word": "town",
+     "start": 36.33,
+     "end": 36.85
+    }
+   ]
+  },
+  {
+   "text": "You said forever like it meant tonight",
+   "start": 38.49,
+   "end": 42.13,
+   "words": [
+    {
+     "word": "You",
+     "start": 38.49,
+     "end": 38.69
+    },
+    {
+     "word": "said",
+     "start": 38.69,
+     "end": 38.89
+    },
+    {
+     "word": "forever",
+     "start": 38.89,
+     "end": 40.05
+    },
+    {
+     "word": "like",
+     "start": 40.05,
+     "end": 40.25
+    },
+    {
+     "word": "it",
+     "start": 40.25,
+     "end": 40.49
+    },
+    {
+     "word": "meant",
+     "start": 40.49,
+     "end": 41.21
+    },
+    {
+     "word": "tonight",
+     "start": 41.21,
+     "end": 42.13
+    }
+   ]
+  },
+  {
+   "text": "I heard the warning underneath the neon light",
+   "start": 42.13,
+   "end": 44.77,
+   "words": [
+    {
+     "word": "I",
+     "start": 42.13,
+     "end": 42.29
+    },
+    {
+     "word": "heard",
+     "start": 42.29,
+     "end": 42.49
+    },
+    {
+     "word": "the",
+     "start": 42.49,
+     "end": 42.69
+    },
+    {
+     "word": "warning",
+     "start": 42.69,
+     "end": 43.09
+    },
+    {
+     "word": "underneath",
+     "start": 43.09,
+     "end": 43.49
+    },
+    {
+     "word": "the",
+     "start": 43.49,
+     "end": 43.61
+    },
+    {
+     "word": "neon",
+     "start": 43.61,
+     "end": 44.01
+    },
+    {
+     "word": "light",
+     "start": 44.01,
+     "end": 44.77
+    }
+   ]
+  },
+  {
+   "text": "Every little promise tasted like gold till morning came and left us in the cold",
+   "start": 44.77,
+   "end": 49.85,
+   "words": [
+    {
+     "word": "Every",
+     "start": 44.77,
+     "end": 45.05
+    },
+    {
+     "word": "little",
+     "start": 45.05,
+     "end": 45.53
+    },
+    {
+     "word": "promise",
+     "start": 45.53,
+     "end": 45.89
+    },
+    {
+     "word": "tasted",
+     "start": 45.89,
+     "end": 46.41
+    },
+    {
+     "word": "like",
+     "start": 46.41,
+     "end": 46.73
+    },
+    {
+     "word": "gold",
+     "start": 46.73,
+     "end": 47.05
+    },
+    {
+     "word": "till",
+     "start": 47.05,
+     "end": 47.41
+    },
+    {
+     "word": "morning",
+     "start": 47.41,
+     "end": 47.93
+    },
+    {
+     "word": "came",
+     "start": 47.93,
+     "end": 48.33
+    },
+    {
+     "word": "and",
+     "start": 48.33,
+     "end": 48.61
+    },
+    {
+     "word": "left",
+     "start": 48.61,
+     "end": 48.97
+    },
+    {
+     "word": "us",
+     "start": 48.97,
+     "end": 49.17
+    },
+    {
+     "word": "in",
+     "start": 49.17,
+     "end": 49.29
+    },
+    {
+     "word": "the",
+     "start": 49.29,
+     "end": 49.49
+    },
+    {
+     "word": "cold",
+     "start": 49.49,
+     "end": 49.85
+    }
+   ]
+  },
+  {
+   "text": "And I know",
+   "start": 49.85,
+   "end": 50.97,
+   "words": [
+    {
+     "word": "And",
+     "start": 49.85,
+     "end": 50.09
+    },
+    {
+     "word": "I",
+     "start": 50.09,
+     "end": 50.41
+    },
+    {
+     "word": "know",
+     "start": 50.41,
+     "end": 50.97
+    }
+   ]
+  },
+  {
+   "text": "We were running out of road",
+   "start": 52.48,
+   "end": 54.56,
+   "words": [
+    {
+     "word": "We",
+     "start": 52.48,
+     "end": 52.64
+    },
+    {
+     "word": "were",
+     "start": 52.64,
+     "end": 52.88
+    },
+    {
+     "word": "running",
+     "start": 52.88,
+     "end": 53.48
+    },
+    {
+     "word": "out",
+     "start": 53.48,
+     "end": 53.8
+    },
+    {
+     "word": "of",
+     "start": 53.8,
+     "end": 54.08
+    },
+    {
+     "word": "road",
+     "start": 54.08,
+     "end": 54.56
+    }
+   ]
+  },
+  {
+   "text": "but I held on like I didn't know",
+   "start": 54.56,
+   "end": 59.56,
+   "words": [
+    {
+     "word": "but",
+     "start": 54.56,
+     "end": 54.76
+    },
+    {
+     "word": "I",
+     "start": 54.76,
+     "end": 54.96
+    },
+    {
+     "word": "held",
+     "start": 54.96,
+     "end": 55.32
+    },
+    {
+     "word": "on",
+     "start": 55.32,
+     "end": 56.92
+    },
+    {
+     "word": "like",
+     "start": 56.92,
+     "end": 57.2
+    },
+    {
+     "word": "I",
+     "start": 57.2,
+     "end": 57.52
+    },
+    {
+     "word": "didn",
+     "start": 57.52,
+     "end": 57.88
+    },
+    {
+     "word": "'",
+     "start": 57.88,
+     "end": 58.02
+    },
+    {
+     "word": "t",
+     "start": 58.02,
+     "end": 58.16
+    },
+    {
+     "word": "know",
+     "start": 58.16,
+     "end": 59.56
+    }
+   ]
+  },
+  {
+   "text": "we were burning through the night",
+   "start": 62.08,
+   "end": 64.4,
+   "words": [
+    {
+     "word": "we",
+     "start": 62.08,
+     "end": 62.2
+    },
+    {
+     "word": "were",
+     "start": 62.2,
+     "end": 62.44
+    },
+    {
+     "word": "burning",
+     "start": 62.44,
+     "end": 62.92
+    },
+    {
+     "word": "through",
+     "start": 62.92,
+     "end": 63.4
+    },
+    {
+     "word": "the",
+     "start": 63.4,
+     "end": 63.6
+    },
+    {
+     "word": "night",
+     "start": 63.6,
+     "end": 64.4
+    }
+   ]
+  },
+  {
+   "text": "trying to turn a lie into a life",
+   "start": 64.4,
+   "end": 67.0,
+   "words": [
+    {
+     "word": "trying",
+     "start": 64.4,
+     "end": 64.6
+    },
+    {
+     "word": "to",
+     "start": 64.6,
+     "end": 64.76
+    },
+    {
+     "word": "turn",
+     "start": 64.76,
+     "end": 64.96
+    },
+    {
+     "word": "a",
+     "start": 64.96,
+     "end": 65.12
+    },
+    {
+     "word": "lie",
+     "start": 65.12,
+     "end": 65.6
+    },
+    {
+     "word": "into",
+     "start": 65.6,
+     "end": 66.16
+    },
+    {
+     "word": "a",
+     "start": 66.16,
+     "end": 66.32
+    },
+    {
+     "word": "life",
+     "start": 66.32,
+     "end": 67.0
+    }
+   ]
+  },
+  {
+   "text": "You had your hands around my heart",
+   "start": 67.0,
+   "end": 68.92,
+   "words": [
+    {
+     "word": "You",
+     "start": 67.0,
+     "end": 67.16
+    },
+    {
+     "word": "had",
+     "start": 67.16,
+     "end": 67.36
+    },
+    {
+     "word": "your",
+     "start": 67.36,
+     "end": 67.52
+    },
+    {
+     "word": "hands",
+     "start": 67.52,
+     "end": 67.84
+    },
+    {
+     "word": "around",
+     "start": 67.84,
+     "end": 68.2
+    },
+    {
+     "word": "my",
+     "start": 68.2,
+     "end": 68.56
+    },
+    {
+     "word": "heart",
+     "start": 68.56,
+     "end": 68.92
+    }
+   ]
+  },
+  {
+   "text": "then you disappeared before the dark",
+   "start": 68.92,
+   "end": 71.44,
+   "words": [
+    {
+     "word": "then",
+     "start": 68.92,
+     "end": 69.04
+    },
+    {
+     "word": "you",
+     "start": 69.04,
+     "end": 69.4
+    },
+    {
+     "word": "disappeared",
+     "start": 69.4,
+     "end": 70.28
+    },
+    {
+     "word": "before",
+     "start": 70.28,
+     "end": 70.8
+    },
+    {
+     "word": "the",
+     "start": 70.8,
+     "end": 71.12
+    },
+    {
+     "word": "dark",
+     "start": 71.12,
+     "end": 71.44
+    }
+   ]
+  },
+  {
+   "text": "if we were never meant to stay",
+   "start": 72.44,
+   "end": 73.96,
+   "words": [
+    {
+     "word": "if",
+     "start": 72.44,
+     "end": 72.64
+    },
+    {
+     "word": "we",
+     "start": 72.64,
+     "end": 72.76
+    },
+    {
+     "word": "were",
+     "start": 72.76,
+     "end": 72.96
+    },
+    {
+     "word": "never",
+     "start": 72.96,
+     "end": 73.32
+    },
+    {
+     "word": "meant",
+     "start": 73.32,
+     "end": 73.6
+    },
+    {
+     "word": "to",
+     "start": 73.6,
+     "end": 73.84
+    },
+    {
+     "word": "stay",
+     "start": 73.84,
+     "end": 73.96
+    }
+   ]
+  },
+  {
+   "text": "Why did you make me feel that way",
+   "start": 75.13,
+   "end": 77.85,
+   "words": [
+    {
+     "word": "Why",
+     "start": 75.13,
+     "end": 75.37
+    },
+    {
+     "word": "did",
+     "start": 75.37,
+     "end": 75.53
+    },
+    {
+     "word": "you",
+     "start": 75.53,
+     "end": 75.69
+    },
+    {
+     "word": "make",
+     "start": 75.69,
+     "end": 75.85
+    },
+    {
+     "word": "me",
+     "start": 75.85,
+     "end": 76.05
+    },
+    {
+     "word": "feel",
+     "start": 76.05,
+     "end": 76.37
+    },
+    {
+     "word": "that",
+     "start": 76.37,
+     "end": 76.69
+    },
+    {
+     "word": "way",
+     "start": 76.69,
+     "end": 77.85
+    }
+   ]
+  },
+  {
+   "text": "Now every city looks the same and every stranger knows your name",
+   "start": 77.85,
+   "end": 82.53,
+   "words": [
+    {
+     "word": "Now",
+     "start": 77.85,
+     "end": 78.17
+    },
+    {
+     "word": "every",
+     "start": 78.17,
+     "end": 78.45
+    },
+    {
+     "word": "city",
+     "start": 78.45,
+     "end": 78.77
+    },
+    {
+     "word": "looks",
+     "start": 78.77,
+     "end": 79.13
+    },
+    {
+     "word": "the",
+     "start": 79.13,
+     "end": 79.45
+    },
+    {
+     "word": "same",
+     "start": 79.45,
+     "end": 79.81
+    },
+    {
+     "word": "and",
+     "start": 79.81,
+     "end": 80.21
+    },
+    {
+     "word": "every",
+     "start": 80.21,
+     "end": 80.65
+    },
+    {
+     "word": "stranger",
+     "start": 80.65,
+     "end": 81.29
+    },
+    {
+     "word": "knows",
+     "start": 81.29,
+     "end": 81.69
+    },
+    {
+     "word": "your",
+     "start": 81.69,
+     "end": 82.01
+    },
+    {
+     "word": "name",
+     "start": 82.01,
+     "end": 82.53
+    }
+   ]
+  },
+  {
+   "text": "your name, your name still ringing in my head",
+   "start": 82.53,
+   "end": 88.77,
+   "words": [
+    {
+     "word": "your",
+     "start": 82.53,
+     "end": 82.89
+    },
+    {
+     "word": "name",
+     "start": 82.89,
+     "end": 83.45
+    },
+    {
+     "word": ",",
+     "start": 83.45,
+     "end": 85.25
+    },
+    {
+     "word": "your",
+     "start": 85.25,
+     "end": 85.61
+    },
+    {
+     "word": "name",
+     "start": 85.61,
+     "end": 86.53
+    },
+    {
+     "word": "still",
+     "start": 86.53,
+     "end": 86.97
+    },
+    {
+     "word": "ringing",
+     "start": 86.97,
+     "end": 87.53
+    },
+    {
+     "word": "in",
+     "start": 87.53,
+     "end": 87.81
+    },
+    {
+     "word": "my",
+     "start": 87.81,
+     "end": 88.33
+    },
+    {
+     "word": "head",
+     "start": 88.33,
+     "end": 88.77
+    }
+   ]
+  },
+  {
+   "text": "I found your photograph beneath my bed",
+   "start": 92.85,
+   "end": 96.29,
+   "words": [
+    {
+     "word": "I",
+     "start": 92.85,
+     "end": 93.05
+    },
+    {
+     "word": "found",
+     "start": 93.05,
+     "end": 93.29
+    },
+    {
+     "word": "your",
+     "start": 93.29,
+     "end": 94.01
+    },
+    {
+     "word": "photograph",
+     "start": 94.01,
+     "end": 94.89
+    },
+    {
+     "word": "beneath",
+     "start": 94.89,
+     "end": 95.33
+    },
+    {
+     "word": "my",
+     "start": 95.33,
+     "end": 95.81
+    },
+    {
+     "word": "bed",
+     "start": 95.81,
+     "end": 96.29
+    }
+   ]
+  },
+  {
+   "text": "a little piece of us I thought was dead",
+   "start": 96.29,
+   "end": 99.06,
+   "words": [
+    {
+     "word": "a",
+     "start": 96.29,
+     "end": 96.49
+    },
+    {
+     "word": "little",
+     "start": 96.49,
+     "end": 96.81
+    },
+    {
+     "word": "piece",
+     "start": 96.81,
+     "end": 97.05
+    },
+    {
+     "word": "of",
+     "start": 97.05,
+     "end": 97.21
+    },
+    {
+     "word": "us",
+     "start": 97.21,
+     "end": 97.45
+    },
+    {
+     "word": "I",
+     "start": 97.45,
+     "end": 97.69
+    },
+    {
+     "word": "thought",
+     "start": 97.69,
+     "end": 98.05
+    },
+    {
+     "word": "was",
+     "start": 98.05,
+     "end": 98.37
+    },
+    {
+     "word": "dead",
+     "start": 98.37,
+     "end": 99.06
+    }
+   ]
+  },
+  {
+   "text": "The colors faded but the eyes stay bright like you were waiting for me every night",
+   "start": 99.06,
+   "end": 104.38,
+   "words": [
+    {
+     "word": "The",
+     "start": 99.06,
+     "end": 99.34
+    },
+    {
+     "word": "colors",
+     "start": 99.34,
+     "end": 99.78
+    },
+    {
+     "word": "faded",
+     "start": 99.78,
+     "end": 100.22
+    },
+    {
+     "word": "but",
+     "start": 100.22,
+     "end": 100.42
+    },
+    {
+     "word": "the",
+     "start": 100.42,
+     "end": 100.62
+    },
+    {
+     "word": "eyes",
+     "start": 100.62,
+     "end": 100.9
+    },
+    {
+     "word": "stay",
+     "start": 100.9,
+     "end": 101.26
+    },
+    {
+     "word": "bright",
+     "start": 101.26,
+     "end": 101.62
+    },
+    {
+     "word": "like",
+     "start": 101.62,
+     "end": 101.94
+    },
+    {
+     "word": "you",
+     "start": 101.94,
+     "end": 102.14
+    },
+    {
+     "word": "were",
+     "start": 102.14,
+     "end": 102.5
+    },
+    {
+     "word": "waiting",
+     "start": 102.5,
+     "end": 102.94
+    },
+    {
+     "word": "for",
+     "start": 102.94,
+     "end": 103.14
+    },
+    {
+     "word": "me",
+     "start": 103.14,
+     "end": 103.54
+    },
+    {
+     "word": "every",
+     "start": 103.54,
+     "end": 103.94
+    },
+    {
+     "word": "night",
+     "start": 103.94,
+     "end": 104.38
+    }
+   ]
+  },
+  {
+   "text": "I learned to laugh at all the things we lost",
+   "start": 104.38,
+   "end": 107.14,
+   "words": [
+    {
+     "word": "I",
+     "start": 104.38,
+     "end": 104.7
+    },
+    {
+     "word": "learned",
+     "start": 104.7,
+     "end": 104.98
+    },
+    {
+     "word": "to",
+     "start": 104.98,
+     "end": 105.22
+    },
+    {
+     "word": "laugh",
+     "start": 105.22,
+     "end": 105.58
+    },
+    {
+     "word": "at",
+     "start": 105.58,
+     "end": 105.74
+    },
+    {
+     "word": "all",
+     "start": 105.74,
+     "end": 105.86
+    },
+    {
+     "word": "the",
+     "start": 105.86,
+     "end": 106.06
+    },
+    {
+     "word": "things",
+     "start": 106.06,
+     "end": 106.38
+    },
+    {
+     "word": "we",
+     "start": 106.38,
+     "end": 106.74
+    },
+    {
+     "word": "lost",
+     "start": 106.74,
+     "end": 107.14
+    }
+   ]
+  },
+  {
+   "text": "I learned that freedom always has a cost",
+   "start": 107.14,
+   "end": 109.78,
+   "words": [
+    {
+     "word": "I",
+     "start": 107.14,
+     "end": 107.42
+    },
+    {
+     "word": "learned",
+     "start": 107.42,
+     "end": 107.7
+    },
+    {
+     "word": "that",
+     "start": 107.7,
+     "end": 107.94
+    },
+    {
+     "word": "freedom",
+     "start": 107.94,
+     "end": 108.54
+    },
+    {
+     "word": "always",
+     "start": 108.54,
+     "end": 108.82
+    },
+    {
+     "word": "has",
+     "start": 108.82,
+     "end": 109.14
+    },
+    {
+     "word": "a",
+     "start": 109.14,
+     "end": 109.42
+    },
+    {
+     "word": "cost",
+     "start": 109.42,
+     "end": 109.78
+    }
+   ]
+  },
+  {
+   "text": "So I keep moving when the morning comes with empty pockets and a loaded sun",
+   "start": 109.78,
+   "end": 115.26,
+   "words": [
+    {
+     "word": "So",
+     "start": 109.78,
+     "end": 110.06
+    },
+    {
+     "word": "I",
+     "start": 110.06,
+     "end": 110.34
+    },
+    {
+     "word": "keep",
+     "start": 110.34,
+     "end": 110.7
+    },
+    {
+     "word": "moving",
+     "start": 110.7,
+     "end": 111.14
+    },
+    {
+     "word": "when",
+     "start": 111.14,
+     "end": 111.34
+    },
+    {
+     "word": "the",
+     "start": 111.34,
+     "end": 111.66
+    },
+    {
+     "word": "morning",
+     "start": 111.66,
+     "end": 112.14
+    },
+    {
+     "word": "comes",
+     "start": 112.14,
+     "end": 112.54
+    },
+    {
+     "word": "with",
+     "start": 112.54,
+     "end": 112.86
+    },
+    {
+     "word": "empty",
+     "start": 112.86,
+     "end": 113.58
+    },
+    {
+     "word": "pockets",
+     "start": 113.58,
+     "end": 113.94
+    },
+    {
+     "word": "and",
+     "start": 113.94,
+     "end": 114.06
+    },
+    {
+     "word": "a",
+     "start": 114.06,
+     "end": 114.26
+    },
+    {
+     "word": "loaded",
+     "start": 114.26,
+     "end": 114.86
+    },
+    {
+     "word": "sun",
+     "start": 114.86,
+     "end": 115.26
+    }
+   ]
+  },
+  {
+   "text": "And I know",
+   "start": 115.26,
+   "end": 117.08,
+   "words": [
+    {
+     "word": "And",
+     "start": 115.26,
+     "end": 115.5
+    },
+    {
+     "word": "I",
+     "start": 115.5,
+     "end": 115.9
+    },
+    {
+     "word": "know",
+     "start": 115.9,
+     "end": 117.08
+    }
+   ]
+  },
+  {
+   "text": "we were running out of hope but i held on to a fading goal",
+   "start": 117.91,
+   "end": 124.33,
+   "words": [
+    {
+     "word": "we",
+     "start": 117.91,
+     "end": 118.07
+    },
+    {
+     "word": "were",
+     "start": 118.07,
+     "end": 118.31
+    },
+    {
+     "word": "running",
+     "start": 118.31,
+     "end": 118.91
+    },
+    {
+     "word": "out",
+     "start": 118.91,
+     "end": 119.27
+    },
+    {
+     "word": "of",
+     "start": 119.27,
+     "end": 119.59
+    },
+    {
+     "word": "hope",
+     "start": 119.59,
+     "end": 119.99
+    },
+    {
+     "word": "but",
+     "start": 119.99,
+     "end": 120.19
+    },
+    {
+     "word": "i",
+     "start": 120.19,
+     "end": 120.39
+    },
+    {
+     "word": "held",
+     "start": 120.39,
+     "end": 120.83
+    },
+    {
+     "word": "on",
+     "start": 120.83,
+     "end": 122.31
+    },
+    {
+     "word": "to",
+     "start": 122.31,
+     "end": 122.63
+    },
+    {
+     "word": "a",
+     "start": 122.63,
+     "end": 122.91
+    },
+    {
+     "word": "fading",
+     "start": 122.91,
+     "end": 123.59
+    },
+    {
+     "word": "goal",
+     "start": 123.59,
+     "end": 124.33
+    }
+   ]
+  },
+  {
+   "text": "so,well,we were burning through the night",
+   "start": 125.75,
+   "end": 129.79,
+   "words": [
+    {
+     "word": "so",
+     "start": 125.75,
+     "end": 126.83
+    },
+    {
+     "word": ",",
+     "start": 126.83,
+     "end": 127.31
+    },
+    {
+     "word": "well",
+     "start": 127.31,
+     "end": 127.43
+    },
+    {
+     "word": ",",
+     "start": 127.43,
+     "end": 127.51
+    },
+    {
+     "word": "we",
+     "start": 127.51,
+     "end": 127.63
+    },
+    {
+     "word": "were",
+     "start": 127.63,
+     "end": 127.83
+    },
+    {
+     "word": "burning",
+     "start": 127.83,
+     "end": 128.35
+    },
+    {
+     "word": "through",
+     "start": 128.35,
+     "end": 128.83
+    },
+    {
+     "word": "the",
+     "start": 128.83,
+     "end": 129.03
+    },
+    {
+     "word": "night",
+     "start": 129.03,
+     "end": 129.79
+    }
+   ]
+  },
+  {
+   "text": "trying to turn a lie into a light",
+   "start": 129.79,
+   "end": 132.43,
+   "words": [
+    {
+     "word": "trying",
+     "start": 129.79,
+     "end": 130.07
+    },
+    {
+     "word": "to",
+     "start": 130.07,
+     "end": 130.23
+    },
+    {
+     "word": "turn",
+     "start": 130.23,
+     "end": 130.43
+    },
+    {
+     "word": "a",
+     "start": 130.43,
+     "end": 130.59
+    },
+    {
+     "word": "lie",
+     "start": 130.59,
+     "end": 131.07
+    },
+    {
+     "word": "into",
+     "start": 131.07,
+     "end": 131.59
+    },
+    {
+     "word": "a",
+     "start": 131.59,
+     "end": 131.79
+    },
+    {
+     "word": "light",
+     "start": 131.79,
+     "end": 132.43
+    }
+   ]
+  },
+  {
+   "text": "You had your hands around my heart",
+   "start": 132.43,
+   "end": 134.39,
+   "words": [
+    {
+     "word": "You",
+     "start": 132.43,
+     "end": 132.63
+    },
+    {
+     "word": "had",
+     "start": 132.63,
+     "end": 132.83
+    },
+    {
+     "word": "your",
+     "start": 132.83,
+     "end": 132.95
+    },
+    {
+     "word": "hands",
+     "start": 132.95,
+     "end": 133.27
+    },
+    {
+     "word": "around",
+     "start": 133.27,
+     "end": 133.63
+    },
+    {
+     "word": "my",
+     "start": 133.63,
+     "end": 133.99
+    },
+    {
+     "word": "heart",
+     "start": 133.99,
+     "end": 134.39
+    }
+   ]
+  },
+  {
+   "text": "then you disappeared before the dark",
+   "start": 134.39,
+   "end": 136.91,
+   "words": [
+    {
+     "word": "then",
+     "start": 134.39,
+     "end": 134.51
+    },
+    {
+     "word": "you",
+     "start": 134.51,
+     "end": 134.83
+    },
+    {
+     "word": "disappeared",
+     "start": 134.83,
+     "end": 135.75
+    },
+    {
+     "word": "before",
+     "start": 135.75,
+     "end": 136.23
+    },
+    {
+     "word": "the",
+     "start": 136.23,
+     "end": 136.63
+    },
+    {
+     "word": "dark",
+     "start": 136.63,
+     "end": 136.91
+    }
+   ]
+  },
+  {
+   "text": "if we were never meant to stay",
+   "start": 137.91,
+   "end": 140.59,
+   "words": [
+    {
+     "word": "if",
+     "start": 137.91,
+     "end": 138.07
+    },
+    {
+     "word": "we",
+     "start": 138.07,
+     "end": 138.19
+    },
+    {
+     "word": "were",
+     "start": 138.19,
+     "end": 138.43
+    },
+    {
+     "word": "never",
+     "start": 138.43,
+     "end": 138.75
+    },
+    {
+     "word": "meant",
+     "start": 138.75,
+     "end": 139.07
+    },
+    {
+     "word": "to",
+     "start": 139.07,
+     "end": 139.43
+    },
+    {
+     "word": "stay",
+     "start": 139.43,
+     "end": 140.59
+    }
+   ]
+  },
+  {
+   "text": "why did you make me feel that way",
+   "start": 140.59,
+   "end": 143.27,
+   "words": [
+    {
+     "word": "why",
+     "start": 140.59,
+     "end": 140.79
+    },
+    {
+     "word": "did",
+     "start": 140.79,
+     "end": 140.95
+    },
+    {
+     "word": "you",
+     "start": 140.95,
+     "end": 141.11
+    },
+    {
+     "word": "make",
+     "start": 141.11,
+     "end": 141.27
+    },
+    {
+     "word": "me",
+     "start": 141.27,
+     "end": 141.47
+    },
+    {
+     "word": "feel",
+     "start": 141.47,
+     "end": 141.83
+    },
+    {
+     "word": "that",
+     "start": 141.83,
+     "end": 142.11
+    },
+    {
+     "word": "way",
+     "start": 142.11,
+     "end": 143.27
+    }
+   ]
+  },
+  {
+   "text": "Now every city looks the same",
+   "start": 143.27,
+   "end": 145.27,
+   "words": [
+    {
+     "word": "Now",
+     "start": 143.27,
+     "end": 143.63
+    },
+    {
+     "word": "every",
+     "start": 143.63,
+     "end": 143.87
+    },
+    {
+     "word": "city",
+     "start": 143.87,
+     "end": 144.23
+    },
+    {
+     "word": "looks",
+     "start": 144.23,
+     "end": 144.55
+    },
+    {
+     "word": "the",
+     "start": 144.55,
+     "end": 144.87
+    },
+    {
+     "word": "same",
+     "start": 144.87,
+     "end": 145.27
+    }
+   ]
+  },
+  {
+   "text": "and every stranger knows your name",
+   "start": 145.27,
+   "end": 148.98,
+   "words": [
+    {
+     "word": "and",
+     "start": 145.27,
+     "end": 145.63
+    },
+    {
+     "word": "every",
+     "start": 145.63,
+     "end": 146.11
+    },
+    {
+     "word": "stranger",
+     "start": 146.11,
+     "end": 146.75
+    },
+    {
+     "word": "knows",
+     "start": 146.75,
+     "end": 147.15
+    },
+    {
+     "word": "your",
+     "start": 147.15,
+     "end": 147.47
+    },
+    {
+     "word": "name",
+     "start": 147.47,
+     "end": 148.98
+    }
+   ]
+  },
+  {
+   "text": "maybe i love the way you left maybe i needed something i could never get i don't want you back i just want",
+   "start": 148.98,
+   "end": 156.82,
+   "words": [
+    {
+     "word": "maybe",
+     "start": 148.98,
+     "end": 149.42
+    },
+    {
+     "word": "i",
+     "start": 149.42,
+     "end": 149.7
+    },
+    {
+     "word": "love",
+     "start": 149.7,
+     "end": 150.02
+    },
+    {
+     "word": "the",
+     "start": 150.02,
+     "end": 150.22
+    },
+    {
+     "word": "way",
+     "start": 150.22,
+     "end": 150.54
+    },
+    {
+     "word": "you",
+     "start": 150.54,
+     "end": 150.9
+    },
+    {
+     "word": "left",
+     "start": 150.9,
+     "end": 151.7
+    },
+    {
+     "word": "maybe",
+     "start": 151.7,
+     "end": 152.1
+    },
+    {
+     "word": "i",
+     "start": 152.1,
+     "end": 152.38
+    },
+    {
+     "word": "needed",
+     "start": 152.38,
+     "end": 152.78
+    },
+    {
+     "word": "something",
+     "start": 152.78,
+     "end": 153.46
+    },
+    {
+     "word": "i",
+     "start": 153.46,
+     "end": 153.58
+    },
+    {
+     "word": "could",
+     "start": 153.58,
+     "end": 153.78
+    },
+    {
+     "word": "never",
+     "start": 153.78,
+     "end": 154.3
+    },
+    {
+     "word": "get",
+     "start": 154.3,
+     "end": 154.94
+    },
+    {
+     "word": "i",
+     "start": 154.94,
+     "end": 155.1
+    },
+    {
+     "word": "don",
+     "start": 155.1,
+     "end": 155.18
+    },
+    {
+     "word": "'",
+     "start": 155.18,
+     "end": 155.24
+    },
+    {
+     "word": "t",
+     "start": 155.24,
+     "end": 155.3
+    },
+    {
+     "word": "want",
+     "start": 155.3,
+     "end": 155.54
+    },
+    {
+     "word": "you",
+     "start": 155.54,
+     "end": 155.82
+    },
+    {
+     "word": "back",
+     "start": 155.82,
+     "end": 156.18
+    },
+    {
+     "word": "i",
+     "start": 156.18,
+     "end": 156.3
+    },
+    {
+     "word": "just",
+     "start": 156.3,
+     "end": 156.54
+    },
+    {
+     "word": "want",
+     "start": 156.54,
+     "end": 156.82
+    }
+   ]
+  },
+  {
+   "text": "the night before we knew",
+   "start": 156.82,
+   "end": 159.77,
+   "words": [
+    {
+     "word": "the",
+     "start": 156.82,
+     "end": 156.98
+    },
+    {
+     "word": "night",
+     "start": 156.98,
+     "end": 157.54
+    },
+    {
+     "word": "before",
+     "start": 157.54,
+     "end": 158.02
+    },
+    {
+     "word": "we",
+     "start": 158.02,
+     "end": 158.34
+    },
+    {
+     "word": "knew",
+     "start": 158.34,
+     "end": 159.77
+    }
+   ]
+  },
+  {
+   "text": "We were saying goodbye",
+   "start": 161.5,
+   "end": 164.58,
+   "words": [
+    {
+     "word": "We",
+     "start": 161.5,
+     "end": 161.66
+    },
+    {
+     "word": "were",
+     "start": 161.66,
+     "end": 161.9
+    },
+    {
+     "word": "saying",
+     "start": 161.9,
+     "end": 163.26
+    },
+    {
+     "word": "goodbye",
+     "start": 163.26,
+     "end": 164.58
+    }
+   ]
+  },
+  {
+   "text": "don't let me go",
+   "start": 201.17,
+   "end": 203.97,
+   "words": [
+    {
+     "word": "don",
+     "start": 201.17,
+     "end": 201.29
+    },
+    {
+     "word": "'",
+     "start": 201.29,
+     "end": 201.43
+    },
+    {
+     "word": "t",
+     "start": 201.43,
+     "end": 201.57
+    },
+    {
+     "word": "let",
+     "start": 201.57,
+     "end": 202.13
+    },
+    {
+     "word": "me",
+     "start": 202.13,
+     "end": 202.61
+    },
+    {
+     "word": "go",
+     "start": 202.61,
+     "end": 203.97
+    }
+   ]
+  },
+  {
+   "text": "we were burning through the night",
+   "start": 209.32,
+   "end": 211.36,
+   "words": [
+    {
+     "word": "we",
+     "start": 209.32,
+     "end": 209.44
+    },
+    {
+     "word": "were",
+     "start": 209.44,
+     "end": 209.68
+    },
+    {
+     "word": "burning",
+     "start": 209.68,
+     "end": 210.16
+    },
+    {
+     "word": "through",
+     "start": 210.16,
+     "end": 210.64
+    },
+    {
+     "word": "the",
+     "start": 210.64,
+     "end": 210.84
+    },
+    {
+     "word": "night",
+     "start": 210.84,
+     "end": 211.36
+    }
+   ]
+  },
+  {
+   "text": "turning every wrong into a satellite",
+   "start": 211.36,
+   "end": 214.28,
+   "words": [
+    {
+     "word": "turning",
+     "start": 211.36,
+     "end": 211.8
+    },
+    {
+     "word": "every",
+     "start": 211.8,
+     "end": 212.04
+    },
+    {
+     "word": "wrong",
+     "start": 212.04,
+     "end": 212.24
+    },
+    {
+     "word": "into",
+     "start": 212.24,
+     "end": 212.64
+    },
+    {
+     "word": "a",
+     "start": 212.64,
+     "end": 213.32
+    },
+    {
+     "word": "satellite",
+     "start": 213.32,
+     "end": 214.28
+    }
+   ]
+  },
+  {
+   "text": "You had your hands around my heart",
+   "start": 214.28,
+   "end": 216.2,
+   "words": [
+    {
+     "word": "You",
+     "start": 214.28,
+     "end": 214.44
+    },
+    {
+     "word": "had",
+     "start": 214.44,
+     "end": 214.64
+    },
+    {
+     "word": "your",
+     "start": 214.64,
+     "end": 214.76
+    },
+    {
+     "word": "hands",
+     "start": 214.76,
+     "end": 215.08
+    },
+    {
+     "word": "around",
+     "start": 215.08,
+     "end": 215.48
+    },
+    {
+     "word": "my",
+     "start": 215.48,
+     "end": 215.84
+    },
+    {
+     "word": "heart",
+     "start": 215.84,
+     "end": 216.2
+    }
+   ]
+  },
+  {
+   "text": "and I still feel you when the engine start",
+   "start": 216.2,
+   "end": 218.76,
+   "words": [
+    {
+     "word": "and",
+     "start": 216.2,
+     "end": 216.4
+    },
+    {
+     "word": "I",
+     "start": 216.4,
+     "end": 216.6
+    },
+    {
+     "word": "still",
+     "start": 216.6,
+     "end": 216.96
+    },
+    {
+     "word": "feel",
+     "start": 216.96,
+     "end": 217.32
+    },
+    {
+     "word": "you",
+     "start": 217.32,
+     "end": 217.48
+    },
+    {
+     "word": "when",
+     "start": 217.48,
+     "end": 217.72
+    },
+    {
+     "word": "the",
+     "start": 217.72,
+     "end": 218.08
+    },
+    {
+     "word": "engine",
+     "start": 218.08,
+     "end": 218.48
+    },
+    {
+     "word": "start",
+     "start": 218.48,
+     "end": 218.76
+    }
+   ]
+  },
+  {
+   "text": "if we were never meant to stay",
+   "start": 219.72,
+   "end": 222.4,
+   "words": [
+    {
+     "word": "if",
+     "start": 219.72,
+     "end": 219.88
+    },
+    {
+     "word": "we",
+     "start": 219.88,
+     "end": 220.0
+    },
+    {
+     "word": "were",
+     "start": 220.0,
+     "end": 220.24
+    },
+    {
+     "word": "never",
+     "start": 220.24,
+     "end": 220.6
+    },
+    {
+     "word": "meant",
+     "start": 220.6,
+     "end": 220.88
+    },
+    {
+     "word": "to",
+     "start": 220.88,
+     "end": 221.28
+    },
+    {
+     "word": "stay",
+     "start": 221.28,
+     "end": 222.4
+    }
+   ]
+  },
+  {
+   "text": "why does your ghost still know my name",
+   "start": 222.4,
+   "end": 224.12,
+   "words": [
+    {
+     "word": "why",
+     "start": 222.4,
+     "end": 222.6
+    },
+    {
+     "word": "does",
+     "start": 222.6,
+     "end": 222.8
+    },
+    {
+     "word": "your",
+     "start": 222.8,
+     "end": 222.92
+    },
+    {
+     "word": "ghost",
+     "start": 222.92,
+     "end": 223.12
+    },
+    {
+     "word": "still",
+     "start": 223.12,
+     "end": 223.28
+    },
+    {
+     "word": "know",
+     "start": 223.28,
+     "end": 223.64
+    },
+    {
+     "word": "my",
+     "start": 223.64,
+     "end": 223.92
+    },
+    {
+     "word": "name",
+     "start": 223.92,
+     "end": 224.12
+    }
+   ]
+  },
+  {
+   "text": "I've crossed a 1000 empty roads",
+   "start": 224.77,
+   "end": 226.73,
+   "words": [
+    {
+     "word": "I",
+     "start": 224.77,
+     "end": 224.85
+    },
+    {
+     "word": "'",
+     "start": 224.85,
+     "end": 224.89
+    },
+    {
+     "word": "ve",
+     "start": 224.89,
+     "end": 224.97
+    },
+    {
+     "word": "crossed",
+     "start": 224.97,
+     "end": 225.17
+    },
+    {
+     "word": "a",
+     "start": 225.17,
+     "end": 225.33
+    },
+    {
+     "word": "1000",
+     "start": 225.33,
+     "end": 225.81
+    },
+    {
+     "word": "empty",
+     "start": 225.81,
+     "end": 226.37
+    },
+    {
+     "word": "roads",
+     "start": 226.37,
+     "end": 226.73
+    }
+   ]
+  },
+  {
+   "text": "but I still carry where we used to go",
+   "start": 226.73,
+   "end": 229.77,
+   "words": [
+    {
+     "word": "but",
+     "start": 226.73,
+     "end": 226.97
+    },
+    {
+     "word": "I",
+     "start": 226.97,
+     "end": 227.17
+    },
+    {
+     "word": "still",
+     "start": 227.17,
+     "end": 227.57
+    },
+    {
+     "word": "carry",
+     "start": 227.57,
+     "end": 228.09
+    },
+    {
+     "word": "where",
+     "start": 228.09,
+     "end": 228.41
+    },
+    {
+     "word": "we",
+     "start": 228.41,
+     "end": 228.65
+    },
+    {
+     "word": "used",
+     "start": 228.65,
+     "end": 228.93
+    },
+    {
+     "word": "to",
+     "start": 228.93,
+     "end": 229.29
+    },
+    {
+     "word": "go",
+     "start": 229.29,
+     "end": 229.77
+    }
+   ]
+  },
+  {
+   "text": "Your name still ringing in my head",
+   "start": 229.77,
+   "end": 234.57,
+   "words": [
+    {
+     "word": "Your",
+     "start": 229.77,
+     "end": 230.17
+    },
+    {
+     "word": "name",
+     "start": 230.17,
+     "end": 232.45
+    },
+    {
+     "word": "still",
+     "start": 232.45,
+     "end": 232.89
+    },
+    {
+     "word": "ringing",
+     "start": 232.89,
+     "end": 233.45
+    },
+    {
+     "word": "in",
+     "start": 233.45,
+     "end": 233.73
+    },
+    {
+     "word": "my",
+     "start": 233.73,
+     "end": 234.21
+    },
+    {
+     "word": "head",
+     "start": 234.21,
+     "end": 234.57
+    }
+   ]
+  },
+  {
+   "text": "I won't turn back",
+   "start": 234.57,
+   "end": 236.09,
+   "words": [
+    {
+     "word": "I",
+     "start": 234.57,
+     "end": 234.77
+    },
+    {
+     "word": "won",
+     "start": 234.77,
+     "end": 234.85
+    },
+    {
+     "word": "'",
+     "start": 234.85,
+     "end": 234.97
+    },
+    {
+     "word": "t",
+     "start": 234.97,
+     "end": 235.09
+    },
+    {
+     "word": "turn",
+     "start": 235.09,
+     "end": 235.61
+    },
+    {
+     "word": "back",
+     "start": 235.61,
+     "end": 236.09
+    }
+   ]
+  },
+  {
+   "text": "I won't turn back",
+   "start": 237.21,
+   "end": 238.81,
+   "words": [
+    {
+     "word": "I",
+     "start": 237.21,
+     "end": 237.45
+    },
+    {
+     "word": "won",
+     "start": 237.45,
+     "end": 237.53
+    },
+    {
+     "word": "'",
+     "start": 237.53,
+     "end": 237.65
+    },
+    {
+     "word": "t",
+     "start": 237.65,
+     "end": 237.77
+    },
+    {
+     "word": "turn",
+     "start": 237.77,
+     "end": 238.29
+    },
+    {
+     "word": "back",
+     "start": 238.29,
+     "end": 238.81
+    }
+   ]
+  }
+ ]
+}
