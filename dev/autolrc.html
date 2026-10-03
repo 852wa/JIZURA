@@ -41,18 +41,35 @@ window.__ERROR = null;
     ac.close();
     const t0 = performance.now();
     const mode = q.get('mode') || 'timing';
+    if (mode === 'asr') {
+      /* transcription only, with every segment it produced: what the recogniser heard
+         and where, before the alignment has had any say */
+      const asr = await J.whisper.transcribe(decoded, {
+        model,
+        language: q.get('lang') || J.asrLang(J.guessLyricLang(text)),
+        onProgress: (p) => log('  ' + JSON.stringify(p)),
+      });
+      window.__RESULT = {
+        device: asr.device, duration: asr.duration, segments: asr.segments.length,
+        words: asr.segments.reduce((a, s) => a + s.words.length, 0),
+        list: asr.segments.map(s => ({ s: +s.start.toFixed(2), e: +s.end.toFixed(2), w: s.words.length, t: s.text })),
+      };
+      log(JSON.stringify(window.__RESULT.list, null, 0).slice(0, 4000));
+      window.__DONE = true;
+      return;
+    }
     if (mode === 'probe') {
       /* dump the shape the recogniser returned, for a model whose word timestamps
          come out empty */
-      const probe = await J.whisper.probe(decoded, { model, language: q.get('lang') || undefined, onProgress: (p) => log('  ' + JSON.stringify(p)) });
+      const probe = await J.whisper.probe(decoded, { model, language: q.get('lang') || undefined, start: +(q.get('start') || 0), seconds: +(q.get('secs') || 20), onProgress: (p) => log('  ' + JSON.stringify(p)) });
       const summarize = (r) => ({
         keys: Object.keys(r),
         text: String(r.text || '').slice(0, 80),
         timestamp: r.timestamp,
-        chunks: (r.chunks || []).slice(0, 3).map(c => ({
+        chunks: (r.chunks || []).slice(0, 200).map(c => ({
           keys: Object.keys(c), text: String(c.text || '').slice(0, 60), timestamp: c.timestamp,
           words: c.words ? c.words.length : null,
-          wordSample: c.words ? c.words.slice(0, 4) : null,
+          wordSample: c.words ? c.words.slice(0, 6) : null,
         })),
         chunkCount: (r.chunks || []).length,
       });
@@ -71,6 +88,9 @@ window.__ERROR = null;
       model,
       onProgress: (p) => log('  ' + JSON.stringify(p)),
       align: { features },
+      /* dev knobs: how wide the recogniser window is and how far it moves */
+      window: +(q.get('win') || 0) || undefined,
+      step: +(q.get('step') || 0) || undefined,
     });
     window.__FEATURES = { frames: features.frames, firstVoice: features.firstVoice, quiet: features.quiet };
     const secs = ((performance.now() - t0) / 1000).toFixed(1);
@@ -87,6 +107,7 @@ window.__ERROR = null;
       median: q2(0.5), p90: q2(0.9), max: abs[abs.length - 1] || 0,
       features: window.__FEATURES,
       transcript: r.asr.segments.map(s => s.text).join(' ').slice(0, 400),
+      segments: r.asr.segments.map(s => ({ s: +s.start.toFixed(2), e: +s.end.toFixed(2), w: s.words.length, t: String(s.text).slice(0, 40) })),
       tokens: (J.asrTokens(r.asr) || []).slice(0, 30).map(t => t.own + '@' + t.t.toFixed(2)).join(' '),
     };
     log(`\nmedian ${(q2(0.5) * 1000).toFixed(0)}ms  p90 ${(q2(0.9) * 1000).toFixed(0)}ms  max ${((abs[abs.length - 1] || 0) * 1000).toFixed(0)}ms  (${secs}s, ${r.device})`);

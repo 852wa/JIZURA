@@ -1531,8 +1531,7 @@ async function runAutoTime() {
   if (!S.project.lyrics.trim()) { toast('先に歌詞を入れてください'); $('lyrics').focus(); return; }
   if (!J.whisper) { toast('この版では自動タイミングを使えません'); return; }
   const model = $('autoModel').value;
-  const size = (J.whisper.MODELS.find(m => m.key === model) || {}).mb || {};
-  const mb = size[J.whisper.webgpu() ? 'webgpu' : 'wasm'] || 0;
+  const mb = J.whisper.plan(model).mb;
   if (!window.confirm([
     '曲をブラウザの中で解析して、歌詞の各行の開始時刻を求めます。',
     '',
@@ -1595,19 +1594,24 @@ async function autoFeatures() {
   } catch (e) { console.warn('[JIZURA auto timing] audio features skipped', e); return null; }
 }
 
-/* the model choices: a combination the device cannot use (WebGPU with base, see
-   src/10b_whisper.js) is not offered, and the MB figures are the files that will
-   actually be downloaded for this device */
+/* the model choices. Every model is offered, and the MB figure is the file that will
+   actually be downloaded, because a model the GPU cannot time (src/10b_whisper.js
+   `broken`) is run on the CPU instead of being hidden: it is slower and it is the only
+   way to get those words placed at all, so it says "(CPU)" and the default stays the
+   fastest model that runs on the device's own backend */
 function fillAutoModels() {
   const sel = $('autoModel');
   if (!sel || !J.whisper) return;
-  const device = J.whisper.webgpu() ? 'webgpu' : 'wasm';
+  const at = J.whisper.webgpu() ? 'webgpu' : 'wasm';
   let saved = null;
   try { saved = localStorage.getItem('jizura.autoModel'); } catch (e) {}
-  const usable = J.whisper.MODELS.filter(m => !(m.broken && m.broken.indexOf(device) >= 0));
-  sel.innerHTML = usable.map(m => `<option value="${m.key}">${m.label} ${m.mb[device]}MB</option>`).join('');
-  sel.value = usable.some(m => m.key === saved) ? saved : (usable.find(m => m.note === 'recommended') || usable[0]).key;
-  sel.title = device === 'webgpu' ? 'WebGPU' : 'CPU';      // device names, the same in every edition
+  const plans = J.whisper.MODELS.map(m => J.whisper.plan(m.key));
+  sel.innerHTML = plans.map(p =>
+    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'}</option>`).join('');
+  const native = plans.filter(p => p.device === at);
+  const fallback = native.find(p => p.model.note === 'recommended') || native[0] || plans[0];
+  sel.value = plans.some(p => p.model.key === saved) ? saved : fallback.model.key;
+  sel.title = at === 'webgpu' ? 'WebGPU' : 'CPU';          // device names, the same in every edition
 }
 
 /* ---------------- tap sync ---------------- */

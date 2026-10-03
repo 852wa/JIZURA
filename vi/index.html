@@ -11478,18 +11478,21 @@ const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers
 /* What the user is about to download, in MB: measured from the files on Hugging Face
    for the quantisation each device actually loads (dev/model_sizes.py).
 
-   `broken` lists the devices a model cannot be used on, found by measurement rather
-   than by guessing (dev/autolrc_probe.py): on WebGPU, whisper-base_timestamped at fp16
-   returns almost nothing — for a 36 second song it produced the word "I" — so it is
-   not offered there, while the same model on the CPU path transcribes the same clip
-   correctly. */
+   `broken` lists the devices a model cannot be timed on, found by measurement rather
+   than by guessing (dev/autolrc_probe.py): on WebGPU the fp16 exports of base and small
+   do not place anything in time. whisper-base_timestamped there returns almost nothing —
+   for a 36 second song it produced the word "I" — and whisper-small_timestamped
+   transcribes the same clip correctly but gives every word the timestamp [29.98, 29.98],
+   which is worse than returning nothing because the words look right. Both models
+   transcribe correctly on the CPU path, and that is where `plan` sends them. */
 const MODELS = [
   { key: 'tiny', id: 'onnx-community/whisper-tiny_timestamped', label: 'Tiny', mb: { webgpu: 77, wasm: 41 }, note: 'fastest' },
   { key: 'base', id: 'onnx-community/whisper-base_timestamped', label: 'Base', mb: { webgpu: 146, wasm: 77 }, note: 'recommended', broken: ['webgpu'] },
-  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'most accurate' },
+  { key: 'small', id: 'onnx-community/whisper-small_timestamped', label: 'Small', mb: { webgpu: 485, wasm: 241 }, note: 'most accurate', broken: ['webgpu'] },
 ];
 const SAMPLE_RATE = 16000;
-const CHUNK = 30;                                          // seconds per recogniser pass, for progress and for memory
+const WINDOW = 30;                                         // seconds per recogniser pass
+const STEP = 15;                                           // half a window, so every moment is heard twice
 
 let lib = null;                                            // the imported module
 let loaded = null;                                         // { key, pipe, device }
@@ -11519,20 +11522,31 @@ async function library(onProgress) {
 
 const webgpu = () => typeof navigator !== 'undefined' && !!navigator.gpu;
 
+/* Which model runs on which device, decided in one place because two callers need the
+   same answer: the interface has to say how many MB will be downloaded before it starts,
+   and the loader has to load exactly that.
+
+   A model that cannot place words in time on the GPU (`broken`) is run on the CPU path
+   rather than replaced by a smaller one. Replacing it would be the wrong trade twice
+   over: the reason to choose a bigger model is accuracy, and the bigger models are the
+   ones that work here. Measured on two real songs (dev/autolrc_realsong.py): on WebGPU
+   the CPU path with base gives a median line error of 0.42 s and 84% of lines within a
+   second, where tiny on the GPU gives 0.66 s and 59%; substituting tiny would have
+   thrown that away without saying so. */
+function plan(key) {
+  const model = MODELS.find(m => m.key === key) || MODELS[0];
+  const forced = typeof window !== 'undefined' && window.__JIZURA_FORCE_DEVICE;
+  const want = forced || (webgpu() ? 'webgpu' : 'wasm');
+  const device = (!forced && model.broken && model.broken.indexOf(want) >= 0) ? 'wasm' : want;
+  return { model, device, mb: model.mb[device] };
+}
+
 async function load(key, onProgress) {
-  const device = (typeof window !== 'undefined' && window.__JIZURA_FORCE_DEVICE) || (webgpu() ? 'webgpu' : 'wasm');
-  let model = MODELS.find(m => m.key === key) || MODELS[0];
-  if (model.broken && model.broken.indexOf(device) >= 0) {
-    /* this model cannot produce usable timestamps on this device: use the one that can
-       rather than hand the user a result that is silently made up */
-    const alt = MODELS.find(m => !(m.broken && m.broken.indexOf(device) >= 0));
-    if (onProgress) onProgress({ phase: 'model-substituted', from: model.key, to: alt.key, device });
-    model = alt;
-  }
-  if (loaded && loaded.key === model.key) return loaded;
+  const { model, device, mb } = plan(key);
+  if (loaded && loaded.key === model.key && loaded.device === device) return loaded;
   if (loaded) { await J.whisper.dispose(); }
   const mod = await library(onProgress);
-  if (onProgress) onProgress({ phase: 'model', device, model: model.key, mb: model.mb[device] });
+  if (onProgress) onProgress({ phase: 'model', device, model: model.key, mb });
   /* Which weights to load. On WASM, q8 (the `_quantized` files) is the default and
      works. On WebGPU it does not: measured with dev/autolrc_probe.py, `dtype: 'q8'`
      there returns fluent-looking nonsense ("Ой Monet我說 couch notrekil…") while fp16
@@ -11548,16 +11562,27 @@ async function load(key, onProgress) {
     device, dtype,
     progress_callback: (info) => {
       if (!onProgress || !info) return;
-      if (info.status === 'progress' && isFinite(info.progress)) onProgress({ phase: 'download', device, model: model.key, mb: model.mb[device], progress: J.clamp(info.progress / 100) });
+      if (info.status === 'progress' && isFinite(info.progress)) onProgress({ phase: 'download', device, model: model.key, mb, progress: J.clamp(info.progress / 100) });
     },
   });
   loaded = { key: model.key, pipe, device, mod };
   return loaded;
 }
 
-/* one pass over `audio`, with word-level timestamps. The chunking is ours rather than
-   the pipeline's so that progress moves and so that a long song does not sit in one
-   huge tensor. */
+/* one pass over `audio`, with word-level timestamps. The windowing is ours rather than
+   the pipeline's so that progress moves, so that a long song does not sit in one huge
+   tensor, and so that the step is a number this file controls.
+
+   The window is 30 seconds and it moves 15, so every moment of the song is heard twice.
+   That is not caution for its own sake: a window that opens on an instrumental intro
+   comes back with a hallucinated word and nothing else — measured on two real songs
+   (dev/autolrc_realsong.py), where a window covering 22 seconds of intro before the
+   first sung line returned the single character "都" for the whole 30 seconds, and the
+   same singing was transcribed once the window was moved so that it started later. With
+   half-window steps every line is at worst near the edge of one window and near the
+   middle of another. The two readings of the same moment are both kept and the
+   alignment sorts them out: a phrase heard twice costs the monotone search one
+   insertion, while a phrase heard not at all costs a whole line its timing. */
 async function transcribe(buffer, o) {
   const opts = o || {};
   const onProgress = opts.onProgress;
@@ -11565,24 +11590,24 @@ async function transcribe(buffer, o) {
   const { pipe, device } = await load(opts.model || 'base', onProgress);
   const mono = await text16k(buffer);
   const total = mono.length / SAMPLE_RATE;
-  const chunks = Math.max(1, Math.ceil(total / CHUNK));
-  const stride = 5;
+  /* the window and the step are options so dev/autolrc.html can measure what they cost */
+  const win = Math.min(total, opts.window || WINDOW);
+  const step = opts.step || STEP;
+  const steps = Math.max(1, Math.ceil((total - win) / step) + 1);
   const segments = [];
-  for (let c = 0; c < chunks; c++) {
+  for (let c = 0; c < steps; c++) {
     if (opts.signal && opts.signal.aborted) throw new Error('aborted');
-    const from = Math.max(0, c * CHUNK - (c ? stride : 0));
-    const to = Math.min(total, (c + 1) * CHUNK);
+    const from = Math.min(c * step, Math.max(0, total - win));
+    const to = Math.min(total, from + win);
     const slice = mono.subarray(Math.round(from * SAMPLE_RATE), Math.round(to * SAMPLE_RATE));
     const params = {
       return_timestamps: 'word',
-      chunk_length_s: CHUNK,
-      stride_length_s: stride,
       force_full_sequences: false,
       /* sung lines are quiet and fast: do not let the voice-activity gate throw them away */
       no_speech_threshold: 0.8,
     };
     if (opts.language && opts.language !== 'auto') { params.language = opts.language; params.task = 'transcribe'; }
-    say({ phase: 'run', chunk: c + 1, chunks, device });
+    say({ phase: 'run', chunk: c + 1, chunks: steps, device });
     const out = await pipe(slice, params);
     const list = Array.isArray(out) ? out : [out];
     for (const r of list) {
@@ -11596,8 +11621,10 @@ async function transcribe(buffer, o) {
       }
     }
   }
+  /* the windows overlap by half; the same reading of the same moment, at the same
+     hundredth of a second, is dropped here. Readings that differ belong to the
+     alignment, which is where a transcript that repeats itself is cheap */
   segments.sort((a, b) => a.start - b.start);
-  /* the chunks overlap by `stride`; the same phrase recognised twice is dropped */
   const seen = new Set();
   const out = [];
   for (const s of segments) {
@@ -11615,14 +11642,19 @@ J.whisper = {
   MODELS, SAMPLE_RATE,
   available: () => typeof WebAssembly !== 'undefined',
   webgpu,
+  plan,
   /* the raw result of one pipeline call, for dev/autolrc.html: the shape a model
-     returns is the first thing to look at when word timestamps come out empty */
+     returns is the first thing to look at when word timestamps come out empty. The
+     clip length is a dev knob because a model can behave differently on a window that
+     is mostly instrumental. */
   probe: async (buffer, o) => {
     const opts = o || {};
     const { pipe, device } = await load(opts.model || 'tiny', opts.onProgress);
     const mono = await text16k(buffer);
-    const slice = mono.subarray(0, Math.min(mono.length, SAMPLE_RATE * 20));
-    const params = { return_timestamps: 'word', chunk_length_s: CHUNK, stride_length_s: 5, force_full_sequences: false, no_speech_threshold: 0.8 };
+    const slice = mono.subarray(
+      Math.min(mono.length, SAMPLE_RATE * (opts.start || 0)),
+      Math.min(mono.length, SAMPLE_RATE * ((opts.start || 0) + (opts.seconds || 20))));
+    const params = { return_timestamps: 'word', force_full_sequences: false, no_speech_threshold: 0.8 };
     if (opts.language && opts.language !== 'auto') params.language = opts.language;
     const out = await pipe(slice, params);
     return { device, out };
@@ -44122,8 +44154,7 @@ async function runAutoTime() {
   if (!S.project.lyrics.trim()) { toast('Hãy nhập lời trước'); $('lyrics').focus(); return; }
   if (!J.whisper) { toast('Bản này không có tính năng khớp thời gian tự động'); return; }
   const model = $('autoModel').value;
-  const size = (J.whisper.MODELS.find(m => m.key === model) || {}).mb || {};
-  const mb = size[J.whisper.webgpu() ? 'webgpu' : 'wasm'] || 0;
+  const mb = J.whisper.plan(model).mb;
   if (!window.confirm([
     'Bài hát được phân tích trong trình duyệt để tìm thời gian bắt đầu từng dòng lời.',
     '',
@@ -44186,19 +44217,24 @@ async function autoFeatures() {
   } catch (e) { console.warn('[JIZURA auto timing] audio features skipped', e); return null; }
 }
 
-/* the model choices: a combination the device cannot use (WebGPU with base, see
-   src/10b_whisper.js) is not offered, and the MB figures are the files that will
-   actually be downloaded for this device */
+/* the model choices. Every model is offered, and the MB figure is the file that will
+   actually be downloaded, because a model the GPU cannot time (src/10b_whisper.js
+   `broken`) is run on the CPU instead of being hidden: it is slower and it is the only
+   way to get those words placed at all, so it says "(CPU)" and the default stays the
+   fastest model that runs on the device's own backend */
 function fillAutoModels() {
   const sel = $('autoModel');
   if (!sel || !J.whisper) return;
-  const device = J.whisper.webgpu() ? 'webgpu' : 'wasm';
+  const at = J.whisper.webgpu() ? 'webgpu' : 'wasm';
   let saved = null;
   try { saved = localStorage.getItem('jizura.autoModel'); } catch (e) {}
-  const usable = J.whisper.MODELS.filter(m => !(m.broken && m.broken.indexOf(device) >= 0));
-  sel.innerHTML = usable.map(m => `<option value="${m.key}">${m.label} ${m.mb[device]}MB</option>`).join('');
-  sel.value = usable.some(m => m.key === saved) ? saved : (usable.find(m => m.note === 'recommended') || usable[0]).key;
-  sel.title = device === 'webgpu' ? 'WebGPU' : 'CPU';      // device names, the same in every edition
+  const plans = J.whisper.MODELS.map(m => J.whisper.plan(m.key));
+  sel.innerHTML = plans.map(p =>
+    `<option value="${p.model.key}">${p.model.label} ${p.mb}MB${p.device === at ? '' : ' (CPU)'}</option>`).join('');
+  const native = plans.filter(p => p.device === at);
+  const fallback = native.find(p => p.model.note === 'recommended') || native[0] || plans[0];
+  sel.value = plans.some(p => p.model.key === saved) ? saved : fallback.model.key;
+  sel.title = at === 'webgpu' ? 'WebGPU' : 'CPU';          // device names, the same in every edition
 }
 
 /* ---------------- tap sync ---------------- */

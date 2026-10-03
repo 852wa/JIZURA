@@ -1,11 +1,14 @@
-"""Serve dev/www plus the two test songs over HTTP, and mirror the model files from
+"""Serve dev/www plus the test audio over HTTP, and mirror the model files from
 Hugging Face on first use so a slow link is paid for once.
 
-usage: python dev/serve_autolrc.py [port]        (default 8791)
+usage: python dev/serve_autolrc.py [port] [samples-dir]
 The page under test reads ?audio=...&truth=...&model=... from dev/www/autolrc.html.
+
+The test audio is not in the repository (the real songs used to check the timing are
+copyrighted), so the directory it is served from defaults to $JIZURA_SAMPLES, or to
+dev/samples, and can be given as the second argument.
 """
 import http.server
-import json
 import os
 import socketserver
 import sys
@@ -14,7 +17,7 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WWW = os.path.join(ROOT, 'dev', 'www')
-SAMPLES = r'E:\AgentWorkspace\lyric-workspace\_autolrc-eval'
+SAMPLES = os.environ.get('JIZURA_SAMPLES') or os.path.join(ROOT, 'dev', 'samples')
 MIRROR = os.path.join(WWW, 'mirror')
 HF = 'https://huggingface.co'
 
@@ -75,6 +78,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8791
+    if len(sys.argv) > 2:
+        SAMPLES = sys.argv[2]
     os.makedirs(MIRROR, exist_ok=True)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.ThreadingTCPServer(('127.0.0.1', port), Handler) as httpd:
