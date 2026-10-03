@@ -2,6 +2,13 @@
   "name": "jizura-dev-tools",
   "private": true,
   "description": "Test tools for JIZURA (AE panel mock needs acorn). Install with: cd dev && npm install",
+  "scripts": {
+    "test": "node --test autolrc_test.js autolrc_features_test.js",
+    "test:autotiming": "node --test autolrc_test.js",
+    "test:features": "node --test autolrc_features_test.js",
+    "test:pages": "python page_check.py",
+    "test:browser": "python autolrc_browser_test.py"
+  },
   "devDependencies": {
     "acorn": "^8.14.0"
   }

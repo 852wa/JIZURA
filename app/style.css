@@ -157,6 +157,16 @@ button.play { width: 40px; height: 34px; padding: 0; font-size: 14px; }
 .rngInfo { font-size: 11px; }
 .ln.in-range { border-color: var(--amber); }
 .ln.is-inter .txt { color: var(--muted); font-style: italic; }
+/* 自動タイミングの一致度が低い行: 機械が自信を持てなかった行だけを印します */
+.ln.is-unsure { border-color: rgba(255,107,107,0.55); background: rgba(255,107,107,0.05); }
+.ln.is-unsure .no { color: #ff8080; }
+.autotime { margin-top: 8px; border: 1px solid var(--line2); border-radius: var(--r); padding: 8px 10px; display: grid; gap: 6px; background: var(--raised); }
+.autotime-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 12px; }
+.autotime-btns { display: flex; gap: 6px; }
+.autotime-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.autotime-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--amber)); transition: width 0.25s; }
+.autotime-note { margin: 0; font-size: 11px; color: var(--muted); }
+.autotime-note select { width: auto; font-size: 11px; padding: 2px 4px; }
 .ln .txt-edit { width: 100%; padding: 3px 6px; font-size: 13px; }
 .ln .tools .icon[aria-pressed=true] { color: var(--amber); }
 #timeline { width: 100%; height: 76px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; }

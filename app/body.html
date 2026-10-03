@@ -66,6 +66,12 @@
         <div class="row">
           <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
           <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
+          <button id="btnAutoTime" title="曲をブラウザの中で解析して、歌詞の各行の開始時刻を自動で合わせます。音声は送信しません。初回だけ認識モデルをダウンロードします">自動で時間を合わせる</button>
+        </div>
+        <div id="autoTime" class="autotime" hidden>
+          <div class="autotime-head"><span id="autoMsg">—</span><span class="autotime-btns"><button id="autoStop" class="ghost small">中止</button><button id="autoClose" class="ghost small" hidden>閉じる</button></span></div>
+          <div class="autotime-bar" id="autoBar"><i style="width:0%"></i></div>
+          <p class="autotime-note">認識モデル<select id="autoModel" aria-label="認識モデル"></select>ダウンロードしたモデルはこのブラウザに保存され、次回からは読み込みません。</p>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>

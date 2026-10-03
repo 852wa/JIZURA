@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+build/
+dev/www/
+# test audio: the real songs the timing is checked against are copyrighted
+dev/samples/
