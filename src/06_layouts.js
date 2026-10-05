@@ -129,7 +129,7 @@ J.splitLines = (text, maxPer) => {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
       if (J.isHira(a) && !J.isHira(b)) s += 3;
-      if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
+      if (((J.isPunct(a) && !(J.isOpenPunct && J.isOpenPunct(a))) || a === ' ' || a === '　')) s += 5;
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }

@@ -939,6 +939,8 @@ J.isHira = c => /[ぁ-ゟ]/.test(c);
 J.isKata = c => /[゠-ヿㇰ-ㇿｦ-ﾟ]/.test(c);
 J.isSmallKana = c => 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ'.includes(c);
 J.isPunct = c => /[、。，．,.!?！？…‥・「」『』（）()【】〈〉《》〔〕［］\[\]'"“”‘’ー〜～:：;；\-—―]/.test(c);
+J.isOpenPunct = c => /[「『（(\[【〈《〔［“‘]/.test(c);
+J.isClosePunct = c => /[」』）)\]】〉》〕］”’]/.test(c);
 J.isLatin = c => /[A-Za-z0-9]/.test(c);
 J.VERT_ROTATE = 'ー〜～…‥―—-()（）「」『』【】〈〉《》〔〕[]［］→←:：;；=＝';
 
@@ -2624,7 +2626,7 @@ J.splitLines = (text, maxPer) => {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
       if (J.isHira(a) && !J.isHira(b)) s += 3;
-      if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
+      if (((J.isPunct(a) && !(J.isOpenPunct && J.isOpenPunct(a))) || a === ' ' || a === '　')) s += 5;
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }
@@ -3618,6 +3620,19 @@ J.chunkText = (text) => {
   }
   for (let i = out.length - 1; i > 0; i--) {
     if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (WORDCH.test([...out[i - 1]].pop()) && WORDCH.test(out[i]) && !/[-‐–—]$/.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
+  }
+  // Opening brackets must stay with the following text (行末禁則: 「鉤… / と（英語）, not 「 / 鉤 or と（ / 英語)
+  for (let i = 0; i < out.length - 1; ) {
+    const chars = [...out[i]];
+    let k = chars.length;
+    while (k > 0 && J.isOpenPunct(chars[k - 1])) k--;
+    if (k < chars.length) {
+      const open = chars.slice(k).join('');
+      out[i] = chars.slice(0, k).join('');
+      out[i + 1] = open + out[i + 1];
+      if (!out[i]) { out.splice(i, 1); continue; }
+    }
+    i++;
   }
   return out.length ? out : [text];
 };
@@ -20979,7 +20994,7 @@ function split2(word, force) {
     const a = chars[c - 1], b = chars[c];
     if (!force && ((c === 1 && !J.isKanji(a)) || (c === n - 1 && !J.isKanji(b)))) continue;   // never leave a lone kana
     let s = -Math.abs(c - n / 2) * 0.9;
-    if (a === ' ' || a === '\u3000' || (J.isPunct(a) && a !== '\u30fc')) s += 5;
+    if (a === ' ' || a === '\u3000' || (J.isPunct(a) && a !== '\u30fc' && !(J.isOpenPunct && J.isOpenPunct(a)))) s += 5;
     if (J.isHira(a) && !J.isHira(b) && !isBad(b)) s += 3;
     if (sb.has(c)) s += 2;
     if (isBad(b)) s -= 6;
@@ -21051,7 +21066,13 @@ function splitK(text, k, force) {
 /* single glyphs, with small kana / punctuation / ー kept on the preceding glyph */
 const charUnits = text => {
   const out = [];
-  for (const ch of strip(text)) { if (out.length && isBad(ch)) out[out.length - 1] += ch; else out.push(ch); }
+  let pending = '';
+  for (const ch of strip(text)) {
+    if (J.isOpenPunct && J.isOpenPunct(ch)) { pending += ch; continue; }
+    if (out.length && isBad(ch)) out[out.length - 1] += ch;
+    else { out.push(pending + ch); pending = ''; }
+  }
+  if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
   return out;
 };
 
@@ -24851,7 +24872,7 @@ function split2(word, force) {
     const a = chars[c - 1], b = chars[c];
     if (!force && ((c === 1 && !J.isKanji(a)) || (c === n - 1 && !J.isKanji(b)))) continue;
     let s = -Math.abs(c - n / 2) * 0.9;
-    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー')) s += 5;
+    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー' && !(J.isOpenPunct && J.isOpenPunct(a)))) s += 5;
     if (J.isHira(a) && !J.isHira(b) && !isBad(b)) s += 3;
     if (sb.has(c)) s += 2;
     if (isBad(b)) s -= 6;
@@ -24921,7 +24942,13 @@ function splitK(text, k, force) {
 /* single glyphs, with small kana / punctuation / ー kept on the preceding glyph */
 const charUnits = text => {
   const out = [];
-  for (const ch of strip(text)) { if (out.length && isBad(ch)) out[out.length - 1] += ch; else out.push(ch); }
+  let pending = '';
+  for (const ch of strip(text)) {
+    if (J.isOpenPunct && J.isOpenPunct(ch)) { pending += ch; continue; }
+    if (out.length && isBad(ch)) out[out.length - 1] += ch;
+    else { out.push(pending + ch); pending = ''; }
+  }
+  if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
   return out;
 };
 const brk = (text, maxPer) => {

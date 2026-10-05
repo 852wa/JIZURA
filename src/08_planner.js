@@ -184,6 +184,19 @@ J.chunkText = (text) => {
   for (let i = out.length - 1; i > 0; i--) {
     if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (WORDCH.test([...out[i - 1]].pop()) && WORDCH.test(out[i]) && !/[-‐–—]$/.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
   }
+  // Opening brackets must stay with the following text (行末禁則: 「鉤… / と（英語）, not 「 / 鉤 or と（ / 英語)
+  for (let i = 0; i < out.length - 1; ) {
+    const chars = [...out[i]];
+    let k = chars.length;
+    while (k > 0 && J.isOpenPunct(chars[k - 1])) k--;
+    if (k < chars.length) {
+      const open = chars.slice(k).join('');
+      out[i] = chars.slice(0, k).join('');
+      out[i + 1] = open + out[i + 1];
+      if (!out[i]) { out.splice(i, 1); continue; }
+    }
+    i++;
+  }
   return out.length ? out : [text];
 };
 

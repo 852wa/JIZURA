@@ -151,6 +151,8 @@ J.isHira = c => /[ぁ-ゟ]/.test(c);
 J.isKata = c => /[゠-ヿㇰ-ㇿｦ-ﾟ]/.test(c);
 J.isSmallKana = c => 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ'.includes(c);
 J.isPunct = c => /[、。，．,.!?！？…‥・「」『』（）()【】〈〉《》〔〕［］\[\]'"“”‘’ー〜～:：;；\-—―]/.test(c);
+J.isOpenPunct = c => /[「『（(\[【〈《〔［“‘]/.test(c);
+J.isClosePunct = c => /[」』）)\]】〉》〕］”’]/.test(c);
 J.isLatin = c => /[A-Za-z0-9]/.test(c);
 J.VERT_ROTATE = 'ー〜～…‥―—-()（）「」『』【】〈〉《》〔〕[]［］→←:：;；=＝';
 
