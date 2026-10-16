@@ -84,6 +84,8 @@ BODY = {
     '… フラッシュと揺れを入れる': '… adds a flash and shake',
     '… 注釈レイアウトの小さな文字': '… smaller text in annotation layouts',
     '… LRC のタイムスタンプをそのまま使用': '… uses an LRC timestamp',
+    '… 単語ごとの時刻（逐字）。': '… a time for every word.',
+    ' とも書けます。行の頭に置くと、歌に合わせて語が光ります': ' works too. Put it at the start of the line and the words light up with the voice',
     'で始まる行 … コメント（無視）': 'starts a comment (ignored)',
     '行末の': 'A trailing', '透明': 'transparent', '歌詞|ruby or note': 'lyrics|reading or note',
     '歌詞': 'Lyrics', '曲とタイミング': 'Audio and timing',

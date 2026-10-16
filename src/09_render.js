@@ -163,6 +163,7 @@ class Renderer {
         pass: P.pass, passColor: P.pass === 'A' ? csc.ghostA : P.pass === 'B' ? csc.ghostB : null,
         t: tp, lt, ltb: lt + P.lag, step: Math.floor(tp / clock + 1e-6), scale, allowFilter, energy, beat: beatInfo, layer, zone: Z,
         hideText: morphOn, glyphLog: P.pass === 'main' ? opt.glyphLog || null : null,
+        tq: Math.floor(t / stepDur + 1e-6) * stepDur,   // 逐字: the koma-quantised frame time, as on the main pass
       });
       X.save();
       // 中央を空ける: the cut (text, decorations, its camera) is drawn in its band and clipped to it
@@ -373,7 +374,12 @@ class Renderer {
     if (env.layer !== 'front') for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'back') try { D.draw(env, null, d); } catch (e) { console.warn(e); } }
     if (env.layer === 'back') return null;                // 後景だけ: the lyrics and the front decorations go to the other layer
     let bb = null;
-    try { bb = L.render(env); } catch (e) { console.warn('layout', cut.layout, e); }
+    // 逐字: the layout reads env.wk (which word the voice is on) when the cut carries word times. The layout draws
+    // the line as a whole, so every layout keeps working; only the ones written for it use the state.
+    env.wk = cut.karaoke && cut.karaoke.length ? J.wkState(cut, env.tq != null ? env.tq : cut.start + env.lt) : null;
+    try { bb = L.render(env); }
+    catch (e) { console.warn('layout', cut.layout, e); }
+    env.wk = null;
     for (const d of decor) { const D = J.DECOR[d.id]; if (D && D.layer === 'front') try { D.draw(env, bb, d); } catch (e) { console.warn(e); } }
     return bb;
   }

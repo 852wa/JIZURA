@@ -164,6 +164,44 @@ J.hideDecoText = (env, text) => {
   const lyr = env.cut ? String(env.cut.lineText || env.cut.text || '') : '';
   return !lyr.includes(String(text).trim());
 };
+/* ---------------- 逐字 (karaoke) ----------------
+   The plan gives the cut the time every word starts (cut.karaoke, from the lyric line). Nothing here reads the
+   audio again: a character is "sung" once the clock passes the start of the word it belongs to (cut.words). The
+   times are quantised to the koma clock, so the highlight moves in the same steps as the drawings. */
+/* every character of the text, and the word it belongs to. The words are matched against the text in order, so a
+   layout that re-split the line (a wrap, a 中央を開ける half) still gets the right word per character — and the
+   caller must hand in the very text it is drawing (a glyph's index counts that text's glyphs, not the cut's).
+   A newline is not a glyph (J.layoutText lays the lines out itself), so it must not take a slot here either:
+   one \n in the middle would shift every character after it and kill the highlight for the rest of the line.
+   A character that matches no word is karaoke-neutral: it belongs to no word (w = -1), never "already sung". */
+J.wkChars = (text, words) => {
+  const txt = [...String(text == null ? '' : text)].filter(c => c !== '\n');
+  if (!words || !words.length) return txt.map(ch => ({ ch, w: -1 }));
+  const out = [];
+  let wi = 0, acc = '';                                       // the word being matched, character by character
+  for (let i = 0; i < txt.length; i++) {
+    const ch = txt[i];
+    if (wi >= words.length) { out.push({ ch, w: -1 }); continue; }   // past the last word: it belongs to none
+    const w = String(words[wi]);
+    acc += ch;
+    if (acc === w) { out.push({ ch, w: wi }); wi++; acc = ''; continue; }
+    if (w.startsWith(acc)) { out.push({ ch, w: wi }); continue; }     // still inside this word
+    out.push({ ch, w: -1 }); acc = '';                                // the text has a character the words do not
+  }
+  return out;
+};
+/* karaoke state at time t: k = the word being sung (0-based, -1 before the first one), p = how far through it */
+J.wkState = (cut, t) => {
+  const ks = cut.karaoke || [];
+  if (!ks.length) return null;
+  if (t < ks[0] - 1e-6) return { k: -1, p: 0 };              // the count-in before the first word
+  let k = ks.length - 1;
+  for (let i = 0; i < ks.length - 1; i++) if (t < ks[i + 1] - 1e-6) { k = i; break; }
+  const a = ks[k], b = k + 1 < ks.length ? ks[k + 1] : cut.end;
+  return { k, p: b > a ? J.clamp((t - a) / (b - a)) : 1 };
+};
+
+
 J.drawItem = (env, it) => {
   const ctx = env.ctx;
   const ghostPass = env.pass !== 'main';
