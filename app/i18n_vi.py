@@ -141,6 +141,8 @@ BODY = {
     '… フラッシュと揺れを入れる': '…thêm đèn flash và rung',
     '… 注釈レイアウトの小さな文字': '…văn bản nhỏ trong bố cục',
     '… LRC のタイムスタンプをそのまま使用': '…sử dụng dấu thời gian LRC như hiện tại',
+    '… 単語ごとの時刻（逐字）。': '… mốc thời gian cho từng từ.',
+    ' とも書けます。行の頭に置くと、歌に合わせて語が光ります': ' cũng được. Đặt ở đầu dòng, từng từ sẽ sáng theo giọng hát',
     'で始まる行 … コメント（無視）': 'Đánh dấu ghi chú (bỏ qua)',
     '行末の': 'Ở cuối dòng:',
     '透明': 'nhấn mạnh',

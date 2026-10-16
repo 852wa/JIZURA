@@ -162,14 +162,34 @@ function jzSplitHalf(t, lang) {
     for (var g = 0; g < 3 && cut < all.length - 1 && /[、。，．,.!?！？…・ーっッゃゅょャュョぁぃぅぇぉァィゥェォをがはにでとのへもやよね」』）)]/.test(all[cut]); g++) cut++;
     return [all.slice(0, cut).join(''), all.slice(cut).join('')];
 }
-function jzSplitCut(cut, zones, st, dur, lang) {
-    var hv = jzSplitHalf(cut.text, lang), seed = jzHash(cut.seed, 23);
+function jzSplitCut(cut, zones, st, dur, lang, kb, ends) {
+    var hv = jzSplitHalf(cut.text, lang), seed = jzHash(cut.seed, 23), i;
     function planFor(text, z) { return jzPlanOf('layout', cut.layout, new JzRng(seed), st, { text: text, n: jzChars(text.replace(/\s+/g, '')).length, W: z.w, H: z.h, dur: dur }); }
-    cut.text = hv[0]; cut.lineText = hv[0]; cut.words = jzChunk(hv[0]); cut.zone = jzZoneOf(zones, 0); cut.params = planFor(hv[0], zones[0]);
+    // 逐字 (karaoke): a half keeps the words of its own half, and the times that go with them — the plain chunks would
+    // take the place of the timed words and the highlight would run on the wrong ones. A half may end inside a word (a
+    // split is not on a word boundary) and the part hanging over the cut is not drawn, so the words are cut back to
+    // the text of this half (jzWordSlice already does that for the whole, and the halves here for a split line). The
+    // second half was never given word times (the tags describe the first), so its karaoke is dropped, not sung over.
+    cut.text = hv[0]; cut.lineText = hv[0]; cut.zone = jzZoneOf(zones, 0); cut.params = planFor(hv[0], zones[0]);
+    if (cut.wordTimes && cut.wordTimes.length && cut.words && cut.words.length) {
+        // the times stay with the words (the ends are already in cut.karaoke), so a word that is cut back keeps its
+        // own time: only the list of words has to be trimmed, and the times are taken up to the length it comes to
+        var held = [];
+        for (i = 0; i < cut.words.length; i++) held.push({ text: cut.words[i], t: null, e: null });
+        var kept = jzWordsForText(held, hv[0]);
+        cut.words = [];
+        for (i = 0; i < kept.length; i++) cut.words.push(kept[i].text);
+        cut.wordTimes = jzKaraokeTimes(cut.start, cut.dur, cut.wordTimes.slice(0, cut.words.length));
+        // …and where the half's last word ends is that word's own end, not the whole line's (the browser takes it the
+        // same way, from the words it kept): the half stops inside the word, and the highlight follows it there
+        if (ends && ends.length) cut.kEnd = ends[cut.words.length - 1];
+        cut.karaoke = jzKaraoke(cut);
+    } else { cut.words = jzChunk(hv[0]); cut.wordTimes = null; cut.karaoke = null; }
     var tw = {}, k2;
     for (k2 in cut) if (cut.hasOwnProperty(k2)) tw[k2] = cut[k2];
     var delay = Math.min(0.12, dur * 0.08);
     tw.text = hv[1]; tw.lineText = hv[1]; tw.words = jzChunk(hv[1]); tw.zone = jzZoneOf(zones, 1); tw.params = planFor(hv[1], zones[1]);
+    tw.wordTimes = null; tw.karaoke = null;
     tw.start = cut.start + delay; tw.dur = cut.end - tw.start; tw.bg = 'none'; tw.bgP = {}; tw.trans = null; tw.transP = {}; tw.transDur = 0; tw.companion = true;
     cut.companion = tw;
 }
@@ -250,6 +270,26 @@ function jzPhraseChunks(words) {
     if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
     return out.length ? out : words;
 }
+// 逐字: the words of a line, and the cuts made of whole words (see kbUnits in the browser engine)
+function jzKbWordTexts(KB) { var o = [], i; for (i = 0; i < KB.words.length; i++) o.push(KB.words[i].text); return o; }
+function jzKbUnits(KB, n) {
+    var W = KB.words, N = W.length, nC = Math.max(1, Math.min(n, N)), len = [], total = 0, i;
+    for (i = 0; i < N; i++) { len.push(Math.max(1, jzCount(W[i].text))); total += len[i]; }
+    var out = [], wi = 0;
+    for (var k = 0; k < nC; k++) {
+        var take = 0, want = total * (k + 1) / nC, from = wi, base = 0, guard = 0;
+        for (i = 0; i < wi; i++) base += len[i];
+        while (wi < N - (nC - 1 - k) && (take + base + len[wi] <= want || wi === from) && guard++ < 256) { take += len[wi]; wi++; }
+        if (k === nC - 1) wi = N;
+        var text = '', words = [], times = [], ends = [];
+        for (i = from; i < wi; i++) { text += W[i].text; words.push(W[i].text); times.push(W[i].t); ends.push(W[i].end); }
+        // the words of this cut come with it, each with its own time (the browser takes them from the whole line's
+        // words instead, but the same words come out: a cut runs from word to word)
+        out.push({ text: text, w: take + 1.6, at: KB.times[from], words: words, times: times, ends: ends });
+    }
+    return out;
+}
+
 // a plan without .lang (older JSON): detect from its lines
 function jzDetectLang(plan) {
     var t = [], i;
@@ -270,7 +310,7 @@ function jzMakePlan(o) {
         var gg = JZ_GROUPS[g0], ord = jzOrder(gg); en[gg] = {};
         for (k0 = 0; k0 < ord.length; k0++) { var kk = ord[k0]; en[gg][kk] = !(o.enabled && o.enabled[gg] && o.enabled[gg][kk] === false) && jzRandomOk(o, gg, kk); }
     }
-    for (i = 0; i < lines.length; i++) if (lines[i].lrc == null) allLrc = false;
+    for (i = 0; i < lines.length; i++) { if (lines[i].kb) lines[i].lrc = lines[i].kb.first; if (lines[i].lrc == null) allLrc = false; }   // 逐字: the line starts with its first word
     for (i = 0; i < lines.length; i++) {
         var s;
         if (o.starts && o.starts[i] != null) s = o.starts[i];
@@ -284,8 +324,15 @@ function jzMakePlan(o) {
         starts.push(s);
     }
     for (i = 0; i < lines.length; i++) {
-        if (i < lines.length - 1) ends.push(Math.max(starts[i] + 0.35, starts[i + 1]));
-        else { var Li = lines[i], nl = jzChars(Li.text).length, dl = Li.interlude ? (Li.secs > 0 ? Li.secs : 4) : jzClamp(0.8 + nl * 0.17, 1.5, 5.2) * (o.lineScale || 1); if (beat && !(Li.interlude && Li.secs > 0)) dl = Math.max(2, Math.round(dl / beat)) * beat; ends.push(starts[i] + dl); }
+        // 逐字: a line may not outlast its last word (the tail of the cut is the exit motion)
+        var kbE = lines[i].kb ? lines[i].kb.last : null;
+        if (i < lines.length - 1) ends.push(Math.max(starts[i] + 0.35, Math.min(starts[i + 1], kbE != null ? kbE : 1e9)));
+        else {
+            var Li = lines[i], nl = jzChars(Li.text).length, dl = Li.interlude ? (Li.secs > 0 ? Li.secs : 4) : jzClamp(0.8 + nl * 0.17, 1.5, 5.2) * (o.lineScale || 1);
+            if (beat && !(Li.interlude && Li.secs > 0)) dl = Math.max(2, Math.round(dl / beat)) * beat;
+            if (kbE != null) dl = Math.max(0.2, Math.min(dl, kbE - starts[i]));
+            ends.push(starts[i] + dl);
+        }
     }
     var duration = o.duration || ((ends.length ? ends[ends.length - 1] : 3) + 0.9);
     var W = o.width, H = o.height, portrait = H > W;
@@ -315,7 +362,9 @@ function jzMakePlan(o) {
             continue;
         }
         var nch = jzCount(ln.text), visEnd = Math.min(e0, s0 + Math.max(3.6, nch * 0.5 + 1.2)), D = visEnd - s0;
-        plan.lines.push({ index: li, text: ln.text, start: s0, end: e0, visEnd: visEnd, note: ln.note, impact: ln.impact });
+        var KB = ln.kb ? { words: ln.kb.words, times: ln.kb.times, last: ln.kb.last } : null;
+        plan.lines.push({ index: li, text: ln.text, start: s0, end: e0, visEnd: visEnd, note: ln.note, impact: ln.impact,
+            words: KB ? jzKbWordTexts(KB) : null, wordTimes: KB ? KB.times : null, karaoke: KB ? KB.times.concat([KB.last]) : null });
         var chunks = ln.manual || (plan.lang === 'en' ? jzPhraseChunks(jzChunk(ln.text)) : jzChunk(ln.text)), L = jzLerp(1.3, 0.5, fx.density), nC = Math.round(D / L);
         var maxC = chunks.length + (chunks.length >= 2 && D > 2 ? 1 : 0); nC = jzClamp(nC, 1, Math.max(1, maxC));
         if (zones) nC = Math.max(1, Math.min(nC, Math.floor(chunks.length / 2)));   // 中央を空ける: ≥ 2 words per cut (each cut is split in two)
@@ -324,14 +373,21 @@ function jzMakePlan(o) {
         else { var pg = jzPartition(chunks, nG); for (i = 0; i < pg.length; i++) groups.push(pg[i].join(/[A-Za-z]/.test(pg[i].join('')) ? ' ' : '')); }
         var recap = nC > groups.length && groups.length >= 2, units = [], tot = 0;
         for (i = 0; i < groups.length; i++) { units.push({ text: groups[i], w: jzChars(groups[i]).length + 1.6 }); tot += units[i].w; }
-        if (recap) { var rw = tot / units.length * 1.25; units.push({ text: ln.text, w: rw, recap: true }); tot += rw; }
+        if (KB) { units = jzKbUnits(KB, nC); tot = 0; for (i = 0; i < units.length; i++) tot += units[i].w; }   // 逐字: whole words per cut
+        else if (recap) { var rw = tot / units.length * 1.25; units.push({ text: ln.text, w: rw, recap: true }); tot += rw; }
         var bounds = [s0], acc = s0;
         for (i = 0; i < units.length; i++) { acc += D * units[i].w / tot; bounds.push(i === units.length - 1 ? visEnd : acc); }
+        if (KB) { for (i = 1; i < units.length; i++) if (units[i].at != null) bounds[i] = units[i].at; }        // 逐字: cuts start on words
+        if (KB) { var room = Math.max(0.24, Math.min(0.5, KB.last - s0));                                       // …and stop with the last word
+            bounds[bounds.length - 1] = Math.max(bounds[bounds.length - 2] + 0.22, Math.min(bounds[bounds.length - 1], KB.last + room)); }
+        for (i = 1; i < bounds.length - 1; i++) bounds[i] = jzClamp(bounds[i], bounds[i - 1] + 0.22, bounds[i + 1] - 0.22);
         if (nS > 1 && li > 0 && rng.chance(fx.bgSwitch * (ln.impact ? 1.8 : 1))) schemeIdx = (schemeIdx + 1 + rng.int(0, nS - 2)) % nS;
         var lineBg = jzPickBg(rng, st, en, fx, bgHist); bgHist.push(lineBg);
         var lineBgP = lineBg !== 'none' ? jzPlanOf('bg', lineBg, rng, st) : {};
         for (var k = 0; k < units.length; k++) {
             var u = units[k], cs = bounds[k], ce = bounds[k + 1], dur = ce - cs, nn = jzCount(u.text);
+            var KW = KB ? (u.times ? { words: u.words, times: u.times, ends: u.ends } : jzWordSlice(KB, u.text)) : null;   // 逐字: the words this cut shows, and when
+            var kEnd = KW && KW.ends.length ? KW.ends[KW.ends.length - 1] : null;   // where the last word ends (see kEnd in the browser engine)
             var emph = (ln.impact && (k === 0 || u.recap));
             for (var q = 0; q < ln.emph.length; q++) if (u.text.indexOf(ln.emph[q]) >= 0) emph = true;
             var Z = zones ? jzZoneOf(zones, li) : null, LW = Z ? Z.w : W, LH = Z ? Z.h : H;
@@ -366,10 +422,16 @@ function jzMakePlan(o) {
             }
             var dids = []; for (q = 0; q < decor.length; q++) dids.push(decor[q].id);
             plan.cuts.push({ index: plan.cuts.length, text: u.text, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, dur: dur, layout: layout, enter: enter, exit: exit, hold: hold, inDur: inDur, outDur: outDur,
-                params: params, decor: decor, scheme: sch, seed: jzHash(o.seed, li, k) % 1000000, emph: emph, recap: !!u.recap, words: jzChunk(u.text), stagger: rng.range(0.025, 0.06),
+                params: params, decor: decor, scheme: sch, seed: jzHash(o.seed, li, k) % 1000000, emph: emph, recap: !!u.recap, words: KW ? KW.words : jzChunk(u.text), stagger: rng.range(0.025, 0.06),
+                wordTimes: KW ? jzKaraokeTimes(cs, ce - cs, KW.times) : null,   // 逐字: the word starts, clamped to the cut
+                karaoke: null,   // …filled in below (the end of the last word comes with it)
                 treat: treat, treatP: treatP, bg: bg, bgP: bg === lineBg ? lineBgP : {}, cam: cam, camP: camP, trans: trans, transP: transP, transDur: transDur });
+            var kEnds = KW ? KW.ends.slice(0) : null;   // for jzSplitCut: a half takes its own last word's end from these
+            var newCut = plan.cuts[plan.cuts.length - 1];
+            newCut.kEnd = kEnd;     // kept until the cut is split: the halves take their times from it
+            if (newCut.wordTimes) newCut.karaoke = jzKaraoke(newCut);
             hist.push({ layout: layout, enter: enter, exit: exit, hold: hold, treat: treat, cam: cam, trans: trans, decor: dids });
-            if (zones) jzSplitCut(plan.cuts[plan.cuts.length - 1], zones, st, dur, plan.lang);
+            if (zones) jzSplitCut(newCut, zones, st, dur, plan.lang, KB, kEnds);
             var g = fx.glitch * (st.glitchBoost || 1);
             if (en.fx.chroma !== false) ev(cs, 'chroma', 1.4 + rng.range(0, 2) * fx.chroma + (emph ? 2.5 : 0), 0.25);
             if (en.fx.slice !== false && rng.chance(g * 0.5 + (emph ? 0.3 : 0))) ev(cs, 'slice', 0.6 + rng.range(0, 0.8) * g + (emph ? 0.5 : 0), rng.pick([2, 3, 4]) * F);

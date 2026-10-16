@@ -11,7 +11,11 @@ const E = J.E;
 J.mainDraw = (env, it) => {
   const cut = env.cut;
   it.seed = it.seed != null ? it.seed : J.h(cut.seed, (it.mi | 0) + 1, 7);
-  it.charFns = []; it.pieceFns = [];
+  // a charFn the layout set before calling us is a contribution like any other: keep it as the first link of the
+  // chain so the enter / hold / treat animations fold into it instead of replacing it. (A layout that wants only
+  // its own function can still draw with env.draw / J.drawItem and skip mainDraw.)
+  const own = it.charFn || null;
+  it.charFns = own ? [own] : []; it.pieceFns = [];
   const stagger = cut.stagger || 0;
   it.delay = (it.mi | 0) * stagger;
   const ctx = { dur: cut.dur, inDur: cut.inDur, outDur: cut.outDur };

@@ -28,7 +28,7 @@ Tính năng xuất MP4 giờ truyền file ngay trong lúc mã hóa (streaming) 
 
 **Clear lyrics** (Xoá lời) xoá lời cùng thời gian từng dòng, cài đặt riêng của từng dòng và phạm vi xuất (Undo / Ctrl+Z sẽ khôi phục lại); **Reset** ở đầu trang sẽ xoá lời, bài hát (kể cả bản lưu trong trình duyệt), cài đặt và cả hai lịch sử hoàn tác, sau khi bạn xác nhận.
 
-**Cú pháp lời:** `[interlude 8]` thêm một đoạn nhạc không lời dài 8 giây, chỉ có nền và trang trí (4 giây nếu không ghi số); `I remember/the dawn` tạo một điểm cắt thủ công; `*word*` để nhấn mạnh một từ; dấu `!` ở cuối dòng thêm hiệu ứng chớp sáng và rung; `lyric|note` thêm chữ chú thích nhỏ; `[01:23.45]lyric` để nhập mốc thời gian theo định dạng LRC; dòng bắt đầu bằng `#` là comment và sẽ bị bỏ qua.
+**Cú pháp lời:** `[interlude 8]` thêm một đoạn nhạc không lời dài 8 giây, chỉ có nền và trang trí (4 giây nếu không ghi số); `I remember/the dawn` tạo một điểm cắt thủ công; `*word*` để nhấn mạnh một từ; dấu `!` ở cuối dòng thêm hiệu ứng chớp sáng và rung; `lyric|note` thêm chữ chú thích nhỏ; `[01:23.45]lyric` để nhập mốc thời gian theo định dạng LRC; `<00:01.00>một<00:01.60>hai` (hoặc `[00:01.00]một[00:01.60]hai`) cho thời gian từng từ, để dòng sáng lên theo giọng hát; dòng bắt đầu bằng `#` là comment và sẽ bị bỏ qua.
 
 Dùng **Save** và **Open** cho các dự án `.jizura.json`. **Export for AE** tạo dữ liệu bố cục để nhập vào panel After Effects. Video và hình ảnh được tạo ra thuộc về người tạo; bản quyền nhạc và lời bài hát vẫn thuộc về chủ sở hữu tương ứng. File dự án, lời bài hát và audio đều được xử lý ngay trong trình duyệt. Google Fonts được tải khi cần. Công cụ này phát hành theo giấy phép MIT; xem [LICENSE](LICENSE) và [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

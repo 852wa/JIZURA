@@ -38,6 +38,9 @@ function jzBuildStart(plan, opt) {
     // 軽量 (opt.light): no colour-shift ghosts, no paper noise, no bloom / grain / slice warp / zoom blur, and no screen
     // effects that duplicate the picture — plays back several times faster in After Effects
     var LIGHT = !!opt.light;
+    // 逐字 (words): build the lines that carry word timestamps word by word (off unless asked for: the plan and the
+    // comps are otherwise exactly as before)
+    var WORDS = !!opt.words;
     // 合成用の背景: the plan's style is already white-on-black; no lift / paper / background graphic / vignette,
     // the finished comp is made monochrome (Tint) and — for green — screened onto #00FF00
     var KEY = (plan.keyBg === 'green' || plan.keyBg === 'black') ? plan.keyBg : null;
@@ -136,6 +139,16 @@ function jzBuildStart(plan, opt) {
         WL.startTime = cut.start; WL.inPoint = cut.start; WL.outPoint = cut.end;
         WL.name = (jzPad(ci + 1, 3) + ' ' + (cut.text || '')).substr(0, 24);
         wraps.push({ cut: cut, layer: WL, comp: wc, sc: sc, stage: mainStage, content: mainContent });
+        // 逐字 (opt.words): the words of a timed line, each on its own layer of the main comp — the word layers sit
+        // above the cut, on the comp that spans the whole video, so a word can appear at its own time and stay
+        if (WORDS && jzWordsOn(cut)) {
+            // the word layers are drawn at the size the plan's own frame asks for, on a comp that may be another
+            // size: k scales the plan frame to the comp both ways (u alone is the "1080" rule and does not know
+            // plan.W/H), so a landscape plan on a portrait comp still fits — the smaller of the two ratios.
+            var wk = Math.min(H / (plan.H || H), W / (plan.W || W));
+            try { jzWordLayers(comp, cut, sc, wk, plan); }
+            catch (ew) { jzWarn('words ' + (ci + 1) + ': ' + ew.toString() + (ew.line ? ' (line ' + ew.line + ')' : '')); }
+        }
     }
     function finishTrans() {
         // ---------- cut-to-cut transitions (the previous wrapper holds its last state under the new one)

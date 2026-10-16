@@ -113,6 +113,17 @@ J.lrcText = (project, lines, range) => {
     const L = parsed.lines[i];
     let txt = clean(rows[L.src]);
     if (L.interlude && !/^\[/.test(txt)) txt = '[間奏]';
+    // 逐字 (word-by-word timestamps): the words keep their own times, so the file reads back in with the highlight
+    // intact. The tags the row had stay where they were, and <mm:ss.xxx> is written as [mm:ss.xx] like the rest.
+    // The row is written once — its tags carry every time it needs (a row that names several times, e.g. a repeated
+    // chorus line or a timed row whose tag at the end is the next line's, is read back in as it was written).
+    if (L.kb && L.kb.times && L.kb.times.length > 1) {
+      if (!i || parsed.lines[i - 1].src !== L.src) {          // a row that names several times is written once
+        const body = J.wordRow(L.kb.body, t0);
+        out.push((/^\[/.test(body) ? '' : stamp(tm.starts[i] - t0)) + body);
+      }
+      continue;
+    }
     out.push(stamp(tm.starts[i] - t0) + txt);
   }
   return out.join('\n') + '\n';

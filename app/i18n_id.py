@@ -125,6 +125,8 @@ BODY = {
     '… フラッシュと揺れを入れる': '… menambahkan flash dan goyangan',
     '… 注釈レイアウトの小さな文字': '… teks kecil dalam layout anotasi',
     '… LRC のタイムスタンプをそのまま使用': '… memakai timestamp LRC apa adanya',
+    '… 単語ごとの時刻（逐字）。': '… waktu untuk setiap kata.',
+    ' とも書けます。行の頭に置くと、歌に合わせて語が光ります': ' juga bisa. Letakkan di awal baris, katanya menyala mengikuti suara',
     'で始まる行 … コメント（無視）': 'mengawali komentar (diabaikan)',
     '行末の': 'Di akhir baris:', '透明': 'transparan', '歌詞|ruby or note': 'lirik|bacaan atau catatan',
     '歌詞': 'Lirik', '曲とタイミング': 'Audio dan timing',

@@ -45,10 +45,196 @@ J.CORE_ORDER = { layout: J.LAYOUT_ORDER.slice(), enter: J.ENTER_ORDER.slice(), e
 J.komaOf = fx => (fx.koma != null ? +fx.koma : (fx.onTwos === false ? 0 : 12));
 J.stepDur = (fx, fps) => { const k = J.komaOf(fx); return k > 0 ? 1 / k : 1 / (fps || 24); };
 
+/* ---------------- 逐字 (per-word) timestamps ----------------
+   Two notations are understood, and a line may mix them:
+     [00:01.00]ねえ[00:01.60]まだ[00:02.30]間に合うかな   a [mm:ss.xx] before every word
+     <00:01.00>ねえ<00:01.60>まだ<00:02.30>間に合うかな     an <mm:ss.xxx> before every word
+   The tags must come first on the line, after the line tag (which may repeat). The text after a tag belongs to that
+   tag; the text of the first tag belongs to it as well: <t1>a<t2>b<t3>c<  →  a@t1, b@t2, c@t3 — the last tag (with
+   nothing after it) only says when the last word ends. */
+const KB_LINE = /^\[(\d+):(\d+(?:[.:]\d+)?)\]/;
+const KB_WORD = /^<\s*(\d+):(\d+(?:[.:]\d+)?)\s*>/;
+const kbSec = (mm, ss) => +mm * 60 + parseFloat(String(ss).replace(':', '.'));
+/* the [mm:ss.xx] / <mm:ss.xxx> a row ends on: where this row stops singing (the next row starts there). A lot of LRC
+   files write the next line's time at the end of the line before it, and on a 逐字 row it ends the last word — either
+   way it is a time, never lyric text, so it comes off the row (J.wordTiming keeps it as the end of the last word) */
+const KB_TAIL = /(?:\s*(?:\[\s*\d+:\d+(?:[.:]\d+)?\s*\]|\s*<\s*\d+:\d+(?:[.:]\d+)?\s*>))+\s*$/;
+const kbTailOff = s => s.replace(KB_TAIL, '');
+/* the time that tail holds: where the row stops singing (null when the row does not name one) */
+const kbTailEnd = (row) => {
+  const tail = String(row || '').match(KB_TAIL);
+  if (!tail) return null;
+  const tags = tail[0].match(/[\[<]\s*(\d+):(\d+(?:[.:]\d+)?)\s*[\]>]/g);
+  if (!tags) return null;
+  const g = tags[tags.length - 1].match(/(\d+):(\d+(?:[.:]\d+)?)/);
+  return g ? kbSec(g[1], g[2]) : null;
+};
+/* [mm:ss.xx] / <mm:ss.xxx> alone on a line: the 強調 tag or a time note to ourselves — never a word timestamp */
+const kbQuiet = s => !/[^\d:.\uFF1A\s]/.test(s);
+/* every word timestamp on a line, or null when it has none. Every tag has to be the first thing after the text of
+   the word before it, so the line is read left to right: [tag]text[tag]text…<tag>text<tag> — `<` opens a word tag,
+   and the text of a word runs up to the next tag (of either kind) or to the end of the line. */
+function kbWords(s) {
+  const tags = [], texts = [];
+  let rest = s;
+  while (rest) {
+    const tg = rest.match(KB_WORD) || rest.match(KB_LINE);     // <mm:ss.xx> / [mm:ss.xx] at the head of the rest
+    if (!tg) { if (tags.length) { texts.push(rest); rest = ''; } break; }
+    const next = [rest.indexOf('<', tg[0].length), rest.indexOf('[', tg[0].length)].filter(i => i >= 0);
+    const cut = next.length ? Math.min(...next) : rest.length;  // the word ends where the next tag begins
+    const text = rest.slice(tg[0].length, cut).trim();
+    tags.push(kbSec(tg[1], tg[2])); texts.push(text);
+    rest = rest.slice(cut).trim();
+    if (tags.length > 64) break;                               // a sane limit: 64 words in one line is plenty
+  }
+  if (tags.length < 2) return null;
+  // the word each tag carries. A tag with no text of its own (its text is the next tag — [00:04.00][00:04.00]…) is
+  // skipped, and a tag with nothing after it only closes the word before it (that is where the next row starts).
+  const words = [];
+  for (let k = 0; k < tags.length; k++) if (texts[k]) words.push({ t: tags[k], text: texts[k], end: tags[k + 1] != null ? tags[k + 1] : tags[k] });
+  // only a line with two or more words of its own is 逐字. One word means every tag before it was a line tag:
+  // [00:01.00][00:30.00]同じ歌詞 is a repeated line (the chorus), not a word — it has to stay two lines.
+  if (words.length < 2) return null;
+  const out = [];
+  for (let k = 0; k < words.length - 1; k++) out.push({ t: words[k].t, text: words[k].text, end: words[k + 1].t });
+  const lastW = words[words.length - 1];
+  out.push({ t: lastW.t, text: lastW.text, end: lastW.end });
+  return out;
+}
+/* 行の記号（|注释・行末 !・*強調*・/手動切分）を取り出す。逐字の行でも同じように効くよう、時刻タグはそのまま残し、
+   記号だけを落とした行を返す → { text, note, impact, emph, cuts }。cuts = / で切った断片（無ければ []）。 */
+J.lineMarkers = (row) => {
+  let s = String(row || '').trim();
+  let note = null;
+  const bar = s.indexOf('|');
+  if (bar >= 0) { note = s.slice(bar + 1).trim() || null; s = s.slice(0, bar).trim(); }
+  let impact = false;
+  if (s.length > 1 && /!$/.test(s)) { impact = true; s = s.slice(0, -1).trim(); }
+  const emph = [];
+  s = s.replace(/\*([^*]+)\*/g, (_, w) => { emph.push(w); return w; });
+  if (s.endsWith('/')) s = s.replace(/\/+$/, '').trim();            // a / with nothing after it closes the last cut
+  const parts = s.includes('/') ? s.split('/').map(x => x.trim()).filter(Boolean) : [];
+  const cuts = parts.length >= 2 ? parts : [];                    // a lone / is not a cut point
+  return { text: s, note, impact, emph, cuts };
+};
+/* 逐字の行の / は「言葉の切れ目」でしかない：断片それぞれが覆う部分を求め、語はそのままの形（/ は落とす）で返す。
+   語の中に / があるときは、その語を / のところで分けて数える（`まだ/間に合う` は 2 つ分）。合わないときは null を
+   返し、呼び手は行全体をそのまま使う。→ 分组されたテキストの配列 | null */
+J.kbCuts = (kb, cuts) => {
+  if (!kb || !cuts || cuts.length < 2) return null;
+  // 比較用: 時刻タグ・空白・/ を落とす（/ は語の切れ目そのものなので、比べるときには要らない）
+  const norm = w => String(w).replace(/<\s*\d+:\d+(?:[.:]\d+)?\s*>/g, '').replace(/\[\d+:\d+(?:[.:]\d+)?\]/g, '').replace(/[\s\u3000/]/g, '');
+  // 語を / のところでも分けた「かけら」の並び。each cut may only end where a piece ends.
+  const pieces = [];
+  kb.words.forEach(w => String(w).split('/').forEach(x => { x = norm(x); if (x) pieces.push(x); }));
+  const line = pieces.join('');
+  let at = 0;
+  const out = [];
+  for (const c of cuts) {
+    const t = norm(c);
+    if (!t) return null;
+    const to = at + t.length;
+    if (line.slice(at, to) !== t) return null;
+    let n = 0, acc = 0;                                             // the pieces this cut covers
+    for (const p2 of pieces) { if (acc >= to) break; acc += p2.length; n++; }
+    if (acc !== to) return null;
+    out.push(t);
+    at = to;
+  }
+  return at === line.length ? out : null;
+};
+/* 逐字の時刻を拾う → { text, words, times, ends, first, last, body } | null.
+   A tag with nothing after it is not a word of its own: it only says where the last word ends (and where the next
+   row starts), so `last` is that time and the row is never shown a second time for it (see J.parseLyrics). */
+J.wordTiming = (row) => {
+  let s = String(row || '').trim();
+  const lead = [];                                            // the [mm:ss.xx] tags at the head of the row
+  let m;
+  while ((m = s.match(KB_LINE))) { if (s.indexOf('<', 1) >= 0 && kbQuiet(s)) break; lead.push(m[0]); s = s.slice(m[0].length).trim(); }
+  if (!s) return null;
+  // the head tags belong to the words only when the words are tagged the same way ([t]a[t]b…). With <mm:ss.xxx>
+  // words they are the line's own times, and the first word tag already says where the line starts.
+  const body = s.startsWith('<') ? s : lead.join('') + s;
+  const words = kbWords(body);
+  if (!words) return null;
+  // the words are kept as they were written
+  return { text: words.map(w => w.text).join(''), words: words.map(w => w.text), times: words.map(w => w.t),
+    ends: words.map(w => w.end), first: words[0].t, last: words[words.length - 1].end, body: body };
+};
+/* 逐字 for one cut: the words the cut shows, each with the time it starts and the time it ends, in the line's own
+   timeline. The cut's text is found inside the line (a cut may start anywhere in it: `/` cuts, a recap), and the
+   words it covers are matched in order, so a word is never left without a time. A cut that starts or ends inside a
+   word gets one slot for the part it shows. → { words, times, ends } | null */
+J.wordSlice = (words, times, ends, txt) => {
+  if (!words || !words.length || !txt) return null;
+  const norm = w => String(w).replace(/[\s\u3000]/g, '');
+  const line = words.map(norm).join('');
+  const target = norm(txt);
+  const at = line.indexOf(target);                        // where in the line this cut starts
+  if (at < 0 || !target) return null;
+  const out = [];
+  let acc = 0;
+  for (let k = 0; k < words.length; k++) {
+    const w = norm(words[k]);
+    const from = acc, to = acc + w.length;
+    acc = to;
+    if (to <= at) continue;                               // before the cut
+    if (from >= at + target.length) break;                // after it
+    out.push({ text: words[k], t: times[k], e: k + 1 < words.length ? times[k + 1] : ends[k] });
+    // a word that the cut only partly shows ends where the cut does
+    if (to >= at + target.length) out[out.length - 1].e = Math.max(out[out.length - 1].e, times[k]);
+  }
+  // a word at the edge of the cut can reach past its text (the cut starts / ends inside it): the tail that hangs
+  // over is not drawn anywhere, so it is not a word of the cut (J.wordsForText gives the words back trimmed)
+  const kept = J.wordsForText(out.map(o => o.text), target);
+  return kept.length ? { words: kept, times: out.map(o => o.t).slice(0, kept.length), ends: out.map(o => o.e).slice(0, kept.length) } : null;
+};
+
+/* the words of a cut, taken back to the text it really draws. A cut that starts or ends inside a word (a half of a
+   split line, 中央を空ける) keeps whole words, so the one at the edge can reach past its text: that tail is not
+   drawn anywhere, so it comes off here. It matters twice over — J.wkChars matches the words to the drawn text in
+   order, and the AE build gives every word a layer of its own: neither may see a character the cut does not draw. */
+J.wordsForText = (words, text) => {
+  const norm = w => String(w).replace(/[\s\u3000]/g, '');
+  const target = norm(text);
+  const out = [];
+  let acc = 0;
+  for (const w of words) {
+    const c = norm(w), room = target.length - acc;
+    if (room <= 0) break;
+    if (c.length <= room) { out.push(w); acc += c.length; continue; }
+    out.push([...c].slice(0, room).join(''));       // the part that hangs over the cut is not drawn
+    break;
+  }
+  return out;
+};
+
+/* 逐字 for one cut, on the timeline: the words keep the times they were given, and a word without one (a cut split
+   by hand) is spread over the cut. The times are absolute, so only the first is pulled inside the cut. -> [start of
+   each word] | null */
+J.karaokeTimes = (start, dur, times) => {
+  if (!times || !times.length) return null;
+  const end = start + dur, n = times.length;
+  const out = times.map((t, i) => (isFinite(t) ? t : start + dur * i / Math.max(1, n - 1)));   // a missing time is spread over the cut
+  out[0] = J.clamp(out[0], start, Math.max(start, end - 0.05));         // the times are absolute: only the first can fall outside
+  for (let i = 1; i < n; i++) if (out[i] < out[i - 1]) out[i] = out[i - 1];   // in order
+  return out;
+};
+
+/* a 逐字 line as LRC: the body as written, with every <mm:ss.xxx> written [mm:ss.xx] instead (the words stay where
+   they were, so reading the file back gives the same line). shift = seconds taken off every time (an export range). */
+J.wordRow = (body, shift = 0) => String(body).replace(/<\s*(\d+):(\d+(?:[.:]\d+)?)\s*>/g, (all, mm, ss) => {
+  const t = Math.max(0, +mm * 60 + parseFloat(ss.replace(':', '.')) - shift);
+  const m = Math.floor(t / 60), sec = t - m * 60;
+  return '[' + String(m).padStart(2, '0') + ':' + sec.toFixed(2).padStart(5, '0') + ']';
+}).replace(/\s+$/, '');
+
+
 /* ---------------- lyric parsing ---------------- */
 J.parseLyrics = (raw) => {
   const lines = []; const meta = {};
   let pendingGap = false;
+  let open = null;                                        // 双语: the row that is singing now (start / end)
   const rows = String(raw || '').replace(/\r/g, '').split('\n');
   for (let ri = 0; ri < rows.length; ri++) {
     const s0 = rows[ri].trim();
@@ -56,36 +242,50 @@ J.parseLyrics = (raw) => {
     if (s0.startsWith('#')) continue;
     const mm = s0.match(/^\[(ti|ar|al|by|offset):(.*)\]$/i);
     if (mm) { meta[mm[1].toLowerCase()] = mm[2].trim(); continue; }
-    let s = s0; const times = [];
+    // the line markers (|注释, a trailing !, *強調*, /手動切分) are read off the row first: they may sit between the
+    // word timestamps, so they have to be gone before the words are read out of it (逐字 and markers mix freely).
+    const mk = J.lineMarkers(s0);
+    // 逐字: the timestamp of every word (only when the whole line is timed that way)
+    const kb = J.wordTiming(mk.text);
+    let s = mk.text; const times = [];
     let m;
-    while ((m = s.match(/^\[(\d+):(\d+(?:[.:]\d+)?)\]/))) { times.push(+m[1] * 60 + parseFloat(m[2].replace(':', '.'))); s = s.slice(m[0].length); }
-    s = s.trim();
+    while ((m = s.match(KB_LINE))) { if (s.indexOf('<') >= 0 && kbQuiet(s)) break; times.push(kbSec(m[1], m[2])); s = s.slice(m[0].length); }   // a [mm:ss.xx] alone is a plain time
+    // a tag the row ends on is a time too (where the next row starts), never lyric text: it comes off here, and on a
+    // 逐字 row it is already the end of the last word (J.wordTiming), so the row is not shown twice for it
+    s = kbTailOff(s.trim());
+    // 逐字: on a timed line those leading tags are where the words are, so they are not row times any more
+    if (kb) times.length = 0;
+    const st = kb ? kb.first : (times.length ? Math.min(...times) : null);
+    // 双语 (a lyric written in two languages): the second row of a pair starts while the row above it is still
+    // singing — it is the same phrase in another language, and only one of them can be on screen. The row that is
+    // already singing keeps it, so the translation is dropped here (one place: the line list, the plan, the AE
+    // build and the .lrc export all see the same lyric). A row that starts when the row above ends is the next
+    // phrase, not a translation, and stays.
+    if (st != null && open && (open.end != null ? st < open.end - 0.02 : st <= open.start + 0.02)) continue;
     // 間奏: [間奏] / [間奏 8] (8 seconds) — also [interlude] [inst] [间奏] [간주]; no lyrics, only background and decorations
     const im = s.match(/^\[\s*(間奏|间奏|interlude|instrumental|inst|간주)(?:\s*[:：]?\s*(\d+(?:\.\d+)?)\s*(?:s|sec|秒|초)?)?\s*\]$/i);
     if (im) {
       const base = { text: '', interlude: true, secs: im[2] ? parseFloat(im[2]) : null, note: null, impact: false, emph: [], manual: null, gapBefore: pendingGap, src: ri };
       pendingGap = false;
+      open = st != null ? { start: st, end: im[2] ? st + parseFloat(im[2]) : null } : null;
       if (times.length) times.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
       else lines.push(Object.assign({}, base, { lrc: null }));
       continue;
     }
-    let note = null;
-    const bar = s.indexOf('|');
-    if (bar >= 0) { note = s.slice(bar + 1).trim() || null; s = s.slice(0, bar).trim(); }
-    let impact = false;
-    if (/[!！]$/.test(s) && s.length > 1 && /!$/.test(s)) { impact = true; s = s.slice(0, -1).trim(); }
-    const emph = [];
-    s = s.replace(/\*([^*]+)\*/g, (_, w) => { emph.push(w); return w; });
+    const note = mk.note, impact = mk.impact, emph = mk.emph;
     let manual = null;
-    if (s.includes('/')) {
-      manual = s.split('/').map(x => x.trim()).filter(Boolean);
-      const latin = manual.some(x => /[A-Za-z]/.test(x));
-      s = manual.join(latin ? ' ' : '');
+    if (kb && mk.cuts.length) { manual = J.kbCuts(kb, mk.cuts); s = kb.text; }   // 逐字: / cuts the words, not the tags
+    else if (mk.cuts.length) {
+      manual = mk.cuts;
+      s = manual.join(manual.some(x => /[A-Za-z]/.test(x)) ? ' ' : '');
     }
+    if (kb) s = kb.text;                                  // 逐字: the line is the words and their times
     if (!s) continue;
-    const base = { text: s, note, impact, emph, manual, gapBefore: pendingGap, src: ri };
+    const base = { text: s, note, impact, emph, manual, gapBefore: pendingGap, src: ri, kb };
     pendingGap = false;
-    if (times.length) times.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
+    const at = kb ? [kb.first] : times;
+    open = (st != null && at.length <= 1) ? { start: st, end: kb ? kb.last : kbTailEnd(mk.text) } : null;
+    if (at.length) at.forEach(t => lines.push(Object.assign({}, base, { lrc: t })));
     else lines.push(Object.assign({}, base, { lrc: null }));
   }
   // LRC: order by time. A line without a tag (an interlude, a line added by hand) stays right after the line it
@@ -106,6 +306,26 @@ J.parseOrderV1 = (raw) => {
   const old = byRow.slice().sort((a, b) => ((a.l.lrc ?? 1e9) - (b.l.lrc ?? 1e9)) || (a.l.src - b.l.src));
   return old.map(x => x.i);          // old index -> new index
 };
+
+/* 逐字: the cuts of a line are whole words, so the highlight never has to stop inside one. n cuts are made by
+   dividing the words into n runs of nearly equal length (in characters), and each cut remembers the time its first
+   word starts — that is where the cut begins. */
+function kbUnits(KB, n) {
+  const W = KB.words, N = W.length;
+  const nC = Math.max(1, Math.min(n, N));
+  const len = W.map(w => Math.max(1, [...String(w).replace(/\s+/g, '')].length));
+  const total = len.reduce((a, b) => a + b, 0);
+  const out = [];
+  let wi = 0;
+  for (let k = 0; k < nC; k++) {
+    let take = 0, want = total * (k + 1) / nC;
+    const from = wi, base = len.slice(0, wi).reduce((a, b) => a + b, 0);   // aim for an even share of the characters
+    while (wi < N - (nC - 1 - k) && (take + base + len[wi] <= want || wi === from)) { take += len[wi]; wi++; }
+    if (k === nC - 1) wi = N;
+    out.push({ text: W.slice(from, wi).join(''), w: take + 1.6, at: KB.times[from], words: wi - from });
+  }
+  return out;
+}
 
 /* ---------------- chunking (bunsetsu-ish) ---------------- */
 const segmenters = {};   // one per lyric language (J.segLocale: ja / zh-Hant / zh-Hans / ko)
@@ -211,7 +431,8 @@ J.computeTiming = (project, parsed, audio) => {
   const fixed = lines.map((l, i) => {
     const man = T.lineTimes && T.lineTimes[i] != null ? +T.lineTimes[i] : null;
     if (man != null && isFinite(man)) return Math.max(0, man);
-    return l.lrc != null && isFinite(l.lrc) ? l.lrc : null;
+    const t = l.kb ? l.kb.first : l.lrc;      // 逐字: the line starts with its first word
+    return t != null && isFinite(t) ? t : null;
   });
   // a fixed time may not go back past an earlier one (the saved value itself is left alone)
   let lastFix = -Infinity;
@@ -223,6 +444,8 @@ J.computeTiming = (project, parsed, audio) => {
     return d;
   };
   const gapOf = i => (i > 0 && i < lines.length && lines[i].gapBefore ? (beat ? beat * 2 : 0.8) : 0);
+  // 逐字: a word timestamp is an upper bound — the line may not outlast its last word (the tail is the exit motion)
+  const kbEnd = i => (lines[i].kb ? lines[i].kb.last : null);
   const starts = new Array(lines.length);
   let i = 0, t = T.offset ?? 0.4;
   if (fixed.length && fixed[0] != null) t = fixed[0];
@@ -245,10 +468,11 @@ J.computeTiming = (project, parsed, audio) => {
     i = j;
   }
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    if (i < starts.length - 1) return Math.max(s + 0.35, Math.min(starts[i + 1], kbEnd(i) != null ? kbEnd(i) : Infinity));
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
+    if (kbEnd(i) != null) d = Math.max(0.2, Math.min(d, kbEnd(i) - s));
     return s + d;
   });
   let duration = (ends.length ? ends[ends.length - 1] : 3) + (T.tail ?? 0.9);
@@ -347,7 +571,10 @@ J.plan = (project, audio) => {
     const n = [...ln.text.replace(/\s+/g, '')].length;
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
-    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
+    // 逐字: the words as parsed, and their times (also the end of the last one, so the highlight can finish)
+    const KB = ln.kb ? { words: ln.kb.words, times: ln.kb.times, ends: ln.kb.ends, last: ln.kb.last } : null;
+    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, words: KB ? KB.words : null, wordTimes: KB ? KB.times : null,
+      karaoke: KB ? KB.times.concat([KB.ends[KB.ends.length - 1]]) : null, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
     const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
@@ -369,7 +596,8 @@ J.plan = (project, audio) => {
     else groups = partition(chunks2, nG).map(g => J.joinWords(g));
     const recap = !fixedN && nC > groups.length && groups.length >= 2;
     let units = groups.map(g => ({ text: g, w: [...g].length + 1.6 }));
-    if (recap) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
+    if (KB) units = kbUnits(KB, nC);                    // 逐字: cuts end where a word ends (never in the middle of one)
+    if (recap && !KB) units.push({ text: ln.text, w: (units.reduce((a, u) => a + u.w, 0) / units.length) * 1.25, recap: true });
     // a locked line keeps its own cuts too (the cut count would otherwise follow the 細かさ slider or おまかせ)
     if (ov.lock && Array.isArray(ov.lockedCuts) && ov.lockedCuts.length && ov.lockedCuts.every(c => c && typeof c.utext === 'string' && ln.text.includes(c.utext.trim())))
       units = ov.lockedCuts.map(c => ({ text: c.utext, w: [...c.utext].length + 1.6, recap: !!c.recap }));
@@ -380,7 +608,15 @@ J.plan = (project, audio) => {
       && ov.lockedCuts.every((c, k2) => c && c.utext === units[k2].text && J.LAYOUTS[c.layout]) ? ov.lockedCuts : null;
     let acc = s; const bounds = [s];
     units.forEach((u, k) => { acc += D * u.w / tot; bounds.push(k === units.length - 1 ? visEnd : acc); });
+    if (KB) {                                           // 逐字: a cut starts on the word it begins with
+      for (let k = 1; k < units.length; k++) { const t = units[k].at; if (t != null) bounds[k] = t; }
+    }
     for (let k = 1; k < bounds.length - 1; k++) bounds[k] = J.clamp(snap(bounds[k]), bounds[k - 1] + 0.22, bounds[k + 1] - 0.22);
+    // 逐字: the last cut of the line ends with its last word (the exit motion still has its own room after that)
+    if (KB) {                                                     // the line's last cut stops with its last word
+      const room = Math.max(0.24, Math.min(0.5, KB.last - s));    // (room is left for the exit motion)
+      bounds[bounds.length - 1] = Math.max(bounds[bounds.length - 2] + 0.22, Math.min(bounds[bounds.length - 1], KB.last + room));
+    }
     // カットの開始時刻 (詳細モード): seconds from the line start, set by hand or by tapping — kept in order, 0.22 s apart
     if (ov.cutTime && typeof ov.cutTime === 'object') {
       const nb = bounds.length - 1;
@@ -399,6 +635,9 @@ J.plan = (project, audio) => {
       const cs = bounds[k], ce = bounds[k + 1], dur = ce - cs;
       const halves = zones ? splitHalf(u.text, plan.lang) : null;               // 中央を空ける: 「花が」｜「咲いた」
       const txt = halves ? halves[0] : u.text;
+      // 逐字: the words this cut shows, and when. txt is already the half this cut draws (a 中央を空ける cut shows
+      // halves[0]), so the slice is the words of this half — splitCut slides them on to the cut as they are.
+      const KW = KB ? J.wordSlice(KB.words, KB.times, KB.ends, txt) : null;
       const nn = Math.max(...(halves || [u.text]).map(t => [...t.replace(/\s+/g, '')].length));
       const emph = kime || ln.impact && (k === 0 || u.recap) || ln.emph.some(w => u.text.includes(w));
       const Z = zoneOf(li), LW = Z ? Z.w : W, LH = Z ? Z.h : H;       // the frame this cut is laid out in
@@ -444,8 +683,9 @@ J.plan = (project, audio) => {
       if (UU) cam = UU.cam(li, cam, { kime, emph, rng });
       let camP = J.CAMERA[cam].plan ? J.CAMERA[cam].plan(rng, st) : {};
       let cutSeed = J.h(lineSeed, k, 17);
-      // 統一感: a line that comes back (サビ etc.) is shown exactly as the first time
-      const again = UU ? UU.again(li, k, txt) : null;
+      // 統一感: a line that comes back (サビ etc.) is shown exactly as the first time. 逐字の行は、
+      // 同じ見せ方でも時刻は声に合わせる（コピーすると前の歌い出しで光ってしまう）
+      const again = UU && !KW ? UU.again(li, k, txt) : null;
       if (again) {
         ({ layout, enter, exit, hold, params, decor, treat, treatP, cam, camP, weightGrow } = again);
         sch = again.scheme; cutSeed = again.seed; LD = J.LAYOUTS[layout];
@@ -539,7 +779,9 @@ J.plan = (project, audio) => {
         enter = 'cut'; inDur = 0.12;
         prevCut.exit = 'cut'; prevCut.outDur = 0;
       }
-      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap, words: J.chunkText(txt), stagger: rng.range(0.025, 0.06),
+      const cut = makeCut({ text: txt, lineText: ln.text, note: ln.note, line: li, start: cs, end: ce, layout, enter, exit, hold, inDur, outDur, params, decor, scheme: sch, seed: cutSeed, emph, recap: !!u.recap,
+        wordTimes: KW ? KW.times : null, kEnd: KW ? KW.ends[KW.ends.length - 1] : null,   // 逐字: the word starts, and the end of the last one
+        words: KW ? KW.words : J.chunkText(txt), stagger: rng.range(0.025, 0.06),
         treat, treatP, bg, bgP: techBgP || (bg === lineBg ? lineBgP : {}), cam, camP, trans, transP, transDur, zone: Z, utext: u.text });
       if (kime || (LS && LS.kime)) cut.kime = true;
       if (weightGrow) cut.weightGrow = true;
@@ -738,11 +980,19 @@ const HEAD_BAD = /[、。，．,.!?！？…・ーっッゃゅょャュョぁぃ
 function splitCut(cut, halves, zones, st, dur, LS) {
   const LD = J.LAYOUTS[cut.layout], seed = J.h(cut.seed, 23);
   const planFor = (text, z) => LD.plan(J.rng(seed), { text, n: [...text.replace(/\s+/g, '')].length, W: z.w, H: z.h, dur }, st);
-  cut.text = halves[0]; cut.lineText = halves[0]; cut.words = J.chunkText(halves[0]); cut.zone = Object.assign({}, zones[0]);
+  // 逐字 (karaoke): a half of the line keeps the words the cut was given — they are this half's already (wordSlice ran
+  // on halves[0]) — so they are not replaced with plain chunks, and the times stay in step with them. A half may end
+  // inside a word (the split is not on a word boundary), and the part that hangs over the cut is not drawn: the words
+  // are taken back to the text the cut really shows. The second half has no word times of its own (the tags only ever
+  // described the first), so the twin drops the karaoke rather than singing the first half's times over its words.
+  cut.text = halves[0]; cut.lineText = halves[0]; cut.zone = Object.assign({}, zones[0]);
+  if (cut.words && cut.words.length) cut.words = J.wordsForText(cut.words, halves[0]);
+  else cut.words = J.chunkText(halves[0]);
   cut.params = LS && LS.params && LS.twinParams ? LS.params : planFor(halves[0], zones[0]);   // a locked line keeps its own
   const delay = Math.min(0.12, dur * 0.08);
   const twin = Object.assign({}, cut, { text: halves[1], lineText: halves[1], words: J.chunkText(halves[1]), zone: Object.assign({}, zones[1]), params: LS && LS.twinParams ? LS.twinParams : planFor(halves[1], zones[1]),
-    start: cut.start + delay, bg: 'none', bgP: {}, companion: true, trans: null, transP: {}, transDur: 0, morph: cut.morph });
+    start: cut.start + delay, bg: 'none', bgP: {}, companion: true, trans: null, transP: {}, transDur: 0, morph: cut.morph, wordTimes: null, kEnd: null,
+    karaoke: null });
   twin.dur = twin.end - twin.start;
   delete twin.companion_; cut.companion = twin;
 }
@@ -779,6 +1029,13 @@ J.sideZones = (W, H, dir) => {
 function makeCut(o) {
   const c = Object.assign({ hold: 'still', inDur: 0.3, outDur: 0.25, stagger: 0.04, decor: [], params: {}, scheme: 0, emph: false, words: [], note: null, treat: 'none', treatP: {}, bg: 'none', bgP: {}, cam: 'push', camP: {} }, o);
   c.dur = c.end - c.start;
+  // 逐字: cut.wordTimes = when each word the cut shows starts, cut.karaoke = those times and the end of the last
+  // word (gives J.wkState and the AE build the span every word is on screen). Recorded on the cut so both readers
+  // see the same thing, and the koma clock quantises it like everything else in a frame.
+  const t = J.karaokeTimes(c.start, c.dur, c.wordTimes);
+  if (t) { c.wordTimes = t; c.karaoke = t.concat([c.kEnd != null ? c.kEnd : c.end]); }
+  else { c.wordTimes = null; c.karaoke = null; }
+  delete c.kEnd;
   return c;
 }
 /* split chunks until there are at least n pieces (longest first: words for Latin text, characters otherwise) */
