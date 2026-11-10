@@ -244,10 +244,12 @@ function jzPhraseChunks(words) {
     for (i = 0; i < words.length; i++) {
         w = words[i]; m = String(w).match(/[A-Za-z\u00c0-\u024f0-9]/g);
         cur.push(w); letters += m ? m.length : 0;
-        if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+        if (letters >= 9 || cur.length >= 3 || /[,.;:!?]["'”’)\]」』）]*$/.test(w)) flush();
     }
     flush();
-    if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
+    // a lone short word at the end joins the previous phrase (a Hangul / Han character counts as two letters)
+    var tail = out.length ? out[out.length - 1] : '', weight = tail.replace(/[^A-Za-z]/g, '').length + 2 * tail.replace(/[^가-힯㐀-鿿]/g, '').length;
+    if (out.length >= 2 && weight <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
     return out.length ? out : words;
 }
 // a plan without .lang (older JSON): detect from its lines

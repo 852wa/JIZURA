@@ -5,7 +5,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const AEOM = require('./aeom');
 const ROOT = path.join(__dirname, '..');
-const SRC = fs.readFileSync(path.join(ROOT, 'JIZURA_AE.jsx'), 'utf8').replace(/^#target.*\n/, '')
+const SRC = fs.readFileSync(path.join(ROOT, 'JIZURA_AE.jsx'), 'utf8').replace(/\r\n/g, '\n').replace(/^#target.*\n/, '')
   .replace(/jzUI\(thisObj\);\s*\}\)\(this\);\s*$/, 'thisObj.__jz = { jzMakePlan: jzMakePlan, jzBuild: jzBuild, log: function () { return JZLOG; }, JZ_DATA: JZ_DATA, JZ_REG: JZ_REG, jzOrder: jzOrder, jzChunk: jzChunk, jzMoodEnabled: jzMoodEnabled, fallbacks: function () { return JZ_FALLBACKS; } };\n})(this);');
 const total = { builds: 0, comps: 0, layers: 0, exprs: 0, animators: 0, effects: {}, unknown: new Set(), exprErrors: [], problems: [], warnings: [] };
 // ExtendScript is ES3: run the panel in a realm without ES5+ built-ins so accidental use fails here, not in AE

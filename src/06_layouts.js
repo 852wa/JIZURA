@@ -115,6 +115,7 @@ const splitWords = (text, maxPer) => {
   for (let k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
   return out.join('\n');
 };
+const LATINCH = /[A-Za-zÀ-ɏ0-9가-힯]/;
 /* split long text into balanced lines, preferring script boundaries */
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
@@ -124,12 +125,16 @@ J.splitLines = (text, maxPer) => {
   const per = arr.length / nLines;
   const out = []; let start = 0;
   for (let l = 1; l < nLines; l++) {
-    let target = Math.round(per * l), best = target, bestScore = -1;
+    let target = Math.round(per * l), best = target, bestScore = -Infinity;
     for (let k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
       if (J.isHira(a) && !J.isHira(b)) s += 3;
-      if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
+      const opens = J.opensAt(arr, k - 1);
+      if ((J.isPunct(a) && !opens) || a === ' ' || a === '　') s += 5;
+      if (opens) s -= 8;                                     // never end a line with 「 『 （ “ or an opening "
+      if (J.noStartAt(arr, k)) s -= 8;                       // never start one with 」 』 ） ” , . ! ? or a closing "
+      if (LATINCH.test(a) && LATINCH.test(b)) s -= 4;        // nor cut inside a Latin / Hangul word
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }

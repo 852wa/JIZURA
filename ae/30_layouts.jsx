@@ -1,14 +1,43 @@
 // ================================================================ layouts (AE)
+// mostly Latin letters (English … lyrics) — same test as the browser's J.isLatinText
+function jzIsLatinText(t) {
+    var s = String(t || '').replace(/[\s　]/g, ''); if (!s) return false;
+    var m = s.match(/[A-Za-zÀ-ɏḀ-ỿ]/g);
+    return (m ? m.length : 0) / jzChars(s).length >= 0.6;
+}
+// Latin text: break between words only, into as few balanced lines as fit (the browser's splitWords)
+function jzSplitWords(text, maxPer) {
+    var ws = jzTrim(text).split(/[\s　]+/), n = ws.length, total = n - 1, i;
+    for (i = 0; i < n; i++) total += jzChars(ws[i]).length;
+    var nL = Math.min(n, Math.ceil(total / maxPer));
+    if (nL <= 1) return ws.join(' ');
+    function len(a, b) { var s = b - a - 1; for (var q = a; q < b; q++) s += jzChars(ws[q]).length; return s; }
+    var ideal = total / nL, memo = {};
+    function best(i0, l) {
+        if (l === 1) { var d0 = len(i0, n) - ideal; return { c: d0 * d0, cuts: [] }; }
+        var key = i0 + ',' + l; if (memo[key]) return memo[key];
+        var r = { c: Infinity, cuts: [] };
+        for (var j = i0 + 1; j <= n - l + 1; j++) { var d = len(i0, j) - ideal, sub = best(j, l - 1), c = d * d + sub.c; if (c < r.c) r = { c: c, cuts: [j].concat(sub.cuts) }; }
+        memo[key] = r; return r;
+    }
+    var cuts = [0].concat(best(0, nL).cuts).concat([n]), out = [];
+    for (var k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
+    return out.join('\r');
+}
 function jzSplitLines(text, maxPer) {
     var arr = jzChars(text);
     if (arr.length <= maxPer) return text;
+    if (jzIsLatinText(text)) return /[\s　]/.test(jzTrim(text)) ? jzSplitWords(text, maxPer) : text;   // one word stays whole
     var nL = Math.ceil(arr.length / maxPer), per = arr.length / nL, out = [], start = 0;
     for (var l = 1; l < nL; l++) {
-        var target = Math.round(per * l), best = target, bestS = -99;
+        var target = Math.round(per * l), best = target, bestS = -Infinity;
         for (var k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
-            var a = arr[k - 1], b = arr[k], s = 3 - Math.abs(k - target);
+            var a = arr[k - 1], b = arr[k], s = 3 - Math.abs(k - target), opens = jzIsOpenAt(arr, k - 1);
             if (jzIsHira(a) && !jzIsHira(b)) s += 3;
-            if (jzIsPunct(a) || a === ' ' || a === '　') s += 5;
+            if ((jzIsPunct(a) && !opens) || a === ' ' || a === '　') s += 5;
+            if (opens) s -= 8;                                          // never end a line with 「 『 （ “ or an opening "
+            if (jzIsNoStart(arr, k)) s -= 8;                            // never start one with 」 』 ） ” , . ! ? or a closing "
+            if (JZ_WORDCH.test(a) && JZ_WORDCH.test(b)) s -= 4;         // nor cut inside a Latin / Hangul word
             if ('っゃゅょー、。'.indexOf(b) >= 0) s -= 6;
             if (s > bestS) { bestS = s; best = k; }
         }

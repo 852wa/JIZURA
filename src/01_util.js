@@ -151,7 +151,20 @@ J.isHira = c => /[ぁ-ゟ]/.test(c);
 J.isKata = c => /[゠-ヿㇰ-ㇿｦ-ﾟ]/.test(c);
 J.isSmallKana = c => 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ'.includes(c);
 J.isPunct = c => /[、。，．,.!?！？…‥・「」『』（）()【】〈〉《》〔〕［］\[\]'"“”‘’ー〜～:：;；\-—―]/.test(c);
+J.isOpenPunct = c => /[「『（(\[【〈《〔［“‘]/.test(c);
+J.isClosePunct = c => /[」』）)\]】〉》〕］”’]/.test(c);
 J.isLatin = c => /[A-Za-z0-9]/.test(c);
+/* the same, for the character at cs[i] in its text: a straight " or ' opens a quote when it comes at the start or after
+   a space / an opening bracket and a non-space follows it (the apostrophe in “It's” does not). A line or a chunk never
+   ends with an opening one, and a line never starts with a closing one or a comma / stop */
+J.opensAt = (cs, i) => {
+  const c = cs[i];
+  if (J.isOpenPunct(c)) return true;
+  if (c !== '"' && c !== "'") return false;
+  const p = cs[i - 1], n = cs[i + 1];
+  return (i === 0 || /\s/.test(p) || J.isOpenPunct(p)) && n != null && !/\s/.test(n);
+};
+J.noStartAt = (cs, i) => J.isClosePunct(cs[i]) || '、。，．,.!?！？…‥・:：;；'.includes(cs[i]) || ((cs[i] === '"' || cs[i] === "'") && !J.opensAt(cs, i));
 J.VERT_ROTATE = 'ー〜～…‥―—-()（）「」『』【】〈〉《》〔〕[]［］→←:：;；=＝';
 
 /* ---- kana → romaji (for annotation labels; kanji left out) ---- */

@@ -151,40 +151,58 @@ J.joinWords = arr => {
 J.isLatinText = t => { const s = String(t || '').replace(/\s/g, ''); if (!s) return false; const n = (s.match(/[A-Za-z\u00c0-\u024f\u1e00-\u1eff]/g) || []).length; return n / [...s].length >= 0.6; };
 
 J.chunkText = (text) => {
-  const segs = J.segments(text);
-  const chunks = []; let cur = null;
-  const close = () => { if (cur && cur.s.trim()) chunks.push(cur.s.trim()); cur = null; };
+  const segs = J.segments(text), cs = [...text];
+  // each chunk remembers whether a space came before it (sp), so words split apart are joined back with that space
+  const chunks = []; let cur = null, gap = false, pos = 0;
+  const close = () => { if (cur && cur.s.trim()) { chunks.push({ s: cur.s.trim(), sp: cur.sp }); gap = false; } cur = null; };
+  const start = (s, k) => { cur = { s, k, hasH: k === 'H', sp: gap, open: false }; };
   for (const sg of segs) {
+    const at = pos; pos += [...sg].length;
     const t = segType(sg);
-    if (t === 'S') { close(); continue; }
-    if (t === 'P') { if (cur) cur.s += sg; else if (chunks.length) chunks[chunks.length - 1] += sg; else cur = { s: sg, k: 'P', hasH: false }; continue; }
-    if (!cur) { cur = { s: sg, k: t, hasH: t === 'H' }; continue; }
+    if (t === 'S') { close(); gap = true; continue; }
+    if (t === 'P') {
+      [...sg].forEach((c, j) => {
+        // an opening bracket / quote (「 『 （ “ and a " or ' that opens a quote) starts the next chunk — it never ends one
+        if (J.opensAt(cs, at + j)) { if (!(cur && cur.open)) { close(); start(c, 'P'); cur.open = true; } else cur.s += c; }
+        else if (cur) cur.s += c;
+        else if (chunks.length) chunks[chunks.length - 1].s += c;
+        else start(c, 'P');
+      });
+      continue;
+    }
+    if (!cur) { start(sg, t); continue; }
+    if (cur.open) { cur.s += sg; cur.k = t; cur.hasH = t === 'H'; cur.open = false; continue; }
     if (t === 'H') {
       const len = [...sg].length;
       if (len <= 3 || (cur.k !== 'H' && !cur.hasH) || (cur.k === 'H' && [...cur.s].length + len <= 4)) { cur.s += sg; cur.hasH = true; continue; }
-      close(); cur = { s: sg, k: 'H', hasH: true }; continue;
+      close(); start(sg, 'H'); continue;
     }
     if (t === 'K' && cur.k === 'K' && !cur.hasH && [...(cur.s + sg)].length <= 6) { cur.s += sg; continue; }
     if (t === 'T' && cur.k === 'T') { cur.s += sg; continue; }
     if (t === 'L' && cur.k === 'L') { cur.s += sg; continue; }
-    close(); cur = { s: sg, k: t, hasH: t === 'H' };
+    close(); start(sg, t);
   }
   close();
   // split very long chunks, merge lonely single kana
   const out = [];
   for (const c of chunks) {
-    const n = [...c].length;
-    if (n > 10 && J.isWordLike(c)) {
+    const n = [...c.s].length;
+    if (n > 10 && J.isWordLike(c.s)) {
       // one long Latin / Hangul word: never cut inside it — only after its dashes (never-ending → never- / ending)
-      const parts = c.split(/(?<=[-‐–—])(?=\S)/);
-      if (parts.length > 1) parts.forEach(x => out.push(x)); else out.push(c);
-    } else if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
+      const parts = c.s.split(/(?<=[-‐–—])(?=\S)/);
+      parts.forEach((x, k) => out.push({ s: x, sp: k ? false : c.sp }));
+    } else if (n > 10) { J.splitLines(c.s, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach((x, k) => out.push({ s: x, sp: k ? false : c.sp })); }
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (WORDCH.test([...out[i - 1]].pop()) && WORDCH.test(out[i]) && !/[-‐–—]$/.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
+    const a = out[i - 1].s, b = out[i].s;
+    if ([...b].length !== 1 || J.isKanji(b)) continue;
+    // a lone word after a sentence break (“exactly! I know,” / “But still, I wanted”) goes with the words after it
+    if (out[i].sp && WORDCH.test(b) && /[.,!?;:…”’"')\]」』）]$/.test(a) && i + 1 < out.length) { out[i + 1] = { s: b + ' ' + out[i + 1].s, sp: true }; out.splice(i, 1); continue; }
+    const space = WORDCH.test(b) && !/[-‐–—]$/.test(a) && (out[i].sp || WORDCH.test([...a].pop()));
+    out[i - 1] = { s: a + (space ? ' ' : '') + b, sp: out[i - 1].sp }; out.splice(i, 1);
   }
-  return out.length ? out : [text];
+  return out.length ? out.map(c => c.s) : [text];
 };
 
 /* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
@@ -194,11 +212,12 @@ J.phraseChunks = (words) => {
   for (const w of words) {
     const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
     cur.push(w); letters += n;
-    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]["'”’)\]」』）]*$/.test(w)) flush();
   }
   flush();
-  // a lone short word at the end joins the previous phrase
-  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] = J.joinWords([out[out.length - 1], last]); }
+  // a lone short word at the end joins the previous phrase (a Hangul / Han character counts as two letters)
+  const weight = s => s.replace(/[^A-Za-z]/g, '').length + 2 * s.replace(/[^가-힯㐀-鿿]/g, '').length;
+  if (out.length >= 2 && weight(out[out.length - 1]) <= 4) { const last = out.pop(); out[out.length - 1] = J.joinWords([out[out.length - 1], last]); }
   return out.length ? out : words;
 };
 

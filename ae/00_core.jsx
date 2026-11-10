@@ -38,7 +38,22 @@ function jzIsKanji(ch) { var c = jzCode(ch); return (c >= 0x3400 && c <= 0x9FFF)
 function jzIsHira(ch) { var c = jzCode(ch); return c >= 0x3041 && c <= 0x309F; }
 function jzIsKata(ch) { var c = jzCode(ch); return (c >= 0x30A0 && c <= 0x30FF) || (c >= 0x31F0 && c <= 0x31FF); }
 function jzIsLatin(ch) { return /[A-Za-z0-9]/.test(ch); }
-function jzIsPunct(ch) { return /[\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300C\u300D\u300E\u300F\uFF08\uFF09()\u3010\u3011~\u301C\uFF5E:\uFF1A;\uFF1B\-\u2014\u2015]/.test(ch); }
+function jzIsPunct(ch) { return /[\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300C\u300D\u300E\u300F\uFF08\uFF09()\u3010\u3011\u3008\u3009\u300A\u300B\u3014\u3015\uFF3B\uFF3D\[\]'"\u201C\u201D\u2018\u2019~\u301C\uFF5E:\uFF1A;\uFF1B\-\u2014\u2015]/.test(ch); }
+// opening brackets / quotes (same rule as the browser's J.isOpenPunct): a line or a chunk never ends with one.
+// A straight " or ' opens a quote at the start or after a space / another opening bracket, when a non-space follows
+var JZ_OPEN_BR = '\u300C\u300E\uFF08(\u3010\u3008\u300A\u3014\uFF3B[\uFF5B{\u201C\u2018';
+var JZ_NO_START = '\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300D\u300F\uFF09)\u3011\u3009\u300B\u3015\uFF3D]\uFF5D}\u201D\u2019:\uFF1A;\uFF1B';
+var JZ_WORDCH = /[A-Za-z\u00C0-\u024F0-9\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/;
+function jzIsOpenAt(cs, i) {
+    var c = cs[i];
+    if (JZ_OPEN_BR.indexOf(c) >= 0) return true;
+    if (c !== '"' && c !== "'") return false;
+    var p = cs[i - 1], n = cs[i + 1];
+    return (i === 0 || /[\s\u3000]/.test(p) || JZ_OPEN_BR.indexOf(p) >= 0) && n != null && !/[\s\u3000]/.test(n);
+}
+// closing punctuation that must not start a line: closing brackets / quotes, commas, stops, ! ? …
+function jzIsNoStart(cs, i) { var c = cs[i]; return c != null && (JZ_NO_START.indexOf(c) >= 0 || ((c === '"' || c === "'") && !jzIsOpenAt(cs, i))); }
+function jzIsWordLike(t) { return /^[A-Za-z\u00C0-\u024F0-9\uAC00-\uD7AF'\u2019.,!?\u2010\u2013\u2014\-]+$/.test(t) && JZ_WORDCH.test(t); }
 function jzCount(s) { return jzChars(String(s).replace(/[\s\u3000]+/g, '')).length; }
 
 // deterministic hashing + seeded stream
@@ -115,41 +130,65 @@ function jzCopy(o) { var r = {}; for (var k in o) if (o.hasOwnProperty(k)) r[k] 
 
 // bunsetsu-ish chunking without a dictionary: script runs + trailing kana
 function jzChunk(text) {
-    var cs = jzChars(text), chunks = [], cur = '', curType = '', hasH = false, i;
+    var cs = jzChars(text), chunks = [], cur = null, gap = false, i, j;
     function typeOf(ch) {
         if (/[\s\u3000]/.test(ch)) return 'S';
         if (jzIsPunct(ch)) return 'P';
         if (jzIsKanji(ch)) return 'K';
         if (jzIsHira(ch) || ch === '\u30FC') return 'H';
         if (jzIsKata(ch)) return 'T';
-        if (jzIsLatin(ch)) return 'L';
+        if (/[A-Za-z0-9\u00C0-\u024F]/.test(ch)) return 'L';
+        if (/[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/.test(ch)) return 'G';   // Hangul: one word per run, like Latin
         return 'O';
     }
-    function close() { if (jzTrim(cur)) chunks.push(jzTrim(cur)); cur = ''; curType = ''; hasH = false; }
-    var hRun = 0;
+    // each chunk remembers whether a space came before it (sp), so words split apart are joined back with that space
+    function start(ch, t) { cur = { s: ch, k: t, hasH: t === 'H', sp: gap, open: false }; }
+    function close() { if (cur && jzTrim(cur.s)) { chunks.push({ s: jzTrim(cur.s), sp: cur.sp }); gap = false; } cur = null; }
     for (i = 0; i < cs.length; i++) {
         var ch = cs[i], t = typeOf(ch);
-        if (t === 'S') { close(); continue; }
-        if (t === 'P') { if (cur) cur += ch; else if (chunks.length) chunks[chunks.length - 1] += ch; continue; }
-        if (!cur) { cur = ch; curType = t; hasH = t === 'H'; hRun = t === 'H' ? 1 : 0; continue; }
+        if (t === 'S') { close(); gap = true; continue; }
+        if (t === 'P') {
+            // an opening bracket / quote starts the next chunk \u2014 it never ends one
+            if (jzIsOpenAt(cs, i)) { if (cur && cur.open) cur.s += ch; else { close(); start(ch, 'P'); cur.open = true; } }
+            else if (cur) cur.s += ch;
+            else if (chunks.length) chunks[chunks.length - 1].s += ch;
+            else start(ch, 'P');
+            continue;
+        }
+        if (!cur) { start(ch, t); continue; }
+        if (cur.open) { cur.s += ch; cur.k = t; cur.hasH = t === 'H'; cur.open = false; continue; }
         if (t === 'H') {
             // kana after kanji/katakana (okurigana, particles) stays; long pure-kana runs split at ~6
-            if (curType !== 'H' || jzChars(cur).length < 6) { cur += ch; hasH = true; hRun++; continue; }
-            close(); cur = ch; curType = 'H'; hasH = true; hRun = 1; continue;
+            if (cur.k !== 'H' || jzChars(cur.s).length < 6) { cur.s += ch; cur.hasH = true; continue; }
+            close(); start(ch, 'H'); continue;
         }
-        if (t === 'K' && curType === 'K' && !hasH) { cur += ch; continue; }
-        if (t === 'T' && curType === 'T' && !hasH) { cur += ch; continue; }
-        if (t === 'L' && curType === 'L') { cur += ch; continue; }
+        if (t === 'K' && cur.k === 'K' && !cur.hasH) { cur.s += ch; continue; }
+        if (t === 'T' && cur.k === 'T' && !cur.hasH) { cur.s += ch; continue; }
+        if ((t === 'L' || t === 'G') && cur.k === t) { cur.s += ch; continue; }
         // kanji right after a short kana particle run starts a new chunk
-        close(); cur = ch; curType = t; hasH = t === 'H'; hRun = 0;
+        close(); start(ch, t);
     }
     close();
     var out = [];
     for (i = 0; i < chunks.length; i++) {
-        var n = jzChars(chunks[i]).length;
-        if (n > 10) { var half = Math.ceil(n / 2), cc = jzChars(chunks[i]); out.push(cc.slice(0, half).join('')); out.push(cc.slice(half).join('')); }
-        else out.push(chunks[i]);
+        var c = chunks[i], cc = jzChars(c.s), n = cc.length;
+        if (n > 10 && jzIsWordLike(c.s)) {
+            // one long Latin / Hangul word: never cut inside it \u2014 only after its dashes (never-ending \u2192 never- / ending)
+            var part = '', first = true;
+            for (j = 0; j < n; j++) { part += cc[j]; if (/[\-\u2010\u2013\u2014]/.test(cc[j]) && j + 1 < n) { out.push({ s: part, sp: first ? c.sp : false }); part = ''; first = false; } }
+            if (part) out.push({ s: part, sp: first ? c.sp : false });
+        } else if (n > 10) { var half = Math.ceil(n / 2); out.push({ s: cc.slice(0, half).join(''), sp: c.sp }); out.push({ s: cc.slice(half).join(''), sp: false }); }
+        else out.push(c);
     }
-    for (i = out.length - 1; i > 0; i--) if (jzChars(out[i]).length === 1 && !jzIsKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
-    return out.length ? out : [text];
+    for (i = out.length - 1; i > 0; i--) {
+        var a = out[i - 1].s, b = out[i].s;
+        if (jzChars(b).length !== 1 || jzIsKanji(b)) continue;
+        // a lone word after a sentence break (\u201Cexactly! I know,\u201D) goes with the words after it
+        if (out[i].sp && JZ_WORDCH.test(b) && /[.,!?;:\u2026\u201D\u2019"')\]\u300D\u300F\uFF09]$/.test(a) && i + 1 < out.length) { out[i + 1] = { s: b + ' ' + out[i + 1].s, sp: true }; out.splice(i, 1); continue; }
+        var ac = jzChars(a), space = JZ_WORDCH.test(b) && !/[\-\u2010\u2013\u2014]$/.test(a) && (out[i].sp || JZ_WORDCH.test(ac[ac.length - 1]));
+        out[i - 1] = { s: a + (space ? ' ' : '') + b, sp: out[i - 1].sp }; out.splice(i, 1);
+    }
+    var res = [];
+    for (i = 0; i < out.length; i++) res.push(out[i].s);
+    return res.length ? res : [text];
 }
