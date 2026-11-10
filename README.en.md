@@ -6,19 +6,25 @@ Turn lyrics into animated lyric videos in your browser. JIZURA combines layouts,
 
 The Japanese, English, Indonesian, Vietnamese, Traditional Chinese, Simplified Chinese and Korean browser editions share the same project format and saved browser data. Use the language links at the top of the editor to switch editions without changing your lyrics or settings. English After Effects panels are available as [ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) and [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip) downloads. The AE JSON format is the same in both languages.
 
-**Project policy:** JIZURA is built to run entirely from a static page on GitHub Pages. Features that use **AI**, or that need to **send to or load from outside servers or services** (anything GitHub Pages alone cannot run), are generally not implemented. See [Project policy](#project-policy).
+**Project policy:** JIZURA runs entirely from a static page on GitHub Pages, and lyrics and songs never leave the browser. Features that need to **send to or load from outside servers or services** (anything GitHub Pages alone cannot run), and features that **integrate AI**, are generally not implemented. See [Project policy](#project-policy).
 
 **Version: v0.13.0** (see [CHANGELOG.md](CHANGELOG.md))
 
 ## Project policy
 
-JIZURA runs entirely from one static page on GitHub Pages, and lyrics and songs never leave the browser. To keep it that way, the following are generally not implemented, and pull requests that add them may not be merged:
+JIZURA follows two rules. Features that break either are generally not implemented, and pull requests that add them may not be merged.
 
-- features that use AI (LLM-driven direction, speech recognition for transcribing or timing lyrics, control by AI agents, …)
+**1. JIZURA itself does not talk to the outside.** It runs from one static page on GitHub Pages, and lyrics and songs never leave the browser.
+
 - features that need to send to or receive from outside servers or services (API calls, accounts and sign-in, cloud storage, analytics or tracking, …)
 - loading code or data at run time from outside CDNs or model hosts
+- the only exception is loading the typefaces in use from Google Fonts
 
-The only exception is loading the typefaces in use from Google Fonts. You are free to build such features in your own fork (MIT License). Bug fixes, new expression parts, and features that work entirely inside the browser are welcome.
+**2. No AI integration**, including integrations that use no network.
+
+- LLM-driven direction, speech recognition for transcribing or timing lyrics, interfaces for AI agents (WebMCP and similar)
+
+Letting your own AI tool open and read the JIZURA page is your choice as a user, not a feature of JIZURA. You are free to build such features in your own fork (MIT License). Bug fixes, new expression parts, and features that work entirely inside the browser are welcome.
 
 <details>
 <summary><h2>Quick start</h2></summary>
