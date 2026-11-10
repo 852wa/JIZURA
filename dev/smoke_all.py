@@ -17,7 +17,7 @@ async () => {
   const run = (label, ovs, aspect, style, n = 7) => {
     cur = label;
     const lines = ovs.map((o, i) => texts[i % texts.length]);
-    const p = Object.assign(J.defaultProject(), { extra: true, lyrics: lines.join('\n'), style, aspect, seed: 1 + (label.length * 7919) % 99991,
+    const p = Object.assign(J.defaultProject(), { extra: true, extra2: true, horror: label.length % 3 === 0, lyrics: lines.join('\n'), style, aspect, seed: 1 + (label.length * 7919) % 99991,
       overrides: Object.fromEntries(ovs.map((o, i) => [i, Object.assign({ single: true }, o)])),
       timing: { bpm: 0, offset: 0, snap: false, tail: 0.5, lineTimes: Object.fromEntries(lines.map((_, i) => [i, i * 2.4])), lineScale: 1 } });
     p.fx = Object.assign(J.defaultProject().fx, { hud: 'on', glitch: 0.8, decor: 0.9 });
@@ -46,7 +46,7 @@ async () => {
   for (const k of G('trans')) run('trans.' + k, texts.map((_, i) => (i ? { trans: k } : {})), aspects[k.length % 6], styles[k.length % styles.length], 8);
   for (const k of J.STYLE_ORDER) run('style.' + k, texts.map(() => ({})), aspects[k.length % 6], k, 5);
   // random full plans with everything on
-  for (let s = 0; s < 30; s++) run('random#' + s, texts.map(() => ({})), aspects[s % 6], styles[s % styles.length], 6);
+  for (let s = 0; s < 90; s++) run('random#' + s, texts.map(() => ({})), aspects[s % 6], styles[s % styles.length], 6);
   console.warn = warn; console.error = err;
   return out;
 }

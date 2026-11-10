@@ -180,6 +180,13 @@ Packs named `typo`, `kinetic` or `horror` (or entries with `set: '<name>'`) belo
 The ホラー mood (`J.MOODS.horror`) is offered by おまかせ only when the horror switch is on, and おまかせ uses horror entries only in that mood.
 Keys use a set prefix (`ty`, `kn`, `hr`); new sets need an entry in `J.SETS` (src/11q_sets.js) and a switch in the UI.
 
+### 追加分2 (extra2)
+Packs whose name starts with `x2` (files `src/11p_x2_*.js`) are 追加分2: their entries get `x2: true` and are picked at random
+only when the project's 「追加分2の演出も使う」 switch is on (off by default). A pack named `x2typo…` / `x2kinetic…` / `x2horror…`
+also joins that part set, so its entries need both switches; 和風 entries carry `wa: true` as usual. Every entry of these packs
+has `en` (its English name, used by the non-Japanese editions). Adding to 追加分2 must not change what random picks give with
+the switch off.
+
 ### Avoid near-duplicates
 Before designing, list what already exists in your group: `node -e` is not enough for visuals — run
 `python3 dev/overview.py <group> out/ov t_all` (after `python3 dev/build_test.py all --all-packs`) and look at the grid. Every
