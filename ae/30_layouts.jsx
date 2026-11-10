@@ -101,22 +101,35 @@ JZ_LAYOUTS.center = function (ctx) {
 
 JZ_LAYOUTS.mixed = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, seed = c.seed;
-    var chars = jzChars(c.text.replace(/[\s　]+/g, '')), n = chars.length, rows = n > 9 ? 2 : 1, per = Math.ceil(n / rows);
+    // Latin lyrics keep the spaces between words and break rows between words (same as the browser)
+    var srcT = jzTrim(c.text).replace(/[\s　]+/g, ' '), latin = jzIsLatinText(srcT) && srcT.indexOf(' ') > 0, rowChars = [], n = 0, off = 0, r, i;
+    if (latin) {
+        var len = jzChars(srcT).length, parts = (len > 9 ? jzSplitLines(srcT, Math.ceil(len / (len > 30 ? 3 : 2))) : srcT).split('\r');
+        for (r = 0; r < parts.length; r++) rowChars.push(jzChars(parts[r]));
+    } else {
+        var chars = jzChars(srcT.replace(/ /g, '')), per = Math.ceil(chars.length / (chars.length > 9 ? 2 : 1));
+        if (chars.length > 9) { rowChars.push(chars.slice(0, per)); rowChars.push(chars.slice(per)); } else rowChars.push(chars);
+    }
+    var rows = rowChars.length;
+    for (r = 0; r < rows; r++) n += rowChars[r].length;
     var fB = jzFontOf(ctx, 'fontBig', 'display'), fS = jzFontOf(ctx, 'fontSmall', 'serif'), smallK = jzP(ctx, 'smallK', 0.52), rotA = jzP(ctx, 'rotAmp', 6), mode = jzP(ctx, 'mode', 'line');
-    var bb = null, r, i;
-    for (r = 0; r < rows; r++) {
-        var row = chars.slice(r * per, (r + 1) * per), Ls = [], ks = [], widths = [], sum = 0;
+    var bb = null;
+    for (r = 0; r < rows; off += rowChars[r].length, r++) {
+        var row = rowChars[r], Ls = [], ks = [], widths = [], sum = 0;
         for (i = 0; i < row.length; i++) {
-            var ch = row[i], gi = r * per + i;
+            var ch = row[i], gi = off + i;
+            if (ch === ' ') { Ls.push(null); ks.push(0.8); widths.push(26); sum += 26; continue; }
             var k = jzIsKanji(ch) ? 1 : jzIsKata(ch) ? 0.88 : jzIsLatin(ch) ? 0.8 : jzIsPunct(ch) ? 0.42 : smallK + jzR(seed, gi, 3) * 0.14;
             var font = (jzIsKanji(ch) || jzIsKata(ch)) ? fB : (jzR(seed, gi, 4) < 0.55 ? fS : fB);
             var L = jzText(ctx, ch, { font: font, size: 100 * k, color: sc.fg, x: 0, y: 0 });
             var sz = jzSize(L); Ls.push(L); ks.push(k); widths.push(Math.max(sz[0], 100 * k * 0.6)); sum += widths[i];
         }
-        var s = Math.min(W * 0.86 / sum, (H * (rows > 1 ? 0.3 : 0.4)) / 100);
+        if (!sum) continue;
+        var s = Math.min(W * 0.86 / sum, (H * (rows > 2 ? 0.24 : rows > 1 ? 0.3 : 0.4)) / 100);
         var x = W / 2 - sum * s / 2, base = 100 * s, baseline = H / 2 + base * 0.38 + (r - (rows - 1) / 2) * base * 1.05;
         for (i = 0; i < Ls.length; i++) {
-            var gi2 = r * per + i, src = Ls[i].property('ADBE Text Properties').property('ADBE Text Document'), td = src.value;
+            if (!Ls[i]) { x += widths[i] * s; continue; }
+            var gi2 = off + i, src = Ls[i].property('ADBE Text Properties').property('ADBE Text Document'), td = src.value;
             td.fontSize = 100 * ks[i] * s; if (gi2 === (jzP(ctx, 'accentIdx', 99) % n) && !jzIsKanji(row[i])) td.fillColor = jzHex(sc.accent);
             src.setValue(td); jzAnchor(Ls[i]);
             var size = 100 * ks[i] * s, y = baseline - size / 2 + (jzR(seed, gi2, 5) * 2 - 1) * base * 0.06;
@@ -344,7 +357,7 @@ JZ_LAYOUTS.labels = function (ctx) {
 };
 
 JZ_LAYOUTS.condensed = function (ctx) {
-    var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = c.text.replace(/[\s　]+/g, ''), count = jzP(ctx, 'count', 2), sx = jzP(ctx, 'sx', 0.5), sy = jzP(ctx, 'sy', 1.2);
+    var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = jzIsLatinText(c.text) ? jzTrim(c.text).replace(/[\s　]+/g, ' ') : c.text.replace(/[\s　]+/g, ''), count = jzP(ctx, 'count', 2), sx = jzP(ctx, 'sx', 0.5), sy = jzP(ctx, 'sy', 1.2);
     var slot = W * 0.92 / count, bb = null, order = [1, 0, 2, 3];
     for (var i = 0; i < count; i++) {
         var L = jzMain(ctx, text, { font: jzFontOf(ctx, 'font', 'display'), size: 200, color: sc.fg, x: W / 2 + (i - (count - 1) / 2) * slot, y: H / 2, track: 0.04, maxW: slot * 0.94 / sx, maxH: H * 0.8 / sy, maxSize: H * 0.62, sx: sx, sy: sy, mi: count > 1 ? order[i] * 2 : 0 });

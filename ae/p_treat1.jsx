@@ -51,8 +51,9 @@ function tr1_recolor(D, hex) {
     var an = D.property('ADBE Text Properties').property('ADBE Text Animators'), i, c = jzHex(hex);
     for (i = 1; i <= an.numProperties; i++) {
         var pr = an.property(i).property('ADBE Text Animator Properties'), f = pr.property('ADBE Text Fill Color'), s = pr.property('ADBE Text Stroke Color');
-        if (f) f.setValue(c);
-        if (s) s.setValue(c);
+        // a colour the animator does not use is hidden, and setValue on a hidden property throws
+        if (f) { try { f.setValue(c); } catch (e1) {} }
+        if (s) { try { s.setValue(c); } catch (e2) {} }
     }
 }
 // copy of L drawn in one colour (fill, optional stroke) and shifted by (dx, dy) comp px in the layer's own frame

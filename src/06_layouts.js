@@ -175,25 +175,31 @@ J.LAYOUTS = {
     plan: (rng, cut, st) => ({ fontBig: rng.pick(fontsOf(st, ['display', 'serif'])), fontSmall: rng.pick(fontsOf(st, ['serif', 'body'])), mode: rng.pick(['line', 'stair', 'line', 'wave']), rotAmp: rng.range(2, 10), smallK: rng.range(0.42, 0.6), accentIdx: rng.int(0, 20) }),
     render(env) {
       const { W, H, sc } = env, P = env.cut.params;
-      const chars = [...env.cut.text.replace(/\s+/g, '')];
-      const n = chars.length;
-      const rows = n > 9 ? 2 : 1;
-      const perRow = Math.ceil(n / rows);
-      const items = chars.map((ch, i) => {
+      // Latin lyrics keep the spaces between words and break rows between words (a line picked by hand can be long)
+      const src = env.cut.text.trim().replace(/\s+/g, ' '), latin = J.isLatinText(src) && src.includes(' ');
+      let rowChars;
+      if (latin) { const len = [...src].length; rowChars = (len > 9 ? J.splitLines(src, Math.ceil(len / (len > 30 ? 3 : 2))) : src).split('\n').map(r => [...r]); }
+      else { const chars = [...src.replace(/\s+/g, '')], perRow = Math.ceil(chars.length / (chars.length > 9 ? 2 : 1)); rowChars = chars.length > 9 ? [chars.slice(0, perRow), chars.slice(perRow)] : [chars]; }
+      const rows = rowChars.length, n = rowChars.reduce((s, r) => s + r.length, 0);
+      const item = (ch, i) => {
+        if (ch === ' ') return { ch, k: 0.8, font: P.fontBig, w: 0.26 };
         let k = J.isKanji(ch) ? 1 : J.isKata(ch) ? 0.88 : J.isLatin(ch) ? 0.8 : J.isPunct(ch) ? 0.42 : P.smallK + J.r(env.cut.seed, i, 3) * 0.14;
         if (J.isSmallKana(ch)) k *= 0.8;
         const font = (J.isKanji(ch) || J.isKata(ch)) ? P.fontBig : (J.r(env.cut.seed, i, 4) < 0.55 ? P.fontSmall : P.fontBig);
         return { ch, k, font, w: J.metrics.adv(font, ch) * k * 0.96 };
-      });
-      let bbAll = null;
+      };
+      let bbAll = null, first = 0;
       for (let r = 0; r < rows; r++) {
-        const row = items.slice(r * perRow, (r + 1) * perRow);
+        const at = first; first += rowChars[r].length;
+        const row = rowChars[r].map((ch, j) => item(ch, at + j));
         const sumW = row.reduce((s, c) => s + c.w, 0);
-        const base = Math.min(W * 0.86 / sumW, H * (rows > 1 ? 0.3 : 0.4));
+        if (!sumW) continue;
+        const base = Math.min(W * 0.86 / sumW, H * (rows > 2 ? 0.24 : rows > 1 ? 0.3 : 0.4));
         let x = W / 2 - sumW * base / 2;
         const baseline = H / 2 + base * 0.38 + (r - (rows - 1) / 2) * base * 1.05;
         row.forEach((c, j) => {
-          const i = r * perRow + j;
+          const i = at + j;
+          if (c.ch === ' ') { x += c.w * base; return; }
           const size = c.k * base;
           let y = baseline - size / 2 + J.rs(env.cut.seed, i, 5) * base * 0.06;
           if (P.mode === 'stair') y += (j - (row.length - 1) / 2) * base * 0.12;
@@ -465,7 +471,8 @@ J.LAYOUTS = {
     name: '縦長圧縮', fits: n => n <= 10,
     plan: (rng, cut, st) => { const n = glyphCount(cut.text); return { count: n <= 4 ? rng.pick([3, 2, 1]) : n <= 7 ? rng.pick([2, 1]) : 1, sx: rng.range(0.42, 0.58), sy: rng.range(1.1, 1.3), font: rng.pick(fontsOf(st, ['display', 'body'])) }; },
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      // Latin lyrics keep the spaces between words
+      const { W, H, sc } = env, P = env.cut.params, text = J.isLatinText(env.cut.text) ? env.cut.text.trim().replace(/\s+/g, ' ') : env.cut.text.replace(/\s+/g, '');
       const slot = W * 0.92 / P.count;
       const size = Math.min(J.fitSize(text, P.font, slot * 0.94, H * 0.8, { sx: P.sx, sy: P.sy, track: 0.04 }), H * 0.62);
       let bb = null; const order = [1, 0, 2, 3];

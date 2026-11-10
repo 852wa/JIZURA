@@ -168,7 +168,7 @@ function jzText(ctx, str, o) {
     if (td.applyFill) td.fillColor = jzHex(o.color || '#ffffff');
     if (o.stroke) { td.applyStroke = true; td.strokeColor = jzHex(o.strokeColor || o.color || '#ffffff'); td.strokeWidth = o.stroke; try { td.strokeOverFill = !!o.strokeOver; } catch (e4) {} }
     else td.applyStroke = false;
-    td.tracking = Math.round((o.track || 0) * 1000);
+    td.tracking = Math.round(jzClamp(o.track || 0, -1, 1) * 1000);   // After Effects takes -1000..1000 only
     td.justification = o.align === 'left' ? ParagraphJustification.LEFT_JUSTIFY : (o.align === 'right' ? ParagraphJustification.RIGHT_JUSTIFY : ParagraphJustification.CENTER_JUSTIFY);
     if (o.leading) { try { td.autoLeading = false; td.leading = o.leading; } catch (e5) {} }
     src.setValue(td);
