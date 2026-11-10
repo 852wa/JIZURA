@@ -174,7 +174,9 @@ function jzBuildStart(plan, opt) {
 
     }
     var evs = plan.events || [], fctx = { comp: comp, W: W, H: H, u: u, st: st, fx: FXV, plan: plan, fps: fps, wraps: wraps };
-    var HEAVY_FX = { strobe: 1, rgbSplit: 1, radialChroma: 1, echoFrames: 1, kaleido: 1, perspectiveTilt: 1 };
+    var HEAVY_FX = { strobe: 1, rgbSplit: 1, radialChroma: 1, echoFrames: 1, kaleido: 1, perspectiveTilt: 1,
+        // 追加分2: effects that duplicate the picture or the lyric
+        xrQuadCycle: 1, xrAccordion: 1, xrLongShadow: 1, xrWaterMirror: 1, xrSwingEcho: 1, xrBandRepeat: 1, xrNested: 1, xrThumbRow: 1, xrLoupe: 1, xrCrossFringe: 1, xrTapeCrease: 1 };
     function buildEvent(ei) {
         var ev = evs[ei], fk = jzFallback('fx', ev.type, null);
         if (!fk || JZ_REG.fx[fk].builtin || (LIGHT && HEAVY_FX[fk])) return;

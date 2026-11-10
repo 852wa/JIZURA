@@ -193,6 +193,9 @@ Before designing, list what already exists in your group: `node -e` is not enoug
 new entry must be recognisably different from all existing ones (different motion principle, composition or graphic idea — not the
 same thing with other numbers).
 
+## Project policy
+No AI, no network: a pack must not call any server, service or model, and must not load code or data from outside at run time (the app runs from a static page on GitHub Pages; Google Fonts is the only outside load). See "開発の方針" in README.md.
+
 ## Performance & robustness
 Budget ≈ 2 ms per call at 1080p. No `getImageData`, no canvas creation per frame (cache on a module-level Map keyed by params if you must
 pre-render), no unbounded loops (cap counts). Guard against `bb === null`, empty text, 1-glyph text, very long text. No exceptions.

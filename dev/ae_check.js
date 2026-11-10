@@ -7,7 +7,7 @@ const fs = require('fs'), vm = require('vm'), path = require('path');
 const AEOM = require('./aeom');
 const args = {}; for (let i = 2; i < process.argv.length; i += 2) args[process.argv[i].replace(/^--/, '')] = process.argv[i + 1];
 const JSX = args.jsx || path.join(__dirname, '..', 'JIZURA_AE.jsx');
-const SRC = fs.readFileSync(JSX, 'utf8').replace(/^#target.*\n/, '')
+const SRC = fs.readFileSync(JSX, 'utf8').replace(/\r\n/g, '\n').replace(/^#target.*\n/, '')
   .replace(/jzUI\(thisObj\);\s*\}\)\(this\);\s*$/, 'thisObj.__jz = { jzMakePlan: jzMakePlan, jzBuild: jzBuild, log: function () { return JZLOG; }, JZ_DATA: JZ_DATA, JZ_REG: JZ_REG, jzOrder: jzOrder, jzPlanOf: jzPlanOf, JzRng: JzRng, jzDecorParams: jzDecorParams, jzMeta: jzMeta, fallbacks: function () { return JZ_FALLBACKS; } };\n})(this);');
 try { require('acorn').parse(SRC, { ecmaVersion: 3 }); } catch (e) { console.log('ES3 SYNTAX ERROR', e.message, JSON.stringify(SRC.slice(Math.max(0, e.pos - 160), e.pos + 40))); process.exit(1); }
 { // every top-level function name must be unique across core + packs (a later definition would silently replace an earlier one)

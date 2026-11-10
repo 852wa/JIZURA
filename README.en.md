@@ -6,7 +6,19 @@ Turn lyrics into animated lyric videos in your browser. JIZURA combines layouts,
 
 The Japanese, English, Indonesian, Vietnamese, Traditional Chinese, Simplified Chinese and Korean browser editions share the same project format and saved browser data. Use the language links at the top of the editor to switch editions without changing your lyrics or settings. English After Effects panels are available as [ScriptUI](https://852wa.github.io/JIZURA/JIZURA_AE_en.jsx) and [CEP](https://852wa.github.io/JIZURA/JIZURA_CEP_en.zip) downloads. The AE JSON format is the same in both languages.
 
-**Version: v0.9.0** (see [CHANGELOG.md](CHANGELOG.md))
+**Project policy:** JIZURA is built to run entirely from a static page on GitHub Pages. Features that use **AI**, or that need to **send to or load from outside servers or services** (anything GitHub Pages alone cannot run), are generally not implemented. See [Project policy](#project-policy).
+
+**Version: v0.13.0** (see [CHANGELOG.md](CHANGELOG.md))
+
+## Project policy
+
+JIZURA runs entirely from one static page on GitHub Pages, and lyrics and songs never leave the browser. To keep it that way, the following are generally not implemented, and pull requests that add them may not be merged:
+
+- features that use AI (LLM-driven direction, speech recognition for transcribing or timing lyrics, control by AI agents, …)
+- features that need to send to or receive from outside servers or services (API calls, accounts and sign-in, cloud storage, analytics or tracking, …)
+- loading code or data at run time from outside CDNs or model hosts
+
+The only exception is loading the typefaces in use from Google Fonts. You are free to build such features in your own fork (MIT License). Bug fixes, new expression parts, and features that work entirely inside the browser are welcome.
 
 <details>
 <summary><h2>Quick start</h2></summary>
@@ -35,7 +47,7 @@ A volume slider next to the play button sets the preview volume (click **Vol** t
 
 Edit a line's lyrics in place (✎ or double-click), set the number of cuts per line (auto / 1–6), redo tap sync from any line (◎; Backspace undoes a tap), and drag line markers on the timeline (zoom with + / − or the wheel; hold Shift to ignore beats). Ctrl+Z undoes lyric and timing edits. **Export range** exports only the lines you pick (⇥ in the line list). The song you load is kept in this browser, so a reload does not drop it from exports; when the browser cannot encode AAC audio, a WAV of the soundtrack is saved next to the MP4. A short guided tour opens on the first visit in Simple mode (? to replay).
 
-New in v0.12: the number of parts has doubled, from 860 to 1,715 (layouts 364, entrances 251, holds 102, exits 221, decorations 260, text treatments 122, backgrounds 130, camera moves 71, screen effects 138, transitions 56). The 855 new ones form **new effects 2** (marked E2) with their own switch, off by default; with it off, automatic results are the same as before. New typographic, kinetic, horror and Japanese-motif parts are used only when their own switch is on as well. The After Effects panels do not build the new parts yet: a plan exported from the browser that uses them is built with the closest existing parts.
+New in v0.12: the number of parts has doubled, from 860 to 1,715 (layouts 364, entrances 251, holds 102, exits 221, decorations 260, text treatments 122, backgrounds 130, camera moves 71, screen effects 138, transitions 56). The 855 new ones form **new effects 2** (marked E2) with their own switch, off by default; with it off, automatic results are the same as before. New typographic, kinetic, horror and Japanese-motif parts are used only when their own switch is on as well. Since v0.13 the After Effects panels build all 1,715 parts, the new ones included (checked on an emulated After Effects object model, not yet in After Effects itself — please report anything that looks different from the browser).
 
 New in v0.11: **Load LRC / SRT** also reads subtitle files (`.srt` / `.vtt`): each block becomes one timed line, and where a block ends a second or more before the next one starts, an `[interlude]` row is added at its end time, so the line ends where the singing ends. You can drop a song, a lyric file (`.lrc` / `.srt` / `.vtt` / `.txt`) or a saved project (`.json`) anywhere on the window. `D` rerolls the line at the playhead and `L` locks or unlocks it; a reroll is one step of Previous / Next, so it can be taken back. Straight quotes and opening brackets in lyrics now stay with the words they belong to.
 
