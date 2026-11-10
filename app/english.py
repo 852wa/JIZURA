@@ -1,6 +1,8 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Load an LRC file (lyrics with time stamps) or subtitles (SRT / VTT) in place of the current lyrics (Undo brings them back). You can also drop the file on the window">Load LRC / SRT',
+    '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Drop to load</strong><span>A song (mp3, wav …), lyrics (LRC / SRT / text) or a project (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Speed <select id="tapRate" aria-label="Playback speed while tapping">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Count-in</label>',
@@ -173,6 +175,10 @@ BODY = {
 }
 
 UI = {
+    '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Subtitles loaded (${sub.lines} lines, ${sub.gaps} interlude(s) · Undo brings the old lyrics back)`',
+    "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'You can drop a song, lyrics (LRC / SRT) or a project (.json)'",
+    '（再生位置の行は D キー）': ' (D for the line at the playhead)',
+    '（再生位置の行は L キー）': ' (L for the line at the playhead)',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Set to ${w.toFixed(2)} s so the lines stay in order`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Start of this cut (set by hand). Clear it to go back to automatic'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Start of this cut (automatic). Type a time to fix it'",

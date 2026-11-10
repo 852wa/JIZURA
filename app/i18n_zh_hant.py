@@ -1,6 +1,8 @@
 """Traditional Chinese (Taiwan) copy for the browser edition. Same glossary keys as app/english.py."""
 
 BODY = {
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="讀取 LRC 檔（附時間標記的歌詞）或字幕檔（SRT / VTT），取代目前的歌詞（可用「復原」還原）。也可以把檔案拖放到畫面上">讀取 LRC / SRT',
+    '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>拖放到這裡讀取</strong><span>歌曲（mp3 / wav 等）、歌詞（LRC / SRT / 文字檔）、專案（.json）</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '一行有多個片段時，在片段切換的瞬間按 <span class="kbd">Tab</span>，也能對齊該行各片段的開始時間。',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>速度 <select id="tapRate" aria-label="點按時的播放速度">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 倒數</label>',
@@ -171,6 +173,10 @@ BODY = {
 }
 
 UI = {
+    '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`已讀取字幕檔（${sub.lines} 行・間奏 ${sub.gaps} 處・可用「復原」還原）`',
+    "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'可以讀取的是歌曲、歌詞（LRC / SRT）和專案（.json）'",
+    '（再生位置の行は D キー）': '（播放位置的那一行可按 D 鍵）',
+    '（再生位置の行は L キー）': '（播放位置的那一行可按 L 鍵）',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`為了不與前後的行交換順序，已設為 ${w.toFixed(2)} 秒`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'此片段的開始時間（手動）。清空即恢復自動'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'此片段的開始時間（自動）。輸入數值即可固定'",

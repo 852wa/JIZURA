@@ -1,6 +1,8 @@
 """Korean copy for the browser edition (same glossary keys as app/english.py). The Japanese source stays authoritative."""
 
 BODY = {
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="LRC 파일(타임스탬프가 붙은 가사)이나 자막 파일(SRT / VTT)을 불러와 지금 가사를 바꿉니다(‘되돌리기’로 되돌릴 수 있습니다). 파일을 화면에 끌어다 놓아도 불러옵니다">LRC / SRT 불러오기',
+    '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>여기에 놓아서 불러오기</strong><span>곡(mp3 / wav 등) · 가사(LRC / SRT / 텍스트) · 프로젝트(.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': '한 줄에 컷이 여러 개일 때는 컷이 바뀌는 순간 <span class="kbd">Tab</span> 을 누르면 그 줄의 컷 시작 시각도 맞출 수 있습니다.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>속도 <select id="tapRate" aria-label="탭하는 동안의 재생 속도">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> 카운트다운</label>',
@@ -169,6 +171,10 @@ BODY = {
 }
 
 UI = {
+    '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`자막 파일을 불러왔습니다(${sub.lines}줄 · 간주 ${sub.gaps}곳 · ‘되돌리기’로 되돌릴 수 있습니다)`',
+    "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'불러올 수 있는 것은 곡, 가사(LRC / SRT), 프로젝트(.json)입니다'",
+    '（再生位置の行は D キー）': '(재생 위치의 줄은 D 키)',
+    '（再生位置の行は L キー）': '(재생 위치의 줄은 L 키)',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`앞뒤 줄과 순서가 바뀌지 않도록 ${w.toFixed(2)}초로 했습니다`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'이 컷의 시작 시각(수동). 비우면 자동으로 돌아갑니다'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'이 컷의 시작 시각(자동). 숫자를 넣으면 고정합니다'",

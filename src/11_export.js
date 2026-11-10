@@ -118,6 +118,37 @@ J.lrcText = (project, lines, range) => {
   return out.join('\n') + '\n';
 };
 
+/* ---------- SRT / WebVTT (subtitles) → timed lyrics ----------
+   one subtitle block = one lyric row, tagged with its start time. A block's end time is kept as an interlude row
+   when the next block starts `gap` seconds or more later, so the line ends where the singing ends; the last
+   block gets a short one. Returns null when the text holds no subtitle timing. */
+J.isSubtitleText = text => /(?:^|\n)\s*(?:\d+:)?\d+:\d+[.,]\d+\s*-->\s*(?:\d+:)?\d+:\d+[.,]\d+/.test(String(text || ''));
+J.srtToLyrics = (text, gap = 1) => {
+  const sec = s => { const m = s.match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/); return m ? (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + parseFloat('0.' + m[4]) : NaN; };
+  const stamp = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return `[${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}]`; };
+  const TIME = /^\s*((?:\d+:)?\d+:\d+[.,]\d+)\s*-->\s*((?:\d+:)?\d+:\d+[.,]\d+)/;
+  const cues = [];
+  let cur = null;
+  for (const row of String(text || '').replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n')) {
+    const m = row.match(TIME);
+    if (m) { cur = { start: sec(m[1]), end: sec(m[2]), rows: [] }; cues.push(cur); continue; }
+    if (!row.trim()) { cur = null; continue; }
+    if (cur) cur.rows.push(row);
+  }
+  const body = c => c.rows.map(r => r.replace(/<[^>]*>/g, '').replace(/\{\\[^}]*\}/g, '').trim()).filter(Boolean).join(' ')
+    .replace(/^[♪♫\s]+|[♪♫\s]+$/g, '').replace(/^#/, '＃').replace(/^\[/, '［');     // a row may not read as a comment or a tag
+  const list = cues.filter(c => isFinite(c.start) && isFinite(c.end)).map(c => ({ start: c.start, end: Math.max(c.start, c.end), text: body(c) })).filter(c => c.text).sort((a, b) => a.start - b.start);
+  if (!list.length) return null;
+  const out = [], IL = '[間奏]'; let gaps = 0;
+  list.forEach((c, i) => {
+    out.push(stamp(c.start) + c.text);
+    const next = list[i + 1];
+    if (next && next.start - c.end >= gap) { out.push(stamp(c.end) + IL); gaps++; }
+    else if (!next && c.end - c.start >= 0.2) out.push(stamp(c.end) + IL.slice(0, -1) + ' 1]');
+  });
+  return { lyrics: out.join('\n'), lines: list.length, gaps };
+};
+
 /* ---------- MP4 ---------- */
 /* The MP4 is written as it is encoded (mp4-muxer, moov at the end) instead of being assembled in one huge
    ArrayBuffer: into many small memory blocks (file: null), or straight into a file the user picked

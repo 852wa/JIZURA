@@ -41,6 +41,8 @@ STYLES = {
 }
 
 BODY = {
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Muat file LRC (lirik dengan cap waktu) atau subtitle (SRT / VTT) untuk mengganti lirik sekarang (Urungkan mengembalikannya). File juga bisa dijatuhkan ke jendela">Muat LRC / SRT',
+    '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Jatuhkan untuk memuat</strong><span>Lagu (mp3, wav …), lirik (LRC / SRT / teks), atau proyek (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Jika satu baris punya beberapa cut, tekan <span class="kbd">Tab</span> saat cut harus berganti untuk menyesuaikan waktu cut di baris itu juga.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Kecepatan <select id="tapRate" aria-label="Kecepatan putar saat mengetuk">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Hitung mundur</label>',
@@ -205,6 +207,10 @@ BODY = {
 }
 
 UI = {
+    '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Subtitle dimuat (${sub.lines} baris, ${sub.gaps} interlude · Urungkan untuk mengembalikan)`',
+    "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'Yang bisa dimuat: lagu, lirik (LRC / SRT), atau proyek (.json)'",
+    '（再生位置の行は D キー）': ' (D untuk baris di posisi putar)',
+    '（再生位置の行は L キー）': ' (L untuk baris di posisi putar)',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Diatur ke ${w.toFixed(2)} dtk agar urutan baris tetap`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Awal cut ini (manual). Kosongkan untuk kembali otomatis'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Awal cut ini (otomatis). Ketik waktu untuk menguncinya'",

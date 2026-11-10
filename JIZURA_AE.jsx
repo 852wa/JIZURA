@@ -1,5 +1,5 @@
 #target aftereffects
-/*  JIZURA \u5B57\u9762 \u2014 lyric motion panel for Adobe After Effects  (v0.10.1)
+/*  JIZURA \u5B57\u9762 \u2014 lyric motion panel for Adobe After Effects  (v0.11.0)
     Put this file in:  After Effects <version>/Support Files/Scripts/ScriptUI Panels/
     Restart AE, then open  Window > JIZURA_AE.jsx
     (Or run it once via File > Scripts > Run Script File... as a floating window.)
@@ -47,7 +47,22 @@ function jzIsKanji(ch) { var c = jzCode(ch); return (c >= 0x3400 && c <= 0x9FFF)
 function jzIsHira(ch) { var c = jzCode(ch); return c >= 0x3041 && c <= 0x309F; }
 function jzIsKata(ch) { var c = jzCode(ch); return (c >= 0x30A0 && c <= 0x30FF) || (c >= 0x31F0 && c <= 0x31FF); }
 function jzIsLatin(ch) { return /[A-Za-z0-9]/.test(ch); }
-function jzIsPunct(ch) { return /[\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300C\u300D\u300E\u300F\uFF08\uFF09()\u3010\u3011~\u301C\uFF5E:\uFF1A;\uFF1B\-\u2014\u2015]/.test(ch); }
+function jzIsPunct(ch) { return /[\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300C\u300D\u300E\u300F\uFF08\uFF09()\u3010\u3011\u3008\u3009\u300A\u300B\u3014\u3015\uFF3B\uFF3D\[\]'"\u201C\u201D\u2018\u2019~\u301C\uFF5E:\uFF1A;\uFF1B\-\u2014\u2015]/.test(ch); }
+// opening brackets / quotes (same rule as the browser's J.isOpenPunct): a line or a chunk never ends with one.
+// A straight " or ' opens a quote at the start or after a space / another opening bracket, when a non-space follows
+var JZ_OPEN_BR = '\u300C\u300E\uFF08(\u3010\u3008\u300A\u3014\uFF3B[\uFF5B{\u201C\u2018';
+var JZ_NO_START = '\u3001\u3002\uFF0C\uFF0E,.!?\uFF01\uFF1F\u2026\u2025\u30FB\u300D\u300F\uFF09)\u3011\u3009\u300B\u3015\uFF3D]\uFF5D}\u201D\u2019:\uFF1A;\uFF1B';
+var JZ_WORDCH = /[A-Za-z\u00C0-\u024F0-9\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/;
+function jzIsOpenAt(cs, i) {
+    var c = cs[i];
+    if (JZ_OPEN_BR.indexOf(c) >= 0) return true;
+    if (c !== '"' && c !== "'") return false;
+    var p = cs[i - 1], n = cs[i + 1];
+    return (i === 0 || /[\s\u3000]/.test(p) || JZ_OPEN_BR.indexOf(p) >= 0) && n != null && !/[\s\u3000]/.test(n);
+}
+// closing punctuation that must not start a line: closing brackets / quotes, commas, stops, ! ? \u2026
+function jzIsNoStart(cs, i) { var c = cs[i]; return c != null && (JZ_NO_START.indexOf(c) >= 0 || ((c === '"' || c === "'") && !jzIsOpenAt(cs, i))); }
+function jzIsWordLike(t) { return /^[A-Za-z\u00C0-\u024F0-9\uAC00-\uD7AF'\u2019.,!?\u2010\u2013\u2014\-]+$/.test(t) && JZ_WORDCH.test(t); }
 function jzCount(s) { return jzChars(String(s).replace(/[\s\u3000]+/g, '')).length; }
 
 // deterministic hashing + seeded stream
@@ -124,43 +139,67 @@ function jzCopy(o) { var r = {}; for (var k in o) if (o.hasOwnProperty(k)) r[k] 
 
 // bunsetsu-ish chunking without a dictionary: script runs + trailing kana
 function jzChunk(text) {
-    var cs = jzChars(text), chunks = [], cur = '', curType = '', hasH = false, i;
+    var cs = jzChars(text), chunks = [], cur = null, gap = false, i, j;
     function typeOf(ch) {
         if (/[\s\u3000]/.test(ch)) return 'S';
         if (jzIsPunct(ch)) return 'P';
         if (jzIsKanji(ch)) return 'K';
         if (jzIsHira(ch) || ch === '\u30FC') return 'H';
         if (jzIsKata(ch)) return 'T';
-        if (jzIsLatin(ch)) return 'L';
+        if (/[A-Za-z0-9\u00C0-\u024F]/.test(ch)) return 'L';
+        if (/[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/.test(ch)) return 'G';   // Hangul: one word per run, like Latin
         return 'O';
     }
-    function close() { if (jzTrim(cur)) chunks.push(jzTrim(cur)); cur = ''; curType = ''; hasH = false; }
-    var hRun = 0;
+    // each chunk remembers whether a space came before it (sp), so words split apart are joined back with that space
+    function start(ch, t) { cur = { s: ch, k: t, hasH: t === 'H', sp: gap, open: false }; }
+    function close() { if (cur && jzTrim(cur.s)) { chunks.push({ s: jzTrim(cur.s), sp: cur.sp }); gap = false; } cur = null; }
     for (i = 0; i < cs.length; i++) {
         var ch = cs[i], t = typeOf(ch);
-        if (t === 'S') { close(); continue; }
-        if (t === 'P') { if (cur) cur += ch; else if (chunks.length) chunks[chunks.length - 1] += ch; continue; }
-        if (!cur) { cur = ch; curType = t; hasH = t === 'H'; hRun = t === 'H' ? 1 : 0; continue; }
+        if (t === 'S') { close(); gap = true; continue; }
+        if (t === 'P') {
+            // an opening bracket / quote starts the next chunk \u2014 it never ends one
+            if (jzIsOpenAt(cs, i)) { if (cur && cur.open) cur.s += ch; else { close(); start(ch, 'P'); cur.open = true; } }
+            else if (cur) cur.s += ch;
+            else if (chunks.length) chunks[chunks.length - 1].s += ch;
+            else start(ch, 'P');
+            continue;
+        }
+        if (!cur) { start(ch, t); continue; }
+        if (cur.open) { cur.s += ch; cur.k = t; cur.hasH = t === 'H'; cur.open = false; continue; }
         if (t === 'H') {
             // kana after kanji/katakana (okurigana, particles) stays; long pure-kana runs split at ~6
-            if (curType !== 'H' || jzChars(cur).length < 6) { cur += ch; hasH = true; hRun++; continue; }
-            close(); cur = ch; curType = 'H'; hasH = true; hRun = 1; continue;
+            if (cur.k !== 'H' || jzChars(cur.s).length < 6) { cur.s += ch; cur.hasH = true; continue; }
+            close(); start(ch, 'H'); continue;
         }
-        if (t === 'K' && curType === 'K' && !hasH) { cur += ch; continue; }
-        if (t === 'T' && curType === 'T' && !hasH) { cur += ch; continue; }
-        if (t === 'L' && curType === 'L') { cur += ch; continue; }
+        if (t === 'K' && cur.k === 'K' && !cur.hasH) { cur.s += ch; continue; }
+        if (t === 'T' && cur.k === 'T' && !cur.hasH) { cur.s += ch; continue; }
+        if ((t === 'L' || t === 'G') && cur.k === t) { cur.s += ch; continue; }
         // kanji right after a short kana particle run starts a new chunk
-        close(); cur = ch; curType = t; hasH = t === 'H'; hRun = 0;
+        close(); start(ch, t);
     }
     close();
     var out = [];
     for (i = 0; i < chunks.length; i++) {
-        var n = jzChars(chunks[i]).length;
-        if (n > 10) { var half = Math.ceil(n / 2), cc = jzChars(chunks[i]); out.push(cc.slice(0, half).join('')); out.push(cc.slice(half).join('')); }
-        else out.push(chunks[i]);
+        var c = chunks[i], cc = jzChars(c.s), n = cc.length;
+        if (n > 10 && jzIsWordLike(c.s)) {
+            // one long Latin / Hangul word: never cut inside it \u2014 only after its dashes (never-ending \u2192 never- / ending)
+            var part = '', first = true;
+            for (j = 0; j < n; j++) { part += cc[j]; if (/[\-\u2010\u2013\u2014]/.test(cc[j]) && j + 1 < n) { out.push({ s: part, sp: first ? c.sp : false }); part = ''; first = false; } }
+            if (part) out.push({ s: part, sp: first ? c.sp : false });
+        } else if (n > 10) { var half = Math.ceil(n / 2); out.push({ s: cc.slice(0, half).join(''), sp: c.sp }); out.push({ s: cc.slice(half).join(''), sp: false }); }
+        else out.push(c);
     }
-    for (i = out.length - 1; i > 0; i--) if (jzChars(out[i]).length === 1 && !jzIsKanji(out[i])) { out[i - 1] += out[i]; out.splice(i, 1); }
-    return out.length ? out : [text];
+    for (i = out.length - 1; i > 0; i--) {
+        var a = out[i - 1].s, b = out[i].s;
+        if (jzChars(b).length !== 1 || jzIsKanji(b)) continue;
+        // a lone word after a sentence break (\u201Cexactly! I know,\u201D) goes with the words after it
+        if (out[i].sp && JZ_WORDCH.test(b) && /[.,!?;:\u2026\u201D\u2019"')\]\u300D\u300F\uFF09]$/.test(a) && i + 1 < out.length) { out[i + 1] = { s: b + ' ' + out[i + 1].s, sp: true }; out.splice(i, 1); continue; }
+        var ac = jzChars(a), space = JZ_WORDCH.test(b) && !/[\-\u2010\u2013\u2014]$/.test(a) && (out[i].sp || JZ_WORDCH.test(ac[ac.length - 1]));
+        out[i - 1] = { s: a + (space ? ' ' : '') + b, sp: out[i - 1].sp }; out.splice(i, 1);
+    }
+    var res = [];
+    for (i = 0; i < out.length; i++) res.push(out[i].s);
+    return res.length ? res : [text];
 }
 
 // ================================================================ expression registry (AE)
@@ -397,7 +436,7 @@ function jzText(ctx, str, o) {
     if (td.applyFill) td.fillColor = jzHex(o.color || '#ffffff');
     if (o.stroke) { td.applyStroke = true; td.strokeColor = jzHex(o.strokeColor || o.color || '#ffffff'); td.strokeWidth = o.stroke; try { td.strokeOverFill = !!o.strokeOver; } catch (e4) {} }
     else td.applyStroke = false;
-    td.tracking = Math.round((o.track || 0) * 1000);
+    td.tracking = Math.round(jzClamp(o.track || 0, -1, 1) * 1000);   // After Effects takes -1000..1000 only
     td.justification = o.align === 'left' ? ParagraphJustification.LEFT_JUSTIFY : (o.align === 'right' ? ParagraphJustification.RIGHT_JUSTIFY : ParagraphJustification.CENTER_JUSTIFY);
     if (o.leading) { try { td.autoLeading = false; td.leading = o.leading; } catch (e5) {} }
     src.setValue(td);
@@ -881,10 +920,12 @@ function jzPhraseChunks(words) {
     for (i = 0; i < words.length; i++) {
         w = words[i]; m = String(w).match(/[A-Za-z\u00c0-\u024f0-9]/g);
         cur.push(w); letters += m ? m.length : 0;
-        if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+        if (letters >= 9 || cur.length >= 3 || /[,.;:!?]["'\u201D\u2019)\]\u300D\u300F\uFF09]*$/.test(w)) flush();
     }
     flush();
-    if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
+    // a lone short word at the end joins the previous phrase (a Hangul / Han character counts as two letters)
+    var tail = out.length ? out[out.length - 1] : '', weight = tail.replace(/[^A-Za-z]/g, '').length + 2 * tail.replace(/[^\uAC00-\uD7AF\u3400-\u9FFF]/g, '').length;
+    if (out.length >= 2 && weight <= 4) { var last = out.pop(); out[out.length - 1] += ' ' + last; }
     return out.length ? out : words;
 }
 // a plan without .lang (older JSON): detect from its lines
@@ -1389,16 +1430,45 @@ function jzFadeIO(ctx, L, delay, inDur) {
 }
 
 // ================================================================ layouts (AE)
+// mostly Latin letters (English \u2026 lyrics) \u2014 same test as the browser's J.isLatinText
+function jzIsLatinText(t) {
+    var s = String(t || '').replace(/[\s\u3000]/g, ''); if (!s) return false;
+    var m = s.match(/[A-Za-z\u00C0-\u024F\u1E00-\u1EFF]/g);
+    return (m ? m.length : 0) / jzChars(s).length >= 0.6;
+}
+// Latin text: break between words only, into as few balanced lines as fit (the browser's splitWords)
+function jzSplitWords(text, maxPer) {
+    var ws = jzTrim(text).split(/[\s\u3000]+/), n = ws.length, total = n - 1, i;
+    for (i = 0; i < n; i++) total += jzChars(ws[i]).length;
+    var nL = Math.min(n, Math.ceil(total / maxPer));
+    if (nL <= 1) return ws.join(' ');
+    function len(a, b) { var s = b - a - 1; for (var q = a; q < b; q++) s += jzChars(ws[q]).length; return s; }
+    var ideal = total / nL, memo = {};
+    function best(i0, l) {
+        if (l === 1) { var d0 = len(i0, n) - ideal; return { c: d0 * d0, cuts: [] }; }
+        var key = i0 + ',' + l; if (memo[key]) return memo[key];
+        var r = { c: Infinity, cuts: [] };
+        for (var j = i0 + 1; j <= n - l + 1; j++) { var d = len(i0, j) - ideal, sub = best(j, l - 1), c = d * d + sub.c; if (c < r.c) r = { c: c, cuts: [j].concat(sub.cuts) }; }
+        memo[key] = r; return r;
+    }
+    var cuts = [0].concat(best(0, nL).cuts).concat([n]), out = [];
+    for (var k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
+    return out.join('\r');
+}
 function jzSplitLines(text, maxPer) {
     var arr = jzChars(text);
     if (arr.length <= maxPer) return text;
+    if (jzIsLatinText(text)) return /[\s\u3000]/.test(jzTrim(text)) ? jzSplitWords(text, maxPer) : text;   // one word stays whole
     var nL = Math.ceil(arr.length / maxPer), per = arr.length / nL, out = [], start = 0;
     for (var l = 1; l < nL; l++) {
-        var target = Math.round(per * l), best = target, bestS = -99;
+        var target = Math.round(per * l), best = target, bestS = -Infinity;
         for (var k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
-            var a = arr[k - 1], b = arr[k], s = 3 - Math.abs(k - target);
+            var a = arr[k - 1], b = arr[k], s = 3 - Math.abs(k - target), opens = jzIsOpenAt(arr, k - 1);
             if (jzIsHira(a) && !jzIsHira(b)) s += 3;
-            if (jzIsPunct(a) || a === ' ' || a === '\u3000') s += 5;
+            if ((jzIsPunct(a) && !opens) || a === ' ' || a === '\u3000') s += 5;
+            if (opens) s -= 8;                                          // never end a line with \u300C \u300E \uFF08 \u201C or an opening "
+            if (jzIsNoStart(arr, k)) s -= 8;                            // never start one with \u300D \u300F \uFF09 \u201D , . ! ? or a closing "
+            if (JZ_WORDCH.test(a) && JZ_WORDCH.test(b)) s -= 4;         // nor cut inside a Latin / Hangul word
             if ('\u3063\u3083\u3085\u3087\u30FC\u3001\u3002'.indexOf(b) >= 0) s -= 6;
             if (s > bestS) { bestS = s; best = k; }
         }
@@ -1462,22 +1532,35 @@ JZ_LAYOUTS.center = function (ctx) {
 
 JZ_LAYOUTS.mixed = function (ctx) {
     var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, seed = c.seed;
-    var chars = jzChars(c.text.replace(/[\s\u3000]+/g, '')), n = chars.length, rows = n > 9 ? 2 : 1, per = Math.ceil(n / rows);
+    // Latin lyrics keep the spaces between words and break rows between words (same as the browser)
+    var srcT = jzTrim(c.text).replace(/[\s\u3000]+/g, ' '), latin = jzIsLatinText(srcT) && srcT.indexOf(' ') > 0, rowChars = [], n = 0, off = 0, r, i;
+    if (latin) {
+        var len = jzChars(srcT).length, parts = (len > 9 ? jzSplitLines(srcT, Math.ceil(len / (len > 30 ? 3 : 2))) : srcT).split('\r');
+        for (r = 0; r < parts.length; r++) rowChars.push(jzChars(parts[r]));
+    } else {
+        var chars = jzChars(srcT.replace(/ /g, '')), per = Math.ceil(chars.length / (chars.length > 9 ? 2 : 1));
+        if (chars.length > 9) { rowChars.push(chars.slice(0, per)); rowChars.push(chars.slice(per)); } else rowChars.push(chars);
+    }
+    var rows = rowChars.length;
+    for (r = 0; r < rows; r++) n += rowChars[r].length;
     var fB = jzFontOf(ctx, 'fontBig', 'display'), fS = jzFontOf(ctx, 'fontSmall', 'serif'), smallK = jzP(ctx, 'smallK', 0.52), rotA = jzP(ctx, 'rotAmp', 6), mode = jzP(ctx, 'mode', 'line');
-    var bb = null, r, i;
-    for (r = 0; r < rows; r++) {
-        var row = chars.slice(r * per, (r + 1) * per), Ls = [], ks = [], widths = [], sum = 0;
+    var bb = null;
+    for (r = 0; r < rows; off += rowChars[r].length, r++) {
+        var row = rowChars[r], Ls = [], ks = [], widths = [], sum = 0;
         for (i = 0; i < row.length; i++) {
-            var ch = row[i], gi = r * per + i;
+            var ch = row[i], gi = off + i;
+            if (ch === ' ') { Ls.push(null); ks.push(0.8); widths.push(26); sum += 26; continue; }
             var k = jzIsKanji(ch) ? 1 : jzIsKata(ch) ? 0.88 : jzIsLatin(ch) ? 0.8 : jzIsPunct(ch) ? 0.42 : smallK + jzR(seed, gi, 3) * 0.14;
             var font = (jzIsKanji(ch) || jzIsKata(ch)) ? fB : (jzR(seed, gi, 4) < 0.55 ? fS : fB);
             var L = jzText(ctx, ch, { font: font, size: 100 * k, color: sc.fg, x: 0, y: 0 });
             var sz = jzSize(L); Ls.push(L); ks.push(k); widths.push(Math.max(sz[0], 100 * k * 0.6)); sum += widths[i];
         }
-        var s = Math.min(W * 0.86 / sum, (H * (rows > 1 ? 0.3 : 0.4)) / 100);
+        if (!sum) continue;
+        var s = Math.min(W * 0.86 / sum, (H * (rows > 2 ? 0.24 : rows > 1 ? 0.3 : 0.4)) / 100);
         var x = W / 2 - sum * s / 2, base = 100 * s, baseline = H / 2 + base * 0.38 + (r - (rows - 1) / 2) * base * 1.05;
         for (i = 0; i < Ls.length; i++) {
-            var gi2 = r * per + i, src = Ls[i].property('ADBE Text Properties').property('ADBE Text Document'), td = src.value;
+            if (!Ls[i]) { x += widths[i] * s; continue; }
+            var gi2 = off + i, src = Ls[i].property('ADBE Text Properties').property('ADBE Text Document'), td = src.value;
             td.fontSize = 100 * ks[i] * s; if (gi2 === (jzP(ctx, 'accentIdx', 99) % n) && !jzIsKanji(row[i])) td.fillColor = jzHex(sc.accent);
             src.setValue(td); jzAnchor(Ls[i]);
             var size = 100 * ks[i] * s, y = baseline - size / 2 + (jzR(seed, gi2, 5) * 2 - 1) * base * 0.06;
@@ -1705,7 +1788,7 @@ JZ_LAYOUTS.labels = function (ctx) {
 };
 
 JZ_LAYOUTS.condensed = function (ctx) {
-    var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = c.text.replace(/[\s\u3000]+/g, ''), count = jzP(ctx, 'count', 2), sx = jzP(ctx, 'sx', 0.5), sy = jzP(ctx, 'sy', 1.2);
+    var W = ctx.W, H = ctx.H, sc = ctx.sc, c = ctx.cut, text = jzIsLatinText(c.text) ? jzTrim(c.text).replace(/[\s\u3000]+/g, ' ') : c.text.replace(/[\s\u3000]+/g, ''), count = jzP(ctx, 'count', 2), sx = jzP(ctx, 'sx', 0.5), sy = jzP(ctx, 'sy', 1.2);
     var slot = W * 0.92 / count, bb = null, order = [1, 0, 2, 3];
     for (var i = 0; i < count; i++) {
         var L = jzMain(ctx, text, { font: jzFontOf(ctx, 'font', 'display'), size: 200, color: sc.fg, x: W / 2 + (i - (count - 1) / 2) * slot, y: H / 2, track: 0.04, maxW: slot * 0.94 / sx, maxH: H * 0.8 / sy, maxSize: H * 0.62, sx: sx, sy: sy, mi: count > 1 ? order[i] * 2 : 0 });
@@ -31968,8 +32051,9 @@ function tr1_recolor(D, hex) {
     var an = D.property('ADBE Text Properties').property('ADBE Text Animators'), i, c = jzHex(hex);
     for (i = 1; i <= an.numProperties; i++) {
         var pr = an.property(i).property('ADBE Text Animator Properties'), f = pr.property('ADBE Text Fill Color'), s = pr.property('ADBE Text Stroke Color');
-        if (f) f.setValue(c);
-        if (s) s.setValue(c);
+        // a colour the animator does not use is hidden, and setValue on a hidden property throws
+        if (f) { try { f.setValue(c); } catch (e1) {} }
+        if (s) { try { s.setValue(c); } catch (e2) {} }
     }
 }
 // copy of L drawn in one colour (fill, optional stroke) and shifted by (dx, dy) comp px in the layer's own frame
@@ -35601,7 +35685,7 @@ function jzTidyTree(comp) {
 // Walks a built comp tree, evaluates every expression at a few times and collects AE's own error messages
 // (Property.expressionError), plus the substitutions and warnings of the build. Used by the panels'
 // "\u8A3A\u65AD\u30EC\u30DD\u30FC\u30C8" button; the report is plain text so it can be sent as-is.
-var JZ_PANEL_VERSION = '0.10.1';
+var JZ_PANEL_VERSION = '0.11.0';
 // parts this panel can build, counted like the browser (its expression groups' orders)
 function jzPartsCount() {
     var n = 0, g, i, o = JZ_DATA.orders || {};

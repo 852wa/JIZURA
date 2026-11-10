@@ -464,6 +464,15 @@ button.small.primary { padding: 4px 12px; }
 .ln .cuts select.cut-lay { width: 112px; }
 .ln .tools select.lay { width: 112px; }
 
+/* files dragged over the window */
+.drop-hint { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(8,8,10,0.72); pointer-events: none; }
+.drop-hint[hidden] { display: none; }
+.drop-hint > div { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; padding: 26px 34px; margin: 16px; border: 2px dashed var(--cyan); border-radius: 12px; background: rgba(12,12,14,0.9); }
+.drop-hint strong { font-size: 18px; }
+.drop-hint span { font-size: 12px; opacity: 0.8; }
+.sec-btns { flex-wrap: wrap; justify-content: flex-end; }
+.sec-btns > * { white-space: nowrap; }
+
 </style>
 </head>
 <body>
@@ -478,7 +487,7 @@ button.small.primary { padding: 4px 12px; }
 </div>
 <div id="app">
   <header class="bar">
-    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.10.1</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true">字面</span><span class="word">JIZURA</span><span class="tag">lyric motion engine</span><span class="ver">v0.11.0</span></div>
     <div class="proj">
       <input id="songTitle" type="text" placeholder="Judul lagu (ditampilkan di kartu judul dan HUD)" aria-label="Judul lagu">
       <input id="songArtist" type="text" placeholder="Artis" aria-label="Artis">
@@ -513,7 +522,7 @@ button.small.primary { padding: 4px 12px; }
           <button id="tapStop" class="ghost">Selesai</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><label class="file ghost small" title="Muat file LRC (lirik dengan cap waktu) untuk mengganti lirik sekarang (Urungkan mengembalikannya)">Muat LRC<input id="fileLrc" type="file" accept=".lrc,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
+        <div class="sec-h"><h2>Lirik</h2><span class="sec-btns"><label class="file ghost small" title="Muat file LRC (lirik dengan cap waktu) atau subtitle (SRT / VTT) untuk mengganti lirik sekarang (Urungkan mengembalikannya). File juga bisa dijatuhkan ke jendela">Muat LRC / SRT<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Hapus lirik beserta waktu per baris, pengaturan per baris, dan rentang ekspor (bisa dikembalikan dengan Urungkan atau Ctrl+Z)">Hapus lirik</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Sintaks</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lirik (satu frasa per baris)"></textarea>
         <label class="lang-row">Bahasa lirik<select id="lyricLang"><option value="auto">Deteksi otomatis</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
@@ -776,6 +785,7 @@ button.small.primary { padding: 4px 12px; }
     <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Tutup</button></div>
   </form>
 </dialog>
+<div id="dropHint" class="drop-hint" hidden><div><strong>Jatuhkan untuk memuat</strong><span>Lagu (mp3, wav …), lirik (LRC / SRT / teks), atau proyek (.json)</span></div></div>
 
 <script>
 /*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */
@@ -939,7 +949,20 @@ J.isHira = c => /[ぁ-ゟ]/.test(c);
 J.isKata = c => /[゠-ヿㇰ-ㇿｦ-ﾟ]/.test(c);
 J.isSmallKana = c => 'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ'.includes(c);
 J.isPunct = c => /[、。，．,.!?！？…‥・「」『』（）()【】〈〉《》〔〕［］\[\]'"“”‘’ー〜～:：;；\-—―]/.test(c);
+J.isOpenPunct = c => /[「『（(\[【〈《〔［“‘]/.test(c);
+J.isClosePunct = c => /[」』）)\]】〉》〕］”’]/.test(c);
 J.isLatin = c => /[A-Za-z0-9]/.test(c);
+/* the same, for the character at cs[i] in its text: a straight " or ' opens a quote when it comes at the start or after
+   a space / an opening bracket and a non-space follows it (the apostrophe in “It's” does not). A line or a chunk never
+   ends with an opening one, and a line never starts with a closing one or a comma / stop */
+J.opensAt = (cs, i) => {
+  const c = cs[i];
+  if (J.isOpenPunct(c)) return true;
+  if (c !== '"' && c !== "'") return false;
+  const p = cs[i - 1], n = cs[i + 1];
+  return (i === 0 || /\s/.test(p) || J.isOpenPunct(p)) && n != null && !/\s/.test(n);
+};
+J.noStartAt = (cs, i) => J.isClosePunct(cs[i]) || '、。，．,.!?！？…‥・:：;；'.includes(cs[i]) || ((cs[i] === '"' || cs[i] === "'") && !J.opensAt(cs, i));
 J.VERT_ROTATE = 'ー〜～…‥―—-()（）「」『』【】〈〉《》〔〕[]［］→←:：;；=＝';
 
 /* ---- kana → romaji (for annotation labels; kanji left out) ---- */
@@ -2610,6 +2633,7 @@ const splitWords = (text, maxPer) => {
   for (let k = 0; k < cuts.length - 1; k++) out.push(ws.slice(cuts[k], cuts[k + 1]).join(' '));
   return out.join('\n');
 };
+const LATINCH = /[A-Za-zÀ-ɏ0-9가-힯]/;
 /* split long text into balanced lines, preferring script boundaries */
 J.splitLines = (text, maxPer) => {
   const arr = [...text];
@@ -2619,12 +2643,16 @@ J.splitLines = (text, maxPer) => {
   const per = arr.length / nLines;
   const out = []; let start = 0;
   for (let l = 1; l < nLines; l++) {
-    let target = Math.round(per * l), best = target, bestScore = -1;
+    let target = Math.round(per * l), best = target, bestScore = -Infinity;
     for (let k = Math.max(start + 1, target - 3); k <= Math.min(arr.length - 1, target + 3); k++) {
       const a = arr[k - 1], b = arr[k];
       let s = 3 - Math.abs(k - target);
       if (J.isHira(a) && !J.isHira(b)) s += 3;
-      if (J.isPunct(a) || a === ' ' || a === '　') s += 5;
+      const opens = J.opensAt(arr, k - 1);
+      if ((J.isPunct(a) && !opens) || a === ' ' || a === '　') s += 5;
+      if (opens) s -= 8;                                     // never end a line with 「 『 （ “ or an opening "
+      if (J.noStartAt(arr, k)) s -= 8;                       // never start one with 」 』 ） ” , . ! ? or a closing "
+      if (LATINCH.test(a) && LATINCH.test(b)) s -= 4;        // nor cut inside a Latin / Hangul word
       if (J.isSmallKana(b) || 'ーっ、。'.includes(b)) s -= 6;
       if (s > bestScore) { bestScore = s; best = k; }
     }
@@ -2665,25 +2693,31 @@ J.LAYOUTS = {
     plan: (rng, cut, st) => ({ fontBig: rng.pick(fontsOf(st, ['display', 'serif'])), fontSmall: rng.pick(fontsOf(st, ['serif', 'body'])), mode: rng.pick(['line', 'stair', 'line', 'wave']), rotAmp: rng.range(2, 10), smallK: rng.range(0.42, 0.6), accentIdx: rng.int(0, 20) }),
     render(env) {
       const { W, H, sc } = env, P = env.cut.params;
-      const chars = [...env.cut.text.replace(/\s+/g, '')];
-      const n = chars.length;
-      const rows = n > 9 ? 2 : 1;
-      const perRow = Math.ceil(n / rows);
-      const items = chars.map((ch, i) => {
+      // Latin lyrics keep the spaces between words and break rows between words (a line picked by hand can be long)
+      const src = env.cut.text.trim().replace(/\s+/g, ' '), latin = J.isLatinText(src) && src.includes(' ');
+      let rowChars;
+      if (latin) { const len = [...src].length; rowChars = (len > 9 ? J.splitLines(src, Math.ceil(len / (len > 30 ? 3 : 2))) : src).split('\n').map(r => [...r]); }
+      else { const chars = [...src.replace(/\s+/g, '')], perRow = Math.ceil(chars.length / (chars.length > 9 ? 2 : 1)); rowChars = chars.length > 9 ? [chars.slice(0, perRow), chars.slice(perRow)] : [chars]; }
+      const rows = rowChars.length, n = rowChars.reduce((s, r) => s + r.length, 0);
+      const item = (ch, i) => {
+        if (ch === ' ') return { ch, k: 0.8, font: P.fontBig, w: 0.26 };
         let k = J.isKanji(ch) ? 1 : J.isKata(ch) ? 0.88 : J.isLatin(ch) ? 0.8 : J.isPunct(ch) ? 0.42 : P.smallK + J.r(env.cut.seed, i, 3) * 0.14;
         if (J.isSmallKana(ch)) k *= 0.8;
         const font = (J.isKanji(ch) || J.isKata(ch)) ? P.fontBig : (J.r(env.cut.seed, i, 4) < 0.55 ? P.fontSmall : P.fontBig);
         return { ch, k, font, w: J.metrics.adv(font, ch) * k * 0.96 };
-      });
-      let bbAll = null;
+      };
+      let bbAll = null, first = 0;
       for (let r = 0; r < rows; r++) {
-        const row = items.slice(r * perRow, (r + 1) * perRow);
+        const at = first; first += rowChars[r].length;
+        const row = rowChars[r].map((ch, j) => item(ch, at + j));
         const sumW = row.reduce((s, c) => s + c.w, 0);
-        const base = Math.min(W * 0.86 / sumW, H * (rows > 1 ? 0.3 : 0.4));
+        if (!sumW) continue;
+        const base = Math.min(W * 0.86 / sumW, H * (rows > 2 ? 0.24 : rows > 1 ? 0.3 : 0.4));
         let x = W / 2 - sumW * base / 2;
         const baseline = H / 2 + base * 0.38 + (r - (rows - 1) / 2) * base * 1.05;
         row.forEach((c, j) => {
-          const i = r * perRow + j;
+          const i = at + j;
+          if (c.ch === ' ') { x += c.w * base; return; }
           const size = c.k * base;
           let y = baseline - size / 2 + J.rs(env.cut.seed, i, 5) * base * 0.06;
           if (P.mode === 'stair') y += (j - (row.length - 1) / 2) * base * 0.12;
@@ -2955,7 +2989,8 @@ J.LAYOUTS = {
     name: '縦長圧縮', fits: n => n <= 10,
     plan: (rng, cut, st) => { const n = glyphCount(cut.text); return { count: n <= 4 ? rng.pick([3, 2, 1]) : n <= 7 ? rng.pick([2, 1]) : 1, sx: rng.range(0.42, 0.58), sy: rng.range(1.1, 1.3), font: rng.pick(fontsOf(st, ['display', 'body'])) }; },
     render(env) {
-      const { W, H, sc } = env, P = env.cut.params, text = env.cut.text.replace(/\s+/g, '');
+      // Latin lyrics keep the spaces between words
+      const { W, H, sc } = env, P = env.cut.params, text = J.isLatinText(env.cut.text) ? env.cut.text.trim().replace(/\s+/g, ' ') : env.cut.text.replace(/\s+/g, '');
       const slot = W * 0.92 / P.count;
       const size = Math.min(J.fitSize(text, P.font, slot * 0.94, H * 0.8, { sx: P.sx, sy: P.sy, track: 0.04 }), H * 0.62);
       let bb = null; const order = [1, 0, 2, 3];
@@ -3586,40 +3621,58 @@ J.joinWords = arr => {
 J.isLatinText = t => { const s = String(t || '').replace(/\s/g, ''); if (!s) return false; const n = (s.match(/[A-Za-z\u00c0-\u024f\u1e00-\u1eff]/g) || []).length; return n / [...s].length >= 0.6; };
 
 J.chunkText = (text) => {
-  const segs = J.segments(text);
-  const chunks = []; let cur = null;
-  const close = () => { if (cur && cur.s.trim()) chunks.push(cur.s.trim()); cur = null; };
+  const segs = J.segments(text), cs = [...text];
+  // each chunk remembers whether a space came before it (sp), so words split apart are joined back with that space
+  const chunks = []; let cur = null, gap = false, pos = 0;
+  const close = () => { if (cur && cur.s.trim()) { chunks.push({ s: cur.s.trim(), sp: cur.sp }); gap = false; } cur = null; };
+  const start = (s, k) => { cur = { s, k, hasH: k === 'H', sp: gap, open: false }; };
   for (const sg of segs) {
+    const at = pos; pos += [...sg].length;
     const t = segType(sg);
-    if (t === 'S') { close(); continue; }
-    if (t === 'P') { if (cur) cur.s += sg; else if (chunks.length) chunks[chunks.length - 1] += sg; else cur = { s: sg, k: 'P', hasH: false }; continue; }
-    if (!cur) { cur = { s: sg, k: t, hasH: t === 'H' }; continue; }
+    if (t === 'S') { close(); gap = true; continue; }
+    if (t === 'P') {
+      [...sg].forEach((c, j) => {
+        // an opening bracket / quote (「 『 （ “ and a " or ' that opens a quote) starts the next chunk — it never ends one
+        if (J.opensAt(cs, at + j)) { if (!(cur && cur.open)) { close(); start(c, 'P'); cur.open = true; } else cur.s += c; }
+        else if (cur) cur.s += c;
+        else if (chunks.length) chunks[chunks.length - 1].s += c;
+        else start(c, 'P');
+      });
+      continue;
+    }
+    if (!cur) { start(sg, t); continue; }
+    if (cur.open) { cur.s += sg; cur.k = t; cur.hasH = t === 'H'; cur.open = false; continue; }
     if (t === 'H') {
       const len = [...sg].length;
       if (len <= 3 || (cur.k !== 'H' && !cur.hasH) || (cur.k === 'H' && [...cur.s].length + len <= 4)) { cur.s += sg; cur.hasH = true; continue; }
-      close(); cur = { s: sg, k: 'H', hasH: true }; continue;
+      close(); start(sg, 'H'); continue;
     }
     if (t === 'K' && cur.k === 'K' && !cur.hasH && [...(cur.s + sg)].length <= 6) { cur.s += sg; continue; }
     if (t === 'T' && cur.k === 'T') { cur.s += sg; continue; }
     if (t === 'L' && cur.k === 'L') { cur.s += sg; continue; }
-    close(); cur = { s: sg, k: t, hasH: t === 'H' };
+    close(); start(sg, t);
   }
   close();
   // split very long chunks, merge lonely single kana
   const out = [];
   for (const c of chunks) {
-    const n = [...c].length;
-    if (n > 10 && J.isWordLike(c)) {
+    const n = [...c.s].length;
+    if (n > 10 && J.isWordLike(c.s)) {
       // one long Latin / Hangul word: never cut inside it — only after its dashes (never-ending → never- / ending)
-      const parts = c.split(/(?<=[-‐–—])(?=\S)/);
-      if (parts.length > 1) parts.forEach(x => out.push(x)); else out.push(c);
-    } else if (n > 10) { J.splitLines(c, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach(x => out.push(x)); }
+      const parts = c.s.split(/(?<=[-‐–—])(?=\S)/);
+      parts.forEach((x, k) => out.push({ s: x, sp: k ? false : c.sp }));
+    } else if (n > 10) { J.splitLines(c.s, Math.ceil(n / Math.ceil(n / 8))).split('\n').forEach((x, k) => out.push({ s: x, sp: k ? false : c.sp })); }
     else out.push(c);
   }
   for (let i = out.length - 1; i > 0; i--) {
-    if ([...out[i]].length === 1 && !J.isKanji(out[i])) { out[i - 1] += (WORDCH.test([...out[i - 1]].pop()) && WORDCH.test(out[i]) && !/[-‐–—]$/.test(out[i - 1]) ? ' ' : '') + out[i]; out.splice(i, 1); }
+    const a = out[i - 1].s, b = out[i].s;
+    if ([...b].length !== 1 || J.isKanji(b)) continue;
+    // a lone word after a sentence break (“exactly! I know,” / “But still, I wanted”) goes with the words after it
+    if (out[i].sp && WORDCH.test(b) && /[.,!?;:…”’"')\]」』）]$/.test(a) && i + 1 < out.length) { out[i + 1] = { s: b + ' ' + out[i + 1].s, sp: true }; out.splice(i, 1); continue; }
+    const space = WORDCH.test(b) && !/[-‐–—]$/.test(a) && (out[i].sp || WORDCH.test([...a].pop()));
+    out[i - 1] = { s: a + (space ? ' ' : '') + b, sp: out[i - 1].sp }; out.splice(i, 1);
   }
-  return out.length ? out : [text];
+  return out.length ? out.map(c => c.s) : [text];
 };
 
 /* English lyrics: cut by short phrases, not word by word (a Japanese chunk holds about as much as 2–3 English words) */
@@ -3629,11 +3682,12 @@ J.phraseChunks = (words) => {
   for (const w of words) {
     const n = (w.match(/[A-Za-z\u00c0-\u024f0-9]/g) || []).length;
     cur.push(w); letters += n;
-    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]$/.test(w)) flush();
+    if (letters >= 9 || cur.length >= 3 || /[,.;:!?]["'”’)\]」』）]*$/.test(w)) flush();
   }
   flush();
-  // a lone short word at the end joins the previous phrase
-  if (out.length >= 2 && out[out.length - 1].replace(/[^A-Za-z]/g, '').length <= 4) { const last = out.pop(); out[out.length - 1] = J.joinWords([out[out.length - 1], last]); }
+  // a lone short word at the end joins the previous phrase (a Hangul / Han character counts as two letters)
+  const weight = s => s.replace(/[^A-Za-z]/g, '').length + 2 * s.replace(/[^가-힯㐀-鿿]/g, '').length;
+  if (out.length >= 2 && weight(out[out.length - 1]) <= 4) { const last = out.pop(); out[out.length - 1] = J.joinWords([out[out.length - 1], last]); }
   return out.length ? out : words;
 };
 
@@ -3725,7 +3779,7 @@ J.plan = (project, audio) => {
   const zoneOf = () => (zones ? Object.assign({}, zones[0]) : null);
   if (zones && en.bg) en.bg.bigChar = false;               // the one background that draws the lyric itself (big, centred)
   const plan = {
-    version: 1, generator: 'JIZURA', appVersion: '0.10.1', title, artist, W, H, fps: project.fps || 24,
+    version: 1, generator: 'JIZURA', appVersion: '0.11.0', title, artist, W, H, fps: project.fps || 24,
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
@@ -5401,6 +5455,37 @@ J.lrcText = (project, lines, range) => {
     out.push(stamp(tm.starts[i] - t0) + txt);
   }
   return out.join('\n') + '\n';
+};
+
+/* ---------- SRT / WebVTT (subtitles) → timed lyrics ----------
+   one subtitle block = one lyric row, tagged with its start time. A block's end time is kept as an interlude row
+   when the next block starts `gap` seconds or more later, so the line ends where the singing ends; the last
+   block gets a short one. Returns null when the text holds no subtitle timing. */
+J.isSubtitleText = text => /(?:^|\n)\s*(?:\d+:)?\d+:\d+[.,]\d+\s*-->\s*(?:\d+:)?\d+:\d+[.,]\d+/.test(String(text || ''));
+J.srtToLyrics = (text, gap = 1) => {
+  const sec = s => { const m = s.match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/); return m ? (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + parseFloat('0.' + m[4]) : NaN; };
+  const stamp = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return `[${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}]`; };
+  const TIME = /^\s*((?:\d+:)?\d+:\d+[.,]\d+)\s*-->\s*((?:\d+:)?\d+:\d+[.,]\d+)/;
+  const cues = [];
+  let cur = null;
+  for (const row of String(text || '').replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n')) {
+    const m = row.match(TIME);
+    if (m) { cur = { start: sec(m[1]), end: sec(m[2]), rows: [] }; cues.push(cur); continue; }
+    if (!row.trim()) { cur = null; continue; }
+    if (cur) cur.rows.push(row);
+  }
+  const body = c => c.rows.map(r => r.replace(/<[^>]*>/g, '').replace(/\{\\[^}]*\}/g, '').trim()).filter(Boolean).join(' ')
+    .replace(/^[♪♫\s]+|[♪♫\s]+$/g, '').replace(/^#/, '＃').replace(/^\[/, '［');     // a row may not read as a comment or a tag
+  const list = cues.filter(c => isFinite(c.start) && isFinite(c.end)).map(c => ({ start: c.start, end: Math.max(c.start, c.end), text: body(c) })).filter(c => c.text).sort((a, b) => a.start - b.start);
+  if (!list.length) return null;
+  const out = [], IL = '[interlude]'; let gaps = 0;
+  list.forEach((c, i) => {
+    out.push(stamp(c.start) + c.text);
+    const next = list[i + 1];
+    if (next && next.start - c.end >= gap) { out.push(stamp(c.end) + IL); gaps++; }
+    else if (!next && c.end - c.start >= 0.2) out.push(stamp(c.end) + IL.slice(0, -1) + ' 1]');
+  });
+  return { lyrics: out.join('\n'), lines: list.length, gaps };
 };
 
 /* ---------- MP4 ---------- */
@@ -20979,7 +21064,7 @@ function split2(word, force) {
     const a = chars[c - 1], b = chars[c];
     if (!force && ((c === 1 && !J.isKanji(a)) || (c === n - 1 && !J.isKanji(b)))) continue;   // never leave a lone kana
     let s = -Math.abs(c - n / 2) * 0.9;
-    if (a === ' ' || a === '\u3000' || (J.isPunct(a) && a !== '\u30fc')) s += 5;
+    if (a === ' ' || a === '\u3000' || (J.isPunct(a) && a !== '\u30fc' && !(J.isOpenPunct && J.isOpenPunct(a)))) s += 5;
     if (J.isHira(a) && !J.isHira(b) && !isBad(b)) s += 3;
     if (sb.has(c)) s += 2;
     if (isBad(b)) s -= 6;
@@ -21051,7 +21136,13 @@ function splitK(text, k, force) {
 /* single glyphs, with small kana / punctuation / ー kept on the preceding glyph */
 const charUnits = text => {
   const out = [];
-  for (const ch of strip(text)) { if (out.length && isBad(ch)) out[out.length - 1] += ch; else out.push(ch); }
+  let pending = '';
+  for (const ch of strip(text)) {
+    if (J.isOpenPunct && J.isOpenPunct(ch)) { pending += ch; continue; }
+    if (out.length && isBad(ch)) out[out.length - 1] += ch;
+    else { out.push(pending + ch); pending = ''; }
+  }
+  if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
   return out;
 };
 
@@ -24851,7 +24942,7 @@ function split2(word, force) {
     const a = chars[c - 1], b = chars[c];
     if (!force && ((c === 1 && !J.isKanji(a)) || (c === n - 1 && !J.isKanji(b)))) continue;
     let s = -Math.abs(c - n / 2) * 0.9;
-    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー')) s += 5;
+    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー' && !(J.isOpenPunct && J.isOpenPunct(a)))) s += 5;
     if (J.isHira(a) && !J.isHira(b) && !isBad(b)) s += 3;
     if (sb.has(c)) s += 2;
     if (isBad(b)) s -= 6;
@@ -24921,7 +25012,13 @@ function splitK(text, k, force) {
 /* single glyphs, with small kana / punctuation / ー kept on the preceding glyph */
 const charUnits = text => {
   const out = [];
-  for (const ch of strip(text)) { if (out.length && isBad(ch)) out[out.length - 1] += ch; else out.push(ch); }
+  let pending = '';
+  for (const ch of strip(text)) {
+    if (J.isOpenPunct && J.isOpenPunct(ch)) { pending += ch; continue; }
+    if (out.length && isBad(ch)) out[out.length - 1] += ch;
+    else { out.push(pending + ch); pending = ''; }
+  }
+  if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
   return out;
 };
 const brk = (text, maxPer) => {
@@ -36726,8 +36823,8 @@ function renderLines() {
         ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Pilih layout"></select>`}
         <button class="icon ghost tapfrom" title="Sinkronkan ulang dengan ketukan mulai dari baris ini" aria-label="Sinkronkan dengan ketukan mulai baris ${i + 1}">${ICON.tap}</button>
         <button class="icon ghost rng" title="Jadikan rentang ekspor (Shift+klik untuk memperluas rentang)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Ekspor baris ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Acak ulang baris ini">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Kunci susunan baris ini" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Acak ulang baris ini (D untuk baris di posisi putar)">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Kunci susunan baris ini (L untuk baris di posisi putar)" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) lazyLay(q('.lay'), o.layout || '');
@@ -36752,17 +36849,12 @@ function renderLines() {
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
     q('.txt').addEventListener('dblclick', () => editLine(li, ln));
     q('.edit').addEventListener('click', () => editLine(li, ln));
-    if (q('.lay')) q('.lay').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
+    if (q('.lay')) q('.lay').addEventListener('change', e => { remember(); setOv(i, { layout: e.target.value || undefined }); replan(); commit(); });
     if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
     q('.tapfrom').addEventListener('click', () => startTap(i));
     q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
-    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined }); replan(); seek(ln.start + 0.001); });
-    if (q('.lock')) q('.lock').addEventListener('click', () => {
-      const cur = ov[i] || {};
-      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
-      else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
-      replan();
-    });
+    if (q('.dice')) q('.dice').addEventListener('click', () => rerollLine(i));
+    if (q('.lock')) q('.lock').addEventListener('click', () => toggleLineLock(i));
     const cutsEl = q('.cuts');
     S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
       const forced = o.cutLayouts && o.cutLayouts[k];
@@ -36850,7 +36942,7 @@ function edGo(d) {
   toast(d < 0 ? 'Dibatalkan' : 'Diulang kembali');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
-function loadLrc(text) {
+function loadLrc(text, sub) {
   if (S.tap || S.exporting) return;
   const P = S.project;
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
@@ -36860,7 +36952,8 @@ function loadLrc(text) {
   $('lyrics').value = P.lyrics;
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
-  toast(`LRC dimuat (${n} baris berwaktu · Urungkan untuk mengembalikan)`);
+  if (sub) toast(`Subtitle dimuat (${sub.lines} baris, ${sub.gaps} interlude · Urungkan untuk mengembalikan)`);
+  else toast(`LRC dimuat (${n} baris berwaktu · Urungkan untuk mengembalikan)`);
 }
 function saveLrc() {
   const R = exportRangeLines(), r = exportRange();
@@ -36942,6 +37035,24 @@ function bindRangeUI() {
     flushSave(); renderLines();
   }));
 }
+/* Acak ulang baris ini / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
+function rerollLine(i) {
+  const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
+  const cur = (S.project.overrides || {})[i] || {};
+  remember();
+  setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined });
+  replan(); commit(); seek(S.plan.lines[i].start + 0.001);
+}
+function toggleLineLock(i) {
+  const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
+  const cur = (S.project.overrides || {})[i] || {};
+  remember();
+  if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+  else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
+  replan(); commit();
+}
+// the lyric line under the playhead (-1: title card or none)
+function lineAtPlayhead() { const c = J.cutAt(S.plan, S.t); return c && c.line >= 0 ? c.line : -1; }
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
   for (const k of Object.keys(cur)) if (cur[k] === undefined || cur[k] === false || cur[k] === '') delete cur[k];
@@ -37831,7 +37942,7 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.10.1' }), null, 1)));
+  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '0.11.0' }), null, 1)));
   $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
@@ -37840,15 +37951,7 @@ function bind() {
     document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
     flushSave();
   }));
-  $('fileLrc').addEventListener('change', async e => {
-    const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
-    if (f.size > 2e6) { toast('File LRC terlalu besar'); return; }
-    let text = '';
-    try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
-    catch (err) { toast('File LRC tidak bisa dibaca'); return; }
-    if (S.project.lyrics.trim() && !window.confirm('Ganti lirik sekarang dengan isi LRC? (Waktu per baris, pengaturan per baris, dan rentang ekspor juga dihapus. Urungkan mengembalikannya.)')) return;
-    loadLrc(text);
-  });
+  $('fileLrc').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openLyricFile(f); });
   ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
@@ -37856,20 +37959,7 @@ function bind() {
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
-  $('fileProject').addEventListener('change', async e => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    try {
-      const np = mergeProject(JSON.parse(await f.text()));
-      if (S.tap) stopTap();
-      pause();
-      S.project = np;
-      // another project: undo and 前の案 / 次の案 belonged to the old one
-      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
-      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
-    }
-    catch (err) { showMsg('Proyek gagal dibuka'); setTimeout(() => showMsg(null), 2500); }
-    e.target.value = '';
-  });
+  $('fileProject').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; await openProjectFile(f); e.target.value = ''; });
   document.addEventListener('keydown', e => {
     const tag = (e.target && e.target.tagName) || '';
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
@@ -37884,10 +37974,62 @@ function bind() {
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.exporting) { e.preventDefault(); omakase(); }
+    else if (e.code === 'KeyD' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); rerollLine(i); } }
+    else if (e.code === 'KeyL' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); toggleLineLock(i); } }
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
   bindFollow();
+  bindDrop();
+}
+
+/* lyric file (.lrc / .txt, or .srt / .vtt subtitles): from the file input or dropped on the window */
+async function openLyricFile(f) {
+  if (!f || S.tap || S.exporting) return;
+  if (f.size > 2e6) { toast('File LRC terlalu besar'); return; }
+  let text = '';
+  try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
+  catch (err) { toast('File LRC tidak bisa dibaca'); return; }
+  if (S.project.lyrics.trim() && !window.confirm('Ganti lirik sekarang dengan isi LRC? (Waktu per baris, pengaturan per baris, dan rentang ekspor juga dihapus. Urungkan mengembalikannya.)')) return;
+  // SRT / WebVTT subtitles: each block becomes a timed line, and a pause after a block's end time becomes an interlude
+  if (J.isSubtitleText(text)) { const sub = J.srtToLyrics(text); if (!sub) { toast('File LRC tidak bisa dibaca'); return; } loadLrc(sub.lyrics, sub); }
+  else loadLrc(text);
+}
+/* saved project (.json) */
+async function openProjectFile(f) {
+  if (!f || S.exporting) return;
+  try {
+    const np = mergeProject(JSON.parse(await f.text()));
+    if (S.tap) stopTap();
+    pause();
+    S.project = np;
+    // another project: undo and 前の案 / 次の案 belonged to the old one
+    ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
+  }
+  catch (err) { showMsg('Proyek gagal dibuka'); setTimeout(() => showMsg(null), 2500); }
+}
+/* files dropped anywhere on the window: a song, lyrics (LRC / SRT / VTT / text) or a saved project */
+function bindDrop() {
+  const hint = $('dropHint'); let depth = 0;
+  const hasFiles = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  const show = on => { if (hint) hint.hidden = !on; };
+  window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); depth++; show(true); });
+  window.addEventListener('dragover', e => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) show(false); });
+  window.addEventListener('drop', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0; show(false);
+    if (S.exporting || S.tap) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    const ext = f => (f.name.match(/\.([^.]+)$/) || ['', ''])[1].toLowerCase();
+    const song = files.find(f => /^audio\//.test(f.type) || ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'].includes(ext(f)));
+    const proj = files.find(f => ext(f) === 'json');
+    const lyr = files.find(f => ['lrc', 'srt', 'vtt', 'txt'].includes(ext(f)));
+    if (proj) { openProjectFile(proj); return; }            // a project brings its own lyrics
+    if (!song && !lyr) { toast('Yang bisa dimuat: lagu, lirik (LRC / SRT), atau proyek (.json)'); return; }
+    (async () => { if (lyr) await openLyricFile(lyr); if (song) loadAudioFile(song); })();
+  });
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */

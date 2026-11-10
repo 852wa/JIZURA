@@ -440,3 +440,12 @@ button.small.primary { padding: 4px 12px; }
 /* layout menus are filled on first use: keep their width fixed so nothing jumps */
 .ln .cuts select.cut-lay { width: 112px; }
 .ln .tools select.lay { width: 112px; }
+
+/* files dragged over the window */
+.drop-hint { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(8,8,10,0.72); pointer-events: none; }
+.drop-hint[hidden] { display: none; }
+.drop-hint > div { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; padding: 26px 34px; margin: 16px; border: 2px dashed var(--cyan); border-radius: 12px; background: rgba(12,12,14,0.9); }
+.drop-hint strong { font-size: 18px; }
+.drop-hint span { font-size: 12px; opacity: 0.8; }
+.sec-btns { flex-wrap: wrap; justify-content: flex-end; }
+.sec-btns > * { white-space: nowrap; }

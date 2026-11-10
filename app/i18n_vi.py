@@ -42,6 +42,8 @@ STYLES = {
 }
 
 BODY = {
+    'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Mở tệp LRC (lời có dấu thời gian) hoặc phụ đề (SRT / VTT) để thay lời hiện tại (Hoàn tác để lấy lại). Cũng có thể thả tệp vào cửa sổ">Mở LRC / SRT',
+    '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Thả vào đây để mở</strong><span>Bài hát (mp3, wav …), lời (LRC / SRT / văn bản) hoặc dự án (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Nếu một dòng có nhiều cảnh, nhấn <span class="kbd">Tab</span> đúng lúc cảnh cần chuyển để canh cả thời điểm bắt đầu các cảnh của dòng đó.',
     '<label>速さ <select id="tapRate" aria-label="タップ中の再生速度">': '<label>Tốc độ <select id="tapRate" aria-label="Tốc độ phát khi nhấn">',
     '<input type="checkbox" id="tapCount"> カウントダウン</label>': '<input type="checkbox" id="tapCount"> Đếm ngược</label>',
@@ -263,6 +265,10 @@ BODY = {
 }
 
 UI = {
+    '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Đã mở phụ đề (${sub.lines} dòng, ${sub.gaps} đoạn nhạc dạo · Hoàn tác để lấy lại)`',
+    "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'Có thể mở: bài hát, lời (LRC / SRT) hoặc dự án (.json)'",
+    '（再生位置の行は D キー）': ' (phím D cho hàng tại vị trí phát)',
+    '（再生位置の行は L キー）': ' (phím L cho hàng tại vị trí phát)',
     '`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`': '`Đã đặt ${w.toFixed(2)} giây để giữ thứ tự các dòng`',
     "'このカットの開始時刻（手動）。空にすると自動に戻ります'": "'Thời điểm bắt đầu cảnh này (thủ công). Xóa trống để về tự động'",
     "'このカットの開始時刻（自動）。数値を入れると固定します'": "'Thời điểm bắt đầu cảnh này (tự động). Nhập số để cố định'",

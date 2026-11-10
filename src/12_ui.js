@@ -664,8 +664,8 @@ function renderLines() {
         ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="レイアウト指定"></select>`}
         <button class="icon ghost tapfrom" title="この行からタップで同期し直す" aria-label="${i + 1}行目からタップ">${ICON.tap}</button>
         <button class="icon ghost rng" title="書き出す範囲にする（Shift+クリックで範囲を広げる）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}行目を書き出す範囲に">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="この行を再抽選">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="この行の構成をロック" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="この行を再抽選（再生位置の行は D キー）">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="この行の構成をロック（再生位置の行は L キー）" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) lazyLay(q('.lay'), o.layout || '');
@@ -690,17 +690,12 @@ function renderLines() {
     q('.txt').addEventListener('click', () => seek(ln.start + 0.001));
     q('.txt').addEventListener('dblclick', () => editLine(li, ln));
     q('.edit').addEventListener('click', () => editLine(li, ln));
-    if (q('.lay')) q('.lay').addEventListener('change', e => { setOv(i, { layout: e.target.value || undefined }); replan(); });
+    if (q('.lay')) q('.lay').addEventListener('change', e => { remember(); setOv(i, { layout: e.target.value || undefined }); replan(); commit(); });
     if (q('.ncut')) q('.ncut').addEventListener('change', e => { remember(); setOv(i, { cuts: +e.target.value || undefined, single: undefined }); replan(); commit(); seek(ln.start + 0.001); });
     q('.tapfrom').addEventListener('click', () => startTap(i));
     q('.rng').addEventListener('click', e => setExportRange(i, e.shiftKey));
-    if (q('.dice')) q('.dice').addEventListener('click', () => { const cur = ov[i] || {}; setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined }); replan(); seek(ln.start + 0.001); });
-    if (q('.lock')) q('.lock').addEventListener('click', () => {
-      const cur = ov[i] || {};
-      if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
-      else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
-      replan();
-    });
+    if (q('.dice')) q('.dice').addEventListener('click', () => rerollLine(i));
+    if (q('.lock')) q('.lock').addEventListener('click', () => toggleLineLock(i));
     const cutsEl = q('.cuts');
     S.plan.cuts.filter(c => c.line === i && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).forEach((c, k) => {
       const forced = o.cutLayouts && o.cutLayouts[k];
@@ -788,7 +783,7 @@ function edGo(d) {
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
-function loadLrc(text) {
+function loadLrc(text, sub) {
   if (S.tap || S.exporting) return;
   const P = S.project;
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
@@ -798,7 +793,8 @@ function loadLrc(text) {
   $('lyrics').value = P.lyrics;
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
-  toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
+  if (sub) toast(`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`);
+  else toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
 }
 function saveLrc() {
   const R = exportRangeLines(), r = exportRange();
@@ -880,6 +876,24 @@ function bindRangeUI() {
     flushSave(); renderLines();
   }));
 }
+/* この行を再抽選 / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
+function rerollLine(i) {
+  const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
+  const cur = (S.project.overrides || {})[i] || {};
+  remember();
+  setOv(i, { seed: (cur.seed | 0) + 1, lock: false, lockedSeed: undefined, lockedCuts: undefined });
+  replan(); commit(); seek(S.plan.lines[i].start + 0.001);
+}
+function toggleLineLock(i) {
+  const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
+  const cur = (S.project.overrides || {})[i] || {};
+  remember();
+  if (cur.lock) setOv(i, { lock: false, lockedSeed: undefined, lockedCuts: undefined });
+  else setOv(i, { lock: true, lockedSeed: ln.seed, lockedCuts: J.lineSnapshot(S.plan, i) || undefined });
+  replan(); commit();
+}
+// the lyric line under the playhead (-1: title card or none)
+function lineAtPlayhead() { const c = J.cutAt(S.plan, S.t); return c && c.line >= 0 ? c.line : -1; }
 function setOv(i, patch) {
   const cur = Object.assign({}, S.project.overrides[i] || {}, patch);
   for (const k of Object.keys(cur)) if (cur[k] === undefined || cur[k] === false || cur[k] === '') delete cur[k];
@@ -1778,15 +1792,7 @@ function bind() {
     document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
     flushSave();
   }));
-  $('fileLrc').addEventListener('change', async e => {
-    const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
-    if (f.size > 2e6) { toast('LRC ファイルが大きすぎます'); return; }
-    let text = '';
-    try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
-    catch (err) { toast('LRC を読み込めませんでした'); return; }
-    if (S.project.lyrics.trim() && !window.confirm('今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？')) return;
-    loadLrc(text);
-  });
+  $('fileLrc').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openLyricFile(f); });
   ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
@@ -1794,20 +1800,7 @@ function bind() {
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
-  $('fileProject').addEventListener('change', async e => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    try {
-      const np = mergeProject(JSON.parse(await f.text()));
-      if (S.tap) stopTap();
-      pause();
-      S.project = np;
-      // another project: undo and 前の案 / 次の案 belonged to the old one
-      ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
-      syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
-    }
-    catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
-    e.target.value = '';
-  });
+  $('fileProject').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; await openProjectFile(f); e.target.value = ''; });
   document.addEventListener('keydown', e => {
     const tag = (e.target && e.target.tagName) || '';
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
@@ -1822,10 +1815,62 @@ function bind() {
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.exporting) { e.preventDefault(); omakase(); }
+    else if (e.code === 'KeyD' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); rerollLine(i); } }
+    else if (e.code === 'KeyL' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); toggleLineLock(i); } }
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
   bindFollow();
+  bindDrop();
+}
+
+/* lyric file (.lrc / .txt, or .srt / .vtt subtitles): from the file input or dropped on the window */
+async function openLyricFile(f) {
+  if (!f || S.tap || S.exporting) return;
+  if (f.size > 2e6) { toast('LRC ファイルが大きすぎます'); return; }
+  let text = '';
+  try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
+  catch (err) { toast('LRC を読み込めませんでした'); return; }
+  if (S.project.lyrics.trim() && !window.confirm('今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？')) return;
+  // SRT / WebVTT subtitles: each block becomes a timed line, and a pause after a block's end time becomes an interlude
+  if (J.isSubtitleText(text)) { const sub = J.srtToLyrics(text); if (!sub) { toast('LRC を読み込めませんでした'); return; } loadLrc(sub.lyrics, sub); }
+  else loadLrc(text);
+}
+/* saved project (.json) */
+async function openProjectFile(f) {
+  if (!f || S.exporting) return;
+  try {
+    const np = mergeProject(JSON.parse(await f.text()));
+    if (S.tap) stopTap();
+    pause();
+    S.project = np;
+    // another project: undo and 前の案 / 次の案 belonged to the old one
+    ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
+  }
+  catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+}
+/* files dropped anywhere on the window: a song, lyrics (LRC / SRT / VTT / text) or a saved project */
+function bindDrop() {
+  const hint = $('dropHint'); let depth = 0;
+  const hasFiles = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  const show = on => { if (hint) hint.hidden = !on; };
+  window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); depth++; show(true); });
+  window.addEventListener('dragover', e => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) show(false); });
+  window.addEventListener('drop', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0; show(false);
+    if (S.exporting || S.tap) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    const ext = f => (f.name.match(/\.([^.]+)$/) || ['', ''])[1].toLowerCase();
+    const song = files.find(f => /^audio\//.test(f.type) || ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'].includes(ext(f)));
+    const proj = files.find(f => ext(f) === 'json');
+    const lyr = files.find(f => ['lrc', 'srt', 'vtt', 'txt'].includes(ext(f)));
+    if (proj) { openProjectFile(proj); return; }            // a project brings its own lyrics
+    if (!song && !lyr) { toast('読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'); return; }
+    (async () => { if (lyr) await openLyricFile(lyr); if (song) loadAudioFile(song); })();
+  });
 }
 
 /* song file -> beat analysis (file input, or a host such as the After Effects panel) */
