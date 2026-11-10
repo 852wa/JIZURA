@@ -42,6 +42,8 @@ STYLES = {
 }
 
 BODY = {
+    '追加分2の演出も使う': 'Sử dụng các hiệu ứng mới 2',
+    '<small>v0.12 で追加した部品（「追2」印）。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのスイッチもオンのときに使います</small>': '<small>Các thành phần thêm ở v0.12 (đánh dấu E2). Thành phần Lyric Video, Kinetic, kinh dị và họa tiết Nhật mới chỉ được dùng khi công tắc riêng của chúng cũng bật</small>',
     'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Mở tệp LRC (lời có dấu thời gian) hoặc phụ đề (SRT / VTT) để thay lời hiện tại (Hoàn tác để lấy lại). Cũng có thể thả tệp vào cửa sổ">Mở LRC / SRT',
     '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Thả vào đây để mở</strong><span>Bài hát (mp3, wav …), lời (LRC / SRT / văn bản) hoặc dự án (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Nếu một dòng có nhiều cảnh, nhấn <span class="kbd">Tab</span> đúng lúc cảnh cần chuyển để canh cả thời điểm bắt đầu các cảnh của dòng đó.',
@@ -265,6 +267,9 @@ BODY = {
 }
 
 UI = {
+    "'追加分2の演出：使う'": "'Hiệu ứng mới 2: bật'",
+    "'追加分2の演出：使わない'": "'Hiệu ứng mới 2: tắt'",
+    "{ name: '追加分2', badge: '追2' }": "{ name: 'Mới 2', badge: 'E2' }",
     '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Đã mở phụ đề (${sub.lines} dòng, ${sub.gaps} đoạn nhạc dạo · Hoàn tác để lấy lại)`',
     "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'Có thể mở: bài hát, lời (LRC / SRT) hoặc dự án (.json)'",
     '（再生位置の行は D キー）': ' (phím D cho hàng tại vị trí phát)',

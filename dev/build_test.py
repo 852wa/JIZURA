@@ -10,7 +10,7 @@ allsrc = sorted(glob.glob('src/*.js'))
 packs = [f for f in allsrc if os.path.basename(f).startswith('11p_')]
 core = [f for f in allsrc if f not in packs]
 chosen = packs if '--all-packs' in args else [a for a in args if a.endswith('.js')]
-files = sorted(core + chosen)          # keep global load order (packs load before 12_ui)
+files = sorted(set(os.path.normpath(f) for f in core + chosen), key=os.path.basename)          # keep global load order (packs load before 12_ui)
 js = '\n'.join(open(f, encoding='utf-8').read() for f in files)
 os.makedirs('dev/www', exist_ok=True)
 open(f'dev/www/t_{name}.js', 'w', encoding='utf-8').write(js)

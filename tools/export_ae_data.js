@@ -28,7 +28,7 @@ function tab(fn) {   // inDur / outDur (dur[, n]) -> table on a fixed grid (AE i
   return { n: NS, d: NS.map(n => DUR.map(d => r3(fn(d, n)))) };
 }
 const KEEP = ['w', 'tags', 'extra', 'wa', 'ae', 'portrait', 'emph', 'enterBias', 'busy', 'treat', 'cam', 'minDur', 'maxChars', 'safe', 'subtle', 'strong',
-  'layer', 'edge', 'mid', 'glitchy', 'dur', 'amp', 'pre', 'builtin', 'special', 'scratch', 'pack', 'set'];
+  'layer', 'edge', 'mid', 'glitchy', 'dur', 'amp', 'pre', 'builtin', 'special', 'scratch', 'pack', 'set', 'x2'];
 const meta = {}, orders = {}, names = {};
 for (const g of JJ.GROUP_KEYS) {
   meta[g] = {}; names[g] = {}; orders[g] = JJ.order(g).slice();

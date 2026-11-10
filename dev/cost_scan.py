@@ -1,6 +1,6 @@
 """Per-entry render cost: each registered entry alone (others at defaults), best-of-2 warmed frame at 0.5x.
 usage: python3 dev/cost_scan.py [page=t_all] [threshold_ms=45]"""
-import asyncio, sys
+import asyncio, os, sys
 from playwright.async_api import async_playwright
 PAGE = sys.argv[1] if len(sys.argv) > 1 else 't_all'
 TH = float(sys.argv[2]) if len(sys.argv) > 2 else 45
@@ -44,7 +44,7 @@ async (TH) => {
 }"""
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); pg = await b.new_page()
+        b = await p.chromium.launch(channel=os.environ.get("JIZURA_BROWSER") or None); pg = await b.new_page()
         await pg.goto(f'http://localhost:8765/{PAGE}.html'); await pg.wait_for_timeout(300)
         await pg.evaluate("p => T.setup(p)", {'lyrics': 'テスト'})
         r = await pg.evaluate(JS, TH)

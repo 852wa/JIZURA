@@ -20,7 +20,7 @@ TEXT = 'ほどけた声が鳴った'
 TEXT2 = '夜明けの色を'
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(channel=os.environ.get("JIZURA_BROWSER") or None)
         pg = await b.new_page()
         await pg.goto(f'http://localhost:8765/{PAGE}.html'); await pg.wait_for_timeout(300)
         await pg.evaluate("p => T.setup(p)", {'lyrics': 'テスト'})

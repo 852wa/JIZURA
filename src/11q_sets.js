@@ -12,6 +12,12 @@
       off by default), 文字PV系 (typo) and キネティック (kinetic),
       both on by default. Entries carry `set: '<name>'` (or come
       from a pack of that name).
+   4) 追加分2 (extra2, off by default): the parts added in v0.12. They
+      come from packs whose name starts with 'x2' and carry x2: true.
+      A pack named x2typo… / x2kinetic… / x2horror… belongs to that
+      part set AND to 追加分2: its entries are picked only when both
+      switches are on. 和風 entries of 追加分2 carry wa: true as usual.
+      With 追加分2 off, random picks are exactly what they were before.
    Pack authors: packs not listed in J.BASE_PACKS count as 追加分;
    add Japanese-motif keys to J.WA (or set `wa: true` on the def).
    ============================================================ */
@@ -29,11 +35,18 @@ J.WA = {
   treat: ['monoGrid'],
   style: ['sakura', 'sumi'],
 };
-J.SETS = { horror: { on: false }, typo: { on: true }, kinetic: { on: true } };   // on = default (UI labels live in 12_ui.js)
+J.SETS = { horror: { on: false }, typo: { on: true }, kinetic: { on: true }, extra2: { on: false } };   // on = default (UI labels live in 12_ui.js)
 J.SET_ORDER = Object.keys(J.SETS);
 /* is this part set switched on in the project? (old projects without the flag get the default) */
 J.setOn = (project, set) => { const v = project && project[set]; return typeof v === 'boolean' ? v : !!(J.SETS[set] && J.SETS[set].on); };
 const def = (g, k) => g === 'style' ? J.STYLES[k] : g === 'font' ? J.FONTS[k] : (J.registry(g) || {})[k];
+// 追加分2: packs named x2… (x2typo… / x2kinetic… / x2horror… also join that part set)
+for (const g of J.GROUP_KEYS) for (const k of J.order(g)) {
+  const d = def(g, k); if (!d || !/^x2/.test(d.pack || '')) continue;
+  d.x2 = true;
+  if (!d.set) { const m = /^x2(typo|kinetic|horror)/.exec(d.pack); d.set = m ? m[1] : 'extra2'; }
+}
+for (const k of J.STYLE_ORDER) if (J.STYLES[k].x2 && !J.STYLES[k].set) J.STYLES[k].set = 'extra2';
 // mark the part sets, then 追加分 (set entries are not 追加分: they have their own switch)
 for (const g of J.GROUP_KEYS) for (const k of J.order(g)) { const d = def(g, k); if (d && !d.set && J.SETS[d.pack]) d.set = d.pack; }
 for (const g of J.GROUP_KEYS) for (const k of J.order(g)) { const d = def(g, k); if (d && !d.set && !J.BASE_PACKS.includes(d.pack)) d.extra = true; }
@@ -51,6 +64,7 @@ J.randomOk = (project, g, k) => {
   if (d.extra && !(project && project.extra === true)) return false;
   if (d.wa && project && project.wa === false) return false;
   if (d.set && !J.setOn(project, d.set)) return false;
+  if (d.x2 && !J.setOn(project, 'extra2')) return false;
   return true;
 };
 })();

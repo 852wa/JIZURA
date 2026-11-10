@@ -21,6 +21,7 @@ J.defaultProject = () => ({
   horror: false,                  // parts sets (independent of 'extra'): ホラー (also enables the ホラー mood)
   typo: true,                     // 文字PV系 typographic parts
   kinetic: true,                  // キネティック parts
+  extra2: false,                  // 追加分2: the parts added in v0.12 (themed ones also need their own set's switch)
   lang: 'auto',                   // 歌詞の言語: 'auto' | 'ja' | 'zh-Hant' | 'zh-Hans' | 'ko' — picks the faces each font key is drawn with
   keyBg: 'off',                   // 合成用の背景: 'off' | 'green' (グリーンバック) | 'black' (ブラックバック)
   unify: false,                   // 統一感: part palettes, repeats shown the same way, キメ, モーフ, 太さ

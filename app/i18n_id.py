@@ -41,6 +41,8 @@ STYLES = {
 }
 
 BODY = {
+    '追加分2の演出も使う': 'Sertakan efek baru 2',
+    '<small>v0.12 で追加した部品（「追2」印）。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのスイッチもオンのときに使います</small>': '<small>Komponen yang ditambahkan di v0.12 (bertanda E2). Komponen tipografi, kinetik, horor, dan motif Jepang yang baru hanya dipakai bila sakelarnya sendiri juga menyala</small>',
     'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Muat file LRC (lirik dengan cap waktu) atau subtitle (SRT / VTT) untuk mengganti lirik sekarang (Urungkan mengembalikannya). File juga bisa dijatuhkan ke jendela">Muat LRC / SRT',
     '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Jatuhkan untuk memuat</strong><span>Lagu (mp3, wav …), lirik (LRC / SRT / teks), atau proyek (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'Jika satu baris punya beberapa cut, tekan <span class="kbd">Tab</span> saat cut harus berganti untuk menyesuaikan waktu cut di baris itu juga.',
@@ -207,6 +209,9 @@ BODY = {
 }
 
 UI = {
+    "'追加分2の演出：使う'": "'Efek baru 2: aktif'",
+    "'追加分2の演出：使わない'": "'Efek baru 2: nonaktif'",
+    "{ name: '追加分2', badge: '追2' }": "{ name: 'Baru 2', badge: 'E2' }",
     '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Subtitle dimuat (${sub.lines} baris, ${sub.gaps} interlude · Urungkan untuk mengembalikan)`',
     "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'Yang bisa dimuat: lagu, lirik (LRC / SRT), atau proyek (.json)'",
     '（再生位置の行は D キー）': ' (D untuk baris di posisi putar)',

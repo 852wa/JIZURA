@@ -76,7 +76,7 @@ def sheet(rows, title, path):
 
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(channel=os.environ.get("JIZURA_BROWSER") or None)
         pg = await b.new_page(viewport={'width': 1280, 'height': 800})
         logs = []
         pg.on('console', lambda m: logs.append(f'{m.type}: {m.text}') if m.type in ('warning', 'error') and 'ERR_TUNNEL' not in m.text and 'Failed to load resource' not in m.text else None)

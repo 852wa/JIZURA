@@ -1,6 +1,8 @@
 """English copy for the browser edition. The Japanese source stays authoritative."""
 
 BODY = {
+    '追加分2の演出も使う': 'Include new effects 2',
+    '<small>v0.12 で追加した部品（「追2」印）。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのスイッチもオンのときに使います</small>': '<small>Parts added in v0.12 (marked E2). The new typographic, kinetic, horror and Japanese-motif parts are used only when their own switch is on as well</small>',
     'title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む': 'title="Load an LRC file (lyrics with time stamps) or subtitles (SRT / VTT) in place of the current lyrics (Undo brings them back). You can also drop the file on the window">Load LRC / SRT',
     '<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>': '<strong>Drop to load</strong><span>A song (mp3, wav …), lyrics (LRC / SRT / text) or a project (.json)</span>',
     '1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。': 'If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.',
@@ -175,6 +177,9 @@ BODY = {
 }
 
 UI = {
+    "'追加分2の演出：使う'": "'Extra effects 2: on'",
+    "'追加分2の演出：使わない'": "'Extra effects 2: off'",
+    "{ name: '追加分2', badge: '追2' }": "{ name: 'Extra 2', badge: 'E2' }",
     '`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`': '`Subtitles loaded (${sub.lines} lines, ${sub.gaps} interlude(s) · Undo brings the old lyrics back)`',
     "'読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'": "'You can drop a song, lyrics (LRC / SRT) or a project (.json)'",
     '（再生位置の行は D キー）': ' (D for the line at the playhead)',
@@ -350,6 +355,8 @@ EXPORT = {
 }
 
 AE_UI = {
+    "'追加分2の演出も使う'": "'Include new effects 2'",
+    "'v0.12 で追加した部品。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのチェックもオンのときに使います'": "'Parts added in v0.12. The new typographic, kinetic, horror and Japanese-motif parts are used only when their own checkbox is on as well'",
     "'文字PV系の部品を使う'": "'Use typographic parts'", "'キネティックの部品を使う'": "'Use kinetic parts'", "'ホラーの演出も使う'": "'Include horror effects'",
     "'線・数字・字組みだけで見せる、文字PVらしい部品（約50）'": "'About 50 parts that work with lines, numbers and type alone'",
     "'語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）'": "'About 50 motion-first parts: words move, bounce and stack one by one'",

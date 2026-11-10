@@ -40,14 +40,15 @@ function jzFallback(g, k, dflt) {
     return dflt;
 }
 // is a part set switched on? (same defaults as the browser)
-function jzSetOn(o, s) { if (o && (o[s] === true || o[s] === false)) return o[s]; return s !== 'horror'; }
+function jzSetOn(o, s) { if (o && (o[s] === true || o[s] === false)) return o[s]; return s !== 'horror' && s !== 'extra2'; }
 // may random picks use this entry?  (追加分 first, then 和風 — same rule as the browser)
 function jzRandomOk(o, g, k) {
     var m = g === 'style' ? JZ_DATA.styles[k] : (g === 'font' ? JZ_DATA.fonts[k] : jzMeta(g, k));
     if (!m) return false;
     if (m.extra && !(o && o.extra === true)) return false;
     if (m.wa && o && o.wa === false) return false;
-    if (m.set && !jzSetOn(o, m.set)) return false;   // part sets: ホラー (off unless switched on), 文字PV系 / キネティック (on)
+    if (m.set && !jzSetOn(o, m.set)) return false;
+    if (m.x2 && !jzSetOn(o, 'extra2')) return false;        // 追加分2 (themed parts need their own set's switch too)   // part sets: ホラー (off unless switched on), 文字PV系 / キネティック (on)
     return true;
 }
 // inDur / outDur tables exported from the web (duration grid 0.2..4.0 s, optional glyph-count rows)

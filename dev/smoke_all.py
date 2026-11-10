@@ -1,6 +1,6 @@
 """Render every registered expression in many combinations and report console problems / exceptions / slow frames.
 usage: python3 dev/smoke_all.py [page=t_all]"""
-import asyncio, json, sys
+import asyncio, json, os, sys
 from playwright.async_api import async_playwright
 PAGE = sys.argv[1] if len(sys.argv) > 1 else 't_all'
 JS = r"""
@@ -53,7 +53,7 @@ async () => {
 """
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(channel=os.environ.get("JIZURA_BROWSER") or None)
         pg = await b.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))

@@ -354,6 +354,7 @@ dialog.terms a { color: var(--cyan); word-break: break-all; }
 .set-badge.set-horror { border-color: #c0544a; color: #e0786e; }
 .set-badge.set-typo { border-color: #9aa3ad; color: #c5ccd3; }
 .set-badge.set-kinetic { border-color: #7fbf6a; color: #9fd98a; }
+.set-badge.set-extra2 { border-color: #b08adf; color: #c9a8f0; }
 .checks label.set-off { opacity: 0.45; }
 .checks label.set-off .set-badge { border-color: var(--muted); color: var(--muted); }
 .stile { position: relative; }
