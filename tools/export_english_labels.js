@@ -1,4 +1,4 @@
-/* Print the browser edition's localized metadata for the AE build. */
+/* Print English metadata for the AE build, or Japanese originals with --source. */
 'use strict';
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = path.resolve(__dirname, '..');
@@ -8,7 +8,9 @@ const context = vm.createContext({
   console, Intl, URL, Map, Set, TextEncoder, TextDecoder, performance: { now: () => 0 }
 });
 for (const file of files) vm.runInContext(fs.readFileSync(path.join(root, 'src', file), 'utf8'), context, { filename: file });
-vm.runInContext(fs.readFileSync(path.join(root, 'app/english.js'), 'utf8'), context, { filename: 'english.js' });
+if (!process.argv.includes('--source')) {
+  vm.runInContext(fs.readFileSync(path.join(root, 'app/english.js'), 'utf8'), context, { filename: 'english.js' });
+}
 const J = context.window.J;
 const labels = { styles: {}, moods: {}, groups: {} };
 for (const key of J.STYLE_ORDER) labels.styles[key] = { name: J.STYLES[key].name, desc: J.STYLES[key].desc };
