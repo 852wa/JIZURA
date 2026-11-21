@@ -7,3 +7,4 @@ for i, sc in enumerate(re.findall(r'<script>(.*?)</script>', html, re.S)):
     r = subprocess.run(['node', '--check', fn], capture_output=True, text=True); os.unlink(fn)
     if r.returncode: ok = False; print('script', i, r.stderr[:800])
 print('JS OK' if ok else 'JS ERRORS')
+sys.exit(0 if ok else 1)

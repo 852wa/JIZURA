@@ -1,7 +1,7 @@
 """Localized browser editions. Japanese (the source) and English (app/english.py) are the originals; the Chinese,
 Indonesian, Korean, and Vietnamese editions use the same glossary keys as English, with values in their own module (app/i18n_<code>.py):
 BODY / UI / EXPORT (Japanese phrase -> translation), STYLES {key: (name, description)}, MOODS {key: name},
-SAMPLE (sample lyrics), TITLE, DESCRIPTION. Effect part names use the English labels (app/english.js)."""
+SAMPLE (sample lyrics), TITLE, DESCRIPTION. PARTS optionally supplies explicit localized effect names."""
 import importlib, json
 
 # code, output folder, html lang, native name
@@ -18,9 +18,9 @@ MODULES = {
     'zh-Hant': 'app.i18n_zh_hant', 'zh-Hans': 'app.i18n_zh_hans',
     'ko': 'app.i18n_ko', 'id': 'app.i18n_id', 'vi': 'app.i18n_vi',
 }
-# community translations (PR #6 by Zaious, PR #8 by andongmin94): their glossary wins over app/i18n_<code>.py, which
-# only fills strings added later; their label scripts name every part, style and mood (after app/english.js)
-COMMUNITY = {'zh-Hant': ('app.chinese', 'app/chinese.js'), 'ko': ('app.korean', 'app/korean.js')}
+# Traditional Chinese community translations take priority over the shared glossary.
+# Korean UI and effect names live together in app/i18n_ko.py.
+COMMUNITY = {'zh-Hant': ('app.chinese', 'app/chinese.js')}
 # part-name scripts for editions without a community glossary (after app/english.js and the edition's own names)
 PART_NAMES = {'zh-Hans': 'app/chinese_hans.js'}
 BASE = 'https://852wa.github.io/JIZURA/'
@@ -73,9 +73,16 @@ def localize_js(code, source, filename):
 
 
 def names_js(code):
-    """styles / moods / sample lyrics in the edition's language (after app/english.js, which names the parts)"""
+    """Localized metadata, applied after the English edition's labels."""
     m = module(code)
-    return ('(() => {\n  const S = ' + json.dumps({k: list(v) for k, v in m.STYLES.items()}, ensure_ascii=False) + ';\n'
+    parts = ''
+    if hasattr(m, 'PARTS'):
+        parts = ('  const P = ' + json.dumps(m.PARTS, ensure_ascii=False) + ';\n'
+                 '  for (const [g, labels] of Object.entries(P)) {\n'
+                 '    const registry = J.registry(g);\n'
+                 '    for (const [key, name] of Object.entries(labels)) registry[key].name = name;\n'
+                 '  }\n')
+    return ('(() => {\n' + parts + '  const S = ' + json.dumps({k: list(v) for k, v in m.STYLES.items()}, ensure_ascii=False) + ';\n'
             '  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }\n'
             '  const M = ' + json.dumps(m.MOODS, ensure_ascii=False) + ';\n'
             '  for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;\n'
@@ -91,7 +98,7 @@ def nav(code):
     for c, folder, hl, name in EDITIONS:
         href = up + (folder + '/' if folder else '') + 'index.html'
         opts.append(f'<option value="{href}" lang="{hl}"{" selected" if c == code else ""}>{name}</option>')
-    label = 'Bahasa' if code == 'id' else 'Ngôn ngữ' if code == 'vi' else 'Language'
+    label = {'id': 'Bahasa', 'vi': 'Ngôn ngữ', 'ko': '언어'}.get(code, 'Language')
     return (f'<label class="lang-switch"><span class="sr-only">{label}</span>'
             f'<select aria-label="{label}" onchange="if(this.value)location.href=this.value">' + ''.join(opts) + '</select></label>')
 

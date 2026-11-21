@@ -4,7 +4,7 @@
 
 **[한국어판 열기](https://852wa.github.io/JIZURA/ko/)** · [Tiếng Việt](https://852wa.github.io/JIZURA/vi/) · [日本語版](https://852wa.github.io/JIZURA/) · [English](https://852wa.github.io/JIZURA/en/) · [일본어 가이드](README.md)
 
-한국어·영어·일본어 브라우저판은 같은 프로젝트 형식과 브라우저 저장 데이터를 사용합니다. 편집기 상단의 언어 링크로 UI 언어를 바꿔도 가사와 설정은 그대로 유지됩니다.
+한국어를 포함한 7개 언어의 브라우저판은 같은 프로젝트 형식과 브라우저 저장 데이터를 사용합니다. 편집기 상단의 언어 메뉴로 UI 언어를 바꿔도 가사와 설정은 그대로 유지됩니다. 한국어판은 추가 효과를 포함한 효과 이름도 한국어로 표시합니다.
 
 <details>
 <summary><h2>빠른 시작</h2></summary>
@@ -46,10 +46,12 @@
 <details>
 <summary><h2>빌드</h2></summary>
 
-저장소 루트에서 python3 build.py 를 실행합니다.
+저장소 루트에서 `python3 build.py`를 실행합니다.
 
-index.html, en/index.html, ko/index.html이 생성됩니다. 세 파일은 GitHub Pages에서 각각 일본어, 영어, 한국어판으로 사용할 수 있는 단일 HTML 파일입니다.
+`index.html`, `en/index.html`, `zh-hant/index.html`, `zh-hans/index.html`, `ko/index.html`, `id/index.html`, `vi/index.html`이 생성됩니다. 각 파일은 GitHub Pages나 로컬에서 사용할 수 있는 단일 HTML 파일입니다.
 
 한국어판은 브라우저 UI 번역만 추가합니다. After Effects 패널의 프로젝트 JSON 형식은 기존과 동일하며, 가사의 한국어 감지와 한국어 글꼴 매핑은 기존 엔진을 그대로 사용합니다.
+
+한국어 UI와 효과 이름은 `app/i18n_ko.py`에서 관리합니다. `python3 tools/translate_ko.py --check`로 번역할 새 문구가 있는지 확인할 수 있습니다. 개발용 번역 갱신 명령과 검증 방법은 [번역 관리 안내](docs/TRANSLATIONS.md)를 참고하세요. 앱은 미리 저장된 번역을 사용하며, 번역 서비스에 접속하지 않습니다.
 
 </details>
